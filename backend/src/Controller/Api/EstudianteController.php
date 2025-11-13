@@ -4,48 +4,220 @@ namespace App\Controller\Api;
 
 use App\Entity\Estudiante;
 use App\Repository\EstudianteRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/estudiantes', name: 'api_estudiantes_')]
+#[IsGranted('ROLE_API')]
 final class EstudianteController extends AbstractController
 {
+    use JsonRequestTrait;
+
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(EstudianteRepository $repository): JsonResponse
     {
         $estudiantes = $repository->findAll();
 
-        $data = array_map(static function (Estudiante $estudiante): array {
-            $asignaciones = $estudiante->getAsignaciones();
-
-            return [
-                'id' => $estudiante->getId(),
-                'nombre' => $estudiante->getNombre(),
-                'apellido' => $estudiante->getApellido(),
-                'dni' => $estudiante->getDni(),
-                'email' => $estudiante->getEmail(),
-                'grado' => $estudiante->getGrado(),
-                'curso' => $estudiante->getCurso(),
-                'estado' => $estudiante->getEstado(),
-                'asignaciones' => [
-                    'total' => $asignaciones->count(),
-                    'enCurso' => $asignaciones->filter(static fn ($a) => $a->getEstado() === 'en_curso')->count(),
-                ],
-            ];
-        }, $estudiantes);
+        $data = array_map(fn (Estudiante $estudiante): array => $this->serializeSummary($estudiante), $estudiantes);
 
         return $this->json($data, Response::HTTP_OK);
     }
 
-    #[Route('/{id<\d+>}', name: 'show', methods: ['GET'])]
+    #[Route('', name: 'create', methods: ['POST'])]
+    public function create(
+        Request $request,
+        EstudianteRepository $repository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): JsonResponse {
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 120)],
+                'apellido' => [new Assert\NotBlank(), new Assert\Length(max: 120)],
+                'dni' => [new Assert\NotBlank(), new Assert\Length(max: 16)],
+                'email' => [new Assert\NotBlank(), new Assert\Email(), new Assert\Length(max: 150)],
+                'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'grado' => new Assert\Optional([new Assert\Length(max: 120)]),
+                'curso' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'expediente' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estado' => new Assert\Optional([new Assert\Length(max: 30)]),
+            ],
+            allowExtraFields: true
+        );
+
+        $violations = $validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        if ($repository->findOneBy(['dni' => $payload['dni']])) {
+            return $this->json([
+                'message' => 'Ya existe un estudiante con el DNI indicado.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        if ($repository->findOneBy(['email' => $payload['email']])) {
+            return $this->json([
+                'message' => 'Ya existe un estudiante con el email indicado.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $estudiante = new Estudiante();
+        $estudiante
+            ->setNombre($payload['nombre'])
+            ->setApellido($payload['apellido'])
+            ->setDni($payload['dni'])
+            ->setEmail($payload['email']);
+
+        if (array_key_exists('telefono', $payload)) {
+            $estudiante->setTelefono($payload['telefono']);
+        }
+        if (array_key_exists('grado', $payload)) {
+            $estudiante->setGrado($payload['grado']);
+        }
+        if (array_key_exists('curso', $payload)) {
+            $estudiante->setCurso($payload['curso']);
+        }
+        if (array_key_exists('expediente', $payload)) {
+            $estudiante->setExpediente($payload['expediente']);
+        }
+        if (array_key_exists('estado', $payload)) {
+            $estudiante->setEstado($payload['estado']);
+        }
+
+        $entityManager->persist($estudiante);
+        $entityManager->flush();
+
+        return $this->json($this->serializeDetail($estudiante), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\\d+>}', name: 'show', methods: ['GET'])]
     public function show(?Estudiante $estudiante): JsonResponse
     {
         if (!$estudiante) {
             return $this->json(['message' => 'Estudiante no encontrado'], Response::HTTP_NOT_FOUND);
         }
 
+        return $this->json($this->serializeDetail($estudiante), Response::HTTP_OK);
+    }
+
+    #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
+    public function update(
+        ?Estudiante $estudiante,
+        Request $request,
+        EstudianteRepository $repository,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator
+    ): JsonResponse {
+        if (!$estudiante) {
+            return $this->json(['message' => 'Estudiante no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'nombre' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 120)]),
+                'apellido' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 120)]),
+                'dni' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 16)]),
+                'email' => new Assert\Optional([new Assert\NotBlank(), new Assert\Email(), new Assert\Length(max: 150)]),
+                'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'grado' => new Assert\Optional([new Assert\Length(max: 120)]),
+                'curso' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'expediente' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estado' => new Assert\Optional([new Assert\Length(max: 30)]),
+            ],
+            allowMissingFields: true,
+            allowExtraFields: true
+        );
+
+        $violations = $validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        if (array_key_exists('dni', $payload) && $payload['dni'] !== $estudiante->getDni()) {
+            if ($repository->findOneBy(['dni' => $payload['dni']])) {
+                return $this->json([
+                    'message' => 'Ya existe un estudiante con el DNI indicado.',
+                ], Response::HTTP_CONFLICT);
+            }
+            $estudiante->setDni($payload['dni']);
+        }
+
+        if (array_key_exists('email', $payload) && $payload['email'] !== $estudiante->getEmail()) {
+            if ($repository->findOneBy(['email' => $payload['email']])) {
+                return $this->json([
+                    'message' => 'Ya existe un estudiante con el email indicado.',
+                ], Response::HTTP_CONFLICT);
+            }
+            $estudiante->setEmail($payload['email']);
+        }
+
+        if (array_key_exists('nombre', $payload)) {
+            $estudiante->setNombre($payload['nombre']);
+        }
+        if (array_key_exists('apellido', $payload)) {
+            $estudiante->setApellido($payload['apellido']);
+        }
+        if (array_key_exists('telefono', $payload)) {
+            $estudiante->setTelefono($payload['telefono']);
+        }
+        if (array_key_exists('grado', $payload)) {
+            $estudiante->setGrado($payload['grado']);
+        }
+        if (array_key_exists('curso', $payload)) {
+            $estudiante->setCurso($payload['curso']);
+        }
+        if (array_key_exists('expediente', $payload)) {
+            $estudiante->setExpediente($payload['expediente']);
+        }
+        if (array_key_exists('estado', $payload)) {
+            $estudiante->setEstado($payload['estado']);
+        }
+
+        $entityManager->flush();
+
+        return $this->json($this->serializeDetail($estudiante), Response::HTTP_OK);
+    }
+
+    private function serializeSummary(Estudiante $estudiante): array
+    {
+        $asignaciones = $estudiante->getAsignaciones();
+
+        return [
+            'id' => $estudiante->getId(),
+            'nombre' => $estudiante->getNombre(),
+            'apellido' => $estudiante->getApellido(),
+            'dni' => $estudiante->getDni(),
+            'email' => $estudiante->getEmail(),
+            'grado' => $estudiante->getGrado(),
+            'curso' => $estudiante->getCurso(),
+            'estado' => $estudiante->getEstado(),
+            'asignaciones' => [
+                'total' => $asignaciones->count(),
+                'enCurso' => $asignaciones->filter(static fn ($a) => $a->getEstado() === 'en_curso')->count(),
+            ],
+        ];
+    }
+
+    private function serializeDetail(Estudiante $estudiante): array
+    {
         $asignaciones = array_map(static function ($asignacion): array {
             return [
                 'id' => $asignacion->getId(),
@@ -57,7 +229,7 @@ final class EstudianteController extends AbstractController
             ];
         }, $estudiante->getAsignaciones()->toArray());
 
-        $data = [
+        return [
             'id' => $estudiante->getId(),
             'nombre' => $estudiante->getNombre(),
             'apellido' => $estudiante->getApellido(),
@@ -70,7 +242,5 @@ final class EstudianteController extends AbstractController
             'estado' => $estudiante->getEstado(),
             'asignaciones' => $asignaciones,
         ];
-
-        return $this->json($data, Response::HTTP_OK);
     }
 }

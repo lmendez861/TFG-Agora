@@ -7,6 +7,7 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 
 final class EstudianteControllerTest extends WebTestCase
 {
@@ -17,7 +18,10 @@ final class EstudianteControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $this->client = static::createClient();
+        $this->client = static::createClient(server: [
+            'PHP_AUTH_USER' => 'admin',
+            'PHP_AUTH_PW' => 'admin123',
+        ]);
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->reloadDemoFixtures($this->entityManager);
     }
@@ -59,5 +63,60 @@ final class EstudianteControllerTest extends WebTestCase
         self::assertSame('Ana', $payload['nombre']);
         self::assertCount(1, $payload['asignaciones']);
         self::assertSame('Innovar Formación', $payload['asignaciones'][0]['empresa']);
+    }
+
+    public function testAltaDeEstudianteValida(): void
+    {
+        $this->client->request(
+            'POST',
+            '/api/estudiantes',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombre' => 'Luis',
+                'apellido' => 'Martinez',
+                'dni' => '12345678Z',
+                'email' => 'luis.martinez@example.com',
+                'grado' => 'Ingenieria Informatica',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame('Luis', $payload['nombre']);
+    self::assertSame('Ingenieria Informatica', $payload['grado']);
+
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['dni' => '12345678Z']);
+
+        self::assertNotNull($estudiante);
+        self::assertSame('luis.martinez@example.com', $estudiante->getEmail());
+    }
+
+    public function testActualizarEstudianteDetectaColisionesDeEmail(): void
+    {
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Miguel']);
+
+        self::assertNotNull($estudiante);
+
+        $existing = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Ana']);
+
+        self::assertNotNull($existing);
+
+        $this->client->request(
+            'PUT',
+            '/api/estudiantes/' . $estudiante->getId(),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'email' => $existing->getEmail(),
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
     }
 }

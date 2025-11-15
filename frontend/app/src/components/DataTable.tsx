@@ -12,13 +12,27 @@ interface DataTableProps<T> {
   columns: Array<TableColumn<T>>;
   data: T[];
   emptyMessage?: string;
+  actions?: ReactNode;
 }
 
-export function DataTable<T>({ caption, columns, data, emptyMessage = 'No hay datos disponibles.' }: DataTableProps<T>) {
+export function DataTable<T>({
+  caption,
+  columns,
+  data,
+  emptyMessage = 'No hay datos disponibles.',
+  actions,
+}: DataTableProps<T>) {
+  const Header = (
+    <div className="data-table__header">
+      <h3>{caption}</h3>
+      {actions && <div className="data-table__actions">{actions}</div>}
+    </div>
+  );
+
   if (data.length === 0) {
     return (
       <div className="data-table__empty">
-        <h3>{caption}</h3>
+        {Header}
         <p>{emptyMessage}</p>
       </div>
     );
@@ -26,8 +40,8 @@ export function DataTable<T>({ caption, columns, data, emptyMessage = 'No hay da
 
   return (
     <div className="data-table__wrapper">
-      <table className="data-table">
-        <caption>{caption}</caption>
+      {Header}
+      <table className="data-table" aria-label={caption}>
         <thead>
           <tr>
             {columns.map((column) => (

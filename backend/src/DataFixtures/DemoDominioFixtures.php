@@ -203,6 +203,86 @@ class DemoDominioFixtures extends Fixture
         $manager->persist($convenioSalud);
         $manager->persist($asignacionLuis);
 
+        // Empresa 3 orientada a log��stica inteligente con asignaci��n activa
+        $empresaLogi = (new EmpresaColaboradora())
+            ->setNombre('LogiMovil Partners')
+            ->setSector('Log��stica inteligente')
+            ->setDireccion('Parque Tecnol��gico, 8')
+            ->setCiudad('Sevilla')
+            ->setProvincia('Sevilla')
+            ->setPais('Espa��a')
+            ->setTelefono('950222111')
+            ->setEmail('contacto@logimovil.es')
+            ->setWeb('https://logimovil.es')
+            ->setEstadoColaboracion('activa')
+            ->setFechaAlta(new \DateTimeImmutable('2023-11-10'))
+            ->setObservaciones('Interesados en perfiles de optimizaci��n de rutas.');
+
+        $contactoLogi = (new ContactoEmpresa())
+            ->setNombre('Patricia Vidal')
+            ->setCargo('HR Tech Lead')
+            ->setTelefono('950222333')
+            ->setEmail('patricia.vidal@logimovil.es')
+            ->setEsTutorProfesional(true);
+        $empresaLogi->addContacto($contactoLogi);
+
+        $mentorLogi = (new TutorProfesional())
+            ->setNombre('Ra��l Montes')
+            ->setEmail('raul.montes@logimovil.es')
+            ->setTelefono('950222444')
+            ->setCargo('Responsable de Operaciones')
+            ->setActivo(true)
+            ->setEmpresa($empresaLogi);
+        $empresaLogi->addTutorProfesional($mentorLogi);
+
+        $convenioLogi = (new Convenio())
+            ->setTitulo('Plataforma de Log��stica Inteligente 2024')
+            ->setDescripcion('Integraci��n de algoritmos de optimizaci��n y dashboards log��sticos.')
+            ->setFechaInicio(new \DateTimeImmutable('2024-08-15'))
+            ->setFechaFin(new \DateTimeImmutable('2025-01-31'))
+            ->setTipo('Pr��cticas curriculares')
+            ->setEstado('vigente')
+            ->setEmpresa($empresaLogi);
+        $empresaLogi->addConvenio($convenioLogi);
+
+        $tutorAcademicoSara = (new TutorAcademico())
+            ->setNombre('Sara')
+            ->setApellido('Nieto')
+            ->setEmail('sara.nieto@universidad.es')
+            ->setTelefono('954000111')
+            ->setDepartamento('Industrial')
+            ->setEspecialidad('Optimizaci��n y simulaci��n')
+            ->setActivo(true);
+
+        $estudianteMarina = (new Estudiante())
+            ->setNombre('Marina')
+            ->setApellido('Vega')
+            ->setDni('44556677C')
+            ->setEmail('marina.vega@alumnos.es')
+            ->setTelefono('600555666')
+            ->setGrado('Ingenier��a Industrial')
+            ->setCurso('5��')
+            ->setExpediente('IND-2020-002')
+            ->setEstado('en_practicas');
+
+        $asignacionMarina = (new AsignacionPractica())
+            ->setEstudiante($estudianteMarina)
+            ->setConvenio($convenioLogi)
+            ->setEmpresa($empresaLogi)
+            ->setTutorAcademico($tutorAcademicoSara)
+            ->setTutorProfesional($mentorLogi)
+            ->setFechaInicio(new \DateTimeImmutable('2024-09-10'))
+            ->setFechaFin(new \DateTimeImmutable('2025-02-15'))
+            ->setModalidad('presencial')
+            ->setHorasTotales(300)
+            ->setEstado('en_curso');
+
+        $manager->persist($empresaLogi);
+        $manager->persist($tutorAcademicoSara);
+        $manager->persist($estudianteMarina);
+        $manager->persist($convenioLogi);
+        $manager->persist($asignacionMarina);
+
         $manager->flush();
     }
 }

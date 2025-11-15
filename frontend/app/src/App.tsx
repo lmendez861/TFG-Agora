@@ -50,14 +50,14 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
   empresas: [
     {
       id: 1,
-      nombre: 'Innovar Formación',
-      sector: 'Tecnología educativa',
+      nombre: 'Innovar Formacion',
+      sector: 'Tecnologia educativa',
       ciudad: 'Madrid',
       estadoColaboracion: 'activa',
-      conveniosActivos: 1,
-      tutoresProfesionales: 1,
-      contactos: 1,
-      asignaciones: { total: 1, enCurso: 1 },
+      conveniosActivos: 2,
+      tutoresProfesionales: 2,
+      contactos: 2,
+      asignaciones: { total: 2, enCurso: 1 },
     },
     {
       id: 2,
@@ -70,16 +70,38 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       contactos: 1,
       asignaciones: { total: 1, enCurso: 0 },
     },
+    {
+      id: 3,
+      nombre: 'LogiMovil Partners',
+      sector: 'Logistica inteligente',
+      ciudad: 'Sevilla',
+      estadoColaboracion: 'activa',
+      conveniosActivos: 1,
+      tutoresProfesionales: 2,
+      contactos: 2,
+      asignaciones: { total: 1, enCurso: 1 },
+    },
+    {
+      id: 4,
+      nombre: 'Energia Circular Coop.',
+      sector: 'Energia renovable',
+      ciudad: 'Bilbao',
+      estadoColaboracion: 'activa',
+      conveniosActivos: 1,
+      tutoresProfesionales: 1,
+      contactos: 2,
+      asignaciones: { total: 1, enCurso: 0 },
+    },
   ],
   estudiantes: [
     {
       id: 1,
       nombre: 'Ana',
-      apellido: 'Martínez',
+      apellido: 'Martinez',
       dni: '12345678A',
       email: 'ana.martinez@alumnos.es',
-      grado: 'Ingeniería Informática',
-      curso: '4º',
+      grado: 'Ingenieria Informatica',
+      curso: '4o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
     },
@@ -89,9 +111,42 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Campos',
       dni: '87654321B',
       email: 'luis.campos@alumnos.es',
-      grado: 'Ingeniería Biomédica',
-      curso: '3º',
+      grado: 'Ingenieria Biomedica',
+      curso: '3o',
       estado: 'disponible',
+      asignaciones: { total: 1, enCurso: 0 },
+    },
+    {
+      id: 3,
+      nombre: 'Marina',
+      apellido: 'Vega',
+      dni: '44556677C',
+      email: 'marina.vega@alumnos.es',
+      grado: 'Ingenieria Industrial',
+      curso: '5o',
+      estado: 'en_practicas',
+      asignaciones: { total: 1, enCurso: 1 },
+    },
+    {
+      id: 4,
+      nombre: 'Carlos',
+      apellido: 'Ibanez',
+      dni: '99887766D',
+      email: 'carlos.ibanez@alumnos.es',
+      grado: 'Telecomunicaciones',
+      curso: '4o',
+      estado: 'planificado',
+      asignaciones: { total: 1, enCurso: 0 },
+    },
+    {
+      id: 5,
+      nombre: 'Sofia',
+      apellido: 'Herrera',
+      dni: '11223344E',
+      email: 'sofia.herrera@alumnos.es',
+      grado: 'Administracion y Direccion',
+      curso: '4o',
+      estado: 'finalizado',
       asignaciones: { total: 1, enCurso: 0 },
     },
   ],
@@ -99,7 +154,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 1,
       titulo: 'Convenio IA Educativa 2024/2025',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
+      empresa: { id: 1, nombre: 'Innovar Formacion' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2024-09-01',
@@ -108,13 +163,43 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 2,
-      titulo: 'Convenio Integraciones Clínicas 2024',
+      titulo: 'Convenio Integraciones Clinicas 2024',
       empresa: { id: 2, nombre: 'Salud Conectada S.L.' },
       tipo: 'extracurricular',
       estado: 'borrador',
       fechaInicio: '2024-11-01',
       fechaFin: null,
       asignacionesAsociadas: 1,
+    },
+    {
+      id: 3,
+      titulo: 'Plataforma de Logistica Inteligente 2024',
+      empresa: { id: 3, nombre: 'LogiMovil Partners' },
+      tipo: 'curricular',
+      estado: 'vigente',
+      fechaInicio: '2024-08-15',
+      fechaFin: '2025-01-31',
+      asignacionesAsociadas: 1,
+    },
+    {
+      id: 4,
+      titulo: 'Programa Transicion Energetica 2024/25',
+      empresa: { id: 4, nombre: 'Energia Circular Coop.' },
+      tipo: 'extracurricular',
+      estado: 'renovacion',
+      fechaInicio: '2024-05-01',
+      fechaFin: '2025-05-01',
+      asignacionesAsociadas: 1,
+    },
+    {
+      id: 5,
+      titulo: 'Convenio DataOps 2025',
+      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      tipo: 'curricular',
+      estado: 'planificado',
+      fechaInicio: '2025-03-01',
+      fechaFin: '2025-09-30',
+      asignacionesAsociadas: 0,
     },
   ],
   asignaciones: [
@@ -125,8 +210,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 320,
       fechaInicio: '2024-10-01',
       fechaFin: '2025-01-31',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
-      estudiante: { id: 1, nombre: 'Ana', apellido: 'Martínez' },
+      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      estudiante: { id: 1, nombre: 'Ana', apellido: 'Martinez' },
     },
     {
       id: 2,
@@ -137,6 +222,36 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       fechaFin: null,
       empresa: { id: 2, nombre: 'Salud Conectada S.L.' },
       estudiante: { id: 2, nombre: 'Luis', apellido: 'Campos' },
+    },
+    {
+      id: 3,
+      estado: 'finalizada',
+      modalidad: 'remota',
+      horasTotales: 180,
+      fechaInicio: '2024-03-01',
+      fechaFin: '2024-06-30',
+      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      estudiante: { id: 5, nombre: 'Sofia', apellido: 'Herrera' },
+    },
+    {
+      id: 4,
+      estado: 'en_curso',
+      modalidad: 'presencial',
+      horasTotales: 300,
+      fechaInicio: '2024-09-10',
+      fechaFin: '2025-02-15',
+      empresa: { id: 3, nombre: 'LogiMovil Partners' },
+      estudiante: { id: 3, nombre: 'Marina', apellido: 'Vega' },
+    },
+    {
+      id: 5,
+      estado: 'planificada',
+      modalidad: 'hibrida',
+      horasTotales: 260,
+      fechaInicio: '2025-01-15',
+      fechaFin: '2025-05-30',
+      empresa: { id: 4, nombre: 'Energia Circular Coop.' },
+      estudiante: { id: 4, nombre: 'Carlos', apellido: 'Ibanez' },
     },
   ],
 };
@@ -624,6 +739,41 @@ type ConvenioModalState = EntityModalState<ConvenioFormValues>;
 type AsignacionModalState = EntityModalState<AsignacionFormValues>;
 
 type StudentDetailTab = 'academico' | 'asignaciones' | 'seguimiento';
+type EmpresaNote = {
+  id: number;
+  author: string;
+  content: string;
+  timestamp: string;
+};
+
+type EmpresaDocument = {
+  id: number;
+  name: string;
+  type: string;
+  uploadedAt: string;
+};
+
+type ConvenioChecklistItem = {
+  id: number;
+  label: string;
+  completed: boolean;
+};
+
+type ConvenioDocumentRecord = {
+  id: number;
+  name: string;
+  type: string;
+  uploadedAt: string;
+};
+
+type ConvenioAlert = {
+  id: number;
+  message: string;
+  level: 'info' | 'warning';
+  active: boolean;
+};
+
+const CONVENIO_STEP_FLOW = ['borrador', 'revisado', 'firmado', 'vigente', 'renovacion', 'finalizado'];
 
 interface CompanyRegistrationPageProps {
   onSuccess: (message: string) => void;
@@ -636,24 +786,52 @@ function DocumentationPage() {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Recursos</p>
-          <h2>Documentación del proyecto</h2>
-          <p>Guías rápidas para desplegar backend y frontend, y descripción de los flujos CRUD.</p>
+          <h2>Documentaci??n del proyecto</h2>
+          <p>Gu??as r??pidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
         </div>
       </header>
       <div className="docs-grid">
         <article className="docs-card">
           <h3>Backend Symfony</h3>
-          <p>Arranque del servidor, ejecución de tests y pautas de autenticación.</p>
+          <p>Arranque del servidor, ejecuci??n de tests y pautas de autenticaci??n.</p>
           <a href="../README.md" target="_blank" rel="noreferrer">Abrir README general</a>
         </article>
         <article className="docs-card">
           <h3>Frontend Vite/React</h3>
-          <p>Variables `.env`, scripts disponibles y consejos de estilo.</p>
+          <p>Variables de entorno, scripts disponibles y consejos de estilo.</p>
           <a href="./README.md" target="_blank" rel="noreferrer">Abrir README frontend</a>
         </article>
         <article className="docs-card">
           <h3>Flujos CRUD</h3>
-          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta también los tests en `backend/tests`.</p>
+          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambi??n los tests en backend/tests.</p>
+        </article>
+        <article className="docs-card">
+          <h3>Pruebas automatizadas</h3>
+          <p>Ejecuta php bin/phpunit para validar controladores y repositorios clave del dominio.</p>
+        </article>
+      </div>
+
+      <div className="docs-panels">
+        <article className="docs-panel">
+          <h3>Checklist de despliegue</h3>
+          <ul>
+            <li>Backend: composer install, configurar .env.local y ejecutar migraciones.</li>
+            <li>Frontend: npm install, definir VITE_API_BASE_URL y lanzar npm run dev.</li>
+            <li>Datos demo: php bin/console doctrine:fixtures:load para poblar empresas y asignaciones.</li>
+            <li>Validar /api/empresas antes de compartir acceso con coordinadores.</li>
+          </ul>
+        </article>
+        <article className="docs-panel docs-panel--links">
+          <h3>Enlaces r??pidos</h3>
+          <div className="docs-links">
+            <Link className="link" to="/asignaciones/1">Ejemplo de seguimiento</Link>
+            <Link className="link" to="/empresas/1">Espacio privado de empresa</Link>
+            <a className="link" href="https://github.com/lmendez861/TFG-gora" target="_blank" rel="noreferrer">
+              Repositorio en GitHub
+            </a>
+            <Link className="link" to="/">Volver al dashboard</Link>
+          </div>
+          <p>Utiliza estos accesos para demo o onboarding de coordinadores.</p>
         </article>
       </div>
     </section>
@@ -823,6 +1001,16 @@ export default function App() {
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
   const [selectedConvenioId, setSelectedConvenioId] = useState<number | null>(null);
   const [convenioEstadoFilter, setConvenioEstadoFilter] = useState<string>('todos');
+  const [convenioEmpresaFilter, setConvenioEmpresaFilter] = useState<string>('todos');
+  const [selectedStudent, setSelectedStudent] = useState<EstudianteSummary | null>(null);
+  const [studentDetailTab, setStudentDetailTab] = useState<StudentDetailTab>('academico');
+  const [empresaNotes, setEmpresaNotes] = useState<Record<number, EmpresaNote[]>>({});
+  const [empresaLabels, setEmpresaLabels] = useState<Record<number, string[]>>({});
+  const [empresaDocs, setEmpresaDocs] = useState<Record<number, EmpresaDocument[]>>({});
+  const [convenioChecklist, setConvenioChecklist] = useState<Record<number, ConvenioChecklistItem[]>>({});
+  const [convenioDocuments, setConvenioDocuments] = useState<Record<number, ConvenioDocumentRecord[]>>({});
+  const [convenioAlerts, setConvenioAlerts] = useState<Record<number, ConvenioAlert[]>>({});
+  const [convenioWorkflowState, setConvenioWorkflowState] = useState<Record<number, string>>({});
 
   const openCreateStudent = useCallback(() => {
     setStudentFormError(null);
@@ -839,6 +1027,121 @@ export default function App() {
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  const handleAddEmpresaNote = useCallback((empresaId: number, content: string) => {
+    const trimmed = content.trim();
+    if (!trimmed) {
+      return false;
+    }
+    setEmpresaNotes((prev) => {
+      const notes = prev[empresaId] ?? [];
+      const newNote: EmpresaNote = {
+        id: Date.now(),
+        author: 'Coordinación',
+        content: trimmed,
+        timestamp: new Date().toISOString(),
+      };
+      return { ...prev, [empresaId]: [newNote, ...notes] };
+    });
+    return true;
+  }, []);
+
+  const handleAddEmpresaLabel = useCallback((empresaId: number, label: string) => {
+    const trimmed = label.trim();
+    if (!trimmed) {
+      return false;
+    }
+    setEmpresaLabels((prev) => {
+      const labels = prev[empresaId] ?? [];
+      if (labels.includes(trimmed)) {
+        return prev;
+      }
+      return { ...prev, [empresaId]: [...labels, trimmed] };
+    });
+    return true;
+  }, []);
+
+  const handleRemoveEmpresaLabel = useCallback((empresaId: number, label: string) => {
+    setEmpresaLabels((prev) => {
+      const labels = prev[empresaId] ?? [];
+      return { ...prev, [empresaId]: labels.filter((item) => item !== label) };
+    });
+  }, []);
+
+  const handleAddEmpresaDocument = useCallback((empresaId: number, name: string, type: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return false;
+    }
+    setEmpresaDocs((prev) => {
+      const docs = prev[empresaId] ?? [];
+      const newDoc: EmpresaDocument = {
+        id: Date.now(),
+        name: trimmedName,
+        type: type.trim() || 'Documento',
+        uploadedAt: new Date().toISOString(),
+      };
+    return { ...prev, [empresaId]: [newDoc, ...docs] };
+  });
+  return true;
+}, []);
+
+  const handleToggleChecklistItem = useCallback((convenioId: number, itemId: number) => {
+    setConvenioChecklist((prev) => {
+      const items = prev[convenioId] ?? [];
+      return {
+        ...prev,
+        [convenioId]: items.map((item) =>
+          item.id === itemId ? { ...item, completed: !item.completed } : item,
+        ),
+      };
+    });
+  }, []);
+
+  const handleAdvanceConvenioState = useCallback((convenioId: number) => {
+    setConvenioWorkflowState((prev) => {
+      const current = prev[convenioId] ?? 'borrador';
+      const index = CONVENIO_STEP_FLOW.findIndex((step) => step === current);
+      const next = CONVENIO_STEP_FLOW[(index + 1) % CONVENIO_STEP_FLOW.length];
+      pushToast('success', `Convenio ${convenioId} cambia a ${next}.`);
+      return { ...prev, [convenioId]: next };
+    });
+  }, [pushToast]);
+
+  const handleAddConvenioDocument = useCallback((convenioId: number, name: string, type: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      return false;
+    }
+    setConvenioDocuments((prev) => {
+      const docs = prev[convenioId] ?? [];
+      return {
+        ...prev,
+        [convenioId]: [
+          {
+            id: Date.now(),
+            name: trimmedName,
+            type: type.trim() || 'PDF',
+            uploadedAt: new Date().toISOString(),
+          },
+          ...docs,
+        ],
+      };
+    });
+    return true;
+  }, []);
+
+  const handleDismissConvenioAlert = useCallback((convenioId: number, alertId: number) => {
+    setConvenioAlerts((prev) => {
+      const alerts = prev[convenioId] ?? [];
+      return {
+        ...prev,
+        [convenioId]: alerts.map((alert) =>
+          alert.id === alertId ? { ...alert, active: false } : alert,
+        ),
+      };
+    });
   }, []);
 
   const loadData = useCallback(async () => {
@@ -1348,9 +1651,14 @@ export default function App() {
       header: 'Acciones',
       align: 'right',
       render: (asignacion) => (
-        <button type="button" className="button button--link" onClick={() => handleEditAsignacion(asignacion)}>
-          Editar
-        </button>
+        <div className="table-actions">
+          <button type="button" className="button button--link" onClick={() => handleEditAsignacion(asignacion)}>
+            Editar
+          </button>
+          <Link to={`/asignaciones/${asignacion.id}`} className="button button--link">
+            Ver detalle
+          </Link>
+        </div>
       ),
     },
   ], [handleEditAsignacion]);
@@ -1418,6 +1726,44 @@ const moduleCards = useMemo(
   ],
   [collections],
 );
+
+  const moduleQuickLinks = useMemo(
+    () => [
+      {
+        id: 'empresas',
+        label: 'Empresas',
+        total: collections?.empresas.length ?? 0,
+        description: 'Control de colaboraciones y convenios asociados.',
+        path: '/empresas',
+      },
+      {
+        id: 'convenios',
+        label: 'Convenios',
+        total: collections?.convenios.length ?? 0,
+        description: 'Estado, fechas y documentación adjunta.',
+        path: '/convenios',
+      },
+      {
+        id: 'estudiantes',
+        label: 'Estudiantes',
+        total: collections?.estudiantes.length ?? 0,
+        description: 'Ficha académica y seguimiento en curso.',
+        path: '/estudiantes',
+      },
+      {
+        id: 'asignaciones',
+        label: 'Asignaciones',
+        total: collections?.asignaciones.length ?? 0,
+        description: 'Pipeline completo, tutores y horas planificadas.',
+        path: '/asignaciones',
+      },
+    ],
+    [collections],
+  );
+
+  const studentPreview = useMemo(() => {
+    return (collections?.estudiantes ?? []).slice(0, 3);
+  }, [collections]);
   const empresaSectors = useMemo(() => {
     if (!collections) {
       return [];
@@ -1481,19 +1827,18 @@ const convenioEstados = useMemo(() => {
   return Array.from(estados);
 }, [collections]);
 
-const [convenioEmpresaFilter, setConvenioEmpresaFilter] = useState<string>('todos');
-
 const filteredConvenios = useMemo(() => {
   if (!collections) {
     return [];
   }
 
   return collections.convenios.filter((convenio) => {
-    const stateMatches = convenioEstadoFilter === 'todos' || convenio.estado === convenioEstadoFilter;
+    const effectiveState = convenioWorkflowState[convenio.id] ?? convenio.estado;
+    const stateMatches = convenioEstadoFilter === 'todos' || effectiveState === convenioEstadoFilter;
     const companyMatches = convenioEmpresaFilter === 'todos' || convenio.empresa.id === Number(convenioEmpresaFilter);
     return stateMatches && companyMatches;
   });
-}, [collections, convenioEstadoFilter, convenioEmpresaFilter]);
+}, [collections, convenioEstadoFilter, convenioEmpresaFilter, convenioWorkflowState]);
 
 const selectedConvenio = useMemo(() => {
   if (!collections || filteredConvenios.length === 0) {
@@ -1515,8 +1860,6 @@ const selectedConvenio = useMemo(() => {
       return acc;
     }, {});
   }, [collections]);
-  const [selectedStudent, setSelectedStudent] = useState<EstudianteSummary | null>(null);
-  const [studentDetailTab, setStudentDetailTab] = useState<StudentDetailTab>('academico');
 
   useEffect(() => {
     if (filteredEmpresas.length > 0) {
@@ -1542,7 +1885,136 @@ const selectedConvenio = useMemo(() => {
     }
   }, [selectedStudent]);
 
-const analyticData = useMemo(() => {
+  useEffect(() => {
+    if (!collections) {
+      return;
+    }
+    setEmpresaNotes((prev) => {
+      let updated = prev;
+      collections.empresas.forEach((empresa) => {
+        if (!prev[empresa.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[empresa.id] = [
+            {
+              id: Number(`${empresa.id}001`),
+              author: 'Sistema',
+              content: `Registro inicial de ${empresa.nombre}.`,
+              timestamp: new Date().toISOString(),
+            },
+          ];
+        }
+      });
+      return updated;
+    });
+
+    setEmpresaLabels((prev) => {
+      let updated = prev;
+      collections.empresas.forEach((empresa) => {
+        if (!prev[empresa.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          const baseLabel = empresa.sector ? empresa.sector : 'General';
+          updated[empresa.id] = [baseLabel];
+        }
+      });
+      return updated;
+    });
+
+    setEmpresaDocs((prev) => {
+      let updated = prev;
+      collections.empresas.forEach((empresa) => {
+        if (!prev[empresa.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[empresa.id] = [
+            {
+              id: Number(`${empresa.id}100`),
+              name: 'Convenio firmado',
+              type: 'PDF',
+              uploadedAt: new Date().toISOString(),
+            },
+          ];
+        }
+      });
+      return updated;
+    });
+
+    setConvenioWorkflowState((prev) => {
+      let updated = prev;
+      collections.convenios.forEach((convenio) => {
+        if (!prev[convenio.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[convenio.id] = convenio.estado;
+        }
+      });
+      return updated;
+    });
+
+    setConvenioChecklist((prev) => {
+      let updated = prev;
+      collections.convenios.forEach((convenio) => {
+        if (!prev[convenio.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[convenio.id] = [
+            { id: Number(`${convenio.id}01`), label: 'Documento firmado', completed: false },
+            { id: Number(`${convenio.id}02`), label: 'Seguro actualizado', completed: false },
+            { id: Number(`${convenio.id}03`), label: 'Aprobación tutor académico', completed: false },
+          ];
+        }
+      });
+      return updated;
+    });
+
+    setConvenioDocuments((prev) => {
+      let updated = prev;
+      collections.convenios.forEach((convenio) => {
+        if (!prev[convenio.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[convenio.id] = [
+            {
+              id: Number(`${convenio.id}500`),
+              name: 'Borrador inicial',
+              type: 'PDF',
+              uploadedAt: new Date().toISOString(),
+            },
+          ];
+        }
+      });
+      return updated;
+    });
+
+    setConvenioAlerts((prev) => {
+      let updated = prev;
+      collections.convenios.forEach((convenio) => {
+        if (!prev[convenio.id]) {
+          if (updated === prev) {
+            updated = { ...prev };
+          }
+          updated[convenio.id] = [
+            {
+              id: Number(`${convenio.id}900`),
+              message: 'Pendiente de checklist documental.',
+              level: 'warning',
+              active: true,
+            },
+          ];
+        }
+      });
+      return updated;
+    });
+  }, [collections]);
+
+  const analyticData = useMemo(() => {
     if (!collections) {
       return [];
     }
@@ -1561,6 +2033,7 @@ const analyticData = useMemo(() => {
     return entries;
   }, [collections, asignacionesPorEstado]);
   const analyticMax = analyticData.reduce((max, entry) => Math.max(max, entry.value), 0) || 1;
+
 
   const selectedStudentAssignments = useMemo(() => {
     if (!collections || !selectedStudent) {
@@ -1785,6 +2258,1355 @@ const analyticData = useMemo(() => {
     );
   };
 
+  const ConvenioManagementPage = () => {
+    const { convenioId } = useParams();
+    const navigate = useNavigate();
+    const numericId = convenioId ? Number(convenioId) : Number.NaN;
+    const [detail, setDetail] = useState<ConvenioDetail | null>(null);
+    const [detailError, setDetailError] = useState<string | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [tab, setTab] = useState<'resumen' | 'documentacion'>('resumen');
+
+    useEffect(() => {
+      setTab('resumen');
+    }, [convenioId]);
+
+    const convenioSummary = useMemo(() => {
+      if (!collections || Number.isNaN(numericId)) {
+        return null;
+      }
+      return collections.convenios.find((item) => item.id === numericId) ?? null;
+    }, [collections, numericId]);
+
+    useEffect(() => {
+      if (!convenioId || Number.isNaN(numericId)) {
+        setDetail(null);
+        return;
+      }
+
+      setDetailLoading(true);
+      getConvenioDetail(numericId)
+        .then((data) => {
+          setDetail(data);
+          setDetailError(null);
+        })
+        .catch((err) => {
+          const message = err instanceof Error ? err.message : 'No se pudo cargar el detalle del convenio.';
+          setDetailError(message);
+        })
+        .finally(() => setDetailLoading(false));
+    }, [convenioId, numericId]);
+
+    if (!convenioId) {
+      return (
+        <div className="convenio-page">
+          <div className="convenio-page__panel">
+            <p>No se ha indicado ningún convenio para gestionar.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al inicio
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!collections) {
+      return (
+        <div className="convenio-page">
+          <div className="convenio-page__panel">
+            <p>No hay datos sincronizados. Regresa al dashboard para cargar la información.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!convenioSummary) {
+      return (
+        <div className="convenio-page">
+          <div className="convenio-page__panel">
+            <p>No encontramos el convenio solicitado.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const highlightCards = [
+      { label: 'Estado', value: convenioSummary.estado },
+      { label: 'Tipo', value: convenioSummary.tipo },
+      { label: 'Empresa', value: convenioSummary.empresa.nombre },
+      { label: 'Asignaciones asociadas', value: convenioSummary.asignacionesAsociadas },
+      { label: 'Inicio', value: formatDate(convenioSummary.fechaInicio) },
+      { label: 'Fin', value: formatDate(convenioSummary.fechaFin) },
+    ];
+
+    return (
+      <div className="convenio-page">
+        <header className="convenio-page__header">
+          <div>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate(-1)}>
+              Volver
+            </button>
+            <p className="module-page__eyebrow">Detalle de convenio</p>
+            <h2>{convenioSummary.titulo}</h2>
+            <p className="convenio-page__subtitle">{convenioSummary.empresa.nombre}</p>
+          </div>
+          <div className="convenio-actions">
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              onClick={() => handleEditConvenio(convenioSummary)}
+            >
+              Editar convenio
+            </button>
+            <button
+              type="button"
+              className="button button--primary button--sm"
+              onClick={() => openCreateAsignacion({
+                convenioId: String(convenioSummary.id),
+                empresaId: String(convenioSummary.empresa.id),
+              })}
+              disabled={!referenceData}
+              title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+            >
+              Planificar asignación
+            </button>
+          </div>
+        </header>
+
+        {detailError && <div className="app__alert app__alert--error">{detailError}</div>}
+        {detailLoading && <div className="app__alert app__alert--info">Cargando datos del convenio…</div>}
+
+        <div className="convenio-summary">
+          {highlightCards.map((card) => (
+            <article key={card.label} className="convenio-summary__card">
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <section className="convenio-panel">
+          <div className="convenio-tabs">
+            <button type="button" className={tab === 'resumen' ? 'active' : ''} onClick={() => setTab('resumen')}>
+              Resumen
+            </button>
+            <button type="button" className={tab === 'documentacion' ? 'active' : ''} onClick={() => setTab('documentacion')}>
+              Documentación
+            </button>
+          </div>
+
+          {tab === 'resumen' ? (
+            <div className="convenio-overview">
+              <div>
+                <span className="student-detail__label">Descripción</span>
+                <p>{detail?.descripcion ?? 'Sin descripción registrada.'}</p>
+              </div>
+              <div>
+                <span className="student-detail__label">Observaciones</span>
+                <p>{detail?.observaciones ?? 'Añade notas de seguimiento para mantener el contexto.'}</p>
+              </div>
+              <div>
+                <span className="student-detail__label">Documentación firmada</span>
+                {detail?.documentoUrl ? (
+                  <a className="link" href={detail.documentoUrl} target="_blank" rel="noreferrer">
+                    Abrir documento
+                  </a>
+                ) : (
+                  <p>No hay documentos adjuntos todavía.</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="convenio-docs">
+              <article>
+                <h4>Guías recomendadas</h4>
+                <ul>
+                  <li>
+                    <Link to="/documentacion" className="link">Documentación general del proyecto</Link>
+                  </li>
+                  <li>
+                    <a
+                      className="link"
+                      href="https://github.com/lmendez861/TFG-gora/blob/main/README.md"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      README raíz
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="link"
+                      href="https://github.com/lmendez861/TFG-gora/blob/main/frontend/README.md"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Guía del frontend
+                    </a>
+                  </li>
+                </ul>
+              </article>
+              <article>
+                <h4>Checklist de convenio</h4>
+                <ol>
+                  <li>Validar el estado (borrador, vigente, finalizado) antes de compartirlo.</li>
+                  <li>Confirmar fechas de inicio y fin con la empresa colaboradora.</li>
+                  <li>Adjuntar documentación firmada o enlazar al repositorio correspondiente.</li>
+                </ol>
+              </article>
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  };
+
+  const AsignacionManagementPage = () => {
+    const { asignacionId } = useParams();
+    const navigate = useNavigate();
+    const numericId = asignacionId ? Number(asignacionId) : Number.NaN;
+    const [detail, setDetail] = useState<AsignacionDetail | null>(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+    const [detailError, setDetailError] = useState<string | null>(null);
+
+    const asignacionSummary = useMemo(() => {
+      if (!collections || Number.isNaN(numericId)) {
+        return null;
+      }
+      return collections.asignaciones.find((item) => item.id === numericId) ?? null;
+    }, [collections, numericId]);
+
+    useEffect(() => {
+      if (!asignacionId || Number.isNaN(numericId)) {
+        setDetail(null);
+        return;
+      }
+
+      setDetailLoading(true);
+      getAsignacionDetail(numericId)
+        .then((data) => {
+          setDetail(data);
+          setDetailError(null);
+        })
+        .catch((err) => {
+          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignación.';
+          setDetailError(message);
+        })
+        .finally(() => setDetailLoading(false));
+    }, [asignacionId, numericId]);
+
+    if (!asignacionId) {
+      return (
+        <div className="asignacion-page">
+          <div className="asignacion-page__panel">
+            <p>No se ha indicado ninguna asignación.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al inicio
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!collections) {
+      return (
+        <div className="asignacion-page">
+          <div className="asignacion-page__panel">
+            <p>No hay datos sincronizados todavía. Regresa al dashboard y sincroniza con el backend.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!asignacionSummary) {
+      return (
+        <div className="asignacion-page">
+          <div className="asignacion-page__panel">
+            <p>No encontramos la asignación solicitada.</p>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
+              Volver al dashboard
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    const studentName = `${asignacionSummary.estudiante.nombre} ${asignacionSummary.estudiante.apellido}`;
+    const detailCards = [
+      { label: 'Estado', value: asignacionSummary.estado },
+      { label: 'Modalidad', value: asignacionSummary.modalidad },
+      { label: 'Horas totales', value: asignacionSummary.horasTotales ?? 'Por confirmar' },
+      { label: 'Empresa', value: asignacionSummary.empresa.nombre },
+      { label: 'Estudiante', value: studentName },
+    ];
+
+    const timelineEvents = useMemo(() => {
+      const events: Array<{ title: string; date: string; note?: string }> = [];
+      events.push({
+        title: 'Inicio planificado',
+        date: formatDate(asignacionSummary.fechaInicio),
+        note: 'Aprobado por coordinación',
+      });
+      if (asignacionSummary.fechaFin) {
+        events.push({
+          title: 'Fin estimado',
+          date: formatDate(asignacionSummary.fechaFin),
+          note: 'Actualiza si hay prórroga',
+        });
+      }
+      if (detail) {
+        events.push({
+          title: 'Tutor académico asignado',
+          date: new Date().toLocaleDateString('es-ES'),
+          note: `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}`,
+        });
+        if (detail.tutorProfesional) {
+          events.push({
+            title: 'Tutor profesional confirmado',
+            date: new Date().toLocaleDateString('es-ES'),
+            note: detail.tutorProfesional.nombre,
+          });
+        }
+      }
+      return events;
+    }, [asignacionSummary, detail]);
+
+    const contactActions = [
+      detail?.estudiante.email && {
+        label: 'Contactar estudiante',
+        href: `mailto:${detail.estudiante.email}`,
+      },
+      detail?.tutorAcademico.email && {
+        label: 'Tutor académico',
+        href: `mailto:${detail.tutorAcademico.email}`,
+      },
+      detail?.tutorProfesional?.email && {
+        label: 'Tutor profesional',
+        href: `mailto:${detail.tutorProfesional.email}`,
+      },
+    ].filter(Boolean) as Array<{ label: string; href: string }>;
+
+    return (
+      <div className="asignacion-page">
+        <header className="asignacion-page__header">
+          <div>
+            <button type="button" className="button button--ghost button--sm" onClick={() => navigate(-1)}>
+              Volver
+            </button>
+            <p className="module-page__eyebrow">Detalle de asignación</p>
+            <h2>{studentName} · {asignacionSummary.empresa.nombre}</h2>
+            <p className="asignacion-page__subtitle">Convenio: {detail?.convenio.titulo ?? 'Sin convenio detallado'}</p>
+          </div>
+          <div className="asignacion-actions">
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              onClick={() => handleEditAsignacion(asignacionSummary)}
+            >
+              Reprogramar / editar
+            </button>
+            <button
+              type="button"
+              className="button button--primary button--sm"
+              onClick={() => openCreateAsignacion({
+                empresaId: String(asignacionSummary.empresa.id),
+                estudianteId: String(asignacionSummary.estudiante.id),
+                convenioId: detail ? String(detail.convenio.id) : '',
+              })}
+              disabled={!referenceData}
+              title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+            >
+              Duplicar asignación
+            </button>
+          </div>
+        </header>
+
+        {detailError && <div className="app__alert app__alert--error">{detailError}</div>}
+        {detailLoading && <div className="app__alert app__alert--info">Cargando detalle actualizado…</div>}
+
+        <div className="asignacion-summary">
+          {detailCards.map((card) => (
+            <article key={card.label} className="asignacion-summary__card">
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+            </article>
+          ))}
+        </div>
+
+        <div className="asignacion-grid">
+          <article className="asignacion-card">
+            <h3>Fechas y alcance</h3>
+            <div className="asignacion-info-grid">
+              <div>
+                <span>Inicio</span>
+                <strong>{formatDate(asignacionSummary.fechaInicio)}</strong>
+              </div>
+              <div>
+                <span>Fin</span>
+                <strong>{formatDate(asignacionSummary.fechaFin)}</strong>
+              </div>
+              <div>
+                <span>Modalidad</span>
+                <strong>{asignacionSummary.modalidad}</strong>
+              </div>
+              <div>
+                <span>Horas</span>
+                <strong>{asignacionSummary.horasTotales ?? 'Por definir'}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className="asignacion-card">
+            <h3>Tutores asignados</h3>
+            <div className="asignacion-info-grid">
+              <div>
+                <span>Tutor académico</span>
+                <strong>
+                  {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando…'}
+                </strong>
+              </div>
+              <div>
+                <span>Tutor profesional</span>
+                <strong>{detail?.tutorProfesional?.nombre ?? 'Sin asignar'}</strong>
+              </div>
+              <div>
+                <span>Convenio</span>
+                <strong>{detail?.convenio.titulo ?? 'No disponible'}</strong>
+              </div>
+              <div>
+                <span>Empresa</span>
+                <strong>{asignacionSummary.empresa.nombre}</strong>
+              </div>
+            </div>
+          </article>
+
+          <article className="asignacion-card asignacion-card--contacts">
+            <h3>Acciones rápidas</h3>
+            {contactActions.length === 0 ? (
+              <p>No hay contactos directos disponibles.</p>
+            ) : (
+              <div className="asignacion-actions__links">
+                {contactActions.map((action) => (
+                  <a key={action.href} className="button button--ghost button--sm" href={action.href}>
+                    {action.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </article>
+        </div>
+
+        <section className="asignacion-timeline">
+          <header>
+            <div>
+              <p className="module-page__eyebrow">Seguimiento</p>
+              <h3>Timeline de hitos</h3>
+            </div>
+          </header>
+          <div className="asignacion-timeline__list">
+            {timelineEvents.map((event, index) => (
+              <article key={`${event.title}-${index}`} className="asignacion-timeline__item">
+                <div className="asignacion-timeline__bullet">
+                  <span>{index + 1}</span>
+                </div>
+                <div>
+                  <h4>{event.title}</h4>
+                  <p>{event.date}</p>
+                  {event.note && <small>{event.note}</small>}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="asignacion-docs">
+          <article>
+            <h4>Informes y anexos</h4>
+            <p>Enlaza actas semanales, evaluaciones y rúbricas firmadas.</p>
+            <Link to="/documentacion" className="link">Abrir documentación general</Link>
+          </article>
+          <article>
+            <h4>Checklist interno</h4>
+            <ul>
+              <li>Confirmar asistencia semanal del estudiante.</li>
+              <li>Registrar feedback de ambos tutores.</li>
+              <li>Adjuntar informe final antes de cerrar la asignación.</li>
+            </ul>
+          </article>
+        </section>
+      </div>
+    );
+  };
+
+  const ModulePageFallback = ({ title }: { title: string }) => (
+    <section className="module-page">
+      <header className="module-page__header">
+        <div>
+          <p className="module-page__eyebrow">{title}</p>
+          <h2>Sin datos disponibles</h2>
+          <p>Sincroniza desde el dashboard principal para cargar la información.</p>
+        </div>
+        <Link className="button button--ghost button--sm" to="/">
+          Volver al dashboard
+        </Link>
+      </header>
+    </section>
+  );
+
+  const EmpresasOverviewPage = () => {
+    if (!collections) {
+      return <ModulePageFallback title="Empresas" />;
+    }
+
+    const navigate = useNavigate();
+    const [empresaLookupId, setEmpresaLookupId] = useState<string>('');
+    const [labelDraft, setLabelDraft] = useState('');
+    const [noteDraft, setNoteDraft] = useState('');
+    const [docDraftName, setDocDraftName] = useState('');
+    const [docDraftType, setDocDraftType] = useState('Contrato');
+
+    const notes = selectedEmpresa ? empresaNotes[selectedEmpresa.id] ?? [] : [];
+    const labels = selectedEmpresa ? empresaLabels[selectedEmpresa.id] ?? [] : [];
+    const documents = selectedEmpresa ? empresaDocs[selectedEmpresa.id] ?? [] : [];
+
+    const historyEntries = useMemo(() => {
+      if (!selectedEmpresa) {
+        return [];
+      }
+      const entries: Array<{ id: string; timestamp: string; title: string; description: string }> = [
+        {
+          id: `estado-${selectedEmpresa.id}`,
+          timestamp: new Date().toISOString(),
+          title: 'Estado actual',
+          description: `Colaboración ${selectedEmpresa.estadoColaboracion}.`,
+        },
+      ];
+      notes.forEach((note) => {
+        entries.push({
+          id: `note-${note.id}`,
+          timestamp: note.timestamp,
+          title: `Nota de ${note.author}`,
+          description: note.content,
+        });
+      });
+      documents.forEach((doc) => {
+        entries.push({
+          id: `doc-${doc.id}`,
+          timestamp: doc.uploadedAt,
+          title: `Documento (${doc.type})`,
+          description: doc.name,
+        });
+      });
+      return entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    }, [selectedEmpresa, notes, documents]);
+
+    useEffect(() => {
+      setLabelDraft('');
+      setNoteDraft('');
+      setDocDraftName('');
+      setDocDraftType('Contrato');
+    }, [selectedEmpresa?.id]);
+
+    return (
+      <section className="module-page module-page--wide">
+        <header className="module-page__header">
+          <div>
+            <p className="module-page__eyebrow">Módulo empresas</p>
+            <h2>Empresas colaboradoras</h2>
+            <p>Repasa el estado de colaboración, contactos y convenios activos.</p>
+          </div>
+          <Link className="button button--ghost button--sm" to="/">
+            Volver al dashboard
+          </Link>
+        </header>
+        <form
+          className="module-search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (empresaLookupId) {
+              navigate(`/empresas/${empresaLookupId}`);
+            }
+          }}
+        >
+          <label>
+            <span>Gestionar empresa</span>
+            <select value={empresaLookupId} onChange={(event) => setEmpresaLookupId(event.target.value)}>
+              <option value="">Selecciona una empresa</option>
+              {collections.empresas.map((empresa) => (
+                <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <button type="submit" className="button button--primary button--sm" disabled={!empresaLookupId}>
+            Ir a gestión
+          </button>
+        </form>
+        <DataTable
+          caption="Empresas"
+          data={collections.empresas}
+          columns={empresaColumns}
+          actions={empresaActions}
+        />
+
+        <div className="detail-grid">
+          <div className="detail-grid__list">
+            <div className="detail-grid__header">
+              <h3>Empresas por sector</h3>
+              <div className="filter-chips">
+                <button
+                  type="button"
+                  className={`chip ${empresaSectorFilter === 'todos' ? 'active' : ''}`}
+                  onClick={() => setEmpresaSectorFilter('todos')}
+                >
+                  Todos
+                </button>
+                {empresaSectors.map((sector) => (
+                  <button
+                    key={sector}
+                    type="button"
+                    className={`chip ${empresaSectorFilter === sector ? 'active' : ''}`}
+                    onClick={() => setEmpresaSectorFilter(sector)}
+                  >
+                    {sector}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="detail-list">
+              {filteredEmpresas.map((empresa) => (
+                <button
+                  type="button"
+                  key={empresa.id}
+                  className={`detail-item ${selectedEmpresa?.id === empresa.id ? 'active' : ''}`}
+                  onClick={() => setSelectedEmpresaId(empresa.id)}
+                >
+                  <div>
+                    <strong>{empresa.nombre}</strong>
+                    <p>{empresa.ciudad ?? 'Sin ciudad'}</p>
+                  </div>
+                  <span className="chip chip--ghost">{empresa.estadoColaboracion}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="detail-grid__panel">
+            <h3>Detalle de empresa</h3>
+            {selectedEmpresa ? (
+              <>
+                <div className="detail-panel">
+                  <p><strong>Sector:</strong> {selectedEmpresa.sector ?? 'No definido'}</p>
+                  <p><strong>Ciudad:</strong> {selectedEmpresa.ciudad ?? 'No definida'}</p>
+                  <p><strong>Estado colaboración:</strong> {selectedEmpresa.estadoColaboracion}</p>
+                  <p><strong>Asignaciones activas:</strong> {selectedEmpresa.asignaciones.enCurso}</p>
+                  <p><strong>Asignaciones totales:</strong> {selectedEmpresa.asignaciones.total}</p>
+                  <p><strong>Convenios activos:</strong> {selectedEmpresa.conveniosActivos}</p>
+                  <p><strong>Tutores profesionales:</strong> {selectedEmpresa.tutoresProfesionales}</p>
+                </div>
+                {selectedEmpresaDetail && (
+                  <>
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Convenios vinculados</h4>
+                      {selectedEmpresaDetail.convenios.length === 0 ? (
+                        <p>No hay convenios asociados.</p>
+                      ) : (
+                        selectedEmpresaDetail.convenios.map((convenio) => (
+                          <div key={convenio.id} className="detail-subitem">
+                            <strong>{convenio.titulo}</strong>
+                            <small>{formatDate(convenio.fechaInicio)} · {formatDate(convenio.fechaFin)}</small>
+                            <span className="chip chip--ghost">{convenio.estado}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Asignaciones de la empresa</h4>
+                      {selectedEmpresaDetail.asignaciones.length === 0 ? (
+                        <p>Aún no se han planificado prácticas con esta empresa.</p>
+                      ) : (
+                        selectedEmpresaDetail.asignaciones.map((asignacion) => (
+                          <div key={asignacion.id} className="detail-subitem">
+                            <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
+                            <small>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</small>
+                            <span className="chip chip--ghost">{asignacion.estado}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
+                {selectedEmpresa && (
+                  <>
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Etiquetas rápidas</h4>
+                      <div className="empresa-tags">
+                        {labels.length === 0 ? (
+                          <p className="detail-placeholder">Aún no hay etiquetas registradas.</p>
+                        ) : (
+                          labels.map((label) => (
+                            <span key={label} className="chip chip--ghost empresa-tag">
+                              {label}
+                              <button type="button" onClick={() => handleRemoveEmpresaLabel(selectedEmpresa.id, label)}>
+                                ×
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <form
+                        className="empresa-form"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (handleAddEmpresaLabel(selectedEmpresa.id, labelDraft)) {
+                            setLabelDraft('');
+                          }
+                        }}
+                      >
+                        <label>
+                          Nueva etiqueta
+                          <input value={labelDraft} onChange={(event) => setLabelDraft(event.target.value)} placeholder="Prioritaria, Renovación..." />
+                        </label>
+                        <button type="submit" className="button button--primary button--sm">Añadir</button>
+                      </form>
+                    </div>
+
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Notas colaborativas</h4>
+                      <div className="empresa-notes">
+                        {notes.length === 0 ? (
+                          <p className="detail-placeholder">Aún no hay notas registradas.</p>
+                        ) : (
+                          notes.map((note) => (
+                            <article key={note.id} className="empresa-note">
+                              <div className="empresa-note__meta">
+                                <strong>{note.author}</strong>
+                                <span>{new Date(note.timestamp).toLocaleString('es-ES')}</span>
+                              </div>
+                              <p>{note.content}</p>
+                            </article>
+                          ))
+                        )}
+                      </div>
+                      <form
+                        className="empresa-form"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (handleAddEmpresaNote(selectedEmpresa.id, noteDraft)) {
+                            setNoteDraft('');
+                          }
+                        }}
+                      >
+                        <label>
+                          Añadir nota
+                          <textarea rows={2} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Resumen de la última llamada..." />
+                        </label>
+                        <button type="submit" className="button button--primary button--sm">Guardar nota</button>
+                      </form>
+                    </div>
+
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Documentación compartida</h4>
+                      <div className="empresa-docs">
+                        {documents.length === 0 ? (
+                          <p className="detail-placeholder">Todavía no se han adjuntado archivos.</p>
+                        ) : (
+                          documents.map((doc) => (
+                            <article key={doc.id} className="empresa-doc">
+                              <div>
+                                <strong>{doc.name}</strong>
+                                <p>{doc.type}</p>
+                              </div>
+                              <small>{new Date(doc.uploadedAt).toLocaleDateString('es-ES')}</small>
+                            </article>
+                          ))
+                        )}
+                      </div>
+                      <form
+                        className="empresa-form empresa-form--row"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          if (handleAddEmpresaDocument(selectedEmpresa.id, docDraftName, docDraftType)) {
+                            setDocDraftName('');
+                            setDocDraftType('Contrato');
+                          }
+                        }}
+                      >
+                        <label>
+                          Nombre
+                          <input value={docDraftName} onChange={(event) => setDocDraftName(event.target.value)} placeholder="Acta seguimiento Q2" />
+                        </label>
+                        <label>
+                          Tipo
+                          <input value={docDraftType} onChange={(event) => setDocDraftType(event.target.value)} placeholder="PDF, Excel..." />
+                        </label>
+                        <button type="submit" className="button button--primary button--sm">Registrar</button>
+                      </form>
+                    </div>
+
+                    <div className="detail-panel detail-panel--secondary">
+                      <h4>Historial de cambios</h4>
+                      <div className="empresa-history">
+                        {historyEntries.length === 0 ? (
+                          <p className="detail-placeholder">Sin eventos registrados.</p>
+                        ) : (
+                          historyEntries.map((event) => (
+                            <article key={event.id} className="empresa-history__item">
+                              <div className="empresa-history__bullet" />
+                              <div>
+                                <strong>{event.title}</strong>
+                                <p>{event.description}</p>
+                                <small>{new Date(event.timestamp).toLocaleString('es-ES')}</small>
+                              </div>
+                            </article>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <p className="detail-placeholder">Selecciona una empresa para ver el detalle.</p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const ConveniosOverviewPage = () => {
+    const [documentName, setDocumentName] = useState('');
+    const [documentType, setDocumentType] = useState('');
+
+    if (!collections) {
+      return <ModulePageFallback title="Convenios" />;
+    }
+
+    const workflowState = selectedConvenio
+      ? convenioWorkflowState[selectedConvenio.id] ?? selectedConvenio.estado
+      : null;
+    const checklistItems = selectedConvenio ? convenioChecklist[selectedConvenio.id] ?? [] : [];
+    const completedChecklist = checklistItems.filter((item) => item.completed).length;
+    const documents = selectedConvenio ? convenioDocuments[selectedConvenio.id] ?? [] : [];
+    const alerts = selectedConvenio ? convenioAlerts[selectedConvenio.id] ?? [] : [];
+    const activeAlerts = alerts.filter((alert) => alert.active);
+    const workflowIndex = workflowState ? CONVENIO_STEP_FLOW.indexOf(workflowState) : -1;
+
+    const handleDocumentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!selectedConvenio) {
+        return;
+      }
+
+      const saved = handleAddConvenioDocument(selectedConvenio.id, documentName, documentType);
+      if (saved) {
+        setDocumentName('');
+        setDocumentType('');
+      }
+    };
+
+    return (
+      <section className="module-page module-page--wide">
+        <header className="module-page__header">
+          <div>
+            <p className="module-page__eyebrow">Módulo convenios</p>
+            <h2>Convenios y acuerdos</h2>
+            <p>Controla el workflow, checklist documental y recordatorios críticos.</p>
+          </div>
+          <Link className="button button--ghost button--sm" to="/">
+            Volver al dashboard
+          </Link>
+        </header>
+        <DataTable
+          caption="Convenios"
+          data={collections.convenios}
+          columns={convenioColumns}
+          actions={convenioActions}
+        />
+
+        <div className="detail-grid">
+          <div className="detail-grid__list">
+            <div className="detail-grid__header">
+              <h3>Convenios por estado</h3>
+              <p>Selecciona uno para gestionar su documentación y alertas privadas.</p>
+              <div className="filter-chips">
+                <button
+                  type="button"
+                  className={`chip ${convenioEstadoFilter === 'todos' ? 'active' : ''}`}
+                  onClick={() => setConvenioEstadoFilter('todos')}
+                >
+                  Todos
+                </button>
+                {convenioEstados.map((estado) => (
+                  <button
+                    key={estado}
+                    type="button"
+                    className={`chip ${convenioEstadoFilter === estado ? 'active' : ''}`}
+                    onClick={() => setConvenioEstadoFilter(estado)}
+                  >
+                    {estado}
+                  </button>
+                ))}
+              </div>
+              <div className="filter-chips">
+                <button
+                  type="button"
+                  className={`chip ${convenioEmpresaFilter === 'todos' ? 'active' : ''}`}
+                  onClick={() => setConvenioEmpresaFilter('todos')}
+                >
+                  Todas las empresas
+                </button>
+                {collections.empresas.map((empresa) => (
+                  <button
+                    key={empresa.id}
+                    type="button"
+                    className={`chip ${convenioEmpresaFilter === String(empresa.id) ? 'active' : ''}`}
+                    onClick={() => setConvenioEmpresaFilter(String(empresa.id))}
+                  >
+                    {empresa.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="detail-list">
+              {filteredConvenios.map((convenio) => (
+                <button
+                  type="button"
+                  key={convenio.id}
+                  className={`detail-item ${selectedConvenio?.id === convenio.id ? 'active' : ''}`}
+                  onClick={() => setSelectedConvenioId(convenio.id)}
+                >
+                  <div>
+                    <strong>{convenio.titulo}</strong>
+                    <p>{convenio.empresa.nombre}</p>
+                  </div>
+                  <span className="chip chip--ghost">
+                    {convenioWorkflowState[convenio.id] ?? convenio.estado}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="detail-grid__panel">
+            <h3>Seguimiento operativo</h3>
+            {selectedConvenio ? (
+              <>
+                <div className="convenio-detail">
+                  <div>
+                    <p className="convenio-detail__eyebrow">Convenio #{selectedConvenio.id}</p>
+                    <h4>{selectedConvenio.titulo}</h4>
+                    <p className="convenio-detail__company">{selectedConvenio.empresa.nombre}</p>
+                  </div>
+                  <div className="convenio-detail__status">
+                    <span className="chip chip--ghost">{workflowState}</span>
+                    <button
+                      type="button"
+                      className="button button--ghost button--sm"
+                      onClick={() => handleAdvanceConvenioState(selectedConvenio.id)}
+                    >
+                      Avanzar estado
+                    </button>
+                  </div>
+                </div>
+                <div className="convenio-detail__meta">
+                  <div>
+                    <span>Tipo</span>
+                    <strong>{selectedConvenio.tipo}</strong>
+                  </div>
+                  <div>
+                    <span>Inicio</span>
+                    <strong>{formatDate(selectedConvenio.fechaInicio)}</strong>
+                  </div>
+                  <div>
+                    <span>Fin</span>
+                    <strong>{formatDate(selectedConvenio.fechaFin)}</strong>
+                  </div>
+                  <div>
+                    <span>Asignaciones asociadas</span>
+                    <strong>{selectedConvenio.asignacionesAsociadas}</strong>
+                  </div>
+                </div>
+
+                <div className="convenio-workflow">
+                  <div className="convenio-workflow__header">
+                    <div>
+                      <p className="convenio-detail__eyebrow">Workflow</p>
+                      <h4>Estados del acuerdo</h4>
+                    </div>
+                    <p>
+                      Paso {workflowIndex + 1} de {CONVENIO_STEP_FLOW.length}
+                    </p>
+                  </div>
+                  <div className="workflow-steps">
+                    {CONVENIO_STEP_FLOW.map((step, index) => {
+                      const isCompleted = workflowIndex > index;
+                      const isCurrent = workflowIndex === index;
+                      return (
+                        <div
+                          key={step}
+                          className={`workflow-step ${isCompleted ? 'completed' : ''} ${isCurrent ? 'current' : ''}`}
+                        >
+                          <span>{step}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="convenio-extras">
+                  <article className="convenio-card">
+                    <header>
+                      <div>
+                        <p className="convenio-detail__eyebrow">Checklist documental</p>
+                        <h4>
+                          {completedChecklist}/{checklistItems.length} completados
+                        </h4>
+                      </div>
+                    </header>
+                    {checklistItems.length > 0 ? (
+                      <ul className="convenio-checklist">
+                        {checklistItems.map((item) => (
+                          <li key={item.id}>
+                            <label className={`convenio-checklist__item ${item.completed ? 'completed' : ''}`}>
+                              <input
+                                type="checkbox"
+                                checked={item.completed}
+                                onChange={() => handleToggleChecklistItem(selectedConvenio.id, item.id)}
+                              />
+                              <span>{item.label}</span>
+                            </label>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="detail-placeholder">Aún no se ha definido el checklist.</p>
+                    )}
+                  </article>
+
+                  <article className="convenio-card">
+                    <header>
+                      <div>
+                        <p className="convenio-detail__eyebrow">Documentos recientes</p>
+                        <h4>{documents.length} ficheros</h4>
+                      </div>
+                    </header>
+                    <div className="convenio-documents">
+                      {documents.length > 0 ? (
+                        documents.map((doc) => (
+                          <div key={doc.id} className="convenio-document">
+                            <div>
+                              <strong>{doc.name}</strong>
+                              <small>{doc.type} · {formatDate(doc.uploadedAt)}</small>
+                            </div>
+                            <button type="button" className="button button--link">
+                              Descargar
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="detail-placeholder">Sin documentos adjuntos todavía.</p>
+                      )}
+                    </div>
+                    <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
+                      <label>
+                        <span>Nombre</span>
+                        <input
+                          value={documentName}
+                          onChange={(event) => setDocumentName(event.target.value)}
+                          placeholder="Acta renovación"
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span>Tipo</span>
+                        <input
+                          value={documentType}
+                          onChange={(event) => setDocumentType(event.target.value)}
+                          placeholder="PDF"
+                        />
+                      </label>
+                      <button type="submit" className="button button--primary button--sm">
+                        Añadir documento
+                      </button>
+                    </form>
+                  </article>
+
+                  <article className="convenio-card convenio-card--alerts">
+                    <header>
+                      <div>
+                        <p className="convenio-detail__eyebrow">Alertas</p>
+                        <h4>{activeAlerts.length} activas</h4>
+                      </div>
+                    </header>
+                    <div className="convenio-alerts">
+                      {alerts.length > 0 ? (
+                        alerts.map((alert) => (
+                          <div
+                            key={alert.id}
+                            className={`convenio-alert convenio-alert--${alert.level} ${alert.active ? '' : 'convenio-alert--inactive'}`}
+                          >
+                            <p>{alert.message}</p>
+                            {alert.active ? (
+                              <button
+                                type="button"
+                                className="button button--ghost button--sm"
+                                onClick={() => handleDismissConvenioAlert(selectedConvenio.id, alert.id)}
+                              >
+                                Marcar como resuelta
+                              </button>
+                            ) : (
+                              <small>Resuelta</small>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="detail-placeholder">Sin alertas configuradas.</p>
+                      )}
+                    </div>
+                  </article>
+                </div>
+              </>
+            ) : (
+              <p className="detail-placeholder">Selecciona un convenio para ver KPIs.</p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const EstudiantesOverviewPage = () => {
+    if (!collections) {
+      return <ModulePageFallback title="Estudiantes" />;
+    }
+
+    return (
+      <section className="module-page module-page--wide">
+        <header className="module-page__header">
+          <div>
+            <p className="module-page__eyebrow">Módulo estudiantes</p>
+            <h2>Listado completo de estudiantes</h2>
+            <p>Consulta información académica, asignaciones y contacto.</p>
+          </div>
+          <Link className="button button--ghost button--sm" to="/">
+            Volver al dashboard
+          </Link>
+        </header>
+        <DataTable
+          caption="Estudiantes"
+          data={collections.estudiantes}
+          columns={estudianteColumns}
+          actions={estudianteActions}
+        />
+
+        <section className="student-cards student-cards--full">
+          <div className="student-cards__grid">
+            {collections.estudiantes.map((estudiante) => {
+              const isActive = selectedStudent?.id === estudiante.id;
+              return (
+                <button
+                  type="button"
+                  key={estudiante.id}
+                  className={`student-card ${isActive ? 'active' : ''}`}
+                  onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
+                  aria-pressed={isActive}
+                >
+                  <div className="student-card__avatar">
+                    {estudiante.nombre.charAt(0)}
+                    {estudiante.apellido.charAt(0)}
+                  </div>
+                  <div className="student-card__body">
+                    <h4>{estudiante.nombre} {estudiante.apellido}</h4>
+                    <p>{estudiante.grado ?? 'Grado no especificado'}</p>
+                    <div className="student-card__chips">
+                      <span className="chip chip--ghost">{estudiante.estado}</span>
+                      <span className="chip chip--ghost">
+                        {estudiante.asignaciones.enCurso} en curso / {estudiante.asignaciones.total} total
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {selectedStudent && (
+            <div className="student-detail">
+              <div className="student-detail__header">
+                <div>
+                  <p className="module-page__eyebrow">Detalle de estudiante</p>
+                  <h4>{selectedStudent.nombre} {selectedStudent.apellido}</h4>
+                  <p className="student-detail__subtitle">{selectedStudent.email}</p>
+                </div>
+                <div className="student-detail__header-actions">
+                  <span className="chip chip--ghost">{selectedStudent.estado}</span>
+                  <div className="student-detail__header-buttons">
+                    <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
+                      Editar ficha
+                    </button>
+                    <button type="button" className="button button--link button--sm" onClick={() => setSelectedStudent(null)}>
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="student-detail__tabs">
+                <button
+                  type="button"
+                  className={studentDetailTab === 'academico' ? 'active' : ''}
+                  onClick={() => setStudentDetailTab('academico')}
+                >
+                  Información académica
+                </button>
+                <button
+                  type="button"
+                  className={studentDetailTab === 'asignaciones' ? 'active' : ''}
+                  onClick={() => setStudentDetailTab('asignaciones')}
+                >
+                  Asignaciones
+                </button>
+                <button
+                  type="button"
+                  className={studentDetailTab === 'seguimiento' ? 'active' : ''}
+                  onClick={() => setStudentDetailTab('seguimiento')}
+                >
+                  Seguimiento
+                </button>
+              </div>
+              <div className="student-detail__content">
+                {studentDetailTab === 'academico' && (
+                  <div className="student-detail__grid">
+                    <div>
+                      <span className="student-detail__label">DNI</span>
+                      <strong>{selectedStudent.dni}</strong>
+                    </div>
+                    <div>
+                      <span className="student-detail__label">Grado</span>
+                      <strong>{selectedStudent.grado ?? 'No especificado'}</strong>
+                    </div>
+                    <div>
+                      <span className="student-detail__label">Curso</span>
+                      <strong>{selectedStudent.curso ?? 'No indicado'}</strong>
+                    </div>
+                    <div>
+                      <span className="student-detail__label">Email</span>
+                      <strong>{selectedStudent.email}</strong>
+                    </div>
+                  </div>
+                )}
+                {studentDetailTab === 'asignaciones' && (
+                  selectedStudentAssignments.length > 0 ? (
+                    <div className="student-detail__list">
+                      {selectedStudentAssignments.map((asignacion) => (
+                        <article className="student-detail__card" key={asignacion.id}>
+                          <header>
+                            <h5>{asignacion.empresa.nombre}</h5>
+                            <span className="chip chip--ghost">{asignacion.estado}</span>
+                          </header>
+                          <p>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</p>
+                          <div className="student-detail__links">
+                            <Link to={`/empresas/${asignacion.empresa.id}`} className="link">
+                              Gestionar empresa
+                            </Link>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
+                  )
+                )}
+                {studentDetailTab === 'seguimiento' && (
+                  <div className="student-timeline">
+                    {studentTimeline.map((milestone, index) => (
+                      <article key={milestone.id} className="student-timeline__item">
+                        <div className="student-timeline__bullet">
+                          <span>{index + 1}</span>
+                        </div>
+                        <div>
+                          <h5>{milestone.title}</h5>
+                          <p>{milestone.date}</p>
+                          <div className="student-card__chips">
+                            <span className="chip chip--ghost">{milestone.status}</span>
+                            <span className="chip chip--ghost">{milestone.modalidad}</span>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      </section>
+    );
+  };
+
+  const AsignacionesOverviewPage = () => {
+    if (!collections) {
+      return <ModulePageFallback title="Asignaciones" />;
+    }
+
+    return (
+      <section className="module-page module-page--wide">
+        <header className="module-page__header">
+          <div>
+            <p className="module-page__eyebrow">Módulo asignaciones</p>
+            <h2>Pipeline completo de asignaciones</h2>
+            <p>Repasa cada práctica, tutores asignados y estado actual.</p>
+          </div>
+          <Link className="button button--ghost button--sm" to="/">
+            Volver al dashboard
+          </Link>
+        </header>
+        <DataTable
+          caption="Asignaciones"
+          data={collections.asignaciones}
+          columns={asignacionColumns}
+          actions={asignacionActions}
+        />
+
+        <section className="kanban">
+          <header className="kanban__header">
+            <h3>Estado de asignaciones</h3>
+            <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
+          </header>
+          <div className="kanban__columns">
+            {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
+              <div key={estado} className="kanban__column">
+                <h4>{estado}</h4>
+                {(items as AsignacionSummary[]).map((asignacion) => (
+                  <article className="kanban-card" key={asignacion.id}>
+                    <h5>{asignacion.empresa.nombre}</h5>
+                    <p>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</p>
+                    <small>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</small>
+                    <div className="kanban-card__tags">
+                      <span className="chip chip--ghost">{asignacion.modalidad}</span>
+                      {asignacion.horasTotales && (
+                        <span className="chip chip--ghost">{asignacion.horasTotales} h</span>
+                      )}
+                    </div>
+                    <Link to={`/asignaciones/${asignacion.id}`} className="link link--muted">
+                      Revisar detalle
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      </section>
+    );
+  };
+
   const dashboardElement = collections ? (
     <>
       <section className="hero">
@@ -1860,7 +3682,11 @@ const analyticData = useMemo(() => {
               <div key={item.label} className="analytics-column">
                 <div
                   className="analytics-column__fill"
-                  style={{ height: `${height}%`, animationDelay: `${index * 0.1}s` }}
+                  style={{
+                    height: `${height}%`,
+                    animationDelay: `${index * 0.35}s`,
+                    animationDuration: `${3 + (index % 3)}s`,
+                  }}
                 >
                   <span className="analytics-column__value">{item.value}</span>
                 </div>
@@ -1871,259 +3697,62 @@ const analyticData = useMemo(() => {
         </div>
       </section>
 
-      <section className="tables-grid">
-        <DataTable
-          caption="Empresas colaboradoras"
-          data={collections.empresas}
-          columns={empresaColumns}
-          actions={empresaActions}
-        />
-        <DataTable
-          caption="Convenios"
-          data={collections.convenios}
-          columns={convenioColumns}
-          actions={convenioActions}
-        />
-        <DataTable
-          caption="Estudiantes"
-          data={collections.estudiantes}
-          columns={estudianteColumns}
-          actions={estudianteActions}
-        />
-        <DataTable
-          caption="Asignaciones"
-          data={collections.asignaciones}
-          columns={asignacionColumns}
-          actions={asignacionActions}
-        />
-      </section>
-
-      <section className="detail-grid">
-        <div className="detail-grid__list">
-          <div className="detail-grid__header">
-            <h3>Empresas por sector</h3>
-            <div className="filter-chips">
-              <button
-                type="button"
-                className={`chip ${empresaSectorFilter === 'todos' ? 'active' : ''}`}
-                onClick={() => setEmpresaSectorFilter('todos')}
-              >
-                Todos
-              </button>
-              {empresaSectors.map((sector) => (
-                <button
-                  key={sector}
-                  type="button"
-                  className={`chip ${empresaSectorFilter === sector ? 'active' : ''}`}
-                  onClick={() => setEmpresaSectorFilter(sector)}
-                >
-                  {sector}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="detail-list">
-            {filteredEmpresas.map((empresa) => (
-              <button
-                type="button"
-                key={empresa.id}
-                className={`detail-item ${selectedEmpresa?.id === empresa.id ? 'active' : ''}`}
-                onClick={() => setSelectedEmpresaId(empresa.id)}
-              >
-                <div>
-                  <strong>{empresa.nombre}</strong>
-                  <p>{empresa.ciudad ?? 'Sin ciudad'}</p>
-                </div>
-                <span className="chip chip--ghost">{empresa.estadoColaboracion}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="detail-grid__panel">
-          <h3>Detalle de empresa</h3>
-          {selectedEmpresa ? (
-            <>
-              <div className="detail-panel">
-                <p><strong>Sector:</strong> {selectedEmpresa.sector ?? 'No definido'}</p>
-                <p><strong>Ciudad:</strong> {selectedEmpresa.ciudad ?? 'No definida'}</p>
-                <p><strong>Estado colaboración:</strong> {selectedEmpresa.estadoColaboracion}</p>
-                <p><strong>Asignaciones activas:</strong> {selectedEmpresa.asignaciones.enCurso}</p>
-                <p><strong>Asignaciones totales:</strong> {selectedEmpresa.asignaciones.total}</p>
-                <p><strong>Convenios activos:</strong> {selectedEmpresa.conveniosActivos}</p>
-                <p><strong>Tutores profesionales:</strong> {selectedEmpresa.tutoresProfesionales}</p>
-              </div>
-
-              {selectedEmpresaDetail && (
-                <>
-                  <div className="detail-panel detail-panel--secondary">
-                    <h4>Convenios vinculados</h4>
-                    {selectedEmpresaDetail.convenios.length === 0 ? (
-                      <p>No hay convenios asociados.</p>
-                    ) : (
-                      selectedEmpresaDetail.convenios.map((convenio) => (
-                        <div key={convenio.id} className="detail-subitem">
-                          <strong>{convenio.titulo}</strong>
-                          <small>{formatDate(convenio.fechaInicio)} → {formatDate(convenio.fechaFin)}</small>
-                          <span className="chip chip--ghost">{convenio.estado}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="detail-panel detail-panel--secondary">
-                    <h4>Asignaciones de la empresa</h4>
-                    {selectedEmpresaDetail.asignaciones.length === 0 ? (
-                      <p>Aún no se han planificado prácticas con esta empresa.</p>
-                    ) : (
-                      selectedEmpresaDetail.asignaciones.map((asignacion) => (
-                        <div key={asignacion.id} className="detail-subitem">
-                          <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
-                          <small>{formatDate(asignacion.fechaInicio)} → {formatDate(asignacion.fechaFin)}</small>
-                          <span className="chip chip--ghost">{asignacion.estado}</span>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="detail-panel detail-panel--secondary">
-                    <h4>Contactos y tutores</h4>
-                    <p><strong>Contactos registrados:</strong> {selectedEmpresa.contactos}</p>
-                    <p><strong>Tutores profesionales:</strong> {selectedEmpresa.tutoresProfesionales}</p>
-                    <p><em>Para ver la lista completa, abre el módulo Empresas en detalle.</em></p>
-                  </div>
-                </>
-              )}
-              <div className="detail-panel__actions">
-                <Link to={`/empresas/${selectedEmpresa.id}`} className="button button--ghost button--sm">
-                  Abrir espacio privado
-                </Link>
-              </div>
-            </>
-          ) : (
-            <p className="detail-placeholder">Selecciona una empresa para ver el detalle.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="detail-grid">
-        <div className="detail-grid__list">
-          <div className="detail-grid__header">
-            <h3>Convenios por estado</h3>
-            <p>Filtra por estado y empresa para encontrar la información relevante.</p>
-            <div className="filter-chips">
-              <button
-                type="button"
-                className={`chip ${convenioEstadoFilter === 'todos' ? 'active' : ''}`}
-                onClick={() => setConvenioEstadoFilter('todos')}
-              >
-                Todos
-              </button>
-              {convenioEstados.map((estado) => (
-                <button
-                  key={estado}
-                  type="button"
-                  className={`chip ${convenioEstadoFilter === estado ? 'active' : ''}`}
-                  onClick={() => setConvenioEstadoFilter(estado)}
-                >
-                  {estado}
-                </button>
-              ))}
-            </div>
-            <div className="filter-chips">
-              <button
-                type="button"
-                className={`chip ${convenioEmpresaFilter === 'todos' ? 'active' : ''}`}
-                onClick={() => setConvenioEmpresaFilter('todos')}
-              >
-                Todas las empresas
-              </button>
-              {collections.empresas.map((empresa) => (
-                <button
-                  key={empresa.id}
-                  type="button"
-                  className={`chip ${convenioEmpresaFilter === String(empresa.id) ? 'active' : ''}`}
-                  onClick={() => setConvenioEmpresaFilter(String(empresa.id))}
-                >
-                  {empresa.nombre}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="detail-list">
-            {filteredConvenios.map((convenio) => (
-              <button
-                type="button"
-                key={convenio.id}
-                className={`detail-item ${selectedConvenio?.id === convenio.id ? 'active' : ''}`}
-                onClick={() => setSelectedConvenioId(convenio.id)}
-              >
-                <div>
-                  <strong>{convenio.titulo}</strong>
-                  <p>{convenio.empresa.nombre}</p>
-                </div>
-                <span className="chip chip--ghost">{convenio.estado}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="detail-grid__panel">
-          <h3>Detalle de convenio</h3>
-          {selectedConvenio ? (
-            <>
-              <div className="detail-panel">
-                <p><strong>Estado:</strong> {selectedConvenio.estado}</p>
-                <p><strong>Tipo:</strong> {selectedConvenio.tipo}</p>
-                <p><strong>Empresa:</strong> {selectedConvenio.empresa.nombre}</p>
-                <p><strong>Inicio:</strong> {formatDate(selectedConvenio.fechaInicio)}</p>
-                <p><strong>Fin:</strong> {formatDate(selectedConvenio.fechaFin)}</p>
-                <p><strong>Asignaciones asociadas:</strong> {selectedConvenio.asignacionesAsociadas}</p>
-              </div>
-              <div className="detail-panel detail-panel--secondary">
-                <h4>Documentación</h4>
-                <p>Sube los contratos firmados y actas de seguimiento en el módulo Convenios.</p>
-                <p>Mientras tanto, puedes consultar la <Link to="/documentacion">documentación general del proyecto</Link>.</p>
-              </div>
-            </>
-          ) : (
-            <p className="detail-placeholder">Selecciona un convenio para ver KPIs.</p>
-          )}
-        </div>
+      <section className="module-links">
+        {moduleQuickLinks.map((module) => (
+          <article key={module.id} className="module-link-card">
+            <p className="module-link-card__label">{module.label}</p>
+            <strong className="module-link-card__value">{module.total}</strong>
+            <p className="module-link-card__description">{module.description}</p>
+            <Link className="button button--ghost button--sm module-link-card__cta" to={module.path}>
+              Abrir módulo
+            </Link>
+          </article>
+        ))}
       </section>
 
       <section className="student-cards">
-        <header className="student-cards__header">
-          <h3>Perfiles de estudiantes</h3>
-          <p>Visión rápida del estado académico y asignaciones.</p>
-        </header>
-        <div className="student-cards__grid">
-          {collections.estudiantes.map((estudiante) => {
-            const isActive = selectedStudent?.id === estudiante.id;
-            return (
-              <button
-                type="button"
-                key={estudiante.id}
-                className={`student-card ${isActive ? 'active' : ''}`}
-                onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
-                aria-pressed={isActive}
-              >
-                <div className="student-card__avatar">
-                  {estudiante.nombre.charAt(0)}
-                  {estudiante.apellido.charAt(0)}
-                </div>
-                <div className="student-card__body">
-                  <h4>{estudiante.nombre} {estudiante.apellido}</h4>
-                  <p>{estudiante.grado ?? 'Grado no especificado'}</p>
-                  <div className="student-card__chips">
-                    <span className="chip chip--ghost">{estudiante.estado}</span>
-                    <span className="chip chip--ghost">
-                      {estudiante.asignaciones.enCurso} en curso / {estudiante.asignaciones.total} total
-                    </span>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+        <div className="student-cards__header">
+          <div>
+            <h3>Perfiles de estudiantes</h3>
+            <p>Resumen rápido del estado académico y asignaciones activas.</p>
+          </div>
+          <Link className="button button--ghost button--sm" to="/estudiantes">
+            Ver módulo completo
+          </Link>
         </div>
+        {studentPreview.length > 0 ? (
+          <div className="student-cards__grid">
+            {studentPreview.map((estudiante) => {
+              const isActive = selectedStudent?.id === estudiante.id;
+              return (
+                <button
+                  type="button"
+                  key={estudiante.id}
+                  className={`student-card ${isActive ? 'active' : ''}`}
+                  onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
+                  aria-pressed={isActive}
+                >
+                  <div className="student-card__avatar">
+                    {estudiante.nombre.charAt(0)}
+                    {estudiante.apellido.charAt(0)}
+                  </div>
+                  <div className="student-card__body">
+                    <h4>{estudiante.nombre} {estudiante.apellido}</h4>
+                    <p>{estudiante.grado ?? 'Grado no especificado'}</p>
+                    <div className="student-card__chips">
+                      <span className="chip chip--ghost">{estudiante.estado}</span>
+                      <span className="chip chip--ghost">
+                        {estudiante.asignaciones.enCurso} en curso / {estudiante.asignaciones.total} total
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="detail-placeholder">Aún no hay estudiantes registrados.</p>
+        )}
         {selectedStudent && (
           <div className="student-detail">
             <div className="student-detail__header">
@@ -2234,33 +3863,7 @@ const analyticData = useMemo(() => {
         )}
       </section>
 
-      <section className="kanban">
-        <header className="kanban__header">
-          <h3>Estado de asignaciones</h3>
-          <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
-        </header>
-        <div className="kanban__columns">
-          {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
-            <div key={estado} className="kanban__column">
-              <h4>{estado}</h4>
-              {(items as AsignacionSummary[]).map((asignacion) => (
-                <article className="kanban-card" key={asignacion.id}>
-                  <h5>{asignacion.empresa.nombre}</h5>
-                  <p>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</p>
-                  <small>{formatDate(asignacion.fechaInicio)} → {formatDate(asignacion.fechaFin)}</small>
-                  <div className="kanban-card__tags">
-                    <span className="chip chip--ghost">{asignacion.modalidad}</span>
-                    {asignacion.horasTotales && (
-                      <span className="chip chip--ghost">{asignacion.horasTotales} h</span>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-    </>
+   </>
   ) : (
     <div className="app__alert app__alert--info">Cargando datos del backend…</div>
   );
@@ -2291,7 +3894,13 @@ const analyticData = useMemo(() => {
 
       <Routes>
         <Route path="/" element={dashboardElement} />
+        <Route path="/empresas" element={<EmpresasOverviewPage />} />
         <Route path="/empresas/:empresaId" element={<EmpresaManagementPage />} />
+        <Route path="/convenios" element={<ConveniosOverviewPage />} />
+        <Route path="/convenios/:convenioId" element={<ConvenioManagementPage />} />
+        <Route path="/estudiantes" element={<EstudiantesOverviewPage />} />
+        <Route path="/asignaciones" element={<AsignacionesOverviewPage />} />
+        <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
         <Route path="/documentacion" element={<DocumentationPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route

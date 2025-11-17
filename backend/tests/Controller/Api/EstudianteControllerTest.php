@@ -42,9 +42,35 @@ final class EstudianteControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertIsArray($payload);
-        self::assertCount(2, $payload);
+        self::assertCount(3, $payload);
         self::assertSame('Ana', $payload[0]['nombre']);
         self::assertArrayHasKey('asignaciones', $payload[0]);
+    }
+
+    public function testListadoPermiteFiltrarYBuscar(): void
+    {
+        $this->client->request('GET', '/api/estudiantes?estado=en_practicas');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertCount(2, $payload);
+        foreach ($payload as $estudiante) {
+            self::assertSame('en_practicas', $estudiante['estado']);
+        }
+
+        $this->client->request('GET', '/api/estudiantes?q=mar');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertGreaterThanOrEqual(1, \count($payload));
+        foreach ($payload as $estudiante) {
+            $hayCoincidencia = stripos($estudiante['nombre'], 'mar') !== false
+                || stripos($estudiante['apellido'] ?? '', 'mar') !== false
+                || stripos($estudiante['email'] ?? '', 'mar') !== false;
+            self::assertTrue($hayCoincidencia);
+        }
     }
 
     public function testDetalleIncluyeAsignacionesDelEstudiante(): void
@@ -84,7 +110,7 @@ final class EstudianteControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertSame('Luis', $payload['nombre']);
-    self::assertSame('Ingenieria Informatica', $payload['grado']);
+        self::assertSame('Ingenieria Informatica', $payload['grado']);
 
         $estudiante = $this->entityManager
             ->getRepository(Estudiante::class)
@@ -98,7 +124,7 @@ final class EstudianteControllerTest extends WebTestCase
     {
         $estudiante = $this->entityManager
             ->getRepository(Estudiante::class)
-            ->findOneBy(['nombre' => 'Miguel']);
+            ->findOneBy(['nombre' => 'Marina']);
 
         self::assertNotNull($estudiante);
 

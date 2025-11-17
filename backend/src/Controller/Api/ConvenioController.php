@@ -22,9 +22,40 @@ final class ConvenioController extends AbstractController
     use JsonRequestTrait;
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(ConvenioRepository $repository): JsonResponse
+    public function index(Request $request, ConvenioRepository $repository): JsonResponse
     {
-        $convenios = $repository->findAll();
+        $qb = $repository->createQueryBuilder('c')
+            ->join('c.empresa', 'e')->addSelect('e');
+
+        if ($estado = $request->query->get('estado')) {
+            $qb->andWhere('c.estado = :estado')
+                ->setParameter('estado', $estado);
+        }
+
+        if ($tipo = $request->query->get('tipo')) {
+            $qb->andWhere('c.tipo = :tipo')
+                ->setParameter('tipo', $tipo);
+        }
+
+        if ($empresaId = $request->query->get('empresaId')) {
+            if (!ctype_digit((string) $empresaId)) {
+                return $this->json(['message' => 'El parámetro empresaId debe ser numérico.'], Response::HTTP_BAD_REQUEST);
+            }
+            $qb->andWhere('e.id = :empresa')->setParameter('empresa', (int) $empresaId);
+        }
+
+        if ($search = $request->query->get('q')) {
+            $pattern = '%' . mb_strtolower($search) . '%';
+            $qb->andWhere('LOWER(c.titulo) LIKE :search')
+                ->setParameter('search', $pattern);
+        }
+
+        [$page, $perPage] = $this->resolvePagination($request);
+        $qb->orderBy('c.id', 'ASC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $convenios = $qb->getQuery()->getResult();
 
         $data = array_map(fn (Convenio $convenio): array => $this->serializeSummary($convenio), $convenios);
 
@@ -252,5 +283,22 @@ final class ConvenioController extends AbstractController
             'observaciones' => $convenio->getObservaciones(),
             'asignaciones' => $asignaciones,
         ];
+    }
+
+    /**
+     * @return array{0:int,1:int}
+     */
+    private function resolvePagination(Request $request): array
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = (int) $request->query->get('perPage', 50);
+        if ($perPage < 1) {
+            $perPage = 1;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        return [$page, $perPage];
     }
 }

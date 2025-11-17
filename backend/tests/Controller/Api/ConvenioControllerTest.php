@@ -43,8 +43,25 @@ final class ConvenioControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertIsArray($payload);
-        self::assertGreaterThanOrEqual(2, count($payload));
+        self::assertGreaterThanOrEqual(2, \count($payload));
         self::assertArrayHasKey('empresa', $payload[0]);
+    }
+
+    public function testListadoFiltradoPorEmpresaYEstado(): void
+    {
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['nombre' => 'Innovar Formación']);
+
+        self::assertNotNull($empresa);
+
+        $this->client->request('GET', '/api/convenios?estado=vigente&empresaId=' . $empresa->getId());
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertCount(1, $payload);
+        self::assertSame('Convenio IA Educativa 2024/2025', $payload[0]['titulo']);
     }
 
     public function testDetalleIncluyeAsignaciones(): void
@@ -125,3 +142,4 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('2025-06-30', $payload['fechaFin']);
     }
 }
+

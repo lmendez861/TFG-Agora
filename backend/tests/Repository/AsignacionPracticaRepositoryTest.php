@@ -3,6 +3,7 @@
 namespace App\Tests\Repository;
 
 use App\Entity\AsignacionPractica;
+use App\Entity\Estudiante;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -33,9 +34,14 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
         $repo = $this->entityManager->getRepository(AsignacionPractica::class);
         $asignaciones = $repo->findAll();
 
-        self::assertCount(2, $asignaciones);
+        self::assertCount(3, $asignaciones);
 
-        $asignacionEnCurso = $repo->findOneBy(['estado' => 'en_curso']);
+        $estudianteAna = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Ana']);
+        self::assertNotNull($estudianteAna);
+
+        $asignacionEnCurso = $repo->findOneBy(['estudiante' => $estudianteAna]);
         self::assertNotNull($asignacionEnCurso);
         self::assertSame('Ana', $asignacionEnCurso->getEstudiante()->getNombre());
         self::assertSame('Innovar Formación', $asignacionEnCurso->getEmpresa()->getNombre());
@@ -48,7 +54,12 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
     public function testAsignacionPlanificadaNoTieneSeguimientosNiEvaluacion(): void
     {
         $repo = $this->entityManager->getRepository(AsignacionPractica::class);
-        $asignacionPlanificada = $repo->findOneBy(['estado' => 'planificada']);
+        $estudianteLuis = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Luis']);
+        self::assertNotNull($estudianteLuis);
+
+        $asignacionPlanificada = $repo->findOneBy(['estudiante' => $estudianteLuis]);
 
         self::assertNotNull($asignacionPlanificada);
         self::assertSame('Luis', $asignacionPlanificada->getEstudiante()->getNombre());

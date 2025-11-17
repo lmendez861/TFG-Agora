@@ -1003,6 +1003,10 @@ export default function App() {
   const [convenioEstadoFilter, setConvenioEstadoFilter] = useState<string>('todos');
   const [convenioEmpresaFilter, setConvenioEmpresaFilter] = useState<string>('todos');
   const [selectedStudent, setSelectedStudent] = useState<EstudianteSummary | null>(null);
+  const [studentEstadoFilter, setStudentEstadoFilter] = useState<string>('todos');
+  const [selectedAsignacion, setSelectedAsignacion] = useState<AsignacionSummary | null>(null);
+  const [asignacionEstadoFilter, setAsignacionEstadoFilter] = useState<string>('todos');
+  const [asignacionModalidadFilter, setAsignacionModalidadFilter] = useState<string>('todas');
   const [studentDetailTab, setStudentDetailTab] = useState<StudentDetailTab>('academico');
   const [empresaNotes, setEmpresaNotes] = useState<Record<number, EmpresaNote[]>>({});
   const [empresaLabels, setEmpresaLabels] = useState<Record<number, string[]>>({});
@@ -1189,6 +1193,7 @@ export default function App() {
       }
     }
   }, [collections, selectedEmpresaId, selectedConvenioId]);
+
 
 
   const handleEditStudent = useCallback((estudiante: EstudianteSummary) => {
@@ -1764,6 +1769,86 @@ const moduleCards = useMemo(
   const studentPreview = useMemo(() => {
     return (collections?.estudiantes ?? []).slice(0, 3);
   }, [collections]);
+
+  const studentEstados = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+    const estados = new Set<string>();
+    collections.estudiantes.forEach((estudiante) => estados.add(estudiante.estado));
+    return Array.from(estados);
+  }, [collections]);
+
+  const asignacionEstados = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+    const estados = new Set<string>();
+    collections.asignaciones.forEach((asignacion) => estados.add(asignacion.estado));
+    return Array.from(estados);
+  }, [collections]);
+
+  const asignacionModalidades = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+    const modalidades = new Set<string>();
+    collections.asignaciones.forEach((asignacion) => modalidades.add(asignacion.modalidad));
+    return Array.from(modalidades);
+  }, [collections]);
+
+  const filteredStudents = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+    if (studentEstadoFilter === 'todos') {
+      return collections.estudiantes;
+    }
+    return collections.estudiantes.filter((estudiante) => estudiante.estado === studentEstadoFilter);
+  }, [collections, studentEstadoFilter]);
+
+  const filteredAsignaciones = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+    return collections.asignaciones.filter((asignacion) => {
+      const matchEstado = asignacionEstadoFilter === 'todos' || asignacion.estado === asignacionEstadoFilter;
+      const matchModalidad =
+        asignacionModalidadFilter === 'todas' || asignacion.modalidad === asignacionModalidadFilter;
+      return matchEstado && matchModalidad;
+    });
+  }, [collections, asignacionEstadoFilter, asignacionModalidadFilter]);
+
+  useEffect(() => {
+    if (!collections) {
+      return;
+    }
+    setSelectedStudent((current) => {
+      if (filteredStudents.length === 0) {
+        return null;
+      }
+      if (current && filteredStudents.some((student) => student.id === current.id)) {
+        return current;
+      }
+      return filteredStudents[0];
+    });
+  }, [collections, filteredStudents]);
+
+  useEffect(() => {
+    if (!collections) {
+      return;
+    }
+    setSelectedAsignacion((current) => {
+      if (filteredAsignaciones.length === 0) {
+        return null;
+      }
+      if (current && filteredAsignaciones.some((item) => item.id === current.id)) {
+        return current;
+      }
+      return filteredAsignaciones[0];
+    });
+  }, [collections, filteredAsignaciones]);
+
   const empresaSectors = useMemo(() => {
     if (!collections) {
       return [];
@@ -2769,52 +2854,11 @@ const selectedConvenio = useMemo(() => {
 
     const navigate = useNavigate();
     const [empresaLookupId, setEmpresaLookupId] = useState<string>('');
-    const [labelDraft, setLabelDraft] = useState('');
-    const [noteDraft, setNoteDraft] = useState('');
-    const [docDraftName, setDocDraftName] = useState('');
-    const [docDraftType, setDocDraftType] = useState('Contrato');
-
     const notes = selectedEmpresa ? empresaNotes[selectedEmpresa.id] ?? [] : [];
     const labels = selectedEmpresa ? empresaLabels[selectedEmpresa.id] ?? [] : [];
     const documents = selectedEmpresa ? empresaDocs[selectedEmpresa.id] ?? [] : [];
-
-    const historyEntries = useMemo(() => {
-      if (!selectedEmpresa) {
-        return [];
-      }
-      const entries: Array<{ id: string; timestamp: string; title: string; description: string }> = [
-        {
-          id: `estado-${selectedEmpresa.id}`,
-          timestamp: new Date().toISOString(),
-          title: 'Estado actual',
-          description: `Colaboración ${selectedEmpresa.estadoColaboracion}.`,
-        },
-      ];
-      notes.forEach((note) => {
-        entries.push({
-          id: `note-${note.id}`,
-          timestamp: note.timestamp,
-          title: `Nota de ${note.author}`,
-          description: note.content,
-        });
-      });
-      documents.forEach((doc) => {
-        entries.push({
-          id: `doc-${doc.id}`,
-          timestamp: doc.uploadedAt,
-          title: `Documento (${doc.type})`,
-          description: doc.name,
-        });
-      });
-      return entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    }, [selectedEmpresa, notes, documents]);
-
-    useEffect(() => {
-      setLabelDraft('');
-      setNoteDraft('');
-      setDocDraftName('');
-      setDocDraftType('Contrato');
-    }, [selectedEmpresa?.id]);
+    const conveniosPreview = selectedEmpresaDetail ? selectedEmpresaDetail.convenios.slice(0, 3) : [];
+    const asignacionesPreview = selectedEmpresaDetail ? selectedEmpresaDetail.asignaciones.slice(0, 4) : [];
 
     return (
       <section className="module-page module-page--wide">
@@ -2857,7 +2901,7 @@ const selectedConvenio = useMemo(() => {
           actions={empresaActions}
         />
 
-        <div className="detail-grid">
+﻿﻿        <div className="detail-grid">
           <div className="detail-grid__list">
             <div className="detail-grid__header">
               <h3>Empresas por sector</h3>
@@ -2899,185 +2943,153 @@ const selectedConvenio = useMemo(() => {
             </div>
           </div>
           <div className="detail-grid__panel">
-            <h3>Detalle de empresa</h3>
+            <h3>Resumen ejecutivo</h3>
             {selectedEmpresa ? (
               <>
-                <div className="detail-panel">
-                  <p><strong>Sector:</strong> {selectedEmpresa.sector ?? 'No definido'}</p>
-                  <p><strong>Ciudad:</strong> {selectedEmpresa.ciudad ?? 'No definida'}</p>
-                  <p><strong>Estado colaboración:</strong> {selectedEmpresa.estadoColaboracion}</p>
-                  <p><strong>Asignaciones activas:</strong> {selectedEmpresa.asignaciones.enCurso}</p>
-                  <p><strong>Asignaciones totales:</strong> {selectedEmpresa.asignaciones.total}</p>
-                  <p><strong>Convenios activos:</strong> {selectedEmpresa.conveniosActivos}</p>
-                  <p><strong>Tutores profesionales:</strong> {selectedEmpresa.tutoresProfesionales}</p>
+                <div className="empresa-summary-mini">
+                  <article>
+                    <span>Sector</span>
+                    <strong>{selectedEmpresa.sector ?? 'No definido'}</strong>
+                  </article>
+                  <article>
+                    <span>Ciudad</span>
+                    <strong>{selectedEmpresa.ciudad ?? 'No definida'}</strong>
+                  </article>
+                  <article>
+                    <span>Estado colaboración</span>
+                    <strong>{selectedEmpresa.estadoColaboracion}</strong>
+                  </article>
+                  <article>
+                    <span>Tutores profesionales</span>
+                    <strong>{selectedEmpresa.tutoresProfesionales}</strong>
+                  </article>
                 </div>
-                {selectedEmpresaDetail && (
-                  <>
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Convenios vinculados</h4>
-                      {selectedEmpresaDetail.convenios.length === 0 ? (
-                        <p>No hay convenios asociados.</p>
+                <div className="empresa-360">
+                  <article className="empresa-360__card">
+                    <div>
+                      <p className="module-page__eyebrow">Situación actual</p>
+                      <h4>{selectedEmpresa.nombre}</h4>
+                    </div>
+                    <div className="empresa-360__info">
+                      <div>
+                        <span>Convenios activos</span>
+                        <strong>{selectedEmpresa.conveniosActivos}</strong>
+                      </div>
+                      <div>
+                        <span>Asignaciones en curso</span>
+                        <strong>{selectedEmpresa.asignaciones.enCurso}</strong>
+                      </div>
+                      <div>
+                        <span>Total asignaciones</span>
+                        <strong>{selectedEmpresa.asignaciones.total}</strong>
+                      </div>
+                      <div>
+                        <span>Etiquetas registradas</span>
+                        <strong>{labels.length}</strong>
+                      </div>
+                      <div>
+                        <span>Notas internas</span>
+                        <strong>{notes.length}</strong>
+                      </div>
+                      <div>
+                        <span>Documentos compartidos</span>
+                        <strong>{documents.length}</strong>
+                      </div>
+                    </div>
+                    <div className="empresa-360__actions">
+                      <button type="button" className="button button--ghost button--sm" onClick={() => handleEditEmpresa(selectedEmpresa)}>
+                        Editar ficha
+                      </button>
+                      <button type="button" className="button button--primary button--sm" onClick={() => navigate(`/empresas/${selectedEmpresa.id}`)}>
+                        Abrir ficha 360°
+                      </button>
+                    </div>
+                  </article>
+                </div>
+                {selectedEmpresaDetail ? (
+                  <div className="empresa-panels">
+                    <article className="empresa-panel">
+                      <header>
+                        <div>
+                          <p className="module-page__eyebrow">Convenios</p>
+                          <h4>Flujo contractual</h4>
+                        </div>
+                        <button type="button" className="button button--ghost button--sm" onClick={() => navigate(`/empresas/${selectedEmpresa.id}`)}>
+                          Ver todos
+                        </button>
+                      </header>
+                      {conveniosPreview.length > 0 ? (
+                        <ul>
+                          {conveniosPreview.map((convenio) => (
+                            <li key={convenio.id}>
+                              <strong>{convenio.titulo}</strong>
+                              <p>{formatDate(convenio.fechaInicio)} — {formatDate(convenio.fechaFin)}</p>
+                              <span className="chip chip--ghost">{convenio.estado}</span>
+                            </li>
+                          ))}
+                        </ul>
                       ) : (
-                        selectedEmpresaDetail.convenios.map((convenio) => (
-                          <div key={convenio.id} className="detail-subitem">
-                            <strong>{convenio.titulo}</strong>
-                            <small>{formatDate(convenio.fechaInicio)} · {formatDate(convenio.fechaFin)}</small>
-                            <span className="chip chip--ghost">{convenio.estado}</span>
-                          </div>
-                        ))
+                        <p className="empresa-panel__placeholder">Sin convenios asociados.</p>
                       )}
-                    </div>
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Asignaciones de la empresa</h4>
-                      {selectedEmpresaDetail.asignaciones.length === 0 ? (
-                        <p>Aún no se han planificado prácticas con esta empresa.</p>
+                    </article>
+                    <article className="empresa-panel">
+                      <header>
+                        <div>
+                          <p className="module-page__eyebrow">Asignaciones</p>
+                          <h4>Talento vinculado</h4>
+                        </div>
+                        <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
+                          Abrir pipeline
+                        </button>
+                      </header>
+                      {asignacionesPreview.length > 0 ? (
+                        <ul>
+                          {asignacionesPreview.map((asignacion) => (
+                            <li key={asignacion.id}>
+                              <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
+                              <p>{formatDate(asignacion.fechaInicio)} — {formatDate(asignacion.fechaFin)}</p>
+                              <span className="chip chip--ghost">{asignacion.estado}</span>
+                            </li>
+                          ))}
+                        </ul>
                       ) : (
-                        selectedEmpresaDetail.asignaciones.map((asignacion) => (
-                          <div key={asignacion.id} className="detail-subitem">
-                            <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
-                            <small>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</small>
-                            <span className="chip chip--ghost">{asignacion.estado}</span>
-                          </div>
-                        ))
+                        <p className="empresa-panel__placeholder">Aún no hay asignaciones registradas.</p>
                       )}
-                    </div>
-                  </>
-                )}
-                {selectedEmpresa && (
-                  <>
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Etiquetas rápidas</h4>
-                      <div className="empresa-tags">
-                        {labels.length === 0 ? (
-                          <p className="detail-placeholder">Aún no hay etiquetas registradas.</p>
-                        ) : (
-                          labels.map((label) => (
-                            <span key={label} className="chip chip--ghost empresa-tag">
-                              {label}
-                              <button type="button" onClick={() => handleRemoveEmpresaLabel(selectedEmpresa.id, label)}>
-                                ×
-                              </button>
-                            </span>
-                          ))
-                        )}
-                      </div>
-                      <form
-                        className="empresa-form"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          if (handleAddEmpresaLabel(selectedEmpresa.id, labelDraft)) {
-                            setLabelDraft('');
-                          }
-                        }}
-                      >
-                        <label>
-                          Nueva etiqueta
-                          <input value={labelDraft} onChange={(event) => setLabelDraft(event.target.value)} placeholder="Prioritaria, Renovación..." />
-                        </label>
-                        <button type="submit" className="button button--primary button--sm">Añadir</button>
-                      </form>
-                    </div>
-
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Notas colaborativas</h4>
-                      <div className="empresa-notes">
-                        {notes.length === 0 ? (
-                          <p className="detail-placeholder">Aún no hay notas registradas.</p>
-                        ) : (
-                          notes.map((note) => (
-                            <article key={note.id} className="empresa-note">
-                              <div className="empresa-note__meta">
-                                <strong>{note.author}</strong>
-                                <span>{new Date(note.timestamp).toLocaleString('es-ES')}</span>
-                              </div>
-                              <p>{note.content}</p>
-                            </article>
-                          ))
-                        )}
-                      </div>
-                      <form
-                        className="empresa-form"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          if (handleAddEmpresaNote(selectedEmpresa.id, noteDraft)) {
-                            setNoteDraft('');
-                          }
-                        }}
-                      >
-                        <label>
-                          Añadir nota
-                          <textarea rows={2} value={noteDraft} onChange={(event) => setNoteDraft(event.target.value)} placeholder="Resumen de la última llamada..." />
-                        </label>
-                        <button type="submit" className="button button--primary button--sm">Guardar nota</button>
-                      </form>
-                    </div>
-
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Documentación compartida</h4>
-                      <div className="empresa-docs">
-                        {documents.length === 0 ? (
-                          <p className="detail-placeholder">Todavía no se han adjuntado archivos.</p>
-                        ) : (
-                          documents.map((doc) => (
-                            <article key={doc.id} className="empresa-doc">
-                              <div>
-                                <strong>{doc.name}</strong>
-                                <p>{doc.type}</p>
-                              </div>
-                              <small>{new Date(doc.uploadedAt).toLocaleDateString('es-ES')}</small>
-                            </article>
-                          ))
-                        )}
-                      </div>
-                      <form
-                        className="empresa-form empresa-form--row"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          if (handleAddEmpresaDocument(selectedEmpresa.id, docDraftName, docDraftType)) {
-                            setDocDraftName('');
-                            setDocDraftType('Contrato');
-                          }
-                        }}
-                      >
-                        <label>
-                          Nombre
-                          <input value={docDraftName} onChange={(event) => setDocDraftName(event.target.value)} placeholder="Acta seguimiento Q2" />
-                        </label>
-                        <label>
-                          Tipo
-                          <input value={docDraftType} onChange={(event) => setDocDraftType(event.target.value)} placeholder="PDF, Excel..." />
-                        </label>
-                        <button type="submit" className="button button--primary button--sm">Registrar</button>
-                      </form>
-                    </div>
-
-                    <div className="detail-panel detail-panel--secondary">
-                      <h4>Historial de cambios</h4>
-                      <div className="empresa-history">
-                        {historyEntries.length === 0 ? (
-                          <p className="detail-placeholder">Sin eventos registrados.</p>
-                        ) : (
-                          historyEntries.map((event) => (
-                            <article key={event.id} className="empresa-history__item">
-                              <div className="empresa-history__bullet" />
-                              <div>
-                                <strong>{event.title}</strong>
-                                <p>{event.description}</p>
-                                <small>{new Date(event.timestamp).toLocaleString('es-ES')}</small>
-                              </div>
-                            </article>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </>
+                    </article>
+                    <article className="empresa-panel">
+                      <header>
+                        <div>
+                          <p className="module-page__eyebrow">Contexto adicional</p>
+                          <h4>Síntesis rápida</h4>
+                        </div>
+                      </header>
+                      <ul>
+                        <li>
+                          <strong>Etiquetas activas</strong>
+                          <p>{labels.length > 0 ? labels.join(', ') : 'Sin etiquetas registradas.'}</p>
+                        </li>
+                        <li>
+                          <strong>Notas colaborativas</strong>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aún no hay notas guardadas.'}</p>
+                        </li>
+                        <li>
+                          <strong>Documentos compartidos</strong>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavía no hay adjuntos.'}</p>
+                        </li>
+                      </ul>
+                    </article>
+                  </div>
+                ) : (
+                  <p className="detail-placeholder">Sin convenios ni asignaciones para mostrar.</p>
                 )}
               </>
             ) : (
-              <p className="detail-placeholder">Selecciona una empresa para ver el detalle.</p>
+              <p className="detail-placeholder">Selecciona una empresa para ver el resumen.</p>
             )}
           </div>
         </div>
+
+
       </section>
     );
   };
@@ -3090,6 +3102,30 @@ const selectedConvenio = useMemo(() => {
       return <ModulePageFallback title="Convenios" />;
     }
 
+    const totalConvenios = collections.convenios.length;
+    const conveniosVigentes = collections.convenios.filter(
+      (convenio) => convenio.estado?.toLowerCase().includes('vig'),
+    ).length;
+    const conveniosPendientes = collections.convenios.filter(
+      (convenio) => convenio.estado?.toLowerCase().includes('pend'),
+    ).length;
+    const proximosRenovacion = collections.convenios.filter((convenio) => {
+      if (!convenio.fechaFin) {
+        return false;
+      }
+      const fin = new Date(convenio.fechaFin).getTime();
+      if (Number.isNaN(fin)) {
+        return false;
+      }
+      const now = Date.now();
+      const windowMs = 1000 * 60 * 60 * 24 * 60;
+      return fin > now && fin - now <= windowMs;
+    }).length;
+    const totalAlertasActivas = Object.values(convenioAlerts).reduce((acc, alertList) => {
+      const activos = alertList.filter((alert) => alert.active).length;
+      return acc + activos;
+    }, 0);
+
     const workflowState = selectedConvenio
       ? convenioWorkflowState[selectedConvenio.id] ?? selectedConvenio.estado
       : null;
@@ -3099,6 +3135,7 @@ const selectedConvenio = useMemo(() => {
     const alerts = selectedConvenio ? convenioAlerts[selectedConvenio.id] ?? [] : [];
     const activeAlerts = alerts.filter((alert) => alert.active);
     const workflowIndex = workflowState ? CONVENIO_STEP_FLOW.indexOf(workflowState) : -1;
+    const workflowPosition = workflowIndex >= 0 ? workflowIndex + 1 : 0;
 
     const handleDocumentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -3132,80 +3169,107 @@ const selectedConvenio = useMemo(() => {
           actions={convenioActions}
         />
 
-        <div className="detail-grid">
-          <div className="detail-grid__list">
-            <div className="detail-grid__header">
-              <h3>Convenios por estado</h3>
-              <p>Selecciona uno para gestionar su documentación y alertas privadas.</p>
-              <div className="filter-chips">
-                <button
-                  type="button"
-                  className={`chip ${convenioEstadoFilter === 'todos' ? 'active' : ''}`}
-                  onClick={() => setConvenioEstadoFilter('todos')}
-                >
-                  Todos
-                </button>
-                {convenioEstados.map((estado) => (
-                  <button
-                    key={estado}
-                    type="button"
-                    className={`chip ${convenioEstadoFilter === estado ? 'active' : ''}`}
-                    onClick={() => setConvenioEstadoFilter(estado)}
-                  >
-                    {estado}
-                  </button>
-                ))}
-              </div>
-              <div className="filter-chips">
-                <button
-                  type="button"
-                  className={`chip ${convenioEmpresaFilter === 'todos' ? 'active' : ''}`}
-                  onClick={() => setConvenioEmpresaFilter('todos')}
-                >
-                  Todas las empresas
-                </button>
-                {collections.empresas.map((empresa) => (
-                  <button
-                    key={empresa.id}
-                    type="button"
-                    className={`chip ${convenioEmpresaFilter === String(empresa.id) ? 'active' : ''}`}
-                    onClick={() => setConvenioEmpresaFilter(String(empresa.id))}
-                  >
-                    {empresa.nombre}
-                  </button>
-                ))}
-              </div>
+﻿        <section className="convenio-insights">
+          <article>
+            <span>Total convenios</span>
+            <strong>{totalConvenios}</strong>
+          </article>
+          <article>
+            <span>Vigentes</span>
+            <strong>{conveniosVigentes}</strong>
+          </article>
+          <article>
+            <span>Por renovar (60 días)</span>
+            <strong>{proximosRenovacion}</strong>
+          </article>
+          <article>
+            <span>En borrador / pendientes</span>
+            <strong>{conveniosPendientes}</strong>
+          </article>
+          <article>
+            <span>Alertas activas</span>
+            <strong>{totalAlertasActivas}</strong>
+          </article>
+        </section>
+
+        <section className="convenio-layout">
+          <aside className="convenio-sidebar">
+            <div>
+              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <h3>Lista de convenios</h3>
+              <p>Acota por estado o empresa y selecciona el convenio que quieras revisar.</p>
             </div>
-            <div className="detail-list">
-              {filteredConvenios.map((convenio) => (
-                <button
-                  type="button"
-                  key={convenio.id}
-                  className={`detail-item ${selectedConvenio?.id === convenio.id ? 'active' : ''}`}
-                  onClick={() => setSelectedConvenioId(convenio.id)}
-                >
-                  <div>
-                    <strong>{convenio.titulo}</strong>
-                    <p>{convenio.empresa.nombre}</p>
-                  </div>
-                  <span className="chip chip--ghost">
-                    {convenioWorkflowState[convenio.id] ?? convenio.estado}
-                  </span>
-                </button>
-              ))}
+            <div className="convenio-sidebar__filters">
+              <div>
+                <span>Estado</span>
+                <div className="filter-chips">
+                  <button
+                    type="button"
+                    className={`chip ${convenioEstadoFilter === 'todos' ? 'active' : ''}`}
+                    onClick={() => setConvenioEstadoFilter('todos')}
+                  >
+                    Todos
+                  </button>
+                  {convenioEstados.map((estado) => (
+                    <button
+                      key={estado}
+                      type="button"
+                      className={`chip ${convenioEstadoFilter === estado ? 'active' : ''}`}
+                      onClick={() => setConvenioEstadoFilter(estado)}
+                    >
+                      {estado}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="convenio-sidebar__select">
+                <span>Empresa</span>
+                <select value={convenioEmpresaFilter} onChange={(event) => setConvenioEmpresaFilter(event.target.value)}>
+                  <option value="todos">Todas las empresas</option>
+                  {collections.empresas.map((empresa) => (
+                    <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>
+                  ))}
+                </select>
+              </label>
             </div>
-          </div>
-          <div className="detail-grid__panel">
-            <h3>Seguimiento operativo</h3>
+
+            <div className="convenio-sidebar__list">
+              {filteredConvenios.length === 0 ? (
+                <p className="detail-placeholder">No hay convenios que coincidan con el filtro.</p>
+              ) : (
+                filteredConvenios.map((convenio) => {
+                  const isActive = selectedConvenio?.id === convenio.id;
+                  return (
+                    <button
+                      type="button"
+                      key={convenio.id}
+                      className={`convenio-list__item ${isActive ? 'active' : ''}`}
+                      onClick={() => setSelectedConvenioId(convenio.id)}
+                    >
+                      <div>
+                        <strong>{convenio.titulo}</strong>
+                        <small>{convenio.empresa.nombre}</small>
+                      </div>
+                      <span className="chip chip--ghost">
+                        {convenioWorkflowState[convenio.id] ?? convenio.estado}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+
+          <div className="convenio-panel">
             {selectedConvenio ? (
               <>
-                <div className="convenio-detail">
+                <div className="convenio-panel__header">
                   <div>
                     <p className="convenio-detail__eyebrow">Convenio #{selectedConvenio.id}</p>
-                    <h4>{selectedConvenio.titulo}</h4>
+                    <h3>{selectedConvenio.titulo}</h3>
                     <p className="convenio-detail__company">{selectedConvenio.empresa.nombre}</p>
                   </div>
-                  <div className="convenio-detail__status">
+                  <div className="convenio-panel__actions">
                     <span className="chip chip--ghost">{workflowState}</span>
                     <button
                       type="button"
@@ -3214,25 +3278,28 @@ const selectedConvenio = useMemo(() => {
                     >
                       Avanzar estado
                     </button>
+                    <Link className="button button--primary button--sm" to={`/convenios/${selectedConvenio.id}`}>
+                      Abrir ficha
+                    </Link>
                   </div>
                 </div>
-                <div className="convenio-detail__meta">
-                  <div>
+                <div className="convenio-panel__meta">
+                  <article>
                     <span>Tipo</span>
                     <strong>{selectedConvenio.tipo}</strong>
-                  </div>
-                  <div>
+                  </article>
+                  <article>
                     <span>Inicio</span>
                     <strong>{formatDate(selectedConvenio.fechaInicio)}</strong>
-                  </div>
-                  <div>
+                  </article>
+                  <article>
                     <span>Fin</span>
                     <strong>{formatDate(selectedConvenio.fechaFin)}</strong>
-                  </div>
-                  <div>
+                  </article>
+                  <article>
                     <span>Asignaciones asociadas</span>
                     <strong>{selectedConvenio.asignacionesAsociadas}</strong>
-                  </div>
+                  </article>
                 </div>
 
                 <div className="convenio-workflow">
@@ -3242,7 +3309,7 @@ const selectedConvenio = useMemo(() => {
                       <h4>Estados del acuerdo</h4>
                     </div>
                     <p>
-                      Paso {workflowIndex + 1} de {CONVENIO_STEP_FLOW.length}
+                      Paso {workflowPosition} de {CONVENIO_STEP_FLOW.length}
                     </p>
                   </div>
                   <div className="workflow-steps">
@@ -3266,9 +3333,7 @@ const selectedConvenio = useMemo(() => {
                     <header>
                       <div>
                         <p className="convenio-detail__eyebrow">Checklist documental</p>
-                        <h4>
-                          {completedChecklist}/{checklistItems.length} completados
-                        </h4>
+                        <h4>{completedChecklist}/{checklistItems.length} completados</h4>
                       </div>
                     </header>
                     {checklistItems.length > 0 ? (
@@ -3304,7 +3369,7 @@ const selectedConvenio = useMemo(() => {
                           <div key={doc.id} className="convenio-document">
                             <div>
                               <strong>{doc.name}</strong>
-                              <small>{doc.type} · {formatDate(doc.uploadedAt)}</small>
+                              <small>{doc.type} – {formatDate(doc.uploadedAt)}</small>
                             </div>
                             <button type="button" className="button button--link">
                               Descargar
@@ -3378,15 +3443,20 @@ const selectedConvenio = useMemo(() => {
               <p className="detail-placeholder">Selecciona un convenio para ver KPIs.</p>
             )}
           </div>
-        </div>
+        </section>
+
       </section>
     );
   };
 
-  const EstudiantesOverviewPage = () => {
+﻿  const EstudiantesOverviewPage = () => {
+    const navigate = useNavigate();
+
     if (!collections) {
       return <ModulePageFallback title="Estudiantes" />;
     }
+
+    const estadoOptions = ['todos', ...studentEstados];
 
     return (
       <section className="module-page module-page--wide">
@@ -3407,81 +3477,104 @@ const selectedConvenio = useMemo(() => {
           actions={estudianteActions}
         />
 
-        <section className="student-cards student-cards--full">
-          <div className="student-cards__grid">
-            {collections.estudiantes.map((estudiante) => {
-              const isActive = selectedStudent?.id === estudiante.id;
-              return (
-                <button
-                  type="button"
-                  key={estudiante.id}
-                  className={`student-card ${isActive ? 'active' : ''}`}
-                  onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
-                  aria-pressed={isActive}
-                >
-                  <div className="student-card__avatar">
-                    {estudiante.nombre.charAt(0)}
-                    {estudiante.apellido.charAt(0)}
+        <section className="student-layout">
+          <aside className="student-layout__sidebar">
+            <div>
+              <p className="module-page__eyebrow">Perfiles 360°</p>
+              <h3>Filtros inteligentes</h3>
+              <p>Selecciona un estado y profundiza en el perfil seleccionado.</p>
+            </div>
+            <div className="student-layout__filters">
+              <span>Estado</span>
+              <div className="filter-chips">
+                {estadoOptions.map((estado) => (
+                  <button
+                    key={estado}
+                    type="button"
+                    className={`chip ${studentEstadoFilter === estado ? 'active' : ''}`}
+                    onClick={() => setStudentEstadoFilter(estado)}
+                  >
+                    {estado === 'todos' ? 'Todos' : estado}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="student-layout__list">
+              {filteredStudents.length === 0 ? (
+                <p className="detail-placeholder">No hay estudiantes con ese estado.</p>
+              ) : (
+                filteredStudents.map((estudiante) => {
+                  const isActive = selectedStudent?.id === estudiante.id;
+                  return (
+                    <button
+                      type="button"
+                      key={estudiante.id}
+                      className={`student-list-item ${isActive ? 'active' : ''}`}
+                      onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
+                    >
+                      <div>
+                        <strong>{estudiante.nombre} {estudiante.apellido}</strong>
+                        <small>{estudiante.grado ?? 'Grado no indicado'}</small>
+                      </div>
+                      <div className="student-card__chips">
+                        <span className="chip chip--ghost">{estudiante.estado}</span>
+                        <span className="chip chip--ghost">
+                          {estudiante.asignaciones.enCurso}/{estudiante.asignaciones.total}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+          <div className="student-layout__panel">
+            {selectedStudent ? (
+              <article className="student-profile">
+                <div className="student-profile__header">
+                  <div>
+                    <p className="module-page__eyebrow">Ficha del estudiante</p>
+                    <h3>{selectedStudent.nombre} {selectedStudent.apellido}</h3>
+                    <p className="student-profile__email">{selectedStudent.email}</p>
                   </div>
-                  <div className="student-card__body">
-                    <h4>{estudiante.nombre} {estudiante.apellido}</h4>
-                    <p>{estudiante.grado ?? 'Grado no especificado'}</p>
-                    <div className="student-card__chips">
-                      <span className="chip chip--ghost">{estudiante.estado}</span>
-                      <span className="chip chip--ghost">
-                        {estudiante.asignaciones.enCurso} en curso / {estudiante.asignaciones.total} total
-                      </span>
+                  <div className="student-profile__actions">
+                    <span className="chip chip--ghost">{selectedStudent.estado}</span>
+                    <div className="student-profile__actions-buttons">
+                      <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
+                        Editar ficha
+                      </button>
+                      <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
+                        Planificar asignación
+                      </button>
+                      <a className="button button--link button--sm" href={`mailto:${selectedStudent.email}`}>
+                        Enviar correo
+                      </a>
                     </div>
                   </div>
-                </button>
-              );
-            })}
-          </div>
-          {selectedStudent && (
-            <div className="student-detail">
-              <div className="student-detail__header">
-                <div>
-                  <p className="module-page__eyebrow">Detalle de estudiante</p>
-                  <h4>{selectedStudent.nombre} {selectedStudent.apellido}</h4>
-                  <p className="student-detail__subtitle">{selectedStudent.email}</p>
                 </div>
-                <div className="student-detail__header-actions">
-                  <span className="chip chip--ghost">{selectedStudent.estado}</span>
-                  <div className="student-detail__header-buttons">
+
+                <div className="student-profile__metrics">
+                  <article>
+                    <span>Asignaciones activas</span>
+                    <strong>{selectedStudent.asignaciones.enCurso}</strong>
+                  </article>
+                  <article>
+                    <span>Total asignaciones</span>
+                    <strong>{selectedStudent.asignaciones.total}</strong>
+                  </article>
+                  <article>
+                    <span>Curso actual</span>
+                    <strong>{selectedStudent.curso ?? 'No indicado'}</strong>
+                  </article>
+                </div>
+
+                <div className="student-profile__section">
+                  <div className="student-profile__section-header">
+                    <h4>Ficha académica</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
-                      Editar ficha
-                    </button>
-                    <button type="button" className="button button--link button--sm" onClick={() => setSelectedStudent(null)}>
-                      Cerrar
+                      Actualizar datos
                     </button>
                   </div>
-                </div>
-              </div>
-              <div className="student-detail__tabs">
-                <button
-                  type="button"
-                  className={studentDetailTab === 'academico' ? 'active' : ''}
-                  onClick={() => setStudentDetailTab('academico')}
-                >
-                  Información académica
-                </button>
-                <button
-                  type="button"
-                  className={studentDetailTab === 'asignaciones' ? 'active' : ''}
-                  onClick={() => setStudentDetailTab('asignaciones')}
-                >
-                  Asignaciones
-                </button>
-                <button
-                  type="button"
-                  className={studentDetailTab === 'seguimiento' ? 'active' : ''}
-                  onClick={() => setStudentDetailTab('seguimiento')}
-                >
-                  Seguimiento
-                </button>
-              </div>
-              <div className="student-detail__content">
-                {studentDetailTab === 'academico' && (
                   <div className="student-detail__grid">
                     <div>
                       <span className="student-detail__label">DNI</span>
@@ -3500,30 +3593,43 @@ const selectedConvenio = useMemo(() => {
                       <strong>{selectedStudent.email}</strong>
                     </div>
                   </div>
-                )}
-                {studentDetailTab === 'asignaciones' && (
-                  selectedStudentAssignments.length > 0 ? (
-                    <div className="student-detail__list">
+                </div>
+
+                <div className="student-profile__section">
+                  <div className="student-profile__section-header">
+                    <h4>Asignaciones</h4>
+                    <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
+                      Ver módulo
+                    </button>
+                  </div>
+                  {selectedStudentAssignments.length > 0 ? (
+                    <div className="student-profile__assignments">
                       {selectedStudentAssignments.map((asignacion) => (
-                        <article className="student-detail__card" key={asignacion.id}>
-                          <header>
-                            <h5>{asignacion.empresa.nombre}</h5>
-                            <span className="chip chip--ghost">{asignacion.estado}</span>
-                          </header>
-                          <p>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</p>
-                          <div className="student-detail__links">
-                            <Link to={`/empresas/${asignacion.empresa.id}`} className="link">
-                              Gestionar empresa
-                            </Link>
+                        <article className="student-assignment" key={asignacion.id}>
+                          <div>
+                            <strong>{asignacion.empresa.nombre}</strong>
+                            <p>{formatDate(asignacion.fechaInicio)} — {formatDate(asignacion.fechaFin)}</p>
                           </div>
+                          <div className="student-assignment__tags">
+                            <span className="chip chip--ghost">{asignacion.estado}</span>
+                            <span className="chip chip--ghost">{asignacion.modalidad}</span>
+                          </div>
+                          <Link className="link" to={`/empresas/${asignacion.empresa.id}`}>
+                            Abrir empresa
+                          </Link>
                         </article>
                       ))}
                     </div>
                   ) : (
                     <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
-                  )
-                )}
-                {studentDetailTab === 'seguimiento' && (
+                  )}
+                </div>
+
+                <div className="student-profile__section">
+                  <div className="student-profile__section-header">
+                    <h4>Seguimiento</h4>
+                    <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>Volver al dashboard</button>
+                  </div>
                   <div className="student-timeline">
                     {studentTimeline.map((milestone, index) => (
                       <article key={milestone.id} className="student-timeline__item">
@@ -3541,19 +3647,34 @@ const selectedConvenio = useMemo(() => {
                       </article>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
-          )}
+                </div>
+              </article>
+            ) : (
+              <p className="detail-placeholder">Selecciona un estudiante para revisar su ficha.</p>
+            )}
+          </div>
         </section>
       </section>
     );
   };
 
-  const AsignacionesOverviewPage = () => {
+﻿  const AsignacionesOverviewPage = () => {
+    const navigate = useNavigate();
+
     if (!collections) {
       return <ModulePageFallback title="Asignaciones" />;
     }
+
+    const estadoOptions = ['todos', ...asignacionEstados];
+    const modalidadOptions = ['todas', ...asignacionModalidades];
+    const totalAsignaciones = collections.asignaciones.length;
+    const enCursoCount = collections.asignaciones.filter((asignacion) => asignacion.estado === 'en_curso').length;
+    const planificadasCount = collections.asignaciones.filter((asignacion) => asignacion.estado === 'planificada').length;
+    const finalizadasCount = collections.asignaciones.filter((asignacion) => asignacion.estado === 'finalizada').length;
+    const totalHorasPlanificadas = collections.asignaciones.reduce(
+      (acc, asignacion) => acc + (asignacion.horasTotales ?? 0),
+      0,
+    );
 
     return (
       <section className="module-page module-page--wide">
@@ -3574,9 +3695,168 @@ const selectedConvenio = useMemo(() => {
           actions={asignacionActions}
         />
 
+        <section className="asignacion-insights">
+          <article>
+            <span>Total asignaciones</span>
+            <strong>{totalAsignaciones}</strong>
+          </article>
+          <article>
+            <span>En curso</span>
+            <strong>{enCursoCount}</strong>
+          </article>
+          <article>
+            <span>Planificadas</span>
+            <strong>{planificadasCount}</strong>
+          </article>
+          <article>
+            <span>Finalizadas</span>
+            <strong>{finalizadasCount}</strong>
+          </article>
+          <article>
+            <span>Horas planificadas</span>
+            <strong>{totalHorasPlanificadas}</strong>
+          </article>
+        </section>
+
+        <section className="asignacion-layout">
+          <aside className="asignacion-sidebar">
+            <div>
+              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <h3>Lista de asignaciones</h3>
+              <p>Aplica filtros por estado o modalidad y abre cada ficha en un clic.</p>
+            </div>
+            <div className="asignacion-sidebar__filters">
+              <div>
+                <span>Estado</span>
+                <div className="filter-chips">
+                  {estadoOptions.map((estado) => (
+                    <button
+                      key={estado}
+                      type="button"
+                      className={`chip ${asignacionEstadoFilter === estado ? 'active' : ''}`}
+                      onClick={() => setAsignacionEstadoFilter(estado)}
+                    >
+                      {estado === 'todos' ? 'Todos' : estado}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="asignacion-sidebar__select">
+                <span>Modalidad</span>
+                <select
+                  value={asignacionModalidadFilter}
+                  onChange={(event) => setAsignacionModalidadFilter(event.target.value)}
+                >
+                  {modalidadOptions.map((modalidad) => (
+                    <option key={modalidad} value={modalidad}>
+                      {modalidad === 'todas' ? 'Todas las modalidades' : modalidad}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="asignacion-sidebar__list">
+              {filteredAsignaciones.length === 0 ? (
+                <p className="detail-placeholder">No hay asignaciones con esos filtros.</p>
+              ) : (
+                filteredAsignaciones.map((asignacion) => {
+                  const isActive = selectedAsignacion?.id === asignacion.id;
+                  return (
+                    <button
+                      type="button"
+                      key={asignacion.id}
+                      className={`asignacion-list__item ${isActive ? 'active' : ''}`}
+                      onClick={() => setSelectedAsignacion(asignacion)}
+                    >
+                      <div>
+                        <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
+                        <small>{asignacion.empresa.nombre}</small>
+                      </div>
+                      <div className="asignacion-list__meta">
+                        <span>{asignacion.modalidad}</span>
+                        <span>{formatDate(asignacion.fechaInicio)} → {formatDate(asignacion.fechaFin)}</span>
+                      </div>
+                      <span className="chip chip--ghost">{asignacion.estado}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+
+          <div className="asignacion-panel">
+            {selectedAsignacion ? (
+              <>
+                <div className="asignacion-panel__header">
+                  <div>
+                    <p className="module-page__eyebrow">Asignación #{selectedAsignacion.id}</p>
+                    <h3>{selectedAsignacion.estudiante.nombre} {selectedAsignacion.estudiante.apellido}</h3>
+                    <p className="asignacion-panel__company">{selectedAsignacion.empresa.nombre}</p>
+                  </div>
+                  <div className="asignacion-panel__actions">
+                    <span className="chip chip--ghost">{selectedAsignacion.estado}</span>
+                    <button
+                      type="button"
+                      className="button button--ghost button--sm"
+                      onClick={() => handleEditAsignacion(selectedAsignacion)}
+                    >
+                      Editar
+                    </button>
+                    <Link className="button button--primary button--sm" to={`/asignaciones/${selectedAsignacion.id}`}>
+                      Abrir ficha
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="asignacion-panel__grid">
+                  <article>
+                    <span>Modalidad</span>
+                    <strong>{selectedAsignacion.modalidad}</strong>
+                  </article>
+                  <article>
+                    <span>Horas planificadas</span>
+                    <strong>{selectedAsignacion.horasTotales ?? '—'}</strong>
+                  </article>
+                  <article>
+                    <span>Inicio</span>
+                    <strong>{formatDate(selectedAsignacion.fechaInicio)}</strong>
+                  </article>
+                  <article>
+                    <span>Fin estimado</span>
+                    <strong>{formatDate(selectedAsignacion.fechaFin)}</strong>
+                  </article>
+                </div>
+
+                <div className="asignacion-panel__links">
+                  <button
+                    type="button"
+                    className="button button--ghost button--sm"
+                    onClick={() => navigate(`/empresas/${selectedAsignacion.empresa.id}`)}
+                  >
+                    Ver empresa
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--ghost button--sm"
+                    onClick={() => navigate('/estudiantes')}
+                  >
+                    Buscar estudiante
+                  </button>
+                </div>
+
+                <p className="asignacion-panel__hint">
+                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentación adjunta.
+                </p>
+              </>
+            ) : (
+              <p className="detail-placeholder">Selecciona una asignación para revisar su detalle.</p>
+            )}
+          </div>
+        </section>
+
         <section className="kanban">
           <header className="kanban__header">
-            <h3>Estado de asignaciones</h3>
+            <h3>Pipeline visual</h3>
             <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
           </header>
           <div className="kanban__columns">
@@ -3587,7 +3867,7 @@ const selectedConvenio = useMemo(() => {
                   <article className="kanban-card" key={asignacion.id}>
                     <h5>{asignacion.empresa.nombre}</h5>
                     <p>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</p>
-                    <small>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</small>
+                    <small>{formatDate(asignacion.fechaInicio)} – {formatDate(asignacion.fechaFin)}</small>
                     <div className="kanban-card__tags">
                       <span className="chip chip--ghost">{asignacion.modalidad}</span>
                       {asignacion.horasTotales && (
@@ -3606,7 +3886,6 @@ const selectedConvenio = useMemo(() => {
       </section>
     );
   };
-
   const dashboardElement = collections ? (
     <>
       <section className="hero">

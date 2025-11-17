@@ -33,7 +33,7 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
         $repo = $this->entityManager->getRepository(EmpresaColaboradora::class);
         $empresas = $repo->findAll();
 
-        self::assertCount(2, $empresas);
+        self::assertCount(3, $empresas);
 
         $innovar = $repo->findOneBy(['nombre' => 'Innovar Formación']);
         self::assertNotNull($innovar);
@@ -48,6 +48,13 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
         self::assertCount(1, $salud->getContactos());
         self::assertCount(1, $salud->getTutoresProfesionales());
         self::assertCount(1, $salud->getConvenios());
+
+        $logi = $repo->findOneBy(['nombre' => 'LogiMovil Partners']);
+        self::assertNotNull($logi);
+        self::assertSame('activa', $logi->getEstadoColaboracion());
+        self::assertCount(1, $logi->getContactos());
+        self::assertCount(1, $logi->getTutoresProfesionales());
+        self::assertCount(1, $logi->getConvenios());
     }
 
     public function testConveniosIncluyenMetadatosClave(): void

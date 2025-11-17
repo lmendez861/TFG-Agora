@@ -3,7 +3,12 @@
 namespace App\Controller\Api;
 
 use App\Entity\EmpresaColaboradora;
+use App\Entity\EmpresaDocumento;
+use App\Entity\EmpresaEtiqueta;
+use App\Entity\EmpresaNota;
 use App\Repository\EmpresaColaboradoraRepository;
+use App\Repository\EmpresaDocumentoRepository;
+use App\Repository\EmpresaEtiquetaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,9 +26,32 @@ final class EmpresaColaboradoraController extends AbstractController
     use JsonRequestTrait;
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(EmpresaColaboradoraRepository $repository): JsonResponse
+    public function index(Request $request, EmpresaColaboradoraRepository $repository): JsonResponse
     {
-        $empresas = $repository->findAll();
+        $qb = $repository->createQueryBuilder('e');
+
+        if ($estado = $request->query->get('estado')) {
+            $qb->andWhere('e.estadoColaboracion = :estado')
+                ->setParameter('estado', $estado);
+        }
+
+        if ($sector = $request->query->get('sector')) {
+            $qb->andWhere('e.sector = :sector')
+                ->setParameter('sector', $sector);
+        }
+
+        if ($search = $request->query->get('q')) {
+            $pattern = '%' . mb_strtolower($search) . '%';
+            $qb->andWhere('LOWER(e.nombre) LIKE :search OR LOWER(e.ciudad) LIKE :search')
+                ->setParameter('search', $pattern);
+        }
+
+        [$page, $perPage] = $this->resolvePagination($request);
+        $qb->orderBy('e.id', 'ASC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $empresas = $qb->getQuery()->getResult();
 
         $data = array_map(fn (EmpresaColaboradora $empresa): array => $this->serializeSummary($empresa), $empresas);
 
@@ -208,6 +236,145 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDetail($empresa), Response::HTTP_OK);
     }
 
+    #[Route('/{id<\d+>}/etiquetas', name: 'add_label', methods: ['POST'])]
+    public function addEtiqueta(
+        ?EmpresaColaboradora $empresa,
+        Request $request,
+        ValidatorInterface $validator,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection([
+            'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 80)],
+        ]);
+
+        $violations = $validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        $etiqueta = (new EmpresaEtiqueta())
+            ->setEmpresa($empresa)
+            ->setNombre($payload['nombre']);
+
+        $entityManager->persist($etiqueta);
+        $entityManager->flush();
+
+        return $this->json($this->serializeEtiqueta($etiqueta), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\d+>}/etiquetas/{etiquetaId<\d+>}', name: 'delete_label', methods: ['DELETE'])]
+    public function deleteEtiqueta(
+        ?EmpresaColaboradora $empresa,
+        int $etiquetaId,
+        EmpresaEtiquetaRepository $etiquetaRepository,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $etiqueta = $etiquetaRepository->find($etiquetaId);
+        if (!$etiqueta || $etiqueta->getEmpresa()->getId() !== $empresa->getId()) {
+            return $this->json(['message' => 'Etiqueta no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $entityManager->remove($etiqueta);
+        $entityManager->flush();
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id<\d+>}/notas', name: 'add_note', methods: ['POST'])]
+    public function addNota(
+        ?EmpresaColaboradora $empresa,
+        Request $request,
+        ValidatorInterface $validator,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'autor' => new Assert\Optional([new Assert\Length(max: 120)]),
+                'contenido' => [new Assert\NotBlank()],
+            ],
+            allowExtraFields: true
+        );
+
+        $violations = $validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        $nota = (new EmpresaNota())
+            ->setEmpresa($empresa)
+            ->setAutor($payload['autor'] ?? 'Coordinación')
+            ->setContenido($payload['contenido']);
+
+        $entityManager->persist($nota);
+        $entityManager->flush();
+
+        return $this->json($this->serializeNota($nota), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\d+>}/documentos', name: 'add_document', methods: ['POST'])]
+    public function addDocumento(
+        ?EmpresaColaboradora $empresa,
+        Request $request,
+        ValidatorInterface $validator,
+        EntityManagerInterface $entityManager
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                'tipo' => new Assert\Optional([new Assert\Length(max: 80)]),
+                'url' => new Assert\Optional([new Assert\Length(max: 255)]),
+            ],
+            allowExtraFields: true
+        );
+
+        $violations = $validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        $documento = (new EmpresaDocumento())
+            ->setEmpresa($empresa)
+            ->setNombre($payload['nombre'])
+            ->setTipo($payload['tipo'] ?? null)
+            ->setUrl($payload['url'] ?? null);
+
+        $entityManager->persist($documento);
+        $entityManager->flush();
+
+        return $this->json($this->serializeDocumento($documento), Response::HTTP_CREATED);
+    }
+
     private function serializeSummary(EmpresaColaboradora $empresa): array
     {
         $asignaciones = $empresa->getAsignaciones();
@@ -291,6 +458,65 @@ final class EmpresaColaboradoraController extends AbstractController
                 'total' => $asignaciones->count(),
                 'porEstado' => $conteoPorEstado,
             ],
+            'etiquetas' => array_map(fn (EmpresaEtiqueta $etiqueta): array => $this->serializeEtiqueta($etiqueta), $empresa->getEtiquetas()->toArray()),
+            'notas' => array_map(fn (EmpresaNota $nota): array => $this->serializeNota($nota), $empresa->getNotas()->toArray()),
+            'documentos' => array_map(fn (EmpresaDocumento $documento): array => $this->serializeDocumento($documento), $empresa->getDocumentos()->toArray()),
         ];
+    }
+
+    /**
+     * @return array{id:int,nombre:string,createdAt:string}
+     */
+    private function serializeEtiqueta(EmpresaEtiqueta $etiqueta): array
+    {
+        return [
+            'id' => $etiqueta->getId(),
+            'nombre' => $etiqueta->getNombre(),
+            'createdAt' => $etiqueta->getCreatedAt()->format(\DateTimeInterface::ATOM),
+        ];
+    }
+
+    /**
+     * @return array{id:int,autor:string,contenido:string,createdAt:string}
+     */
+    private function serializeNota(EmpresaNota $nota): array
+    {
+        return [
+            'id' => $nota->getId(),
+            'autor' => $nota->getAutor(),
+            'contenido' => $nota->getContenido(),
+            'createdAt' => $nota->getCreatedAt()->format(\DateTimeInterface::ATOM),
+        ];
+    }
+
+    /**
+     * @return array{id:int,nombre:string,tipo:?string,url:?string,uploadedAt:string}
+     */
+    private function serializeDocumento(EmpresaDocumento $documento): array
+    {
+        return [
+            'id' => $documento->getId(),
+            'nombre' => $documento->getNombre(),
+            'tipo' => $documento->getTipo(),
+            'url' => $documento->getUrl(),
+            'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
+        ];
+    }
+
+    /**
+     * @return array{0:int,1:int}
+     */
+    private function resolvePagination(Request $request): array
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = (int) $request->query->get('perPage', 50);
+        if ($perPage < 1) {
+            $perPage = 1;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        return [$page, $perPage];
     }
 }

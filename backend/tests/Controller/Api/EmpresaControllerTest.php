@@ -42,10 +42,31 @@ final class EmpresaControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertIsArray($payload);
-        self::assertCount(2, $payload);
+        self::assertCount(3, $payload);
         self::assertSame('Innovar Formación', $payload[0]['nombre']);
         self::assertArrayHasKey('asignaciones', $payload[0]);
         self::assertArrayHasKey('conveniosActivos', $payload[0]);
+    }
+
+    public function testListadoPermiteFiltrarYPaginar(): void
+    {
+        $this->client->request('GET', '/api/empresas?estado=activa');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertCount(2, $payload);
+        foreach ($payload as $empresa) {
+            self::assertSame('activa', $empresa['estadoColaboracion']);
+        }
+
+        $this->client->request('GET', '/api/empresas?perPage=1&page=2');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertCount(1, $payload);
+        self::assertSame('Salud Conectada S.L.', $payload[0]['nombre']);
     }
 
     public function testDetalleIncluyeContactosTutoresYConvenios(): void

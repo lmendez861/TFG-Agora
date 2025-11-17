@@ -76,13 +76,25 @@ class EmpresaColaboradora
     #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: AsignacionPractica::class)]
     private Collection $asignaciones;
 
+    #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: EmpresaEtiqueta::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $etiquetas;
+
+    #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: EmpresaNota::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $notas;
+
+    #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: EmpresaDocumento::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $documentos;
+
     public function __construct()
     {
         $this->fechaAlta = new \DateTimeImmutable();
         $this->contactos = new ArrayCollection();
-    $this->convenios = new ArrayCollection();
-    $this->tutoresProfesionales = new ArrayCollection();
-    $this->asignaciones = new ArrayCollection();
+        $this->convenios = new ArrayCollection();
+        $this->tutoresProfesionales = new ArrayCollection();
+        $this->asignaciones = new ArrayCollection();
+        $this->etiquetas = new ArrayCollection();
+        $this->notas = new ArrayCollection();
+        $this->documentos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -344,6 +356,93 @@ class EmpresaColaboradora
         if ($this->asignaciones->removeElement($asignacion)) {
             if ($asignacion->getEmpresa() === $this) {
                 $asignacion->setEmpresa(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EmpresaEtiqueta>
+     */
+    public function getEtiquetas(): Collection
+    {
+        return $this->etiquetas;
+    }
+
+    public function addEtiqueta(EmpresaEtiqueta $etiqueta): self
+    {
+        if (!$this->etiquetas->contains($etiqueta)) {
+            $this->etiquetas->add($etiqueta);
+            $etiqueta->setEmpresa($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEtiqueta(EmpresaEtiqueta $etiqueta): self
+    {
+        if ($this->etiquetas->removeElement($etiqueta)) {
+            if ($etiqueta->getEmpresa() === $this) {
+                $etiqueta->setEmpresa(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EmpresaNota>
+     */
+    public function getNotas(): Collection
+    {
+        return $this->notas;
+    }
+
+    public function addNota(EmpresaNota $nota): self
+    {
+        if (!$this->notas->contains($nota)) {
+            $this->notas->add($nota);
+            $nota->setEmpresa($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNota(EmpresaNota $nota): self
+    {
+        if ($this->notas->removeElement($nota)) {
+            if ($nota->getEmpresa() === $this) {
+                $nota->setEmpresa(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EmpresaDocumento>
+     */
+    public function getDocumentos(): Collection
+    {
+        return $this->documentos;
+    }
+
+    public function addDocumento(EmpresaDocumento $documento): self
+    {
+        if (!$this->documentos->contains($documento)) {
+            $this->documentos->add($documento);
+            $documento->setEmpresa($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDocumento(EmpresaDocumento $documento): self
+    {
+        if ($this->documentos->removeElement($documento)) {
+            if ($documento->getEmpresa() === $this) {
+                $documento->setEmpresa(null);
             }
         }
 

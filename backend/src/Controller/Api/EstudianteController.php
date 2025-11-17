@@ -21,9 +21,27 @@ final class EstudianteController extends AbstractController
     use JsonRequestTrait;
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(EstudianteRepository $repository): JsonResponse
+    public function index(Request $request, EstudianteRepository $repository): JsonResponse
     {
-        $estudiantes = $repository->findAll();
+        $qb = $repository->createQueryBuilder('e');
+
+        if ($estado = $request->query->get('estado')) {
+            $qb->andWhere('e.estado = :estado')
+                ->setParameter('estado', $estado);
+        }
+
+        if ($search = $request->query->get('q')) {
+            $pattern = '%' . mb_strtolower($search) . '%';
+            $qb->andWhere('LOWER(e.nombre) LIKE :search OR LOWER(e.apellido) LIKE :search OR LOWER(e.email) LIKE :search')
+                ->setParameter('search', $pattern);
+        }
+
+        [$page, $perPage] = $this->resolvePagination($request);
+        $qb->orderBy('e.id', 'ASC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $estudiantes = $qb->getQuery()->getResult();
 
         $data = array_map(fn (Estudiante $estudiante): array => $this->serializeSummary($estudiante), $estudiantes);
 
@@ -242,5 +260,22 @@ final class EstudianteController extends AbstractController
             'estado' => $estudiante->getEstado(),
             'asignaciones' => $asignaciones,
         ];
+    }
+
+    /**
+     * @return array{0:int,1:int}
+     */
+    private function resolvePagination(Request $request): array
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = (int) $request->query->get('perPage', 50);
+        if ($perPage < 1) {
+            $perPage = 1;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        return [$page, $perPage];
     }
 }

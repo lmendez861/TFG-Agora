@@ -47,16 +47,40 @@ final class AsignacionControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertIsArray($payload);
-        self::assertCount(2, $payload);
+        self::assertCount(3, $payload);
         self::assertSame('Innovar Formación', $payload[0]['empresa']['nombre']);
         self::assertArrayHasKey('estudiante', $payload[0]);
     }
 
+    public function testListadoPermiteFiltrarPorEstadoYModalidad(): void
+    {
+        $this->client->request('GET', '/api/asignaciones?estado=en_curso');
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertCount(2, $payload);
+        foreach ($payload as $item) {
+            self::assertSame('en_curso', $item['estado']);
+        }
+
+        $this->client->request('GET', '/api/asignaciones?modalidad=presencial');
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertGreaterThanOrEqual(2, count($payload));
+        foreach ($payload as $item) {
+            self::assertSame('presencial', $item['modalidad']);
+        }
+    }
+
     public function testDetalleIncluyeSeguimientosYEvaluacion(): void
     {
+        $estudianteAna = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Ana']);
+        self::assertNotNull($estudianteAna);
+
         $asignacion = $this->entityManager
             ->getRepository(AsignacionPractica::class)
-            ->findOneBy(['estado' => 'en_curso']);
+            ->findOneBy(['estudiante' => $estudianteAna]);
 
         self::assertNotNull($asignacion);
 

@@ -6,6 +6,9 @@ use App\Entity\AsignacionPractica;
 use App\Entity\ContactoEmpresa;
 use App\Entity\Convenio;
 use App\Entity\EmpresaColaboradora;
+use App\Entity\EmpresaDocumento;
+use App\Entity\EmpresaEtiqueta;
+use App\Entity\EmpresaNota;
 use App\Entity\Estudiante;
 use App\Entity\EvaluacionFinal;
 use App\Entity\Seguimiento;
@@ -117,11 +120,27 @@ class DemoDominioFixtures extends Fixture
             ->setConclusiones('Se recomienda su incorporación a proyectos de I+D.');
         $asignacionAna->setEvaluacionFinal($evaluacionAna);
 
+        $etiquetaInnovar = (new EmpresaEtiqueta())
+            ->setEmpresa($empresaInnovar)
+            ->setNombre('Prioritaria');
+        $notaInnovar = (new EmpresaNota())
+            ->setEmpresa($empresaInnovar)
+            ->setAutor('Coordinación')
+            ->setContenido('Reunión mensual pendiente para revisar plan Q1.');
+        $docInnovar = (new EmpresaDocumento())
+            ->setEmpresa($empresaInnovar)
+            ->setNombre('Acta seguimiento Octubre')
+            ->setTipo('PDF')
+            ->setUrl('https://docs.example.com/acta-octubre.pdf');
+
         $manager->persist($empresaInnovar);
         $manager->persist($tutorAcademicoLaura);
         $manager->persist($estudianteAna);
         $manager->persist($convenioInnovar);
         $manager->persist($asignacionAna);
+        $manager->persist($etiquetaInnovar);
+        $manager->persist($notaInnovar);
+        $manager->persist($docInnovar);
 
         // Empresa 2 con enfoque sanitario y una asignación en curso
         $empresaSalud = (new EmpresaColaboradora())
@@ -197,11 +216,26 @@ class DemoDominioFixtures extends Fixture
             ->setHorasTotales(240)
             ->setEstado('planificada');
 
+        $etiquetaSalud = (new EmpresaEtiqueta())
+            ->setEmpresa($empresaSalud)
+            ->setNombre('Onboarding');
+        $notaSalud = (new EmpresaNota())
+            ->setEmpresa($empresaSalud)
+            ->setAutor('María López')
+            ->setContenido('Esperando confirmación de plan de acogida definitivo.');
+        $docSalud = (new EmpresaDocumento())
+            ->setEmpresa($empresaSalud)
+            ->setNombre('Borrador convenio integraciones')
+            ->setTipo('DOCX');
+
         $manager->persist($empresaSalud);
         $manager->persist($tutorAcademicoMiguel);
         $manager->persist($estudianteLuis);
         $manager->persist($convenioSalud);
         $manager->persist($asignacionLuis);
+        $manager->persist($etiquetaSalud);
+        $manager->persist($notaSalud);
+        $manager->persist($docSalud);
 
         // Empresa 3 orientada a log��stica inteligente con asignaci��n activa
         $empresaLogi = (new EmpresaColaboradora())
@@ -277,11 +311,26 @@ class DemoDominioFixtures extends Fixture
             ->setHorasTotales(300)
             ->setEstado('en_curso');
 
+        $etiquetaLogi = (new EmpresaEtiqueta())
+            ->setEmpresa($empresaLogi)
+            ->setNombre('Analizar capacidad');
+        $notaLogi = (new EmpresaNota())
+            ->setEmpresa($empresaLogi)
+            ->setAutor('Patricia Vidal')
+            ->setContenido('Necesitan refuerzo en optimización de rutas antes de marzo.');
+        $docLogi = (new EmpresaDocumento())
+            ->setEmpresa($empresaLogi)
+            ->setNombre('Plan mentoring logística')
+            ->setTipo('Excel');
+
         $manager->persist($empresaLogi);
         $manager->persist($tutorAcademicoSara);
         $manager->persist($estudianteMarina);
         $manager->persist($convenioLogi);
         $manager->persist($asignacionMarina);
+        $manager->persist($etiquetaLogi);
+        $manager->persist($notaLogi);
+        $manager->persist($docLogi);
 
         $manager->flush();
     }

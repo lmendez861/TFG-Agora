@@ -26,9 +26,42 @@ final class AsignacionController extends AbstractController
     use JsonRequestTrait;
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(AsignacionPracticaRepository $repository): JsonResponse
+    public function index(Request $request, AsignacionPracticaRepository $repository): JsonResponse
     {
-        $asignaciones = $repository->findAll();
+        $qb = $repository->createQueryBuilder('a')
+            ->join('a.empresa', 'e')->addSelect('e')
+            ->join('a.estudiante', 'es')->addSelect('es');
+
+        if ($estado = $request->query->get('estado')) {
+            $qb->andWhere('a.estado = :estado')
+                ->setParameter('estado', $estado);
+        }
+
+        if ($modalidad = $request->query->get('modalidad')) {
+            $qb->andWhere('a.modalidad = :modalidad')
+                ->setParameter('modalidad', $modalidad);
+        }
+
+        if ($empresaId = $request->query->get('empresaId')) {
+            if (!ctype_digit((string) $empresaId)) {
+                return $this->json(['message' => 'El parámetro empresaId debe ser numérico.'], Response::HTTP_BAD_REQUEST);
+            }
+            $qb->andWhere('e.id = :empresa')->setParameter('empresa', (int) $empresaId);
+        }
+
+        if ($estudianteId = $request->query->get('estudianteId')) {
+            if (!ctype_digit((string) $estudianteId)) {
+                return $this->json(['message' => 'El parámetro estudianteId debe ser numérico.'], Response::HTTP_BAD_REQUEST);
+            }
+            $qb->andWhere('es.id = :estudiante')->setParameter('estudiante', (int) $estudianteId);
+        }
+
+        [$page, $perPage] = $this->resolvePagination($request);
+        $qb->orderBy('a.id', 'ASC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $asignaciones = $qb->getQuery()->getResult();
 
         $data = array_map(fn (AsignacionPractica $asignacion): array => $this->serializeSummary($asignacion), $asignaciones);
 
@@ -398,5 +431,22 @@ final class AsignacionController extends AbstractController
                 'conclusiones' => $evaluacion->getConclusiones(),
             ] : null,
         ];
+    }
+
+    /**
+     * @return array{0:int,1:int}
+     */
+    private function resolvePagination(Request $request): array
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = (int) $request->query->get('perPage', 50);
+        if ($perPage < 1) {
+            $perPage = 1;
+        }
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
+        return [$page, $perPage];
     }
 }

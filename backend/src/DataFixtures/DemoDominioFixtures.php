@@ -5,6 +5,10 @@ namespace App\DataFixtures;
 use App\Entity\AsignacionPractica;
 use App\Entity\ContactoEmpresa;
 use App\Entity\Convenio;
+use App\Entity\ConvenioAlerta;
+use App\Entity\ConvenioChecklistItem;
+use App\Entity\ConvenioDocumento;
+use App\Entity\ConvenioWorkflowEvento;
 use App\Entity\EmpresaColaboradora;
 use App\Entity\EmpresaDocumento;
 use App\Entity\EmpresaEtiqueta;
@@ -14,6 +18,7 @@ use App\Entity\EvaluacionFinal;
 use App\Entity\Seguimiento;
 use App\Entity\TutorAcademico;
 use App\Entity\TutorProfesional;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -21,6 +26,8 @@ class DemoDominioFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
+        $this->createAdminUser($manager);
+
         // Empresa 1 con contactos, tutores y convenio activo
         $empresaInnovar = (new EmpresaColaboradora())
             ->setNombre('Innovar Formación')
@@ -65,6 +72,55 @@ class DemoDominioFixtures extends Fixture
             ->setObservaciones('Incluye plan de mentoría mensual.')
             ->setEmpresa($empresaInnovar);
         $empresaInnovar->addConvenio($convenioInnovar);
+
+        $checklistInnovar = [
+            (new ConvenioChecklistItem())->setConvenio($convenioInnovar)->setLabel('Convenio firmado')->setCompleted(true),
+            (new ConvenioChecklistItem())->setConvenio($convenioInnovar)->setLabel('Seguro actualizado'),
+            (new ConvenioChecklistItem())->setConvenio($convenioInnovar)->setLabel('Plan de acogida aprobado'),
+        ];
+
+        foreach ($checklistInnovar as $item) {
+            $manager->persist($item);
+        }
+
+        $docActa = (new ConvenioDocumento())
+            ->setConvenio($convenioInnovar)
+            ->setNombre('Acta de firma')
+            ->setTipo('PDF')
+            ->setUrl('https://docs.example.com/acta-firma-innovar.pdf');
+        $docPlan = (new ConvenioDocumento())
+            ->setConvenio($convenioInnovar)
+            ->setNombre('Plan de mentoría')
+            ->setTipo('DOCX')
+            ->setUrl('https://docs.example.com/plan-mentoria.docx');
+
+        $manager->persist($docActa);
+        $manager->persist($docPlan);
+
+        $alertaInnovar = (new ConvenioAlerta())
+            ->setConvenio($convenioInnovar)
+            ->setMensaje('Recordatorio: renovar antes del 15 de febrero.')
+            ->setNivel('warning');
+        $manager->persist($alertaInnovar);
+
+        $workflowInnovar = [
+            (new ConvenioWorkflowEvento())
+                ->setConvenio($convenioInnovar)
+                ->setEstado('borrador')
+                ->setComentario('Propuesta registrada.'),
+            (new ConvenioWorkflowEvento())
+                ->setConvenio($convenioInnovar)
+                ->setEstado('firmado')
+                ->setComentario('Firmado por ambas partes.'),
+            (new ConvenioWorkflowEvento())
+                ->setConvenio($convenioInnovar)
+                ->setEstado('vigente')
+                ->setComentario('Estudiantes en curso.'),
+        ];
+
+        foreach ($workflowInnovar as $evento) {
+            $manager->persist($evento);
+        }
 
         $tutorAcademicoLaura = (new TutorAcademico())
             ->setNombre('Laura')
@@ -185,6 +241,34 @@ class DemoDominioFixtures extends Fixture
             ->setEmpresa($empresaSalud);
         $empresaSalud->addConvenio($convenioSalud);
 
+        $saludChecklist = [
+            (new ConvenioChecklistItem())->setConvenio($convenioSalud)->setLabel('Checklist Onboarding'),
+            (new ConvenioChecklistItem())->setConvenio($convenioSalud)->setLabel('Plan de seguridad laboral')->setCompleted(true),
+        ];
+        foreach ($saludChecklist as $item) {
+            $manager->persist($item);
+        }
+
+        $docSaludConvenio = (new ConvenioDocumento())
+            ->setConvenio($convenioSalud)
+            ->setNombre('Borrador convenio integraciones')
+            ->setTipo('DOCX');
+        $manager->persist($docSaludConvenio);
+
+        $alertaSalud = (new ConvenioAlerta())
+            ->setConvenio($convenioSalud)
+            ->setMensaje('Pendiente de firma por parte de tutor académico.')
+            ->setNivel('info');
+        $manager->persist($alertaSalud);
+
+        $workflowSalud = [
+            (new ConvenioWorkflowEvento())->setConvenio($convenioSalud)->setEstado('borrador'),
+            (new ConvenioWorkflowEvento())->setConvenio($convenioSalud)->setEstado('revisado'),
+        ];
+        foreach ($workflowSalud as $evento) {
+            $manager->persist($evento);
+        }
+
         $tutorAcademicoMiguel = (new TutorAcademico())
             ->setNombre('Miguel')
             ->setApellido('Garrido')
@@ -237,20 +321,20 @@ class DemoDominioFixtures extends Fixture
         $manager->persist($notaSalud);
         $manager->persist($docSalud);
 
-        // Empresa 3 orientada a log��stica inteligente con asignaci��n activa
+        // Empresa 3 orientada a logística inteligente con asignación activa
         $empresaLogi = (new EmpresaColaboradora())
             ->setNombre('LogiMovil Partners')
-            ->setSector('Log��stica inteligente')
-            ->setDireccion('Parque Tecnol��gico, 8')
+            ->setSector('Logística inteligente')
+            ->setDireccion('Parque Tecnológico, 8')
             ->setCiudad('Sevilla')
             ->setProvincia('Sevilla')
-            ->setPais('Espa��a')
+            ->setPais('España')
             ->setTelefono('950222111')
             ->setEmail('contacto@logimovil.es')
             ->setWeb('https://logimovil.es')
             ->setEstadoColaboracion('activa')
             ->setFechaAlta(new \DateTimeImmutable('2023-11-10'))
-            ->setObservaciones('Interesados en perfiles de optimizaci��n de rutas.');
+            ->setObservaciones('Interesados en perfiles de optimización de rutas.');
 
         $contactoLogi = (new ContactoEmpresa())
             ->setNombre('Patricia Vidal')
@@ -261,7 +345,7 @@ class DemoDominioFixtures extends Fixture
         $empresaLogi->addContacto($contactoLogi);
 
         $mentorLogi = (new TutorProfesional())
-            ->setNombre('Ra��l Montes')
+            ->setNombre('Raúl Montes')
             ->setEmail('raul.montes@logimovil.es')
             ->setTelefono('950222444')
             ->setCargo('Responsable de Operaciones')
@@ -270,14 +354,43 @@ class DemoDominioFixtures extends Fixture
         $empresaLogi->addTutorProfesional($mentorLogi);
 
         $convenioLogi = (new Convenio())
-            ->setTitulo('Plataforma de Log��stica Inteligente 2024')
-            ->setDescripcion('Integraci��n de algoritmos de optimizaci��n y dashboards log��sticos.')
+            ->setTitulo('Plataforma de Logística Inteligente 2024')
+            ->setDescripcion('Integración de algoritmos de optimización y dashboards logísticos.')
             ->setFechaInicio(new \DateTimeImmutable('2024-08-15'))
             ->setFechaFin(new \DateTimeImmutable('2025-01-31'))
-            ->setTipo('Pr��cticas curriculares')
+            ->setTipo('Prácticas curriculares')
             ->setEstado('vigente')
             ->setEmpresa($empresaLogi);
         $empresaLogi->addConvenio($convenioLogi);
+
+        $logiChecklist = [
+            (new ConvenioChecklistItem())->setConvenio($convenioLogi)->setLabel('Checklist logístico')->setCompleted(true),
+            (new ConvenioChecklistItem())->setConvenio($convenioLogi)->setLabel('Plan de riesgos operativos'),
+        ];
+        foreach ($logiChecklist as $item) {
+            $manager->persist($item);
+        }
+
+        $docLogiConvenio = (new ConvenioDocumento())
+            ->setConvenio($convenioLogi)
+            ->setNombre('Plan mentoring logística')
+            ->setTipo('Excel');
+        $manager->persist($docLogiConvenio);
+
+        $alertaLogi = (new ConvenioAlerta())
+            ->setConvenio($convenioLogi)
+            ->setMensaje('Enviar acta de seguimiento trimestral.')
+            ->setNivel('warning');
+        $manager->persist($alertaLogi);
+
+        $workflowLogi = [
+            (new ConvenioWorkflowEvento())->setConvenio($convenioLogi)->setEstado('borrador'),
+            (new ConvenioWorkflowEvento())->setConvenio($convenioLogi)->setEstado('firmado'),
+            (new ConvenioWorkflowEvento())->setConvenio($convenioLogi)->setEstado('vigente'),
+        ];
+        foreach ($workflowLogi as $evento) {
+            $manager->persist($evento);
+        }
 
         $tutorAcademicoSara = (new TutorAcademico())
             ->setNombre('Sara')
@@ -285,7 +398,7 @@ class DemoDominioFixtures extends Fixture
             ->setEmail('sara.nieto@universidad.es')
             ->setTelefono('954000111')
             ->setDepartamento('Industrial')
-            ->setEspecialidad('Optimizaci��n y simulaci��n')
+            ->setEspecialidad('Optimización y simulación')
             ->setActivo(true);
 
         $estudianteMarina = (new Estudiante())
@@ -294,8 +407,8 @@ class DemoDominioFixtures extends Fixture
             ->setDni('44556677C')
             ->setEmail('marina.vega@alumnos.es')
             ->setTelefono('600555666')
-            ->setGrado('Ingenier��a Industrial')
-            ->setCurso('5��')
+            ->setGrado('Ingeniería Industrial')
+            ->setCurso('5º')
             ->setExpediente('IND-2020-002')
             ->setEstado('en_practicas');
 
@@ -333,5 +446,27 @@ class DemoDominioFixtures extends Fixture
         $manager->persist($docLogi);
 
         $manager->flush();
+    }
+
+    private function createAdminUser(ObjectManager $manager): void
+    {
+        $user = (new User())
+            ->setUsername('admin')
+            ->setFullName('Administrador TFG')
+            ->setRoles(['ROLE_ADMIN', 'ROLE_API'])
+            ->setPassword($this->hashPassword('admin123'));
+
+        $manager->persist($user);
+        $manager->flush();
+    }
+
+    private function hashPassword(string $plain): string
+    {
+        $hash = password_hash($plain, PASSWORD_BCRYPT, ['cost' => 12]);
+        if ($hash === false) {
+            throw new \RuntimeException('No se pudo generar el hash de la contraseña para las fixtures.');
+        }
+
+        return $hash;
     }
 }

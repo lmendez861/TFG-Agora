@@ -73,6 +73,13 @@ final class EstudianteControllerTest extends WebTestCase
         }
     }
 
+    public function testListadoRechazaEstadoNoValido(): void
+    {
+        $this->client->request('GET', '/api/estudiantes?estado=sin_estado');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testDetalleIncluyeAsignacionesDelEstudiante(): void
     {
         $estudiante = $this->entityManager

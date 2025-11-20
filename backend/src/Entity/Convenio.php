@@ -50,10 +50,27 @@ class Convenio
     #[ORM\OneToMany(mappedBy: 'convenio', targetEntity: AsignacionPractica::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $asignaciones;
 
+    #[ORM\OneToMany(mappedBy: 'convenio', targetEntity: ConvenioChecklistItem::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $checklistItems;
+
+    #[ORM\OneToMany(mappedBy: 'convenio', targetEntity: ConvenioDocumento::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $documentos;
+
+    #[ORM\OneToMany(mappedBy: 'convenio', targetEntity: ConvenioAlerta::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $alertas;
+
+    #[ORM\OneToMany(mappedBy: 'convenio', targetEntity: ConvenioWorkflowEvento::class, cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['registradoEn' => 'ASC'])]
+    private Collection $workflowEventos;
+
     public function __construct()
     {
         $this->fechaInicio = new \DateTimeImmutable();
         $this->asignaciones = new ArrayCollection();
+        $this->checklistItems = new ArrayCollection();
+        $this->documentos = new ArrayCollection();
+        $this->alertas = new ArrayCollection();
+        $this->workflowEventos = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -192,6 +209,122 @@ class Convenio
         if ($this->asignaciones->removeElement($asignacion)) {
             if ($asignacion->getConvenio() === $this) {
                 $asignacion->setConvenio(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConvenioChecklistItem>
+     */
+    public function getChecklistItems(): Collection
+    {
+        return $this->checklistItems;
+    }
+
+    public function addChecklistItem(ConvenioChecklistItem $item): self
+    {
+        if (!$this->checklistItems->contains($item)) {
+            $this->checklistItems->add($item);
+            $item->setConvenio($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChecklistItem(ConvenioChecklistItem $item): self
+    {
+        if ($this->checklistItems->removeElement($item)) {
+            if ($item->getConvenio() === $this) {
+                $item->setConvenio(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConvenioDocumento>
+     */
+    public function getDocumentos(): Collection
+    {
+        return $this->documentos;
+    }
+
+    public function addDocumento(ConvenioDocumento $documento): self
+    {
+        if (!$this->documentos->contains($documento)) {
+            $this->documentos->add($documento);
+            $documento->setConvenio($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDocumento(ConvenioDocumento $documento): self
+    {
+        if ($this->documentos->removeElement($documento)) {
+            if ($documento->getConvenio() === $this) {
+                $documento->setConvenio(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConvenioAlerta>
+     */
+    public function getAlertas(): Collection
+    {
+        return $this->alertas;
+    }
+
+    public function addAlerta(ConvenioAlerta $alerta): self
+    {
+        if (!$this->alertas->contains($alerta)) {
+            $this->alertas->add($alerta);
+            $alerta->setConvenio($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAlerta(ConvenioAlerta $alerta): self
+    {
+        if ($this->alertas->removeElement($alerta)) {
+            if ($alerta->getConvenio() === $this) {
+                $alerta->setConvenio(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ConvenioWorkflowEvento>
+     */
+    public function getWorkflowEventos(): Collection
+    {
+        return $this->workflowEventos;
+    }
+
+    public function addWorkflowEvento(ConvenioWorkflowEvento $evento): self
+    {
+        if (!$this->workflowEventos->contains($evento)) {
+            $this->workflowEventos->add($evento);
+            $evento->setConvenio($this);
+        }
+
+        return $this;
+    }
+
+    public function removeWorkflowEvento(ConvenioWorkflowEvento $evento): self
+    {
+        if ($this->workflowEventos->removeElement($evento)) {
+            if ($evento->getConvenio() === $this) {
+                $evento->setConvenio(null);
             }
         }
 

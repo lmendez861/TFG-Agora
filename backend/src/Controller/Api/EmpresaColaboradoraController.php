@@ -25,12 +25,26 @@ final class EmpresaColaboradoraController extends AbstractController
 {
     use JsonRequestTrait;
 
+    private const ESTADOS_COLABORACION = [
+        'activa',
+        'en_negociacion',
+        'pendiente_revision',
+        'pausada',
+        'baja',
+        'suspendida',
+    ];
+
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, EmpresaColaboradoraRepository $repository): JsonResponse
     {
         $qb = $repository->createQueryBuilder('e');
 
         if ($estado = $request->query->get('estado')) {
+            if (!\in_array($estado, self::ESTADOS_COLABORACION, true)) {
+                return $this->json([
+                    'message' => 'El estado de colaboración indicado no es válido.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
             $qb->andWhere('e.estadoColaboracion = :estado')
                 ->setParameter('estado', $estado);
         }
@@ -80,7 +94,7 @@ final class EmpresaColaboradoraController extends AbstractController
                 'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
                 'email' => new Assert\Optional([new Assert\Email(), new Assert\Length(max: 150)]),
                 'web' => new Assert\Optional([new Assert\Length(max: 150)]),
-                'estadoColaboracion' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estadoColaboracion' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_COLABORACION)]),
                 'fechaAlta' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'observaciones' => new Assert\Optional(),
             ],
@@ -177,7 +191,7 @@ final class EmpresaColaboradoraController extends AbstractController
                 'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
                 'email' => new Assert\Optional([new Assert\Email(), new Assert\Length(max: 150)]),
                 'web' => new Assert\Optional([new Assert\Length(max: 150)]),
-                'estadoColaboracion' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estadoColaboracion' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_COLABORACION)]),
                 'fechaAlta' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'observaciones' => new Assert\Optional(),
             ],

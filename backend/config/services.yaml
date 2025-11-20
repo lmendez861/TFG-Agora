@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.mail_from: '%env(string:APP_MAIL_FROM)%'
 
 services:
     # default configuration for services in *this* file
@@ -15,6 +16,10 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+
+    App\Controller\RegistroEmpresaController:
+        arguments:
+            $fromAddress: '%app.mail_from%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

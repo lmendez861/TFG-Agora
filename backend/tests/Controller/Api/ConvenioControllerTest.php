@@ -3,6 +3,8 @@
 namespace App\Tests\Controller\Api;
 
 use App\Entity\Convenio;
+use App\Entity\ConvenioAlerta;
+use App\Entity\ConvenioChecklistItem;
 use App\Entity\EmpresaColaboradora;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
@@ -115,6 +117,127 @@ final class ConvenioControllerTest extends WebTestCase
 
         self::assertNotNull($convenio);
         self::assertSame('vigente', $convenio->getEstado());
+    }
+
+    public function testCrearConvenioRechazaFechaFinAnterior(): void
+    {
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['email' => 'contacto@innovar.es']);
+
+        self::assertNotNull($empresa);
+
+        $this->client->request(
+            'POST',
+            '/api/convenios',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'empresaId' => $empresa->getId(),
+                'titulo' => 'Convenio QA negativo',
+                'tipo' => 'curricular',
+                'estado' => 'vigente',
+                'fechaInicio' => '2025-02-01',
+                'fechaFin' => '2024-01-01',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testExtrasIncluyeChecklistDocumentosYAlertas(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $this->client->request('GET', '/api/convenios/' . $convenio->getId() . '/extras');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertArrayHasKey('workflow', $payload);
+        self::assertArrayHasKey('checklist', $payload);
+        self::assertArrayHasKey('documents', $payload);
+        self::assertArrayHasKey('alerts', $payload);
+        self::assertNotEmpty($payload['checklist']);
+        self::assertNotEmpty($payload['documents']);
+        self::assertNotEmpty($payload['alerts']);
+    }
+
+    public function testAdvanceWorkflowActualizaEstado(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+        $estadoInicial = $convenio->getEstado();
+
+        $this->client->request('POST', '/api/convenios/' . $convenio->getId() . '/workflow/advance');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertArrayHasKey('estado', $payload);
+        self::assertNotSame($estadoInicial, $payload['estado']);
+
+        $this->entityManager->refresh($convenio);
+        self::assertSame($payload['estado'], $convenio->getEstado());
+    }
+
+    public function testToggleChecklistPermiteActualizar(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $item = $this->entityManager
+            ->getRepository(ConvenioChecklistItem::class)
+            ->findOneBy(['convenio' => $convenio]);
+
+        self::assertNotNull($item);
+        $estadoInicial = $item->isCompleted();
+
+        $this->client->request('PATCH', sprintf('/api/convenios/%d/checklist/%d', $convenio->getId(), $item->getId()));
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame(!$estadoInicial, $payload['completed']);
+
+        $this->entityManager->refresh($item);
+        self::assertSame(!$estadoInicial, $item->isCompleted());
+    }
+
+    public function testDismissAlertaMarcaComoInactiva(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $alerta = $this->entityManager
+            ->getRepository(ConvenioAlerta::class)
+            ->findOneBy(['convenio' => $convenio, 'activa' => true]);
+
+        self::assertNotNull($alerta);
+
+        $this->client->request(
+            'PATCH',
+            sprintf('/api/convenios/%d/alerts/%d', $convenio->getId(), $alerta->getId())
+        );
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertFalse($payload['active']);
+
+        $this->entityManager->refresh($alerta);
+        self::assertFalse($alerta->isActiva());
     }
 
     public function testActualizarConvenioPermiteCambiarEstado(): void

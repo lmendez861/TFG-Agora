@@ -25,6 +25,20 @@ final class AsignacionController extends AbstractController
 {
     use JsonRequestTrait;
 
+    private const ESTADOS_PERMITIDOS = [
+        'planificada',
+        'en_curso',
+        'finalizada',
+        'cancelada',
+        'en_revision',
+    ];
+
+    private const MODALIDADES_PERMITIDAS = [
+        'presencial',
+        'remota',
+        'hibrida',
+    ];
+
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, AsignacionPracticaRepository $repository): JsonResponse
     {
@@ -33,11 +47,21 @@ final class AsignacionController extends AbstractController
             ->join('a.estudiante', 'es')->addSelect('es');
 
         if ($estado = $request->query->get('estado')) {
+            if (!\in_array($estado, self::ESTADOS_PERMITIDOS, true)) {
+                return $this->json([
+                    'message' => 'El estado indicado no es válido para las asignaciones.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
             $qb->andWhere('a.estado = :estado')
                 ->setParameter('estado', $estado);
         }
 
         if ($modalidad = $request->query->get('modalidad')) {
+            if (!\in_array($modalidad, self::MODALIDADES_PERMITIDAS, true)) {
+                return $this->json([
+                    'message' => 'La modalidad indicada no está soportada.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
             $qb->andWhere('a.modalidad = :modalidad')
                 ->setParameter('modalidad', $modalidad);
         }
@@ -93,9 +117,9 @@ final class AsignacionController extends AbstractController
                 'tutorProfesionalId' => new Assert\Optional(),
                 'fechaInicio' => [new Assert\NotBlank(), new Assert\Length(min: 10, max: 10)],
                 'fechaFin' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
-                'modalidad' => [new Assert\NotBlank(), new Assert\Length(max: 20)],
+                'modalidad' => [new Assert\NotBlank(), new Assert\Choice(choices: self::MODALIDADES_PERMITIDAS)],
                 'horasTotales' => new Assert\Optional([new Assert\Type('integer'), new Assert\PositiveOrZero()]),
-                'estado' => [new Assert\NotBlank(), new Assert\Length(max: 20)],
+                'estado' => [new Assert\NotBlank(), new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)],
             ],
             allowExtraFields: true
         );
@@ -182,6 +206,11 @@ final class AsignacionController extends AbstractController
                 if ($fechaFin instanceof JsonResponse) {
                     return $fechaFin;
                 }
+                if ($fechaFin < $fechaInicio) {
+                    return $this->json([
+                        'message' => 'La fecha de fin no puede ser anterior a la fecha de inicio de la asignación.',
+                    ], Response::HTTP_BAD_REQUEST);
+                }
                 $asignacion->setFechaFin($fechaFin);
             }
         }
@@ -236,9 +265,9 @@ final class AsignacionController extends AbstractController
                 'tutorProfesionalId' => new Assert\Optional(),
                 'fechaInicio' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'fechaFin' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
-                'modalidad' => new Assert\Optional([new Assert\Length(max: 20)]),
+                'modalidad' => new Assert\Optional([new Assert\Choice(choices: self::MODALIDADES_PERMITIDAS)]),
                 'horasTotales' => new Assert\Optional([new Assert\Type('integer'), new Assert\PositiveOrZero()]),
-                'estado' => new Assert\Optional([new Assert\Length(max: 20)]),
+                'estado' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)]),
             ],
             allowMissingFields: true,
             allowExtraFields: true
@@ -256,6 +285,8 @@ final class AsignacionController extends AbstractController
                 ], Response::HTTP_BAD_REQUEST);
             }
         }
+
+        $fechaInicioActual = $asignacion->getFechaInicio();
 
         $empresa = $asignacion->getEmpresa();
         if (array_key_exists('empresaId', $payload)) {
@@ -322,6 +353,7 @@ final class AsignacionController extends AbstractController
                 return $fechaInicio;
             }
             $asignacion->setFechaInicio($fechaInicio);
+            $fechaInicioActual = $fechaInicio;
         }
 
         if (array_key_exists('fechaFin', $payload)) {
@@ -331,6 +363,11 @@ final class AsignacionController extends AbstractController
                 $fechaFin = $this->parseDate($payload['fechaFin'], 'fechaFin');
                 if ($fechaFin instanceof JsonResponse) {
                     return $fechaFin;
+                }
+                if ($fechaFin < $fechaInicioActual) {
+                    return $this->json([
+                        'message' => 'La fecha de fin no puede ser anterior a la fecha de inicio de la asignación.',
+                    ], Response::HTTP_BAD_REQUEST);
                 }
                 $asignacion->setFechaFin($fechaFin);
             }

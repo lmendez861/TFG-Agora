@@ -8,11 +8,13 @@ import { AsignacionForm, type AsignacionFormValues } from './components/Asignaci
 import { Modal } from './components/Modal';
 import { ToastStack, type ToastMessage } from './components/ToastStack';
 import {
+  approveEmpresaSolicitud,
   createAsignacion,
   createConvenio,
   createEmpresa,
   createEstudiante,
   fetchCollections,
+  fetchEmpresaSolicitudes,
   fetchTutorAcademicos,
   fetchTutorProfesionales,
   getApiBaseUrl,
@@ -22,6 +24,7 @@ import {
   getEstudianteDetail,
   updateAsignacion,
   updateConvenio,
+  rejectEmpresaSolicitud,
   updateEmpresa,
   updateEstudiante,
 } from './services/api';
@@ -36,6 +39,7 @@ import type {
   EmpresaDetail,
   EmpresaPayload,
   EmpresaSummary,
+  EmpresaSolicitudSummary,
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
@@ -256,6 +260,13 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
   ],
 };
 
+const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string> = {
+  pendiente: 'Pendiente',
+  email_verificado: 'Correo verificado',
+  aprobada: 'Aprobada',
+  rechazada: 'Rechazada',
+};
+
 function formatDate(value: string | null): string {
   if (!value) {
     return 'â€”';
@@ -458,15 +469,18 @@ function cloneEmpresaForm(values: EmpresaFormValues): EmpresaFormValues {
   return { ...values };
 }
 
-interface CompanyRegistrationFormValues extends EmpresaFormValues {
-  password: string;
-  confirmPassword: string;
+interface StaffRegistrationFormValues {
+  nombre: string;
+  email: string;
+  departamento: string;
+  comentarios: string;
 }
 
-const EMPTY_REGISTRATION_VALUES: CompanyRegistrationFormValues = {
-  ...EMPTY_EMPRESA_VALUES,
-  password: '',
-  confirmPassword: '',
+const EMPTY_STAFF_REGISTRATION_VALUES: StaffRegistrationFormValues = {
+  nombre: '',
+  email: '',
+  departamento: '',
+  comentarios: '',
 };
 
 function mapEmpresaDetailToForm(detail: EmpresaDetail): EmpresaFormValues {
@@ -775,7 +789,7 @@ type ConvenioAlert = {
 
 const CONVENIO_STEP_FLOW = ['borrador', 'revisado', 'firmado', 'vigente', 'renovacion', 'finalizado'];
 
-interface CompanyRegistrationPageProps {
+interface StaffRegistrationPageProps {
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }
@@ -876,8 +890,8 @@ function LoginPage() {
   );
 }
 
-function CompanyRegistrationPage({ onSuccess, onError }: CompanyRegistrationPageProps) {
-  const [values, setValues] = useState<CompanyRegistrationFormValues>({ ...EMPTY_REGISTRATION_VALUES });
+function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProps) {
+  const [values, setValues] = useState<StaffRegistrationFormValues>({ ...EMPTY_STAFF_REGISTRATION_VALUES });
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
@@ -891,24 +905,14 @@ function CompanyRegistrationPage({ onSuccess, onError }: CompanyRegistrationPage
     setSubmitting(true);
     setStatusMessage(null);
 
-    if (values.password !== values.confirmPassword) {
-      setStatusMessage('Las contraseÃ±as no coinciden.');
-      setSubmitting(false);
-      return;
-    }
-
     try {
-      const payload = buildEmpresaPayload(values);
-      const observacionesExtra = `Registro web - email pendiente de verificaciÃ³n.\nContacto: ${values.email}`;
-      payload.observaciones = payload.observaciones
-        ? `${payload.observaciones}\n${observacionesExtra}`
-        : observacionesExtra;
-      await createEmpresa(payload);
-      setStatusMessage('Registro completado. Revisa tu correo para verificar la cuenta.');
-      onSuccess('Empresa registrada correctamente. Revisa tu email.');
-      setValues({ ...EMPTY_REGISTRATION_VALUES });
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const message = 'Solicitud registrada. El equipo de TI validará la información y activará tu usuario.';
+      setStatusMessage(message);
+      onSuccess(message);
+      setValues({ ...EMPTY_STAFF_REGISTRATION_VALUES });
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo registrar la empresa.';
+      const message = err instanceof Error ? err.message : 'No se pudo enviar la solicitud.';
       setStatusMessage(message);
       onError(message);
     } finally {
@@ -919,56 +923,40 @@ function CompanyRegistrationPage({ onSuccess, onError }: CompanyRegistrationPage
   return (
     <section className="auth-section">
       <div className="auth-card">
-        <p className="auth-card__eyebrow">Unirse al ecosistema</p>
-        <h2>Registro de empresa colaboradora</h2>
+        <p className="auth-card__eyebrow">Acceso restringido</p>
+        <h2>Solicitar cuenta interna</h2>
         <p className="auth-card__description">
-          Completa el formulario para solicitar acceso. Tras verificar el correo, podremos activar tu cuenta.
+          Este formulario está pensado para el personal del centro educativo. Tras revisar tus datos, activaremos tu acceso al panel.
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
-            <span>Nombre de la empresa*</span>
+            <span>Nombre completo*</span>
             <input name="nombre" value={values.nombre} onChange={handleChange} required />
           </label>
           <label className="form__field">
-            <span>Email de contacto*</span>
+            <span>Email institucional*</span>
             <input name="email" type="email" value={values.email} onChange={handleChange} required />
           </label>
           <label className="form__field">
-            <span>TelÃ©fono</span>
-            <input name="telefono" value={values.telefono} onChange={handleChange} />
+            <span>Departamento</span>
+            <input name="departamento" value={values.departamento} onChange={handleChange} />
           </label>
           <label className="form__field">
-            <span>Ciudad</span>
-            <input name="ciudad" value={values.ciudad} onChange={handleChange} />
-          </label>
-          <label className="form__field">
-            <span>Sector</span>
-            <input name="sector" value={values.sector} onChange={handleChange} />
-          </label>
-          <label className="form__field">
-            <span>Observaciones</span>
-            <textarea name="observaciones" rows={3} value={values.observaciones} onChange={handleChange} />
-          </label>
-          <label className="form__field">
-            <span>ContraseÃ±a*</span>
-            <input name="password" type="password" value={values.password} onChange={handleChange} required />
-          </label>
-          <label className="form__field">
-            <span>Confirmar contraseÃ±a*</span>
-            <input
-              name="confirmPassword"
-              type="password"
-              value={values.confirmPassword}
+            <span>Comentarios adicionales</span>
+            <textarea
+              name="comentarios"
+              rows={3}
+              placeholder="Indica si gestionarás empresas, convenios, etc."
+              value={values.comentarios}
               onChange={handleChange}
-              required
             />
           </label>
-          {statusMessage && <p className="form__error">{statusMessage}</p>}
+          {statusMessage && <p className="form__success">{statusMessage}</p>}
           <button type="submit" className="button button--primary button--lg" disabled={submitting}>
-            {submitting ? 'Registrandoâ€¦' : 'Enviar solicitud'}
+            {submitting ? 'Enviando…' : 'Enviar solicitud'}
           </button>
           <p className="auth-card__hint">
-            Tras el registro, enviaremos un correo de verificaciÃ³n. Una vez aprobado, podrÃ¡s iniciar sesiÃ³n desde el backend.
+            Si representas a una empresa colaboradora, utiliza el portal específico de registros externos.
           </p>
         </form>
       </div>
@@ -1015,6 +1003,9 @@ export default function App() {
   const [convenioDocuments, setConvenioDocuments] = useState<Record<number, ConvenioDocumentRecord[]>>({});
   const [convenioAlerts, setConvenioAlerts] = useState<Record<number, ConvenioAlert[]>>({});
   const [convenioWorkflowState, setConvenioWorkflowState] = useState<Record<number, string>>({});
+  const [empresaSolicitudes, setEmpresaSolicitudes] = useState<EmpresaSolicitudSummary[]>([]);
+  const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
+  const [processingSolicitudId, setProcessingSolicitudId] = useState<number | null>(null);
 
   const openCreateStudent = useCallback(() => {
     setStudentFormError(null);
@@ -1148,6 +1139,25 @@ export default function App() {
     });
   }, []);
 
+  const refreshSolicitudes = useCallback(
+    async (options?: { silent?: boolean }) => {
+      setLoadingSolicitudes(true);
+      try {
+        const data = await fetchEmpresaSolicitudes();
+        setEmpresaSolicitudes(data.filter((solicitud) => solicitud.estado !== 'aprobada'));
+      } catch (err) {
+        if (!options?.silent) {
+          const message =
+            err instanceof Error ? err.message : 'No se pudieron cargar las solicitudes de empresas.';
+          pushToast('error', message);
+        }
+      } finally {
+        setLoadingSolicitudes(false);
+      }
+    },
+    [pushToast],
+  );
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -1175,7 +1185,8 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, []);
+    await refreshSolicitudes({ silent: true });
+  }, [refreshSolicitudes]);
 
   useEffect(() => {
     loadData().catch(() => {
@@ -1193,6 +1204,52 @@ export default function App() {
       }
     }
   }, [collections, selectedEmpresaId, selectedConvenioId]);
+
+  const handleRefreshSolicitudes = useCallback(() => {
+    refreshSolicitudes().catch(() => {
+      // errores gestionados dentro
+    });
+  }, [refreshSolicitudes]);
+
+  const handleApproveSolicitud = useCallback(
+    async (solicitudId: number) => {
+      setProcessingSolicitudId(solicitudId);
+      try {
+        await approveEmpresaSolicitud(solicitudId);
+        pushToast('success', 'Solicitud aprobada y empresa creada.');
+        await refreshSolicitudes({ silent: true });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'No se pudo aprobar la solicitud seleccionada.';
+        pushToast('error', message);
+      } finally {
+        setProcessingSolicitudId(null);
+      }
+    },
+    [pushToast, refreshSolicitudes],
+  );
+
+  const handleRejectSolicitud = useCallback(
+    async (solicitudId: number) => {
+      const motivo = window.prompt('¿Cuál es el motivo del rechazo?');
+      if (!motivo || !motivo.trim()) {
+        return;
+      }
+      setProcessingSolicitudId(solicitudId);
+      try {
+        await rejectEmpresaSolicitud(solicitudId, motivo.trim());
+        pushToast('success', 'Solicitud rechazada.');
+        await refreshSolicitudes({ silent: true });
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : 'No se pudo rechazar la solicitud seleccionada.';
+        pushToast('error', message);
+      } finally {
+        setProcessingSolicitudId(null);
+      }
+    },
+    [pushToast, refreshSolicitudes],
+  );
 
 
 
@@ -3918,6 +3975,87 @@ const selectedConvenio = useMemo(() => {
         <div className="hero__scribble hero__scribble--violet" />
       </section>
 
+      <section className="solicitudes-panel">
+        <header className="solicitudes-panel__header">
+          <div>
+            <p className="solicitudes-panel__eyebrow">Empresas interesadas</p>
+            <h2>Solicitudes de registro</h2>
+          </div>
+          <div className="solicitudes-panel__actions">
+            <span className="chip chip--ghost">{empresaSolicitudes.length} pendientes</span>
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              onClick={handleRefreshSolicitudes}
+              disabled={loadingSolicitudes}
+            >
+              {loadingSolicitudes ? 'Actualizando…' : 'Actualizar'}
+            </button>
+          </div>
+        </header>
+        {loadingSolicitudes ? (
+          <p className="detail-placeholder">Cargando solicitudes…</p>
+        ) : empresaSolicitudes.length === 0 ? (
+          <p className="detail-placeholder">
+            No hay solicitudes pendientes. Comparte el formulario público para invitar nuevas empresas.
+          </p>
+        ) : (
+          <div className="solicitudes-panel__list">
+            {empresaSolicitudes.map((solicitud) => {
+              const canApprove = solicitud.estado === 'email_verificado';
+              const isProcessing = processingSolicitudId === solicitud.id;
+              const estadoLabel = SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado;
+
+              return (
+                <article key={solicitud.id} className="solicitud-card">
+                  <div className="solicitud-card__header">
+                    <div>
+                      <h3>{solicitud.nombreEmpresa}</h3>
+                      <p className="solicitud-card__meta">
+                        <span className={`badge badge--${solicitud.estado}`}>{estadoLabel}</span>
+                        <span>Registrada: {formatDate(solicitud.creadaEn)}</span>
+                      </p>
+                    </div>
+                    {solicitud.web && (
+                      <a href={solicitud.web} target="_blank" rel="noreferrer" className="link link--muted">
+                        Web
+                      </a>
+                    )}
+                  </div>
+                  <p className="solicitud-card__description">
+                    {solicitud.sector ?? 'Sector no indicado'} · {solicitud.ciudad ?? 'Ciudad no indicada'}
+                  </p>
+                  <div className="solicitud-card__contact">
+                    <strong>{solicitud.contacto.nombre}</strong>
+                    <span>{solicitud.contacto.email}</span>
+                    {solicitud.contacto.telefono && <span>{solicitud.contacto.telefono}</span>}
+                  </div>
+                  <div className="solicitud-card__actions">
+                    <button
+                      type="button"
+                      className="button button--primary button--sm"
+                      onClick={() => handleApproveSolicitud(solicitud.id)}
+                      disabled={!canApprove || isProcessing}
+                      title={!canApprove ? 'La empresa debe verificar su correo antes de aprobar.' : undefined}
+                    >
+                      {isProcessing ? 'Procesando…' : 'Aprobar'}
+                    </button>
+                    <button
+                      type="button"
+                      className="button button--ghost button--sm"
+                      onClick={() => handleRejectSolicitud(solicitud.id)}
+                      disabled={isProcessing}
+                    >
+                      Rechazar
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
       <section className="modules-grid">
       {moduleCards.map((module) => (
         <article key={module.id} className={`module-card module-card--${module.accent}`}>
@@ -4185,7 +4323,7 @@ const selectedConvenio = useMemo(() => {
         <Route
           path="/registro"
           element={(
-            <CompanyRegistrationPage
+            <StaffRegistrationPage
               onSuccess={(msg) => pushToast('success', msg)}
               onError={(msg) => pushToast('error', msg)}
             />
@@ -4260,6 +4398,9 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
+
+
+
 
 
 

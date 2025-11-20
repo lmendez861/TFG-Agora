@@ -48,6 +48,13 @@ final class EmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('conveniosActivos', $payload[0]);
     }
 
+    public function testListadoRechazaEstadoDesconocido(): void
+    {
+        $this->client->request('GET', '/api/empresas?estado=fuera_catalogo');
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testListadoPermiteFiltrarYPaginar(): void
     {
         $this->client->request('GET', '/api/empresas?estado=activa');

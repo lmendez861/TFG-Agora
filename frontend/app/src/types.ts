@@ -122,6 +122,10 @@ export interface ConvenioDetail {
     id: number;
     nombre: string;
   };
+  workflow: ConvenioWorkflow;
+  checklist: ConvenioChecklistItemDetail[];
+  documents: ConvenioDocumentRecord[];
+  alerts: ConvenioAlert[];
 }
 
 export interface ConvenioPayload {
@@ -134,6 +138,49 @@ export interface ConvenioPayload {
   fechaFin?: string | null;
   documentoUrl?: string;
   observaciones?: string;
+}
+
+export interface ConvenioWorkflowEvent {
+  id: number;
+  estado: string;
+  comentario: string | null;
+  registradoEn: string;
+}
+
+export interface ConvenioWorkflow {
+  current: string;
+  steps: string[];
+  history: ConvenioWorkflowEvent[];
+}
+
+export interface ConvenioChecklistItemDetail {
+  id: number;
+  label: string;
+  completed: boolean;
+  createdAt: string;
+}
+
+export interface ConvenioDocumentRecord {
+  id: number;
+  name: string;
+  type: string | null;
+  url: string | null;
+  uploadedAt: string;
+}
+
+export interface ConvenioAlert {
+  id: number;
+  message: string;
+  level: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface ConvenioExtras {
+  workflow: ConvenioWorkflow;
+  checklist: ConvenioChecklistItemDetail[];
+  documents: ConvenioDocumentRecord[];
+  alerts: ConvenioAlert[];
 }
 
 export interface AsignacionSummary {
@@ -230,4 +277,25 @@ export interface ApiCollections {
   estudiantes: EstudianteSummary[];
   convenios: ConvenioSummary[];
   asignaciones: AsignacionSummary[];
+}
+
+export type EmpresaSolicitudEstado = 'pendiente' | 'email_verificado' | 'aprobada' | 'rechazada';
+
+export interface EmpresaSolicitudSummary {
+  id: number;
+  nombreEmpresa: string;
+  cif: string | null;
+  sector: string | null;
+  ciudad: string | null;
+  web: string | null;
+  contacto: {
+    nombre: string;
+    email: string;
+    telefono: string | null;
+  };
+  estado: EmpresaSolicitudEstado;
+  creadaEn: string;
+  emailVerificadoEn: string | null;
+  aprobadoEn: string | null;
+  motivoRechazo: string | null;
 }

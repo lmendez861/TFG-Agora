@@ -20,12 +20,25 @@ final class EstudianteController extends AbstractController
 {
     use JsonRequestTrait;
 
+    private const ESTADOS_PERMITIDOS = [
+        'disponible',
+        'en_practicas',
+        'finalizado',
+        'baja',
+        'bloqueado',
+    ];
+
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, EstudianteRepository $repository): JsonResponse
     {
         $qb = $repository->createQueryBuilder('e');
 
         if ($estado = $request->query->get('estado')) {
+            if (!\in_array($estado, self::ESTADOS_PERMITIDOS, true)) {
+                return $this->json([
+                    'message' => 'El estado indicado no existe en el catálogo permitido.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
             $qb->andWhere('e.estado = :estado')
                 ->setParameter('estado', $estado);
         }
@@ -64,13 +77,17 @@ final class EstudianteController extends AbstractController
             fields: [
                 'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 120)],
                 'apellido' => [new Assert\NotBlank(), new Assert\Length(max: 120)],
-                'dni' => [new Assert\NotBlank(), new Assert\Length(max: 16)],
+                'dni' => [
+                    new Assert\NotBlank(),
+                    new Assert\Length(max: 16),
+                    new Assert\Regex(pattern: '/^[0-9]{7,8}[A-Za-z]$/'),
+                ],
                 'email' => [new Assert\NotBlank(), new Assert\Email(), new Assert\Length(max: 150)],
                 'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
                 'grado' => new Assert\Optional([new Assert\Length(max: 120)]),
                 'curso' => new Assert\Optional([new Assert\Length(max: 30)]),
                 'expediente' => new Assert\Optional([new Assert\Length(max: 30)]),
-                'estado' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estado' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)]),
             ],
             allowExtraFields: true
         );
@@ -152,13 +169,17 @@ final class EstudianteController extends AbstractController
             fields: [
                 'nombre' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 120)]),
                 'apellido' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 120)]),
-                'dni' => new Assert\Optional([new Assert\NotBlank(), new Assert\Length(max: 16)]),
+                'dni' => new Assert\Optional([
+                    new Assert\NotBlank(),
+                    new Assert\Length(max: 16),
+                    new Assert\Regex(pattern: '/^[0-9]{7,8}[A-Za-z]$/'),
+                ]),
                 'email' => new Assert\Optional([new Assert\NotBlank(), new Assert\Email(), new Assert\Length(max: 150)]),
                 'telefono' => new Assert\Optional([new Assert\Length(max: 50)]),
                 'grado' => new Assert\Optional([new Assert\Length(max: 120)]),
                 'curso' => new Assert\Optional([new Assert\Length(max: 30)]),
                 'expediente' => new Assert\Optional([new Assert\Length(max: 30)]),
-                'estado' => new Assert\Optional([new Assert\Length(max: 30)]),
+                'estado' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)]),
             ],
             allowMissingFields: true,
             allowExtraFields: true

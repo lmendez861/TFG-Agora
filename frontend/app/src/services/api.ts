@@ -3,15 +3,21 @@ import type {
   AsignacionDetail,
   AsignacionPayload,
   AsignacionSummary,
+  ConvenioAlert,
+  ConvenioChecklistItemDetail,
   ConvenioDetail,
+  ConvenioDocumentRecord,
+  ConvenioExtras,
   ConvenioPayload,
   ConvenioSummary,
+  ConvenioWorkflow,
   EmpresaDetail,
   EmpresaPayload,
   EmpresaSummary,
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
+  EmpresaSolicitudSummary,
   TutorAcademicoSummary,
   TutorProfesionalSummary,
 } from '../types';
@@ -134,12 +140,59 @@ export async function getConvenioDetail(id: number): Promise<ConvenioDetail> {
   return apiGet<ConvenioDetail>(`/convenios/${id}`);
 }
 
+export async function getConvenioExtras(id: number): Promise<ConvenioExtras> {
+  return apiGet<ConvenioExtras>(`/convenios/${id}/extras`);
+}
+
 export async function createConvenio(payload: ConvenioPayload): Promise<ConvenioDetail> {
   return apiPost<ConvenioDetail>('/convenios', payload);
 }
 
 export async function updateConvenio(id: number, payload: Partial<ConvenioPayload>): Promise<ConvenioDetail> {
   return apiPut<ConvenioDetail>(`/convenios/${id}`, payload);
+}
+
+export async function advanceConvenioWorkflow(
+  id: number,
+): Promise<{ estado: string; workflow: ConvenioWorkflow }> {
+  return apiRequest<{ estado: string; workflow: ConvenioWorkflow }>(`/convenios/${id}/workflow/advance`, {
+    method: 'POST',
+  });
+}
+
+export async function toggleConvenioChecklist(
+  convenioId: number,
+  itemId: number,
+  completed?: boolean,
+): Promise<ConvenioChecklistItemDetail> {
+  const init: RequestInit = { method: 'PATCH' };
+  if (typeof completed !== 'undefined') {
+    init.body = JSON.stringify({ completed });
+  }
+
+  return apiRequest<ConvenioChecklistItemDetail>(`/convenios/${convenioId}/checklist/${itemId}`, init);
+}
+
+export async function addConvenioDocument(
+  convenioId: number,
+  nombre: string,
+  tipo?: string,
+  url?: string,
+): Promise<ConvenioDocumentRecord> {
+  return apiRequest<ConvenioDocumentRecord>(`/convenios/${convenioId}/documents`, {
+    method: 'POST',
+    body: JSON.stringify({
+      nombre,
+      tipo,
+      url,
+    }),
+  });
+}
+
+export async function dismissConvenioAlert(convenioId: number, alertId: number): Promise<ConvenioAlert> {
+  return apiRequest<ConvenioAlert>(`/convenios/${convenioId}/alerts/${alertId}`, {
+    method: 'PATCH',
+  });
 }
 
 export async function getAsignacionDetail(id: number): Promise<AsignacionDetail> {
@@ -161,4 +214,16 @@ export async function fetchTutorAcademicos(): Promise<TutorAcademicoSummary[]> {
 export async function fetchTutorProfesionales(empresaId?: number): Promise<TutorProfesionalSummary[]> {
   const query = typeof empresaId === 'number' ? `?empresaId=${empresaId}` : '';
   return apiGet<TutorProfesionalSummary[]>(`/tutores-profesionales${query}`);
+}
+
+export async function fetchEmpresaSolicitudes(): Promise<EmpresaSolicitudSummary[]> {
+  return apiGet<EmpresaSolicitudSummary[]>('/empresa-solicitudes');
+}
+
+export async function approveEmpresaSolicitud(id: number): Promise<void> {
+  await apiPost(`/empresa-solicitudes/${id}/aprobar`, {});
+}
+
+export async function rejectEmpresaSolicitud(id: number, motivo: string): Promise<void> {
+  await apiPost(`/empresa-solicitudes/${id}/rechazar`, { motivo });
 }

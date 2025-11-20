@@ -269,7 +269,7 @@ const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string>
 
 function formatDate(value: string | null): string {
   if (!value) {
-    return '—';
+    return 'N/D';
   }
 
   const date = new Date(value);
@@ -282,8 +282,8 @@ function formatDate(value: string | null): string {
 
 const BASE_EMPRESA_COLUMNS: Array<TableColumn<EmpresaSummary>> = [
   { key: 'nombre', header: 'Empresa', render: (empresa) => empresa.nombre },
-  { key: 'sector', header: 'Sector', render: (empresa) => empresa.sector ?? '—' },
-  { key: 'ciudad', header: 'Ciudad', render: (empresa) => empresa.ciudad ?? '—' },
+  { key: 'sector', header: 'Sector', render: (empresa) => empresa.sector ?? '-' },
+  { key: 'ciudad', header: 'Ciudad', render: (empresa) => empresa.ciudad ?? '-' },
   { key: 'estado', header: 'Estado', render: (empresa) => empresa.estadoColaboracion, align: 'center' },
   {
     key: 'conveniosActivos',
@@ -356,7 +356,7 @@ const BASE_ASIGNACION_COLUMNS: Array<TableColumn<AsignacionSummary>> = [
   {
     key: 'horas',
     header: 'Horas',
-    render: (asignacion) => asignacion.horasTotales ?? '—',
+    render: (asignacion) => asignacion.horasTotales ?? '-',
     align: 'center',
   },
 ];
@@ -800,14 +800,14 @@ function DocumentationPage() {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Recursos</p>
-          <h2>Documentaci??n del proyecto</h2>
-          <p>Gu??as r??pidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
+          <h2>Documentacion del proyecto</h2>
+          <p>Guias rapidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
         </div>
       </header>
       <div className="docs-grid">
         <article className="docs-card">
           <h3>Backend Symfony</h3>
-          <p>Arranque del servidor, ejecuci??n de tests y pautas de autenticaci??n.</p>
+          <p>Arranque del servidor, ejecucion de tests y pautas de autenticacion.</p>
           <a href="../README.md" target="_blank" rel="noreferrer">Abrir README general</a>
         </article>
         <article className="docs-card">
@@ -817,7 +817,7 @@ function DocumentationPage() {
         </article>
         <article className="docs-card">
           <h3>Flujos CRUD</h3>
-          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambi??n los tests en backend/tests.</p>
+          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambien los tests en backend/tests.</p>
         </article>
         <article className="docs-card">
           <h3>Pruebas automatizadas</h3>
@@ -836,7 +836,7 @@ function DocumentationPage() {
           </ul>
         </article>
         <article className="docs-panel docs-panel--links">
-          <h3>Enlaces r??pidos</h3>
+          <h3>Enlaces rapidos</h3>
           <div className="docs-links">
             <Link className="link" to="/asignaciones/1">Ejemplo de seguimiento</Link>
             <Link className="link" to="/empresas/1">Espacio privado de empresa</Link>
@@ -859,16 +859,16 @@ function LoginPage() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus('La autenticación basada en usuarios llegará próximamente. De momento utiliza la autenticación básica configurada en Symfony.');
+    setStatus('La autenticacion basada en usuarios llegara proximamente. De momento utiliza la autenticacion basica configurada en Symfony.');
   };
 
   return (
     <section className="auth-section">
       <div className="auth-card">
         <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
-        <h2>Iniciar sesión</h2>
+        <h2>Iniciar sesion</h2>
         <p className="auth-card__description">
-          El login real llegará tras migrar usuarios a base de datos. Mientras tanto puedes usar autenticación básica desde el backend.
+          El login real llegara tras migrar usuarios a base de datos. Mientras tanto puedes usar autenticacion basica desde el backend.
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -876,14 +876,14 @@ function LoginPage() {
             <input type="email" placeholder="coordinacion@centro.edu" value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
           <label className="form__field">
-            <span>Contraseña</span>
+            <span>Contrasena</span>
             <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
           <button type="submit" className="button button--primary button--lg">
             Entrar (demo)
           </button>
           {status && <p className="form__error">{status}</p>}
-          <p className="auth-card__hint">Continúa utilizando las credenciales básicas `admin/admin123` en el backend.</p>
+          <p className="auth-card__hint">Continua utilizando las credenciales basicas dmin/admin123 en el backend.</p>
         </form>
       </div>
     </section>
@@ -907,7 +907,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      const message = 'Solicitud registrada. El equipo de TI validar� la informaci�n y activar� tu usuario.';
+      const message = 'Solicitud registrada. El equipo de TI validara la informacion y activara tu usuario.';
       setStatusMessage(message);
       onSuccess(message);
       setValues({ ...EMPTY_STAFF_REGISTRATION_VALUES });
@@ -926,7 +926,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
         <p className="auth-card__eyebrow">Acceso restringido</p>
         <h2>Solicitar cuenta interna</h2>
         <p className="auth-card__description">
-          Este formulario est� pensado para el personal del centro educativo. Tras revisar tus datos, activaremos tu acceso al panel.
+          Este formulario esta pensado para el personal del centro educativo. Tras revisar tus datos, activaremos tu acceso al panel.
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -946,17 +946,17 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
             <textarea
               name="comentarios"
               rows={3}
-              placeholder="Indica si gestionar�s empresas, convenios, etc."
+              placeholder="Indica si gestionaras empresas, convenios, etc."
               value={values.comentarios}
               onChange={handleChange}
             />
           </label>
           {statusMessage && <p className="form__success">{statusMessage}</p>}
           <button type="submit" className="button button--primary button--lg" disabled={submitting}>
-            {submitting ? 'Enviando�' : 'Enviar solicitud'}
+            {submitting ? 'Enviando...' : 'Enviar solicitud'}
           </button>
           <p className="auth-card__hint">
-            Si representas a una empresa colaboradora, utiliza el portal espec�fico de registros externos.
+            Si representas a una empresa colaboradora, utiliza el portal especifico de registros externos.
           </p>
         </form>
       </div>
@@ -985,6 +985,8 @@ export default function App() {
   const [savingAsignacion, setSavingAsignacion] = useState(false);
   const [referenceData, setReferenceData] = useState<ReferenceData | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const navigate = useNavigate();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<number | null>(null);
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
   const [selectedConvenioId, setSelectedConvenioId] = useState<number | null>(null);
@@ -1024,6 +1026,19 @@ export default function App() {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
+  const toggleNotifications = useCallback(() => {
+    setNotificationsOpen((prev) => !prev);
+  }, []);
+
+  const closeNotifications = useCallback(() => {
+    setNotificationsOpen(false);
+  }, []);
+
+  const openSolicitudesPage = useCallback(() => {
+    setNotificationsOpen(false);
+    navigate('/solicitudes');
+  }, [navigate]);
+
   const handleAddEmpresaNote = useCallback((empresaId: number, content: string) => {
     const trimmed = content.trim();
     if (!trimmed) {
@@ -1033,7 +1048,7 @@ export default function App() {
       const notes = prev[empresaId] ?? [];
       const newNote: EmpresaNote = {
         id: Date.now(),
-        author: 'Coordinación',
+        author: 'Coordinacin',
         content: trimmed,
         timestamp: new Date().toISOString(),
       };
@@ -1231,7 +1246,7 @@ export default function App() {
 
   const handleRejectSolicitud = useCallback(
     async (solicitudId: number) => {
-      const motivo = window.prompt('�Cu�l es el motivo del rechazo?');
+      const motivo = window.prompt('Cul es el motivo del rechazo?');
       if (!motivo || !motivo.trim()) {
         return;
       }
@@ -1512,7 +1527,7 @@ export default function App() {
         });
       })
       .catch((err) => {
-        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignación.';
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignacin.';
         setAsignacionFormError(message);
         pushToast('error', message);
         setAsignacionModal((current) => {
@@ -1547,16 +1562,16 @@ export default function App() {
         const payload = buildAsignacionPayload(values);
         if (asignacionModal.mode === 'create') {
           await createAsignacion(payload);
-          pushToast('success', 'Asignación creada correctamente.');
+          pushToast('success', 'Asignacin creada correctamente.');
         } else if (asignacionModal.entityId) {
           await updateAsignacion(asignacionModal.entityId, payload);
-          pushToast('success', 'Asignación actualizada correctamente.');
+          pushToast('success', 'Asignacin actualizada correctamente.');
         }
 
         await loadData();
         handleCloseAsignacionModal();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignación.';
+        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignacin.';
         setAsignacionFormError(message);
         pushToast('error', message);
       } finally {
@@ -1631,7 +1646,7 @@ export default function App() {
     },
     { key: 'dni', header: 'DNI', render: (estudiante) => estudiante.dni },
     { key: 'email', header: 'Email', render: (estudiante) => estudiante.email },
-    { key: 'grado', header: 'Grado', render: (estudiante) => estudiante.grado ?? '�?"' },
+    { key: 'grado', header: 'Grado', render: (estudiante) => estudiante.grado ?? '?"' },
     { key: 'estado', header: 'Estado', render: (estudiante) => estudiante.estado, align: 'center' },
     {
       key: 'asignaciones',
@@ -1734,7 +1749,7 @@ export default function App() {
         disabled={!referenceData}
         title={!referenceData ? 'Cargando datos de referencia...' : undefined}
       >
-        Nueva asignación
+        Nueva asignacin
       </button>
     ),
     [openCreateAsignacion, referenceData],
@@ -1750,7 +1765,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboracin, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -1758,7 +1773,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'Informacin completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -1766,22 +1781,22 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado acadmico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'Prácticas en curso',
-      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
+      description: 'Prcticas en curso',
+      detail: 'Pipeline Kanban con tutoras, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'documentacion',
-      label: 'Documentación',
+      label: 'Documentacin',
       total: 3,
-      description: 'Guías y recursos listos',
+      description: 'Guas y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -1802,14 +1817,14 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentación adjunta.',
+        description: 'Estado, fechas y documentacin adjunta.',
         path: '/convenios',
       },
       {
         id: 'estudiantes',
         label: 'Estudiantes',
         total: collections?.estudiantes.length ?? 0,
-        description: 'Ficha académica y seguimiento en curso.',
+        description: 'Ficha acadmica y seguimiento en curso.',
         path: '/estudiantes',
       },
       {
@@ -2108,7 +2123,7 @@ const selectedConvenio = useMemo(() => {
           updated[convenio.id] = [
             { id: Number(`${convenio.id}01`), label: 'Documento firmado', completed: false },
             { id: Number(`${convenio.id}02`), label: 'Seguro actualizado', completed: false },
-            { id: Number(`${convenio.id}03`), label: 'Aprobación tutor académico', completed: false },
+            { id: Number(`${convenio.id}03`), label: 'Aprobacin tutor acadmico', completed: false },
           ];
         }
       });
@@ -2197,7 +2212,7 @@ const selectedConvenio = useMemo(() => {
         id: `asignacion-${asignacion.id}`,
         title: asignacion.empresa.nombre,
         status: asignacion.estado,
-        date: `${formatDate(asignacion.fechaInicio)} · ${formatDate(asignacion.fechaFin)}`,
+        date: `${formatDate(asignacion.fechaInicio)}  ${formatDate(asignacion.fechaFin)}`,
         modalidad: asignacion.modalidad,
       }));
     }
@@ -2207,7 +2222,7 @@ const selectedConvenio = useMemo(() => {
         id: 'estado-general',
         title: 'Sin asignaciones activas',
         status: selectedStudent.estado,
-        date: 'A la espera de nueva asignación',
+        date: 'A la espera de nueva asignacin',
         modalidad: 'Seguimiento coordinador',
       },
     ];
@@ -2277,10 +2292,10 @@ const selectedConvenio = useMemo(() => {
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate(-1)}>
               Volver
             </button>
-            <p className="module-page__eyebrow">Espacio privado · Empresas</p>
+            <p className="module-page__eyebrow">Espacio privado  Empresas</p>
             <h2>{empresa.nombre}</h2>
             <p className="empresa-page__subtitle">
-              {empresa.ciudad ?? 'Sin ciudad'} · {empresa.sector ?? 'Sin sector definido'}
+              {empresa.ciudad ?? 'Sin ciudad'}  {empresa.sector ?? 'Sin sector definido'}
             </p>
           </div>
           <div className="empresa-actions">
@@ -2297,7 +2312,7 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Planificar asignación
+              Planificar asignacin
             </button>
           </div>
         </header>
@@ -2337,14 +2352,14 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{conveniosEmpresa.length} registros</span>
             </header>
             {conveniosEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Todavía no se han generado convenios para esta empresa.</p>
+              <p className="empresa-panel__placeholder">Todava no se han generado convenios para esta empresa.</p>
             ) : (
               <ul>
                 {conveniosEmpresa.map((convenio) => (
                   <li key={convenio.id}>
                     <strong>{convenio.titulo}</strong>
-                    <p>{convenio.tipo} · {convenio.estado}</p>
-                    <small>{formatDate(convenio.fechaInicio)} · {formatDate(convenio.fechaFin)}</small>
+                    <p>{convenio.tipo}  {convenio.estado}</p>
+                    <small>{formatDate(convenio.fechaInicio)}  {formatDate(convenio.fechaFin)}</small>
                   </li>
                 ))}
               </ul>
@@ -2357,14 +2372,14 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{asignacionesEmpresa.length} registros</span>
             </header>
             {asignacionesEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Aún no hay estudiantes asignados.</p>
+              <p className="empresa-panel__placeholder">An no hay estudiantes asignados.</p>
             ) : (
               <ul>
                 {asignacionesEmpresa.map((asignacion) => (
                   <li key={asignacion.id}>
                     <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
-                    <p>{asignacion.estado} · {asignacion.modalidad}</p>
-                    <small>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</small>
+                    <p>{asignacion.estado}  {asignacion.modalidad}</p>
+                    <small>{formatDate(asignacion.fechaInicio)}  {formatDate(asignacion.fechaFin)}</small>
                   </li>
                 ))}
               </ul>
@@ -2376,19 +2391,19 @@ const selectedConvenio = useMemo(() => {
           <header>
             <div>
               <p className="module-page__eyebrow">Actividad reciente</p>
-              <h3>Últimos movimientos</h3>
+              <h3>ltimos movimientos</h3>
             </div>
-            <Link to="/documentacion" className="link">Abrir documentación</Link>
+            <Link to="/documentacion" className="link">Abrir documentacin</Link>
           </header>
           {activityLog.length === 0 ? (
-            <p className="empresa-panel__placeholder">No hay actividad registrada aún.</p>
+            <p className="empresa-panel__placeholder">No hay actividad registrada an.</p>
           ) : (
             <ul>
               {activityLog.map((item) => (
                 <li key={item.id}>
                   <div>
                     <strong>{item.estudiante.nombre} {item.estudiante.apellido}</strong>
-                    <p>{item.estado} · {item.modalidad}</p>
+                    <p>{item.estado}  {item.modalidad}</p>
                   </div>
                   <span>{formatDate(item.fechaInicio)}</span>
                 </li>
@@ -2443,7 +2458,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No se ha indicado ningún convenio para gestionar.</p>
+            <p>No se ha indicado ningn convenio para gestionar.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al inicio
             </button>
@@ -2456,7 +2471,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No hay datos sincronizados. Regresa al dashboard para cargar la información.</p>
+            <p>No hay datos sincronizados. Regresa al dashboard para cargar la informacin.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -2516,13 +2531,13 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Planificar asignación
+              Planificar asignacin
             </button>
           </div>
         </header>
 
         {detailError && <div className="app__alert app__alert--error">{detailError}</div>}
-        {detailLoading && <div className="app__alert app__alert--info">Cargando datos del convenio…</div>}
+        {detailLoading && <div className="app__alert app__alert--info">Cargando datos del convenio...</div>}
 
         <div className="convenio-summary">
           {highlightCards.map((card) => (
@@ -2539,38 +2554,38 @@ const selectedConvenio = useMemo(() => {
               Resumen
             </button>
             <button type="button" className={tab === 'documentacion' ? 'active' : ''} onClick={() => setTab('documentacion')}>
-              Documentación
+              Documentacin
             </button>
           </div>
 
           {tab === 'resumen' ? (
             <div className="convenio-overview">
               <div>
-                <span className="student-detail__label">Descripción</span>
-                <p>{detail?.descripcion ?? 'Sin descripción registrada.'}</p>
+                <span className="student-detail__label">Descripcin</span>
+                <p>{detail?.descripcion ?? 'Sin descripcin registrada.'}</p>
               </div>
               <div>
                 <span className="student-detail__label">Observaciones</span>
-                <p>{detail?.observaciones ?? 'Añade notas de seguimiento para mantener el contexto.'}</p>
+                <p>{detail?.observaciones ?? 'Aade notas de seguimiento para mantener el contexto.'}</p>
               </div>
               <div>
-                <span className="student-detail__label">Documentación firmada</span>
+                <span className="student-detail__label">Documentacin firmada</span>
                 {detail?.documentoUrl ? (
                   <a className="link" href={detail.documentoUrl} target="_blank" rel="noreferrer">
                     Abrir documento
                   </a>
                 ) : (
-                  <p>No hay documentos adjuntos todavía.</p>
+                  <p>No hay documentos adjuntos todava.</p>
                 )}
               </div>
             </div>
           ) : (
             <div className="convenio-docs">
               <article>
-                <h4>Guías recomendadas</h4>
+                <h4>Guas recomendadas</h4>
                 <ul>
                   <li>
-                    <Link to="/documentacion" className="link">Documentación general del proyecto</Link>
+                    <Link to="/documentacion" className="link">Documentacin general del proyecto</Link>
                   </li>
                   <li>
                     <a
@@ -2579,7 +2594,7 @@ const selectedConvenio = useMemo(() => {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      README raíz
+                      README raz
                     </a>
                   </li>
                   <li>
@@ -2589,7 +2604,7 @@ const selectedConvenio = useMemo(() => {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Guía del frontend
+                      Gua del frontend
                     </a>
                   </li>
                 </ul>
@@ -2599,7 +2614,7 @@ const selectedConvenio = useMemo(() => {
                 <ol>
                   <li>Validar el estado (borrador, vigente, finalizado) antes de compartirlo.</li>
                   <li>Confirmar fechas de inicio y fin con la empresa colaboradora.</li>
-                  <li>Adjuntar documentación firmada o enlazar al repositorio correspondiente.</li>
+                  <li>Adjuntar documentacin firmada o enlazar al repositorio correspondiente.</li>
                 </ol>
               </article>
             </div>
@@ -2637,7 +2652,7 @@ const selectedConvenio = useMemo(() => {
           setDetailError(null);
         })
         .catch((err) => {
-          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignación.';
+          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignacin.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
@@ -2647,7 +2662,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No se ha indicado ninguna asignación.</p>
+            <p>No se ha indicado ninguna asignacin.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al inicio
             </button>
@@ -2660,7 +2675,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No hay datos sincronizados todavía. Regresa al dashboard y sincroniza con el backend.</p>
+            <p>No hay datos sincronizados todava. Regresa al dashboard y sincroniza con el backend.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -2673,7 +2688,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No encontramos la asignación solicitada.</p>
+            <p>No encontramos la asignacin solicitada.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -2696,18 +2711,18 @@ const selectedConvenio = useMemo(() => {
       events.push({
         title: 'Inicio planificado',
         date: formatDate(asignacionSummary.fechaInicio),
-        note: 'Aprobado por coordinación',
+        note: 'Aprobado por coordinacin',
       });
       if (asignacionSummary.fechaFin) {
         events.push({
           title: 'Fin estimado',
           date: formatDate(asignacionSummary.fechaFin),
-          note: 'Actualiza si hay prórroga',
+          note: 'Actualiza si hay prrroga',
         });
       }
       if (detail) {
         events.push({
-          title: 'Tutor académico asignado',
+          title: 'Tutor acadmico asignado',
           date: new Date().toLocaleDateString('es-ES'),
           note: `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}`,
         });
@@ -2728,7 +2743,7 @@ const selectedConvenio = useMemo(() => {
         href: `mailto:${detail.estudiante.email}`,
       },
       detail?.tutorAcademico.email && {
-        label: 'Tutor académico',
+        label: 'Tutor acadmico',
         href: `mailto:${detail.tutorAcademico.email}`,
       },
       detail?.tutorProfesional?.email && {
@@ -2744,8 +2759,8 @@ const selectedConvenio = useMemo(() => {
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate(-1)}>
               Volver
             </button>
-            <p className="module-page__eyebrow">Detalle de asignación</p>
-            <h2>{studentName} · {asignacionSummary.empresa.nombre}</h2>
+            <p className="module-page__eyebrow">Detalle de asignacin</p>
+            <h2>{studentName}  {asignacionSummary.empresa.nombre}</h2>
             <p className="asignacion-page__subtitle">Convenio: {detail?.convenio.titulo ?? 'Sin convenio detallado'}</p>
           </div>
           <div className="asignacion-actions">
@@ -2767,13 +2782,13 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Duplicar asignación
+              Duplicar asignacin
             </button>
           </div>
         </header>
 
         {detailError && <div className="app__alert app__alert--error">{detailError}</div>}
-        {detailLoading && <div className="app__alert app__alert--info">Cargando detalle actualizado…</div>}
+        {detailLoading && <div className="app__alert app__alert--info">Cargando detalle actualizado...</div>}
 
         <div className="asignacion-summary">
           {detailCards.map((card) => (
@@ -2811,9 +2826,9 @@ const selectedConvenio = useMemo(() => {
             <h3>Tutores asignados</h3>
             <div className="asignacion-info-grid">
               <div>
-                <span>Tutor académico</span>
+                <span>Tutor acadmico</span>
                 <strong>
-                  {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando…'}
+                  {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando...'}
                 </strong>
               </div>
               <div>
@@ -2832,7 +2847,7 @@ const selectedConvenio = useMemo(() => {
           </article>
 
           <article className="asignacion-card asignacion-card--contacts">
-            <h3>Acciones rápidas</h3>
+            <h3>Acciones rpidas</h3>
             {contactActions.length === 0 ? (
               <p>No hay contactos directos disponibles.</p>
             ) : (
@@ -2873,15 +2888,15 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-docs">
           <article>
             <h4>Informes y anexos</h4>
-            <p>Enlaza actas semanales, evaluaciones y rúbricas firmadas.</p>
-            <Link to="/documentacion" className="link">Abrir documentación general</Link>
+            <p>Enlaza actas semanales, evaluaciones y rbricas firmadas.</p>
+            <Link to="/documentacion" className="link">Abrir documentacin general</Link>
           </article>
           <article>
             <h4>Checklist interno</h4>
             <ul>
               <li>Confirmar asistencia semanal del estudiante.</li>
               <li>Registrar feedback de ambos tutores.</li>
-              <li>Adjuntar informe final antes de cerrar la asignación.</li>
+              <li>Adjuntar informe final antes de cerrar la asignacin.</li>
             </ul>
           </article>
         </section>
@@ -2895,7 +2910,7 @@ const selectedConvenio = useMemo(() => {
         <div>
           <p className="module-page__eyebrow">{title}</p>
           <h2>Sin datos disponibles</h2>
-          <p>Sincroniza desde el dashboard principal para cargar la información.</p>
+          <p>Sincroniza desde el dashboard principal para cargar la informacin.</p>
         </div>
         <Link className="button button--ghost button--sm" to="/">
           Volver al dashboard
@@ -2921,9 +2936,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo empresas</p>
+            <p className="module-page__eyebrow">Mdulo empresas</p>
             <h2>Empresas colaboradoras</h2>
-            <p>Repasa el estado de colaboración, contactos y convenios activos.</p>
+            <p>Repasa el estado de colaboracin, contactos y convenios activos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -2948,7 +2963,7 @@ const selectedConvenio = useMemo(() => {
             </select>
           </label>
           <button type="submit" className="button button--primary button--sm" disabled={!empresaLookupId}>
-            Ir a gestión
+            Ir a gestin
           </button>
         </form>
         <DataTable
@@ -2958,7 +2973,7 @@ const selectedConvenio = useMemo(() => {
           actions={empresaActions}
         />
 
-﻿﻿        <div className="detail-grid">
+        <div className="detail-grid">
           <div className="detail-grid__list">
             <div className="detail-grid__header">
               <h3>Empresas por sector</h3>
@@ -3013,7 +3028,7 @@ const selectedConvenio = useMemo(() => {
                     <strong>{selectedEmpresa.ciudad ?? 'No definida'}</strong>
                   </article>
                   <article>
-                    <span>Estado colaboración</span>
+                    <span>Estado colaboracin</span>
                     <strong>{selectedEmpresa.estadoColaboracion}</strong>
                   </article>
                   <article>
@@ -3024,7 +3039,7 @@ const selectedConvenio = useMemo(() => {
                 <div className="empresa-360">
                   <article className="empresa-360__card">
                     <div>
-                      <p className="module-page__eyebrow">Situación actual</p>
+                      <p className="module-page__eyebrow">Situacin actual</p>
                       <h4>{selectedEmpresa.nombre}</h4>
                     </div>
                     <div className="empresa-360__info">
@@ -3058,7 +3073,7 @@ const selectedConvenio = useMemo(() => {
                         Editar ficha
                       </button>
                       <button type="button" className="button button--primary button--sm" onClick={() => navigate(`/empresas/${selectedEmpresa.id}`)}>
-                        Abrir ficha 360°
+                        Abrir ficha 360
                       </button>
                     </div>
                   </article>
@@ -3080,7 +3095,7 @@ const selectedConvenio = useMemo(() => {
                           {conveniosPreview.map((convenio) => (
                             <li key={convenio.id}>
                               <strong>{convenio.titulo}</strong>
-                              <p>{formatDate(convenio.fechaInicio)} — {formatDate(convenio.fechaFin)}</p>
+                              <p>{formatDate(convenio.fechaInicio)} - {formatDate(convenio.fechaFin)}</p>
                               <span className="chip chip--ghost">{convenio.estado}</span>
                             </li>
                           ))}
@@ -3104,20 +3119,20 @@ const selectedConvenio = useMemo(() => {
                           {asignacionesPreview.map((asignacion) => (
                             <li key={asignacion.id}>
                               <strong>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</strong>
-                              <p>{formatDate(asignacion.fechaInicio)} — {formatDate(asignacion.fechaFin)}</p>
+                              <p>{formatDate(asignacion.fechaInicio)} - {formatDate(asignacion.fechaFin)}</p>
                               <span className="chip chip--ghost">{asignacion.estado}</span>
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="empresa-panel__placeholder">Aún no hay asignaciones registradas.</p>
+                        <p className="empresa-panel__placeholder">An no hay asignaciones registradas.</p>
                       )}
                     </article>
                     <article className="empresa-panel">
                       <header>
                         <div>
                           <p className="module-page__eyebrow">Contexto adicional</p>
-                          <h4>Síntesis rápida</h4>
+                          <h4>Sntesis rpida</h4>
                         </div>
                       </header>
                       <ul>
@@ -3127,11 +3142,11 @@ const selectedConvenio = useMemo(() => {
                         </li>
                         <li>
                           <strong>Notas colaborativas</strong>
-                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aún no hay notas guardadas.'}</p>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'An no hay notas guardadas.'}</p>
                         </li>
                         <li>
                           <strong>Documentos compartidos</strong>
-                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavía no hay adjuntos.'}</p>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todava no hay adjuntos.'}</p>
                         </li>
                       </ul>
                     </article>
@@ -3211,9 +3226,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo convenios</p>
+            <p className="module-page__eyebrow">Mdulo convenios</p>
             <h2>Convenios y acuerdos</h2>
-            <p>Controla el workflow, checklist documental y recordatorios críticos.</p>
+            <p>Controla el workflow, checklist documental y recordatorios crticos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3226,7 +3241,7 @@ const selectedConvenio = useMemo(() => {
           actions={convenioActions}
         />
 
-﻿        <section className="convenio-insights">
+        <section className="convenio-insights">
           <article>
             <span>Total convenios</span>
             <strong>{totalConvenios}</strong>
@@ -3236,7 +3251,7 @@ const selectedConvenio = useMemo(() => {
             <strong>{conveniosVigentes}</strong>
           </article>
           <article>
-            <span>Por renovar (60 días)</span>
+            <span>Por renovar (60 das)</span>
             <strong>{proximosRenovacion}</strong>
           </article>
           <article>
@@ -3252,7 +3267,7 @@ const selectedConvenio = useMemo(() => {
         <section className="convenio-layout">
           <aside className="convenio-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <p className="module-page__eyebrow">Filtros rpidos</p>
               <h3>Lista de convenios</h3>
               <p>Acota por estado o empresa y selecciona el convenio que quieras revisar.</p>
             </div>
@@ -3409,7 +3424,7 @@ const selectedConvenio = useMemo(() => {
                         ))}
                       </ul>
                     ) : (
-                      <p className="detail-placeholder">Aún no se ha definido el checklist.</p>
+                      <p className="detail-placeholder">An no se ha definido el checklist.</p>
                     )}
                   </article>
 
@@ -3426,7 +3441,7 @@ const selectedConvenio = useMemo(() => {
                           <div key={doc.id} className="convenio-document">
                             <div>
                               <strong>{doc.name}</strong>
-                              <small>{doc.type} – {formatDate(doc.uploadedAt)}</small>
+                              <small>{doc.type} - {formatDate(doc.uploadedAt)}</small>
                             </div>
                             <button type="button" className="button button--link">
                               Descargar
@@ -3434,7 +3449,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos todavía.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos todava.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -3443,7 +3458,7 @@ const selectedConvenio = useMemo(() => {
                         <input
                           value={documentName}
                           onChange={(event) => setDocumentName(event.target.value)}
-                          placeholder="Acta renovación"
+                          placeholder="Acta renovacin"
                           required
                         />
                       </label>
@@ -3456,7 +3471,7 @@ const selectedConvenio = useMemo(() => {
                         />
                       </label>
                       <button type="submit" className="button button--primary button--sm">
-                        Añadir documento
+                        Aadir documento
                       </button>
                     </form>
                   </article>
@@ -3506,7 +3521,7 @@ const selectedConvenio = useMemo(() => {
     );
   };
 
-﻿  const EstudiantesOverviewPage = () => {
+  const EstudiantesOverviewPage = () => {
     const navigate = useNavigate();
 
     if (!collections) {
@@ -3519,9 +3534,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo estudiantes</p>
+            <p className="module-page__eyebrow">Mdulo estudiantes</p>
             <h2>Listado completo de estudiantes</h2>
-            <p>Consulta información académica, asignaciones y contacto.</p>
+            <p>Consulta informacin acadmica, asignaciones y contacto.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3537,7 +3552,7 @@ const selectedConvenio = useMemo(() => {
         <section className="student-layout">
           <aside className="student-layout__sidebar">
             <div>
-              <p className="module-page__eyebrow">Perfiles 360°</p>
+              <p className="module-page__eyebrow">Perfiles 360</p>
               <h3>Filtros inteligentes</h3>
               <p>Selecciona un estado y profundiza en el perfil seleccionado.</p>
             </div>
@@ -3601,7 +3616,7 @@ const selectedConvenio = useMemo(() => {
                         Editar ficha
                       </button>
                       <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
-                        Planificar asignación
+                        Planificar asignacin
                       </button>
                       <a className="button button--link button--sm" href={`mailto:${selectedStudent.email}`}>
                         Enviar correo
@@ -3627,7 +3642,7 @@ const selectedConvenio = useMemo(() => {
 
                 <div className="student-profile__section">
                   <div className="student-profile__section-header">
-                    <h4>Ficha académica</h4>
+                    <h4>Ficha acadmica</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
                       Actualizar datos
                     </button>
@@ -3656,7 +3671,7 @@ const selectedConvenio = useMemo(() => {
                   <div className="student-profile__section-header">
                     <h4>Asignaciones</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
-                      Ver módulo
+                      Ver mdulo
                     </button>
                   </div>
                   {selectedStudentAssignments.length > 0 ? (
@@ -3665,7 +3680,7 @@ const selectedConvenio = useMemo(() => {
                         <article className="student-assignment" key={asignacion.id}>
                           <div>
                             <strong>{asignacion.empresa.nombre}</strong>
-                            <p>{formatDate(asignacion.fechaInicio)} — {formatDate(asignacion.fechaFin)}</p>
+                            <p>{formatDate(asignacion.fechaInicio)} - {formatDate(asignacion.fechaFin)}</p>
                           </div>
                           <div className="student-assignment__tags">
                             <span className="chip chip--ghost">{asignacion.estado}</span>
@@ -3678,7 +3693,7 @@ const selectedConvenio = useMemo(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
+                    <p className="student-detail__placeholder">Todava no tiene asignaciones registradas.</p>
                   )}
                 </div>
 
@@ -3715,7 +3730,7 @@ const selectedConvenio = useMemo(() => {
     );
   };
 
-﻿  const AsignacionesOverviewPage = () => {
+  const AsignacionesOverviewPage = () => {
     const navigate = useNavigate();
 
     if (!collections) {
@@ -3737,9 +3752,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo asignaciones</p>
+            <p className="module-page__eyebrow">Mdulo asignaciones</p>
             <h2>Pipeline completo de asignaciones</h2>
-            <p>Repasa cada práctica, tutores asignados y estado actual.</p>
+            <p>Repasa cada prctica, tutores asignados y estado actual.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3778,7 +3793,7 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-layout">
           <aside className="asignacion-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <p className="module-page__eyebrow">Filtros rpidos</p>
               <h3>Lista de asignaciones</h3>
               <p>Aplica filtros por estado o modalidad y abre cada ficha en un clic.</p>
             </div>
@@ -3831,7 +3846,7 @@ const selectedConvenio = useMemo(() => {
                       </div>
                       <div className="asignacion-list__meta">
                         <span>{asignacion.modalidad}</span>
-                        <span>{formatDate(asignacion.fechaInicio)} → {formatDate(asignacion.fechaFin)}</span>
+                        <span>{formatDate(asignacion.fechaInicio)} {'->'} {formatDate(asignacion.fechaFin)}</span>
                       </div>
                       <span className="chip chip--ghost">{asignacion.estado}</span>
                     </button>
@@ -3846,7 +3861,7 @@ const selectedConvenio = useMemo(() => {
               <>
                 <div className="asignacion-panel__header">
                   <div>
-                    <p className="module-page__eyebrow">Asignación #{selectedAsignacion.id}</p>
+                    <p className="module-page__eyebrow">Asignacin #{selectedAsignacion.id}</p>
                     <h3>{selectedAsignacion.estudiante.nombre} {selectedAsignacion.estudiante.apellido}</h3>
                     <p className="asignacion-panel__company">{selectedAsignacion.empresa.nombre}</p>
                   </div>
@@ -3872,7 +3887,7 @@ const selectedConvenio = useMemo(() => {
                   </article>
                   <article>
                     <span>Horas planificadas</span>
-                    <strong>{selectedAsignacion.horasTotales ?? '—'}</strong>
+                    <strong>{selectedAsignacion.horasTotales ?? '-'}</strong>
                   </article>
                   <article>
                     <span>Inicio</span>
@@ -3902,11 +3917,11 @@ const selectedConvenio = useMemo(() => {
                 </div>
 
                 <p className="asignacion-panel__hint">
-                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentación adjunta.
+                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentacin adjunta.
                 </p>
               </>
             ) : (
-              <p className="detail-placeholder">Selecciona una asignación para revisar su detalle.</p>
+              <p className="detail-placeholder">Selecciona una asignacin para revisar su detalle.</p>
             )}
           </div>
         </section>
@@ -3914,7 +3929,7 @@ const selectedConvenio = useMemo(() => {
         <section className="kanban">
           <header className="kanban__header">
             <h3>Pipeline visual</h3>
-            <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
+            <p>Visualiza el pipeline completo y accede rpido a cada tutor o empresa.</p>
           </header>
           <div className="kanban__columns">
             {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
@@ -3924,7 +3939,7 @@ const selectedConvenio = useMemo(() => {
                   <article className="kanban-card" key={asignacion.id}>
                     <h5>{asignacion.empresa.nombre}</h5>
                     <p>{asignacion.estudiante.nombre} {asignacion.estudiante.apellido}</p>
-                    <small>{formatDate(asignacion.fechaInicio)} – {formatDate(asignacion.fechaFin)}</small>
+                    <small>{formatDate(asignacion.fechaInicio)} - {formatDate(asignacion.fechaFin)}</small>
                     <div className="kanban-card__tags">
                       <span className="chip chip--ghost">{asignacion.modalidad}</span>
                       {asignacion.horasTotales && (
@@ -3945,18 +3960,18 @@ const selectedConvenio = useMemo(() => {
   };
   const dashboardElement = collections ? (
     <>
-      <section className="hero">
+            <section className="hero">
         <div className="hero__content">
           <p className="hero__eyebrow">Todo tu programa en una sola plataforma</p>
           <h1>
-            Gestión integral de prácticas
+            Gestion integral de practicas
             <span className="hero__highlight hero__highlight--amber"> sencilla </span>
             y
             <span className="hero__highlight hero__highlight--cyan"> eficiente</span>.
           </h1>
           <p className="hero__description">
             Coordina empresas, convenios y estudiantes desde un panel oscuro inspirado en Odoo.
-            Sigue cada asignación con trazabilidad y planifica nuevas experiencias en segundos.
+            Sigue cada asignacion con trazabilidad y planifica nuevas experiencias en segundos.
           </p>
           <div className="hero__actions">
             <button
@@ -3965,98 +3980,16 @@ const selectedConvenio = useMemo(() => {
               onClick={() => openCreateAsignacion()}
               disabled={!referenceData}
             >
-              Planificar nueva asignación
+              Planificar nueva asignacion
             </button>
             <Link className="button button--ghost button--lg hero__link" to="/documentacion">
-              Explorar documentación
+              Explorar documentacion
             </Link>
           </div>
         </div>
         <div className="hero__scribble hero__scribble--violet" />
       </section>
-
-      <section className="solicitudes-panel">
-        <header className="solicitudes-panel__header">
-          <div>
-            <p className="solicitudes-panel__eyebrow">Empresas interesadas</p>
-            <h2>Solicitudes de registro</h2>
-          </div>
-          <div className="solicitudes-panel__actions">
-            <span className="chip chip--ghost">{empresaSolicitudes.length} pendientes</span>
-            <button
-              type="button"
-              className="button button--ghost button--sm"
-              onClick={handleRefreshSolicitudes}
-              disabled={loadingSolicitudes}
-            >
-              {loadingSolicitudes ? 'Actualizando�' : 'Actualizar'}
-            </button>
-          </div>
-        </header>
-        {loadingSolicitudes ? (
-          <p className="detail-placeholder">Cargando solicitudes�</p>
-        ) : empresaSolicitudes.length === 0 ? (
-          <p className="detail-placeholder">
-            No hay solicitudes pendientes. Comparte el formulario p�blico para invitar nuevas empresas.
-          </p>
-        ) : (
-          <div className="solicitudes-panel__list">
-            {empresaSolicitudes.map((solicitud) => {
-              const canApprove = solicitud.estado === 'email_verificado';
-              const isProcessing = processingSolicitudId === solicitud.id;
-              const estadoLabel = SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado;
-
-              return (
-                <article key={solicitud.id} className="solicitud-card">
-                  <div className="solicitud-card__header">
-                    <div>
-                      <h3>{solicitud.nombreEmpresa}</h3>
-                      <p className="solicitud-card__meta">
-                        <span className={`badge badge--${solicitud.estado}`}>{estadoLabel}</span>
-                        <span>Registrada: {formatDate(solicitud.creadaEn)}</span>
-                      </p>
-                    </div>
-                    {solicitud.web && (
-                      <a href={solicitud.web} target="_blank" rel="noreferrer" className="link link--muted">
-                        Web
-                      </a>
-                    )}
-                  </div>
-                  <p className="solicitud-card__description">
-                    {solicitud.sector ?? 'Sector no indicado'} � {solicitud.ciudad ?? 'Ciudad no indicada'}
-                  </p>
-                  <div className="solicitud-card__contact">
-                    <strong>{solicitud.contacto.nombre}</strong>
-                    <span>{solicitud.contacto.email}</span>
-                    {solicitud.contacto.telefono && <span>{solicitud.contacto.telefono}</span>}
-                  </div>
-                  <div className="solicitud-card__actions">
-                    <button
-                      type="button"
-                      className="button button--primary button--sm"
-                      onClick={() => handleApproveSolicitud(solicitud.id)}
-                      disabled={!canApprove || isProcessing}
-                      title={!canApprove ? 'La empresa debe verificar su correo antes de aprobar.' : undefined}
-                    >
-                      {isProcessing ? 'Procesando�' : 'Aprobar'}
-                    </button>
-                    <button
-                      type="button"
-                      className="button button--ghost button--sm"
-                      onClick={() => handleRejectSolicitud(solicitud.id)}
-                      disabled={isProcessing}
-                    >
-                      Rechazar
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <section className="modules-grid">
+<section className="modules-grid">
       {moduleCards.map((module) => (
         <article key={module.id} className={`module-card module-card--${module.accent}`}>
           <div className="module-card__inner">
@@ -4087,8 +4020,8 @@ const selectedConvenio = useMemo(() => {
       <section className="analytics-card">
         <header className="analytics-card__header">
           <div>
-            <p className="module-page__eyebrow">Dashboard analítico</p>
-            <h3>Distribución de asignaciones y actividad</h3>
+            <p className="module-page__eyebrow">Dashboard analtico</p>
+            <h3>Distribucin de asignaciones y actividad</h3>
           </div>
           <span className="chip chip--ghost">Total registros: {analyticData.reduce((sum, item) => sum + item.value, 0)}</span>
         </header>
@@ -4121,7 +4054,7 @@ const selectedConvenio = useMemo(() => {
             <strong className="module-link-card__value">{module.total}</strong>
             <p className="module-link-card__description">{module.description}</p>
             <Link className="button button--ghost button--sm module-link-card__cta" to={module.path}>
-              Abrir módulo
+              Abrir mdulo
             </Link>
           </article>
         ))}
@@ -4131,10 +4064,10 @@ const selectedConvenio = useMemo(() => {
         <div className="student-cards__header">
           <div>
             <h3>Perfiles de estudiantes</h3>
-            <p>Resumen rápido del estado académico y asignaciones activas.</p>
+            <p>Resumen rpido del estado acadmico y asignaciones activas.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/estudiantes">
-            Ver módulo completo
+            Ver mdulo completo
           </Link>
         </div>
         {studentPreview.length > 0 ? (
@@ -4168,7 +4101,7 @@ const selectedConvenio = useMemo(() => {
             })}
           </div>
         ) : (
-          <p className="detail-placeholder">Aún no hay estudiantes registrados.</p>
+          <p className="detail-placeholder">An no hay estudiantes registrados.</p>
         )}
         {selectedStudent && (
           <div className="student-detail">
@@ -4196,7 +4129,7 @@ const selectedConvenio = useMemo(() => {
                 className={studentDetailTab === 'academico' ? 'active' : ''}
                 onClick={() => setStudentDetailTab('academico')}
               >
-                Información académica
+                Informacin acadmica
               </button>
               <button
                 type="button"
@@ -4243,7 +4176,7 @@ const selectedConvenio = useMemo(() => {
                           <h5>{asignacion.empresa.nombre}</h5>
                           <span className="chip chip--ghost">{asignacion.estado}</span>
                         </header>
-                        <p>{formatDate(asignacion.fechaInicio)} · {formatDate(asignacion.fechaFin)}</p>
+                        <p>{formatDate(asignacion.fechaInicio)}  {formatDate(asignacion.fechaFin)}</p>
                         <div className="student-detail__links">
                           <Link to={`/empresas/${asignacion.empresa.id}`} className="link">
                             Gestionar empresa
@@ -4253,7 +4186,7 @@ const selectedConvenio = useMemo(() => {
                     ))}
                   </div>
                 ) : (
-                  <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
+                  <p className="student-detail__placeholder">Todava no tiene asignaciones registradas.</p>
                 )
               )}
               {studentDetailTab === 'seguimiento' && (
@@ -4282,7 +4215,110 @@ const selectedConvenio = useMemo(() => {
 
    </>
   ) : (
-    <div className="app__alert app__alert--info">Cargando datos del backend…</div>
+    <div className="app__alert app__alert--info">Cargando datos del backend...</div>
+  );
+
+  const solicitudesElement = (
+    <section className="module-page">
+      <header className="module-page__header">
+        <div>
+          <p className="module-page__eyebrow">Empresas interesadas</p>
+          <h2>Solicitudes de registro</h2>
+          <p>Revisa las solicitudes enviadas desde el portal externo y aprueba solo las verificadas.</p>
+        </div>
+        <div className="module-page__actions">
+          <span className="chip chip--ghost">{empresaSolicitudes.length} pendientes</span>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
+            onClick={handleRefreshSolicitudes}
+            disabled={loadingSolicitudes}
+          >
+            {loadingSolicitudes ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
+      </header>
+
+      {loadingSolicitudes ? (
+        <p className="detail-placeholder">Cargando solicitudes...</p>
+      ) : empresaSolicitudes.length === 0 ? (
+        <p className="detail-placeholder">
+          No hay solicitudes pendientes. Comparte el formulario publico para invitar nuevas empresas.
+        </p>
+      ) : (
+        <div className="solicitudes-panel__list solicitudes-panel__list--page">
+          {empresaSolicitudes.map((solicitud) => {
+            const canApprove = solicitud.estado === 'email_verificado';
+            const isProcessing = processingSolicitudId === solicitud.id;
+            const estadoLabel = SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado;
+
+            return (
+              <article key={solicitud.id} className="solicitud-card">
+                <div className="solicitud-card__header">
+                  <div>
+                    <h3>{solicitud.nombreEmpresa}</h3>
+                    <p className="solicitud-card__meta">
+                      <span className={`badge badge--${solicitud.estado}`}>{estadoLabel}</span>
+                      <span>Registrada: {formatDate(solicitud.creadaEn)}</span>
+                    </p>
+                  </div>
+                  {solicitud.web && (
+                    <a href={solicitud.web} target="_blank" rel="noreferrer" className="link link--muted">
+                      Web
+                    </a>
+                  )}
+                </div>
+                <p className="solicitud-card__description">
+                  {solicitud.sector ?? 'Sector no indicado'}  {solicitud.ciudad ?? 'Ciudad no indicada'}
+                </p>
+                <div className="solicitud-card__contact">
+                  <strong>{solicitud.contacto.nombre}</strong>
+                  <span>{solicitud.contacto.email}</span>
+                  {solicitud.contacto.telefono && <span>{solicitud.contacto.telefono}</span>}
+                </div>
+                <div className="solicitud-card__actions">
+                  <button
+                    type="button"
+                    className="button button--primary button--sm"
+                    onClick={() => handleApproveSolicitud(solicitud.id)}
+                    disabled={!canApprove || isProcessing}
+                    title={!canApprove ? 'La empresa debe verificar su correo antes de aprobar.' : undefined}
+                  >
+                    {isProcessing ? 'Procesando...' : 'Aprobar'}
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--ghost button--sm"
+                    onClick={() => handleRejectSolicitud(solicitud.id)}
+                    disabled={isProcessing}
+                  >
+                    Rechazar
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+
+  const profileElement = (
+    <section className="module-page">
+      <header className="module-page__header">
+        <div>
+          <p className="module-page__eyebrow">Perfil</p>
+          <h2>Administrador</h2>
+          <p>Configuracion basica del usuario interno. La autenticacion real llegara en una iteracion posterior.</p>
+        </div>
+      </header>
+      <div className="profile-card">
+        <p>
+          Usa tu cuenta institucional para gestionar las asignaciones y convenios. Cuando se active el login, aqui
+          podras actualizar tus datos y rotar credenciales.
+        </p>
+      </div>
+    </section>
   );
 
   return (
@@ -4291,23 +4327,81 @@ const selectedConvenio = useMemo(() => {
       <header className="topbar">
         <div>
           <Link to="/" className="topbar__logo">Agora</Link>
-          <span className="topbar__badge">Panel de prácticas</span>
+          <span className="topbar__badge">Panel de practicas</span>
         </div>
         <div className="topbar__actions">
           <span className="app__meta">API: <code>{API_BASE_URL}</code></span>
           {lastUpdated && <span className="app__meta">Sync {lastUpdated.toLocaleTimeString('es-ES')}</span>}
           <button type="button" onClick={loadData} disabled={loading}>
-            {loading ? 'Actualizando…' : 'Sincronizar'}
+            {loading ? 'Actualizando...' : 'Sincronizar'}
           </button>
+          <div className="topbar__notifications">
+            <button
+              type="button"
+              className="notification-bell"
+              onClick={toggleNotifications}
+              aria-expanded={notificationsOpen}
+              aria-label="Solicitudes pendientes"
+            >
+              <span className="notification-bell__icon">&#128276;</span>
+              {empresaSolicitudes.length > 0 && (
+                <span className="notification-bell__badge">{empresaSolicitudes.length}</span>
+              )}
+            </button>
+            {notificationsOpen && (
+              <div className="notification-dropdown">
+                <div className="notification-dropdown__header">
+                  <span>Solicitudes pendientes</span>
+                  <button
+                    type="button"
+                    className="link link--muted"
+                    onClick={handleRefreshSolicitudes}
+                    disabled={loadingSolicitudes}
+                  >
+                    {loadingSolicitudes ? 'Actualizando...' : 'Actualizar'}
+                  </button>
+                </div>
+                <div className="notification-dropdown__list">
+                  {loadingSolicitudes ? (
+                    <p className="detail-placeholder">Cargando solicitudes...</p>
+                  ) : empresaSolicitudes.length === 0 ? (
+                    <p className="detail-placeholder">Sin nuevas solicitudes.</p>
+                  ) : (
+                    empresaSolicitudes.slice(0, 3).map((solicitud) => (
+                      <button
+                        type="button"
+                        key={solicitud.id}
+                        className="notification-item"
+                        onClick={openSolicitudesPage}
+                      >
+                        <span className="notification-item__title">{solicitud.nombreEmpresa}</span>
+                        <span className="notification-item__meta">
+                          {SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="notification-dropdown__footer">
+                  <button type="button" className="button button--ghost button--sm" onClick={openSolicitudesPage}>
+                    Ver todas
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <div className="topbar__auth">
-            <Link to="/login" className="button button--ghost button--sm">Iniciar sesión</Link>
-            <Link to="/registro" className="button button--primary button--sm">Registrar empresa</Link>
+            <Link to="/login" className="button button--ghost button--sm" onClick={closeNotifications}>Iniciar sesion</Link>
+            <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
+              <span className="topbar__profile-icon">&#128100;</span>
+              <span className="topbar__profile-label">Perfil</span>
+            </Link>
           </div>
         </div>
       </header>
 
       {error && <div className="app__alert app__alert--error">{error}</div>}
-      {loading && <div className="app__alert app__alert--info">Cargando datos…</div>}
+      {loading && <div className="app__alert app__alert--info">Cargando datos...</div>}
 
       <Routes>
         <Route path="/" element={dashboardElement} />
@@ -4320,15 +4414,8 @@ const selectedConvenio = useMemo(() => {
         <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
         <Route path="/documentacion" element={<DocumentationPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route
-          path="/registro"
-          element={(
-            <StaffRegistrationPage
-              onSuccess={(msg) => pushToast('success', msg)}
-              onError={(msg) => pushToast('error', msg)}
-            />
-          )}
-        />
+        <Route path="/solicitudes" element={solicitudesElement} />
+        <Route path="/perfil" element={profileElement} />
       </Routes>
 
       {studentModal && (
@@ -4376,7 +4463,7 @@ const selectedConvenio = useMemo(() => {
       )}
       {asignacionModal && (
         <Modal
-          title={asignacionModal.mode === 'create' ? 'Crear asignación' : 'Editar asignación'}
+          title={asignacionModal.mode === 'create' ? 'Crear asignacin' : 'Editar asignacin'}
           onClose={handleCloseAsignacionModal}
         >
           <AsignacionForm

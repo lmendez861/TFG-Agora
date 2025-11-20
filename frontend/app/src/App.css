@@ -130,6 +130,122 @@
   align-items: center;
 }
 
+.topbar__profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.topbar__profile:hover {
+  background: rgba(var(--accent-primary-rgb), 0.15);
+  border-color: rgba(var(--accent-primary-rgb), 0.4);
+}
+
+.topbar__profile-icon {
+  font-size: 1.1rem;
+}
+
+.topbar__profile-label {
+  font-size: 0.95rem;
+}
+
+.topbar__notifications {
+  position: relative;
+}
+
+.notification-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+}
+
+.notification-bell__icon {
+  font-size: 1rem;
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  background: var(--accent-secondary);
+  color: #111;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 2.8rem;
+  right: 0;
+  width: 280px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 0.75rem;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+}
+
+.notification-dropdown__header,
+.notification-dropdown__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.notification-dropdown__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 240px;
+  overflow: auto;
+  margin: 0.5rem 0;
+}
+
+.notification-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.notification-item:hover {
+  border-color: rgba(var(--accent-primary-rgb), 0.6);
+  background: rgba(var(--accent-primary-rgb), 0.08);
+}
+
+.notification-item__title {
+  display: block;
+  font-weight: 600;
+}
+
+.notification-item__meta {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
 .app__meta {
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -2688,6 +2804,10 @@
   gap: 1rem;
 }
 
+.solicitudes-panel__list--page {
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
 .solicitud-card {
   background: rgba(2, 6, 23, 0.6);
   border-radius: 1.25rem;
@@ -2731,6 +2851,15 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.profile-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 1rem;
+  padding: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 .badge {

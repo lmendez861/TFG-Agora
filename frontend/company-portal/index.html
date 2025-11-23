@@ -1,109 +1,13 @@
-﻿<!doctype html>
-<html lang="es">
+<!doctype html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Portal de Empresas | Agora Practicas</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>company-portal</title>
   </head>
   <body>
-    <header class="hero">
-      <div class="hero__content">
-        <p class="hero__eyebrow">Bienvenida</p>
-        <h1>Colabora con nuestro centro educativo</h1>
-        <p>
-          Si tu empresa quiere participar en el programa de practicas, completa la solicitud.
-          Tras verificar el correo electronico, nuestro equipo revisara los datos y os contactara.
-        </p>
-        <div class="hero__cta">
-          <button id="scroll-to-form" class="btn btn--primary">Solicitar colaboracion</button>
-          <a class="link" href="https://github.com/lmendez861/TFG-gora" target="_blank" rel="noreferrer">
-            Conoce el proyecto
-          </a>
-        </div>
-      </div>
-      <div class="hero__illustration">
-        <span>Agora · Programa de Practicas</span>
-        <h2>Empresas innovadoras + talento universitario</h2>
-      </div>
-    </header>
-
-    <main>
-      <section class="features">
-        <article>
-          <h3>Proceso guiado</h3>
-          <p>Recibiras un correo de verificacion y, si todo es correcto, activaremos el portal para coordinar tutores.</p>
-        </article>
-        <article>
-          <h3>Documentacion segura</h3>
-          <p>El equipo del centro gestiona la firma de convenios y los documentos requeridos por normativa.</p>
-        </article>
-        <article>
-          <h3>Acompanamiento continuo</h3>
-          <p>Asignamos un coordinador academico para dar seguimiento a las practicas y resolver dudas.</p>
-        </article>
-      </section>
-
-      <section class="form-section" id="registro">
-        <header>
-          <p class="section-eyebrow">Solicitud online</p>
-          <h2>Registrar mi empresa</h2>
-          <p>Completa la siguiente informacion. Es importante utilizar un correo corporativo para la verificacion.</p>
-        </header>
-        <form id="company-form" class="registro-form">
-          <div class="form-grid">
-            <label>
-              <span>Nombre de la empresa*</span>
-              <input name="nombreEmpresa" required />
-            </label>
-            <label>
-              <span>Sector</span>
-              <input name="sector" placeholder="Tecnologia, Salud, etc." />
-            </label>
-            <label>
-              <span>Ciudad</span>
-              <input name="ciudad" />
-            </label>
-            <label>
-              <span>Web</span>
-              <input name="web" type="url" placeholder="https://example.com" />
-            </label>
-          </div>
-          <label>
-            <span>Descripcion de la colaboracion</span>
-            <textarea name="descripcion" rows="4" placeholder="Cuentanos que tipo de perfiles buscais, duracion, objetivos..."></textarea>
-          </label>
-          <fieldset>
-            <legend>Persona de contacto</legend>
-            <div class="form-grid">
-              <label>
-                <span>Nombre completo*</span>
-                <input name="contactoNombre" required />
-              </label>
-              <label>
-                <span>Email corporativo*</span>
-                <input name="contactoEmail" type="email" required />
-              </label>
-              <label>
-                <span>Telefono</span>
-                <input name="contactoTelefono" />
-              </label>
-            </div>
-          </fieldset>
-          <div id="form-status" class="form-status" hidden></div>
-          <button type="submit" class="btn btn--primary" id="submit-button">
-            Enviar solicitud
-          </button>
-        </form>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>&copy; Agora · Coordinacion de Practicas</p>
-      <small>Este portal envia los datos a la API principal (endpoint /registro-empresa).</small>
-    </footer>
-
-    <script type="module" src="./app.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

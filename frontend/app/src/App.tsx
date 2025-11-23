@@ -4309,14 +4309,54 @@ const selectedConvenio = useMemo(() => {
         <div>
           <p className="module-page__eyebrow">Perfil</p>
           <h2>Administrador</h2>
-          <p>Configuracion basica del usuario interno. La autenticacion real llegara en una iteracion posterior.</p>
+          <p>Panel de cuenta interna. Ajusta datos basicos y atajos mientras llega la autenticacion real.</p>
         </div>
       </header>
-      <div className="profile-card">
-        <p>
-          Usa tu cuenta institucional para gestionar las asignaciones y convenios. Cuando se active el login, aqui
-          podras actualizar tus datos y rotar credenciales.
-        </p>
+      <div className="profile-grid">
+        <article className="profile-card profile-card--main">
+          <h3>Datos de la cuenta</h3>
+          <dl className="profile-fields">
+            <div>
+              <dt>Nombre</dt>
+              <dd>Administrador demo</dd>
+            </div>
+            <div>
+              <dt>Email</dt>
+              <dd>coordinacion@centro.edu</dd>
+            </div>
+            <div>
+              <dt>Rol</dt>
+              <dd>Administrador</dd>
+            </div>
+            <div>
+              <dt>Autenticacion</dt>
+              <dd>Basica (admin/admin123) hasta migrar a usuarios</dd>
+            </div>
+          </dl>
+          <p className="profile-hint">
+            Cuando activemos login real, aqui podras cambiar contrasena, habilitar doble factor y vincular la cuenta al
+            SSO del centro.
+          </p>
+        </article>
+
+        <article className="profile-card">
+          <h3>Preferencias</h3>
+          <ul className="profile-list">
+            <li>Notificaciones de solicitudes: activas (campana)</li>
+            <li>Idioma: es-ES</li>
+            <li>Zona horaria: Europe/Madrid</li>
+          </ul>
+        </article>
+
+        <article className="profile-card">
+          <h3>Accesos rapidos</h3>
+          <ul className="profile-list">
+            <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
+            <li><Link to="/empresas">Ver empresas activas</Link></li>
+            <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
+            <li><Link to="/documentacion">Documentacion</Link></li>
+          </ul>
+        </article>
       </div>
     </section>
   );

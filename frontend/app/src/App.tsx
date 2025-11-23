@@ -4408,17 +4408,17 @@ const selectedConvenio = useMemo(() => {
                     <p className="detail-placeholder">Sin nuevas solicitudes.</p>
                   ) : (
                     empresaSolicitudes.slice(0, 3).map((solicitud) => (
-                      <button
-                        type="button"
+                      <Link
+                        to="/solicitudes"
                         key={solicitud.id}
                         className="notification-item"
-                        onClick={() => openSolicitudesPage()}
+                        onClick={closeNotifications}
                       >
                         <span className="notification-item__title">{solicitud.nombreEmpresa}</span>
                         <span className="notification-item__meta">
                           {SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado}
                         </span>
-                      </button>
+                      </Link>
                     ))
                   )}
                 </div>

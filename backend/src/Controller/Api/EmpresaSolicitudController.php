@@ -52,10 +52,6 @@ final class EmpresaSolicitudController extends AbstractController
             return $this->json(['message' => 'Solicitud no encontrada.'], Response::HTTP_NOT_FOUND);
         }
 
-        if (!$solicitud->isEmailVerified()) {
-            return $this->json(['message' => 'La solicitud debe verificar el correo antes de aprobarse.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         if ($solicitud->getEstado() === EmpresaSolicitud::ESTADO_APROBADA) {
             return $this->json(['message' => 'La solicitud ya fue aprobada.'], Response::HTTP_CONFLICT);
         }

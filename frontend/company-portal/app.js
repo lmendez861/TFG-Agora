@@ -21,7 +21,7 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   resetStatus();
   submitButton.disabled = true;
-  submitButton.textContent = 'Enviando…';
+  submitButton.textContent = 'Enviando...';
 
   const payload = Object.fromEntries(new FormData(form).entries());
 
@@ -48,7 +48,7 @@ form.addEventListener('submit', async (event) => {
     }
 
     setStatus(
-      '¡Solicitud enviada! Revisa tu correo para confirmar la dirección y espera la aprobación del centro.',
+      'Solicitud enviada. Revisa tu correo para confirmar la direccion y espera la aprobacion del centro.',
       'success',
     );
     form.reset();

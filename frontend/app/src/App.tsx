@@ -4412,7 +4412,7 @@ const selectedConvenio = useMemo(() => {
                         type="button"
                         key={solicitud.id}
                         className="notification-item"
-                        onClick={openSolicitudesPage}
+                        onClick={() => openSolicitudesPage()}
                       >
                         <span className="notification-item__title">{solicitud.nombreEmpresa}</span>
                         <span className="notification-item__meta">

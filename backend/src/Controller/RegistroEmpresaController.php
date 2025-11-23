@@ -105,33 +105,54 @@ HTML,
     }
 
     #[Route('/confirmar', name: 'confirm', methods: ['GET'])]
-    public function confirm(Request $request): JsonResponse
+    public function confirm(Request $request): Response
     {
         $token = (string) $request->query->get('token');
         if ($token === '') {
-            return $this->json([
-                'message' => 'El token de verificación es obligatorio.',
-            ], Response::HTTP_BAD_REQUEST);
+            return $this->renderConfirmationPage('El token de verificacion es obligatorio.', Response::HTTP_BAD_REQUEST);
         }
 
         $solicitud = $this->solicitudRepository->findOneBy(['token' => $token]);
         if (!$solicitud) {
-            return $this->json([
-                'message' => 'No encontramos ninguna solicitud asociada a este token.',
-            ], Response::HTTP_NOT_FOUND);
+            return $this->renderConfirmationPage('No encontramos ninguna solicitud asociada a este token.', Response::HTTP_NOT_FOUND);
         }
 
         if ($solicitud->isEmailVerified()) {
-            return $this->json([
-                'message' => 'La dirección ya había sido verificada previamente.',
-            ], Response::HTTP_OK);
+            return $this->renderConfirmationPage('La direccion ya habia sido verificada previamente.', Response::HTTP_OK);
         }
 
         $solicitud->markEmailVerified();
         $this->entityManager->flush();
 
-        return $this->json([
-            'message' => '¡Gracias! Hemos confirmado tu correo y el equipo revisará la solicitud.',
-        ], Response::HTTP_OK);
+        return $this->renderConfirmationPage('Hemos confirmado tu correo. El equipo revisara la solicitud en breve.', Response::HTTP_OK);
+    }
+
+    private function renderConfirmationPage(string $message, int $status): Response
+    {
+        $html = <<<HTML
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Verificacion de empresa</title>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #0c1b2a, #050b12); color: #e9f2ff; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:24px 28px; max-width:460px; box-shadow:0 20px 40px rgba(0,0,0,0.35); }
+    .status { display:inline-block; padding:6px 10px; border-radius:999px; background: rgba(75,139,255,0.2); color:#9bc2ff; font-weight:700; font-size:13px; margin-bottom:10px; }
+    h1 { margin:0 0 8px; font-size:22px; }
+    p { margin:0; line-height:1.6; color:#c7d9ff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="status">Verificacion</div>
+    <h1>Estado de tu solicitud</h1>
+    <p>{$message}</p>
+  </div>
+</body>
+</html>
+HTML;
+
+        return new Response($html, $status);
     }
 }

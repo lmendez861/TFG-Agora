@@ -2901,6 +2901,36 @@
   gap: 0.25rem;
 }
 
+.solicitud-card__messages {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mensaje {
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-soft);
+}
+
+.mensaje--centro {
+  border-color: rgba(var(--accent-primary-rgb), 0.4);
+}
+
+.mensaje--empresa {
+  border-color: rgba(var(--accent-secondary-rgb, 255, 177, 82), 0.4);
+}
+
+.mensaje-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;

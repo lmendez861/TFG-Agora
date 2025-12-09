@@ -27,6 +27,11 @@ import {
   rejectEmpresaSolicitud,
   updateEmpresa,
   updateEstudiante,
+  login,
+  logout,
+  fetchMe,
+  fetchEmpresaMensajes,
+  postEmpresaMensaje,
 } from './services/api';
 import type {
   ApiCollections,
@@ -40,11 +45,13 @@ import type {
   EmpresaPayload,
   EmpresaSummary,
   EmpresaSolicitudSummary,
+  EmpresaSolicitudMensaje,
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
   TutorAcademicoSummary,
   TutorProfesionalSummary,
+  MeResponse,
 } from './types';
 import './App.css';
 
@@ -856,10 +863,20 @@ function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus('La autenticacion basada en usuarios llegara proximamente. De momento utiliza la autenticacion basica configurada en Symfony.');
+    setStatus('Autenticando...');
+    try {
+      await login(email, password);
+      const meData = await fetchMe();
+      setStatus(`Bienvenido ${meData.username}`);
+      navigate('/');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
+      setStatus(message);
+    }
   };
 
   return (
@@ -868,7 +885,7 @@ function LoginPage() {
         <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
         <h2>Iniciar sesion</h2>
         <p className="auth-card__description">
-          El login real llegara tras migrar usuarios a base de datos. Mientras tanto puedes usar autenticacion basica desde el backend.
+          Inicia sesion con tus credenciales. Las llamadas posteriores usan la sesion del navegador (json_login).
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -1008,6 +1025,11 @@ export default function App() {
   const [empresaSolicitudes, setEmpresaSolicitudes] = useState<EmpresaSolicitudSummary[]>([]);
   const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
   const [processingSolicitudId, setProcessingSolicitudId] = useState<number | null>(null);
+  const [solicitudMensajes, setSolicitudMensajes] = useState<Record<number, EmpresaSolicitudMensaje[]>>({});
+  const [mensajeDraft, setMensajeDraft] = useState<Record<number, string>>({});
+  const [loadingMensajesId, setLoadingMensajesId] = useState<number | null>(null);
+  const [me, setMe] = useState<MeResponse | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const openCreateStudent = useCallback(() => {
     setStudentFormError(null);
@@ -1173,6 +1195,43 @@ export default function App() {
     [pushToast],
   );
 
+  const loadMensajes = useCallback(async (solicitudId: number) => {
+    setLoadingMensajesId(solicitudId);
+    try {
+      const msgs = await fetchEmpresaMensajes(solicitudId);
+      setSolicitudMensajes((prev) => ({ ...prev, [solicitudId]: msgs }));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudieron cargar los mensajes.';
+      pushToast('error', message);
+    } finally {
+      setLoadingMensajesId(null);
+    }
+  }, [pushToast]);
+
+  const handleSendMensaje = useCallback(
+    async (solicitudId: number) => {
+      const draft = mensajeDraft[solicitudId]?.trim();
+      if (!draft) {
+        return;
+      }
+      setLoadingMensajesId(solicitudId);
+      try {
+        const nuevo = await postEmpresaMensaje(solicitudId, 'centro', draft);
+        setSolicitudMensajes((prev) => ({
+          ...prev,
+          [solicitudId]: [...(prev[solicitudId] ?? []), nuevo],
+        }));
+        setMensajeDraft((prev) => ({ ...prev, [solicitudId]: '' }));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudo enviar el mensaje.';
+        pushToast('error', message);
+      } finally {
+        setLoadingMensajesId(null);
+      }
+    },
+    [mensajeDraft, pushToast],
+  );
+
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -1204,9 +1263,14 @@ export default function App() {
   }, [refreshSolicitudes]);
 
   useEffect(() => {
-    loadData().catch(() => {
-      // El error ya se captura en loadData, evitamos advertencias de promesas sin tratar.
-    });
+    fetchMe()
+      .then((user) => setMe(user))
+      .catch(() => setMe(null))
+      .finally(() => {
+        loadData().catch(() => {
+          // El error ya se captura en loadData, evitamos advertencias de promesas sin tratar.
+        });
+      });
   }, [loadData]);
 
   useEffect(() => {
@@ -4276,28 +4340,66 @@ const selectedConvenio = useMemo(() => {
                   <span>{solicitud.contacto.email}</span>
                   {solicitud.contacto.telefono && <span>{solicitud.contacto.telefono}</span>}
                 </div>
-                <div className="solicitud-card__actions">
-                  <button
-                    type="button"
-                    className="button button--primary button--sm"
-                    onClick={() => handleApproveSolicitud(solicitud.id)}
+              <div className="solicitud-card__actions">
+                <button
+                  type="button"
+                  className="button button--primary button--sm"
+                  onClick={() => handleApproveSolicitud(solicitud.id)}
                     disabled={!canApprove || isProcessing}
                     title={!canApprove ? 'La empresa debe verificar su correo antes de aprobar.' : undefined}
                   >
                     {isProcessing ? 'Procesando...' : 'Aprobar'}
                   </button>
-                  <button
-                    type="button"
-                    className="button button--ghost button--sm"
-                    onClick={() => handleRejectSolicitud(solicitud.id)}
-                    disabled={isProcessing}
-                  >
-                    Rechazar
-                  </button>
+                <button
+                  type="button"
+                  className="button button--ghost button--sm"
+                  onClick={() => handleRejectSolicitud(solicitud.id)}
+                  disabled={isProcessing}
+                >
+                  Rechazar
+                </button>
+                <button
+                  type="button"
+                  className="button button--ghost button--sm"
+                  onClick={() => loadMensajes(solicitud.id)}
+                  disabled={loadingMensajesId === solicitud.id}
+                >
+                  {loadingMensajesId === solicitud.id ? 'Cargando...' : 'Ver mensajes'}
+                </button>
+              </div>
+              {solicitudMensajes[solicitud.id] && (
+                <div className="solicitud-card__messages">
+                  {solicitudMensajes[solicitud.id].length === 0 ? (
+                    <p className="detail-placeholder">Sin mensajes todavia.</p>
+                  ) : (
+                    solicitudMensajes[solicitud.id].map((msg) => (
+                      <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
+                        <p>{msg.texto}</p>
+                        <small>{msg.autor} · {formatDate(msg.createdAt)}</small>
+                      </div>
+                    ))
+                  )}
+                  <div className="mensaje-form">
+                    <input
+                      type="text"
+                      placeholder="Escribe un mensaje al contacto..."
+                      value={mensajeDraft[solicitud.id] ?? ''}
+                      onChange={(e) => setMensajeDraft((prev) => ({ ...prev, [solicitud.id]: e.target.value }))}
+                    />
+                    <button
+                      type="button"
+                      className="button button--primary button--sm"
+                      onClick={() => handleSendMensaje(solicitud.id)}
+                      disabled={loadingMensajesId === solicitud.id}
+                    >
+                      Enviar
+                    </button>
+                  </div>
                 </div>
-              </article>
-            );
-          })}
+              )}
+            </article>
+          );
+        })}
         </div>
       )}
     </section>

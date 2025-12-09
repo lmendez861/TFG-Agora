@@ -25,24 +25,8 @@ import type {
 } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8000/api';
-const API_USERNAME = import.meta.env.VITE_API_USERNAME as string | undefined;
-const API_PASSWORD = import.meta.env.VITE_API_PASSWORD as string | undefined;
-
-const authorizationHeader = (() => {
-  if (!API_USERNAME || !API_PASSWORD) {
-    return undefined;
-  }
-
-  const credentials = `${API_USERNAME}:${API_PASSWORD}`;
-  return `Basic ${btoa(credentials)}`;
-})();
-
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
-
-  if (authorizationHeader) {
-    headers.set('Authorization', authorizationHeader);
-  }
 
   const hasJsonBody = typeof init.body !== 'undefined';
   if (hasJsonBody && !headers.has('Content-Type')) {

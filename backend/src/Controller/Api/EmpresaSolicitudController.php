@@ -33,16 +33,23 @@ final class EmpresaSolicitudController extends AbstractController
     public function index(Request $request): JsonResponse
     {
         $estado = $request->query->get('estado');
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = min(50, max(1, (int) $request->query->get('perPage', 20)));
+        $offset = ($page - 1) * $perPage;
+
         $criteria = [];
         if ($estado) {
             $criteria['estado'] = $estado;
         }
 
-        $solicitudes = $this->repository->findBy($criteria, ['createdAt' => 'DESC']);
-
+        $solicitudes = $this->repository->findBy($criteria, ['createdAt' => 'DESC'], $perPage, $offset);
         $data = array_map(fn (EmpresaSolicitud $solicitud): array => $this->serializeSolicitud($solicitud), $solicitudes);
 
-        return $this->json($data, Response::HTTP_OK);
+        return $this->json([
+            'items' => $data,
+            'page' => $page,
+            'perPage' => $perPage,
+        ], Response::HTTP_OK);
     }
 
     #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]

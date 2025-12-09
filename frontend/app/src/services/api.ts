@@ -203,8 +203,15 @@ export async function fetchTutorProfesionales(empresaId?: number): Promise<Tutor
   return apiGet<TutorProfesionalSummary[]>(`/tutores-profesionales${query}`);
 }
 
-export async function fetchEmpresaSolicitudes(): Promise<EmpresaSolicitudSummary[]> {
-  return apiGet<EmpresaSolicitudSummary[]>('/empresa-solicitudes');
+export async function fetchEmpresaSolicitudes(
+  page?: number,
+  perPage?: number,
+): Promise<{ items: EmpresaSolicitudSummary[]; page: number; perPage: number }> {
+  const params = new URLSearchParams();
+  if (page) params.set('page', String(page));
+  if (perPage) params.set('perPage', String(perPage));
+  const qs = params.toString() ? `?${params.toString()}` : '';
+  return apiGet<{ items: EmpresaSolicitudSummary[]; page: number; perPage: number }>(`/empresa-solicitudes${qs}`);
 }
 
 export async function approveEmpresaSolicitud(id: number): Promise<void> {

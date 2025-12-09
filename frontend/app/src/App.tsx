@@ -1178,10 +1178,11 @@ export default function App() {
 
   const refreshSolicitudes = useCallback(
     async (options?: { silent?: boolean }) => {
+      if (!me) return;
       setLoadingSolicitudes(true);
       try {
         const data = await fetchEmpresaSolicitudes();
-        setEmpresaSolicitudes(data.filter((solicitud) => solicitud.estado !== 'aprobada'));
+        setEmpresaSolicitudes(data.items.filter((solicitud) => solicitud.estado !== 'aprobada'));
       } catch (err) {
         if (!options?.silent) {
           const message =
@@ -1192,7 +1193,7 @@ export default function App() {
         setLoadingSolicitudes(false);
       }
     },
-    [pushToast],
+    [pushToast, me],
   );
 
   const loadMensajes = useCallback(async (solicitudId: number) => {
@@ -1264,14 +1265,22 @@ export default function App() {
 
   useEffect(() => {
     fetchMe()
-      .then((user) => setMe(user))
-      .catch(() => setMe(null))
+      .then((user) => {
+        setMe(user);
+        setAuthError(null);
+      })
+      .catch(() => {
+        setMe(null);
+        setAuthError('Inicia sesion para ver el panel.');
+      })
       .finally(() => {
-        loadData().catch(() => {
-          // El error ya se captura en loadData, evitamos advertencias de promesas sin tratar.
-        });
+        if (me) {
+          loadData().catch(() => {
+            // El error ya se captura en loadData, evitamos advertencias de promesas sin tratar.
+          });
+        }
       });
-  }, [loadData]);
+  }, [loadData, me]);
 
   useEffect(() => {
     if (collections) {
@@ -4022,7 +4031,9 @@ const selectedConvenio = useMemo(() => {
       </section>
     );
   };
-  const dashboardElement = collections ? (
+  const dashboardElement = authError ? (
+    <div className="app__alert app__alert--error">{authError}</div>
+  ) : collections ? (
     <>
             <section className="hero">
         <div className="hero__content">

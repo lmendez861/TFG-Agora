@@ -100,6 +100,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    #[\Deprecated(reason: 'Empty implementation')]
     public function eraseCredentials(): void
     {
         // No-op: we are not storing temporary sensitive data.

@@ -57,9 +57,13 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         // Aprobar desde el panel interno (auth básica admin/admin123)
         $client->request(
             'POST',
-            sprintf('/api/empresa-solicitudes/%d/aprobar', $solicitud->getId()),
-            server: ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'admin123'],
+            '/api/login',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['username' => 'admin', 'password' => 'admin123'], JSON_THROW_ON_ERROR)
         );
+        self::assertResponseIsSuccessful();
+
+        $client->request('POST', sprintf('/api/empresa-solicitudes/%d/aprobar', $solicitud->getId()));
         self::assertResponseStatusCodeSame(201);
 
         $entityManager->clear();

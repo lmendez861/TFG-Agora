@@ -31,16 +31,21 @@ final class EmpresaMensajeControllerTest extends WebTestCase
 
         $client->request(
             'POST',
+            '/api/login',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['username' => 'admin', 'password' => 'admin123'], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseIsSuccessful();
+        $client->request(
+            'POST',
             sprintf('/api/empresa-solicitudes/%d/mensajes', $solicitud->getId()),
-            server: ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'admin123'],
             content: json_encode(['autor' => 'centro', 'texto' => 'Hola empresa'], JSON_THROW_ON_ERROR)
         );
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $client->request(
             'GET',
-            sprintf('/api/empresa-solicitudes/%d/mensajes', $solicitud->getId()),
-            server: ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'admin123']
+            sprintf('/api/empresa-solicitudes/%d/mensajes', $solicitud->getId())
         );
         self::assertResponseIsSuccessful();
         $data = json_decode($client->getResponse()->getContent() ?: '[]', true);

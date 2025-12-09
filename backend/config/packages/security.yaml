@@ -8,6 +8,8 @@ security:
             entity:
                 class: App\Entity\User
                 property: username
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_API, ROLE_USER]
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -23,9 +25,6 @@ security:
             logout:
                 path: /api/logout
                 invalidate_session: true
-            # Se mantiene basic temporalmente para compatibilidad con el frontend actual
-            http_basic:
-                realm: 'TFG API'
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

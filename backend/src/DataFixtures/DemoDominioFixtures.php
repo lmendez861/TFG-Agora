@@ -450,13 +450,27 @@ class DemoDominioFixtures extends Fixture
 
     private function createAdminUser(ObjectManager $manager): void
     {
-        $user = (new User())
+        $admin = (new User())
             ->setUsername('admin')
             ->setFullName('Administrador TFG')
-            ->setRoles(['ROLE_ADMIN', 'ROLE_API'])
+            ->setRoles(['ROLE_ADMIN'])
             ->setPassword($this->hashPassword('admin123'));
 
-        $manager->persist($user);
+        $coordinador = (new User())
+            ->setUsername('coordinador')
+            ->setFullName('Coordinador Centro')
+            ->setRoles(['ROLE_API'])
+            ->setPassword($this->hashPassword('coordinador123'));
+
+        $lector = (new User())
+            ->setUsername('lectura')
+            ->setFullName('Solo lectura')
+            ->setRoles(['ROLE_USER'])
+            ->setPassword($this->hashPassword('lectura123'));
+
+        $manager->persist($admin);
+        $manager->persist($coordinador);
+        $manager->persist($lector);
         $manager->flush();
     }
 

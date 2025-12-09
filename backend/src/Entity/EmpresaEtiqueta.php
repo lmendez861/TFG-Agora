@@ -20,6 +20,9 @@ class EmpresaEtiqueta
     #[ORM\Column(length: 80)]
     private string $nombre;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $colorHex = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
@@ -65,6 +68,18 @@ class EmpresaEtiqueta
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getColorHex(): ?string
+    {
+        return $this->colorHex;
+    }
+
+    public function setColorHex(?string $colorHex): self
+    {
+        $this->colorHex = $colorHex;
 
         return $this;
     }

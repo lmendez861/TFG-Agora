@@ -60,13 +60,27 @@ final class EmpresaColaboradoraController extends AbstractController
                 ->setParameter('search', $pattern);
         }
 
-        [$page, $perPage] = $this->resolvePagination($request);
-        $qb->orderBy('e.id', 'ASC')
-            ->setFirstResult(($page - 1) * $perPage)
-            ->setMaxResults($perPage);
+        $page = $request->query->get('page');
+        $perPage = $request->query->get('perPage');
 
-        $empresas = $qb->getQuery()->getResult();
+        if ($page !== null) {
+            [$pageNum, $perPageNum] = $this->resolvePagination($request);
+            $qb->orderBy('e.id', 'ASC')
+                ->setFirstResult(($pageNum - 1) * $perPageNum)
+                ->setMaxResults($perPageNum);
+            $total = (int) $repository->createQueryBuilder('e')->select('COUNT(e.id)')->getQuery()->getSingleScalarResult();
+            $empresas = $qb->getQuery()->getResult();
+            $data = array_map(fn (EmpresaColaboradora $empresa): array => $this->serializeSummary($empresa), $empresas);
 
+            return $this->json([
+                'items' => $data,
+                'page' => $pageNum,
+                'perPage' => $perPageNum,
+                'total' => $total,
+            ], Response::HTTP_OK);
+        }
+
+        $empresas = $qb->orderBy('e.id', 'ASC')->getQuery()->getResult();
         $data = array_map(fn (EmpresaColaboradora $empresa): array => $this->serializeSummary($empresa), $empresas);
 
         return $this->json($data, Response::HTTP_OK);
@@ -268,6 +282,7 @@ final class EmpresaColaboradoraController extends AbstractController
 
         $constraints = new Assert\Collection([
             'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 80)],
+            'colorHex' => new Assert\Optional([new Assert\Length(max: 32)]),
         ]);
 
         $violations = $validator->validate($payload, $constraints);
@@ -277,7 +292,8 @@ final class EmpresaColaboradoraController extends AbstractController
 
         $etiqueta = (new EmpresaEtiqueta())
             ->setEmpresa($empresa)
-            ->setNombre($payload['nombre']);
+            ->setNombre($payload['nombre'])
+            ->setColorHex($payload['colorHex'] ?? null);
 
         $entityManager->persist($etiqueta);
         $entityManager->flush();
@@ -486,6 +502,7 @@ final class EmpresaColaboradoraController extends AbstractController
         return [
             'id' => $etiqueta->getId(),
             'nombre' => $etiqueta->getNombre(),
+            'colorHex' => $etiqueta->getColorHex(),
             'createdAt' => $etiqueta->getCreatedAt()->format(\DateTimeInterface::ATOM),
         ];
     }

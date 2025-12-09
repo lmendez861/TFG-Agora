@@ -299,3 +299,15 @@ export interface EmpresaSolicitudSummary {
   aprobadoEn: string | null;
   motivoRechazo: string | null;
 }
+
+export interface EmpresaSolicitudMensaje {
+  id: number;
+  autor: 'empresa' | 'centro';
+  texto: string;
+  createdAt: string;
+}
+
+export interface MeResponse {
+  username: string;
+  roles: string[];
+}

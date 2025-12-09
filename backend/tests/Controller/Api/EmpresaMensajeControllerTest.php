@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Controller\Api;
+
+use App\Entity\EmpresaSolicitud;
+use App\Repository\EmpresaSolicitudRepository;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
+use App\Tests\Support\DemoFixtureLoaderTrait;
+
+final class EmpresaMensajeControllerTest extends WebTestCase
+{
+    use DemoFixtureLoaderTrait;
+
+    public function testCreateAndListMessages(): void
+    {
+        $client = static::createClient();
+        $entityManager = static::getContainer()->get('doctrine')->getManager();
+        $this->reloadDemoFixtures($entityManager);
+
+        $repo = static::getContainer()->get(EmpresaSolicitudRepository::class);
+
+        $solicitud = (new EmpresaSolicitud())
+            ->setNombreEmpresa('Msg Co')
+            ->setContactoNombre('Ana')
+            ->setContactoEmail('ana@example.com');
+        $entityManager->persist($solicitud);
+        $entityManager->flush();
+
+        $client->request(
+            'POST',
+            sprintf('/api/empresa-solicitudes/%d/mensajes', $solicitud->getId()),
+            server: ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'admin123'],
+            content: json_encode(['autor' => 'centro', 'texto' => 'Hola empresa'], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $client->request(
+            'GET',
+            sprintf('/api/empresa-solicitudes/%d/mensajes', $solicitud->getId()),
+            server: ['PHP_AUTH_USER' => 'admin', 'PHP_AUTH_PW' => 'admin123']
+        );
+        self::assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent() ?: '[]', true);
+        self::assertIsArray($data);
+        self::assertCount(1, $data);
+        self::assertSame('Hola empresa', $data[0]['texto']);
+    }
+}

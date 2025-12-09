@@ -4,7 +4,10 @@ namespace App\Entity;
 
 use App\Repository\EmpresaSolicitudRepository;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\EmpresaMensaje;
 
 #[ORM\Entity(repositoryClass: EmpresaSolicitudRepository::class)]
 #[ORM\HasLifecycleCallbacks]
@@ -68,12 +71,16 @@ class EmpresaSolicitud
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $rejectionReason = null;
 
+    #[ORM\OneToMany(mappedBy: 'solicitud', targetEntity: EmpresaMensaje::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $mensajes;
+
     public function __construct()
     {
         $this->token = bin2hex(random_bytes(32));
         $now = new \DateTimeImmutable();
         $this->createdAt = $now;
         $this->updatedAt = $now;
+        $this->mensajes = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -265,5 +272,21 @@ class EmpresaSolicitud
     public function isPending(): bool
     {
         return $this->estado === self::ESTADO_PENDIENTE || $this->estado === self::ESTADO_EMAIL_VERIFICADO;
+    }
+
+    /**
+     * @return Collection<int, EmpresaMensaje>
+     */
+    public function getMensajes(): Collection
+    {
+        return $this->mensajes;
+    }
+
+    public function addMensaje(EmpresaMensaje $mensaje): void
+    {
+        if (!$this->mensajes->contains($mensaje)) {
+            $this->mensajes->add($mensaje);
+            $mensaje->setSolicitud($this);
+        }
     }
 }

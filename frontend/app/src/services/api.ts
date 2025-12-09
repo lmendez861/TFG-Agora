@@ -20,6 +20,8 @@ import type {
   EmpresaSolicitudSummary,
   TutorAcademicoSummary,
   TutorProfesionalSummary,
+  EmpresaSolicitudMensaje,
+  MeResponse,
 } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8000/api';
@@ -50,6 +52,7 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -226,4 +229,32 @@ export async function approveEmpresaSolicitud(id: number): Promise<void> {
 
 export async function rejectEmpresaSolicitud(id: number, motivo: string): Promise<void> {
   await apiPost(`/empresa-solicitudes/${id}/rechazar`, { motivo });
+}
+
+export async function fetchEmpresaMensajes(solicitudId: number): Promise<EmpresaSolicitudMensaje[]> {
+  return apiGet<EmpresaSolicitudMensaje[]>(`/empresa-solicitudes/${solicitudId}/mensajes`);
+}
+
+export async function postEmpresaMensaje(
+  solicitudId: number,
+  autor: 'empresa' | 'centro',
+  texto: string,
+): Promise<EmpresaSolicitudMensaje> {
+  return apiPost<EmpresaSolicitudMensaje>(`/empresa-solicitudes/${solicitudId}/mensajes`, { autor, texto });
+}
+
+export async function login(username: string, password: string): Promise<void> {
+  await apiRequest('/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+export async function logout(): Promise<void> {
+  await apiRequest('/logout', { method: 'POST' });
+}
+
+export async function fetchMe(): Promise<MeResponse> {
+  return apiGet<MeResponse>('/me');
 }

@@ -15,7 +15,15 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-            stateless: true
+            stateless: false
+            json_login:
+                check_path: /api/login
+                username_path: username
+                password_path: password
+            logout:
+                path: /api/logout
+                invalidate_session: true
+            # Se mantiene basic temporalmente para compatibilidad con el frontend actual
             http_basic:
                 realm: 'TFG API'
 
@@ -28,6 +36,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: ROLE_API }
 
 when@test:

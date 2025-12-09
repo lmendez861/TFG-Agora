@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom'
 import './App.css'
@@ -15,14 +15,15 @@ type SolicitudPayload = {
 }
 
 type ChatMessage = {
-  id: string
+  id: number | string
   author: 'empresa' | 'centro'
   text: string
-  createdAt: Date
+  createdAt: string
 }
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://127.0.0.1:8000'
 const REGISTRO_ENDPOINT = `${API_BASE.replace(/\/$/, '')}/registro-empresa`
+const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`
 
 const HERO_LINKS = [
   { href: '#registro', label: 'Formulario' },
@@ -243,7 +244,8 @@ function LandingPage() {
 function InboxPage() {
   const query = useQuery()
   const enviada = query.get('enviada') === '1'
-  const verificationLink = `${API_BASE.replace(/\/$/, '')}/registro-empresa/confirmar?token=TU_TOKEN`
+  const token = query.get('token') ?? ''
+  const verificationLink = `${API_BASE.replace(/\/$/, '')}/registro-empresa/confirmar?token=${token || 'TU_TOKEN'}`
   return (
     <div className="page">
       <section className="panel">
@@ -273,16 +275,49 @@ function InboxPage() {
 }
 
 function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', author: 'centro', text: 'Hola, hemos recibido tu solicitud.', createdAt: new Date() },
-    { id: '2', author: 'empresa', text: 'Gracias, acabamos de confirmar el correo.', createdAt: new Date() },
-  ])
+  const [token, setToken] = useState('')
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [draft, setDraft] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
+  const location = useLocation()
+
+  useEffect(() => {
+    const q = new URLSearchParams(location.search)
+    const t = q.get('token') ?? ''
+    setToken(t)
+    if (t) {
+      setLoading(true)
+      fetch(`${PORTAL_BASE}/${t}/mensajes`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('No se pudo cargar el chat')
+          const data = await res.json()
+          setMessages(data)
+        })
+        .catch((err) => setStatus(err instanceof Error ? err.message : 'Error de red'))
+        .finally(() => setLoading(false))
+    }
+  }, [location.search])
 
   const sendMessage = () => {
-    if (!draft.trim()) return
-    setMessages((prev) => [...prev, { id: crypto.randomUUID(), author: 'empresa', text: draft.trim(), createdAt: new Date() }])
-    setDraft('')
+    if (!draft.trim() || !token) return
+    setLoading(true)
+    fetch(`${PORTAL_BASE}/${token}/mensajes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto: draft.trim() }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json().catch(() => undefined)
+          throw new Error(data?.message || 'No se pudo enviar el mensaje')
+        }
+        const msg = await res.json()
+        setMessages((prev) => [...prev, msg])
+        setDraft('')
+      })
+      .catch((err) => setStatus(err instanceof Error ? err.message : 'Error enviando mensaje'))
+      .finally(() => setLoading(false))
   }
 
   return (
@@ -293,14 +328,17 @@ function ChatPage() {
             <p className="eyebrow">Canal</p>
             <h2>Chat empresa - centro</h2>
             <p>Usa este canal para resolver dudas mientras se aprueba la solicitud.</p>
+            {!token && <p className="alert alert--error">Añade ?token=... a la URL para ver tu chat.</p>}
           </div>
         </div>
         <div className="chat">
+          {status && <div className="alert alert--error">{status}</div>}
+          {loading && <p className="detail-placeholder">Cargando...</p>}
           <div className="chat__messages">
             {messages.map((msg) => (
               <div key={msg.id} className={`chat__bubble chat__bubble--${msg.author}`}>
                 <p>{msg.text}</p>
-                <small>{msg.author === 'empresa' ? 'Tú' : 'Centro'} · {msg.createdAt.toLocaleTimeString()}</small>
+                <small>{msg.author === 'empresa' ? 'Tú' : 'Centro'} · {new Date(msg.createdAt).toLocaleTimeString()}</small>
               </div>
             ))}
           </div>
@@ -310,8 +348,9 @@ function ChatPage() {
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Escribe un mensaje para el centro..."
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage() } }}
+              disabled={!token || loading}
             />
-            <button type="button" className="btn btn--primary" onClick={sendMessage}>Enviar</button>
+            <button type="button" className="btn btn--primary" onClick={sendMessage} disabled={!token || loading}>Enviar</button>
           </div>
         </div>
       </section>

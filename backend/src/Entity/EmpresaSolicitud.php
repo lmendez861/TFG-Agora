@@ -71,12 +71,16 @@ class EmpresaSolicitud
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $rejectionReason = null;
 
+    #[ORM\Column(length: 64, unique: true)]
+    private string $portalToken;
+
     #[ORM\OneToMany(mappedBy: 'solicitud', targetEntity: EmpresaMensaje::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $mensajes;
 
     public function __construct()
     {
         $this->token = bin2hex(random_bytes(32));
+        $this->portalToken = bin2hex(random_bytes(32));
         $now = new \DateTimeImmutable();
         $this->createdAt = $now;
         $this->updatedAt = $now;
@@ -288,5 +292,10 @@ class EmpresaSolicitud
             $this->mensajes->add($mensaje);
             $mensaje->setSolicitud($this);
         }
+    }
+
+    public function getPortalToken(): string
+    {
+        return $this->portalToken;
     }
 }

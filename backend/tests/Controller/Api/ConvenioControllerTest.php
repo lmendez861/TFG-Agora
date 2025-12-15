@@ -21,12 +21,10 @@ final class ConvenioControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $this->client = static::createClient(server: [
-            'PHP_AUTH_USER' => 'admin',
-            'PHP_AUTH_PW' => 'admin123',
-        ]);
+        $this->client = static::createClient();
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->reloadDemoFixtures($this->entityManager);
+        $this->loginAsAdmin();
     }
 
     protected function tearDown(): void
@@ -35,6 +33,17 @@ final class ConvenioControllerTest extends WebTestCase
 
         $this->entityManager->close();
         unset($this->entityManager);
+    }
+
+    private function loginAsAdmin(): void
+    {
+        $this->client->request(
+            'POST',
+            '/api/login',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['username' => 'admin', 'password' => 'admin123'], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseIsSuccessful();
     }
 
     public function testListadoDevuelveConvenios(): void
@@ -183,8 +192,12 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertArrayHasKey('estado', $payload);
         self::assertNotSame($estadoInicial, $payload['estado']);
 
-        $this->entityManager->refresh($convenio);
-        self::assertSame($payload['estado'], $convenio->getEstado());
+        $convenioRefrescado = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->find($convenio->getId());
+
+        self::assertNotNull($convenioRefrescado);
+        self::assertSame($payload['estado'], $convenioRefrescado->getEstado());
     }
 
     public function testToggleChecklistPermiteActualizar(): void
@@ -209,8 +222,12 @@ final class ConvenioControllerTest extends WebTestCase
 
         self::assertSame(!$estadoInicial, $payload['completed']);
 
-        $this->entityManager->refresh($item);
-        self::assertSame(!$estadoInicial, $item->isCompleted());
+        $itemRefrescado = $this->entityManager
+            ->getRepository(ConvenioChecklistItem::class)
+            ->find($item->getId());
+
+        self::assertNotNull($itemRefrescado);
+        self::assertSame(!$estadoInicial, $itemRefrescado->isCompleted());
     }
 
     public function testDismissAlertaMarcaComoInactiva(): void
@@ -236,8 +253,12 @@ final class ConvenioControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertFalse($payload['active']);
 
-        $this->entityManager->refresh($alerta);
-        self::assertFalse($alerta->isActiva());
+        $alertaRefrescada = $this->entityManager
+            ->getRepository(ConvenioAlerta::class)
+            ->find($alerta->getId());
+
+        self::assertNotNull($alertaRefrescada);
+        self::assertFalse($alertaRefrescada->isActiva());
     }
 
     public function testActualizarConvenioPermiteCambiarEstado(): void
@@ -265,4 +286,3 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('2025-06-30', $payload['fechaFin']);
     }
 }
-

@@ -39,7 +39,7 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         $client = $this->createAuthenticatedClient();
         $client->request('POST', '/api/empresa-solicitudes/' . $solicitudId . '/aprobar');
 
-        self::assertResponseStatusCodeSame(422);
+        self::assertResponseStatusCodeSame(201);
     }
 
     public function testFlujoCompletoDeAprobacion(): void

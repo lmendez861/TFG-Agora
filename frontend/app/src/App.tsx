@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { DataTable, type TableColumn } from './components/DataTable';
 import { EstudianteForm, type EstudianteFormValues } from './components/EstudianteForm';
@@ -13,6 +13,8 @@ import {
   createConvenio,
   createEmpresa,
   createEstudiante,
+  addConvenioDocument,
+  addEmpresaDocument,
   fetchCollections,
   fetchEmpresaSolicitudes,
   fetchTutorAcademicos,
@@ -41,17 +43,20 @@ import type {
   ConvenioDetail,
   ConvenioPayload,
   ConvenioSummary,
+  ConvenioDocumentRecord,
   EmpresaDetail,
   EmpresaPayload,
   EmpresaSummary,
   EmpresaSolicitudSummary,
   EmpresaSolicitudMensaje,
+  EmpresaDocument,
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
   TutorAcademicoSummary,
   TutorProfesionalSummary,
   MeResponse,
+  PaginatedResponse,
 } from './types';
 import './App.css';
 
@@ -273,6 +278,30 @@ const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string>
   aprobada: 'Aprobada',
   rechazada: 'Rechazada',
 };
+
+const TUTOR_PAGE_SIZE = 8;
+
+function normalizeListResponse<T>(
+  value: T[] | PaginatedResponse<T>,
+  fallbackPerPage: number = TUTOR_PAGE_SIZE,
+): { items: T[]; page: number; perPage: number; total: number } {
+  if (Array.isArray(value)) {
+    const total = value.length;
+    return {
+      items: value,
+      page: 1,
+      perPage: total > 0 ? Math.min(total, fallbackPerPage) : fallbackPerPage,
+      total,
+    };
+  }
+
+  return {
+    items: value.items,
+    page: value.page ?? 1,
+    perPage: value.perPage ?? fallbackPerPage,
+    total: value.total ?? value.items.length,
+  };
+}
 
 function formatDate(value: string | null): string {
   if (!value) {
@@ -767,24 +796,10 @@ type EmpresaNote = {
   timestamp: string;
 };
 
-type EmpresaDocument = {
-  id: number;
-  name: string;
-  type: string;
-  uploadedAt: string;
-};
-
 type ConvenioChecklistItem = {
   id: number;
   label: string;
   completed: boolean;
-};
-
-type ConvenioDocumentRecord = {
-  id: number;
-  name: string;
-  type: string;
-  uploadedAt: string;
 };
 
 type ConvenioAlert = {
@@ -859,7 +874,11 @@ function DocumentationPage() {
   );
 }
 
-function LoginPage() {
+interface LoginPageProps {
+  onLogin: (user: MeResponse) => void;
+}
+
+function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
@@ -871,6 +890,7 @@ function LoginPage() {
     try {
       await login(email, password);
       const meData = await fetchMe();
+      onLogin(meData);
       setStatus(`Bienvenido ${meData.username}`);
       navigate('/');
     } catch (err) {
@@ -889,8 +909,14 @@ function LoginPage() {
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
-            <span>Email institucional</span>
-            <input type="email" placeholder="coordinacion@centro.edu" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <span>Usuario</span>
+            <input
+              type="text"
+              placeholder="admin"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+            />
           </label>
           <label className="form__field">
             <span>Contrasena</span>
@@ -900,7 +926,9 @@ function LoginPage() {
             Entrar (demo)
           </button>
           {status && <p className="form__error">{status}</p>}
-          <p className="auth-card__hint">Continua utilizando las credenciales basicas dmin/admin123 en el backend.</p>
+          <p className="auth-card__hint">
+            Credenciales demo: admin/admin123 (ROLE_ADMIN), coordinador/coordinador123 (ROLE_API), lectura/lectura123 (ROLE_USER).
+          </p>
         </form>
       </div>
     </section>
@@ -1029,6 +1057,18 @@ export default function App() {
   const [mensajeDraft, setMensajeDraft] = useState<Record<number, string>>({});
   const [loadingMensajesId, setLoadingMensajesId] = useState<number | null>(null);
   const [me, setMe] = useState<MeResponse | null>(null);
+  const [tutorAcademicosList, setTutorAcademicosList] = useState<TutorAcademicoSummary[]>([]);
+  const [tutorAcademicoPage, setTutorAcademicoPage] = useState(1);
+  const [tutorAcademicoTotal, setTutorAcademicoTotal] = useState(0);
+  const [tutorAcademicoEstado, setTutorAcademicoEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
+  const [loadingTutorAcademicos, setLoadingTutorAcademicos] = useState(false);
+  const [tutorProfesionalesList, setTutorProfesionalesList] = useState<TutorProfesionalSummary[]>([]);
+  const [tutorProfesionalPage, setTutorProfesionalPage] = useState(1);
+  const [tutorProfesionalTotal, setTutorProfesionalTotal] = useState(0);
+  const [tutorProfesionalEstado, setTutorProfesionalEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
+  const [tutorProfesionalEmpresa, setTutorProfesionalEmpresa] = useState<string>('todas');
+  const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
+  const [savingConvenioDocument, setSavingConvenioDocument] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   const openCreateStudent = useCallback(() => {
@@ -1101,23 +1141,36 @@ export default function App() {
     });
   }, []);
 
-  const handleAddEmpresaDocument = useCallback((empresaId: number, name: string, type: string) => {
+  const handleAddEmpresaDocument = useCallback(async (
+    empresaId: number,
+    name: string,
+    type: string,
+    urlOrFile?: string | File,
+  ) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return false;
     }
-    setEmpresaDocs((prev) => {
-      const docs = prev[empresaId] ?? [];
-      const newDoc: EmpresaDocument = {
-        id: Date.now(),
-        name: trimmedName,
-        type: type.trim() || 'Documento',
-        uploadedAt: new Date().toISOString(),
-      };
-    return { ...prev, [empresaId]: [newDoc, ...docs] };
-  });
-  return true;
-}, []);
+    const typeValue = type.trim() || undefined;
+    const urlValue = typeof urlOrFile === 'string' ? (urlOrFile.trim() || undefined) : undefined;
+    const fileValue = urlOrFile instanceof File ? urlOrFile : undefined;
+    setSavingConvenioDocument(true);
+    try {
+      const nuevo = await addEmpresaDocument(empresaId, trimmedName, typeValue, urlValue, fileValue);
+      setEmpresaDocs((prev) => {
+        const docs = prev[empresaId] ?? [];
+        return { ...prev, [empresaId]: [nuevo, ...docs] };
+      });
+      pushToast('success', 'Documento anadido.');
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
+      pushToast('error', message);
+      return false;
+    } finally {
+      setSavingConvenioDocument(false);
+    }
+  }, [pushToast]);
 
   const handleToggleChecklistItem = useCallback((convenioId: number, itemId: number) => {
     setConvenioChecklist((prev) => {
@@ -1141,28 +1194,31 @@ export default function App() {
     });
   }, [pushToast]);
 
-  const handleAddConvenioDocument = useCallback((convenioId: number, name: string, type: string) => {
+  const handleAddConvenioDocument = useCallback(async (convenioId: number, name: string, type: string) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return false;
     }
-    setConvenioDocuments((prev) => {
-      const docs = prev[convenioId] ?? [];
-      return {
-        ...prev,
-        [convenioId]: [
-          {
-            id: Date.now(),
-            name: trimmedName,
-            type: type.trim() || 'PDF',
-            uploadedAt: new Date().toISOString(),
-          },
-          ...docs,
-        ],
-      };
-    });
-    return true;
-  }, []);
+    setSavingConvenioDocument(true);
+    try {
+      const nuevo = await addConvenioDocument(convenioId, trimmedName, type.trim() || undefined);
+      setConvenioDocuments((prev) => {
+        const docs = prev[convenioId] ?? [];
+        return {
+          ...prev,
+          [convenioId]: [nuevo, ...docs],
+        };
+      });
+      pushToast('success', 'Documento anadido.');
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
+      pushToast('error', message);
+      return false;
+    } finally {
+      setSavingConvenioDocument(false);
+    }
+  }, [pushToast]);
 
   const handleDismissConvenioAlert = useCallback((convenioId: number, alertId: number) => {
     setConvenioAlerts((prev) => {
@@ -1244,7 +1300,18 @@ export default function App() {
         fetchTutorProfesionales(),
       ]);
       setCollections(data);
-      setReferenceData({ tutoresAcademicos, tutoresProfesionales });
+      const normalizedAcademicos = normalizeListResponse(tutoresAcademicos);
+      const normalizedProfesionales = normalizeListResponse(tutoresProfesionales);
+      setReferenceData({
+        tutoresAcademicos: normalizedAcademicos.items,
+        tutoresProfesionales: normalizedProfesionales.items,
+      });
+      setTutorAcademicosList(normalizedAcademicos.items);
+      setTutorAcademicoPage(normalizedAcademicos.page);
+      setTutorAcademicoTotal(normalizedAcademicos.total);
+      setTutorProfesionalesList(normalizedProfesionales.items);
+      setTutorProfesionalPage(normalizedProfesionales.page);
+      setTutorProfesionalTotal(normalizedProfesionales.total);
       setLastUpdated(new Date());
     } catch (err) {
       if (err instanceof Error) {
@@ -1257,30 +1324,99 @@ export default function App() {
         tutoresAcademicos: [],
         tutoresProfesionales: [],
       });
+      setTutorAcademicosList((prev) => prev ?? []);
+      setTutorProfesionalesList((prev) => prev ?? []);
     } finally {
       setLoading(false);
     }
     await refreshSolicitudes({ silent: true });
   }, [refreshSolicitudes]);
 
+  const loadTutorAcademicosList = useCallback(
+    async (page: number, estado: 'todos' | 'activos' | 'inactivos') => {
+      if (!me) return;
+      setLoadingTutorAcademicos(true);
+      try {
+        const response = await fetchTutorAcademicos({
+          page,
+          perPage: TUTOR_PAGE_SIZE,
+          activo: estado === 'todos' ? undefined : estado === 'activos',
+        });
+        const normalized = normalizeListResponse(response);
+        setTutorAcademicosList(normalized.items);
+        setTutorAcademicoPage(normalized.page);
+        setTutorAcademicoTotal(normalized.total);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores acadÃ©micos.';
+        pushToast('error', message);
+      } finally {
+        setLoadingTutorAcademicos(false);
+      }
+    },
+    [me, pushToast],
+  );
+
+  const loadTutorProfesionalesList = useCallback(
+    async (
+      page: number,
+      estado: 'todos' | 'activos' | 'inactivos',
+      empresaId: string,
+    ) => {
+      if (!me) return;
+      setLoadingTutorProfesionales(true);
+      try {
+        const response = await fetchTutorProfesionales({
+          page,
+          perPage: TUTOR_PAGE_SIZE,
+          activo: estado === 'todos' ? undefined : estado === 'activos',
+          empresaId: empresaId === 'todas' ? undefined : Number(empresaId),
+        });
+        const normalized = normalizeListResponse(response);
+        setTutorProfesionalesList(normalized.items);
+        setTutorProfesionalPage(normalized.page);
+        setTutorProfesionalTotal(normalized.total);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores profesionales.';
+        pushToast('error', message);
+      } finally {
+        setLoadingTutorProfesionales(false);
+      }
+    },
+    [me, pushToast],
+  );
+
   useEffect(() => {
-    fetchMe()
-      .then((user) => {
+    const bootstrap = async () => {
+      setLoading(true);
+      try {
+        await login('admin', 'admin123');
+        const user: MeResponse = { username: 'admin', roles: ['ROLE_ADMIN'] };
         setMe(user);
         setAuthError(null);
-      })
-      .catch(() => {
-        setMe(null);
-        setAuthError('Inicia sesion para ver el panel.');
-      })
-      .finally(() => {
-        if (me) {
-          loadData().catch(() => {
-            // El error ya se captura en loadData, evitamos advertencias de promesas sin tratar.
-          });
-        }
-      });
-  }, [loadData, me]);
+        await loadData();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
+        setAuthError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrap();
+  }, [loadData]);
+
+  useEffect(() => {
+    setTutorAcademicoPage(1);
+    setTutorProfesionalPage(1);
+    loadTutorAcademicosList(1, tutorAcademicoEstado);
+    loadTutorProfesionalesList(1, tutorProfesionalEstado, tutorProfesionalEmpresa);
+  }, [
+    tutorAcademicoEstado,
+    tutorProfesionalEstado,
+    tutorProfesionalEmpresa,
+    loadTutorAcademicosList,
+    loadTutorProfesionalesList,
+  ]);
 
   useEffect(() => {
     if (collections) {
@@ -1866,6 +2002,14 @@ const moduleCards = useMemo(
       accent: 'violet',
     },
     {
+      id: 'tutores',
+      label: 'Tutores',
+      total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
+      description: 'AcadÃ©micos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rÃ¡pido.',
+      accent: 'cyan',
+    },
+    {
       id: 'documentacion',
       label: 'Documentacin',
       total: 3,
@@ -1907,8 +2051,15 @@ const moduleCards = useMemo(
         description: 'Pipeline completo, tutores y horas planificadas.',
         path: '/asignaciones',
       },
+      {
+        id: 'tutores',
+        label: 'Tutores',
+        total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
+        description: 'Equipos acadmicos y de empresa con filtros.',
+        path: '/tutores',
+      },
     ],
-    [collections],
+    [collections, referenceData],
   );
 
   const studentPreview = useMemo(() => {
@@ -2165,6 +2316,7 @@ const selectedConvenio = useMemo(() => {
               id: Number(`${empresa.id}100`),
               name: 'Convenio firmado',
               type: 'PDF',
+              url: null,
               uploadedAt: new Date().toISOString(),
             },
           ];
@@ -2215,6 +2367,7 @@ const selectedConvenio = useMemo(() => {
               id: Number(`${convenio.id}500`),
               name: 'Borrador inicial',
               type: 'PDF',
+              url: null,
               uploadedAt: new Date().toISOString(),
             },
           ];
@@ -2350,6 +2503,10 @@ const selectedConvenio = useMemo(() => {
     const conveniosEmpresa = collections.convenios.filter((convenio) => convenio.empresa.id === empresa.id);
     const asignacionesEmpresa = collections.asignaciones.filter((asignacion) => asignacion.empresa.id === empresa.id);
     const activityLog = asignacionesEmpresa.slice(0, 5);
+    const documents = empresaDocs[empresa.id] ?? [];
+    const [empresaDocName, setEmpresaDocName] = useState('');
+    const [empresaDocType, setEmpresaDocType] = useState('');
+    const [empresaDocFile, setEmpresaDocFile] = useState<File | null>(null);
 
     const highlights = [
       { label: 'Convenios activos', value: conveniosEmpresa.length },
@@ -2425,7 +2582,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{conveniosEmpresa.length} registros</span>
             </header>
             {conveniosEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Todava no se han generado convenios para esta empresa.</p>
+              <p className="empresa-panel__placeholder">Todavia no se han generado convenios para esta empresa.</p>
             ) : (
               <ul>
                 {conveniosEmpresa.map((convenio) => (
@@ -2445,7 +2602,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{asignacionesEmpresa.length} registros</span>
             </header>
             {asignacionesEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">An no hay estudiantes asignados.</p>
+              <p className="empresa-panel__placeholder">Aun no hay estudiantes asignados.</p>
             ) : (
               <ul>
                 {asignacionesEmpresa.map((asignacion) => (
@@ -2457,6 +2614,82 @@ const selectedConvenio = useMemo(() => {
                 ))}
               </ul>
             )}
+          </article>
+          <article className="empresa-panel">
+            <header>
+              <h3>Documentos de la empresa</h3>
+              <span className="chip chip--ghost">{(empresaDocs[empresa.id]?.length ?? 0)} adjuntos</span>
+            </header>
+            <div className="empresa-documents">
+              {(empresaDocs[empresa.id] ?? []).length > 0 ? (
+                (empresaDocs[empresa.id] ?? []).map((doc) => (
+                  <div key={doc.id} className="empresa-document">
+                    <div>
+                      <strong>{doc.name}</strong>
+                      <small>{doc.type ?? 'Documento'} - {formatDate(doc.uploadedAt)}</small>
+                    </div>
+                            {doc.url ? (
+                              <a className="button button--link" href={doc.url} target="_blank" rel="noopener">
+                                Ver
+                              </a>
+                            ) : (
+                              <span className="chip chip--ghost">Archivo local</span>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="empresa-panel__placeholder">Todavia no hay adjuntos.</p>
+                      )}
+            </div>
+            <form
+              className="empresa-document-form"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                const saved = await handleAddEmpresaDocument(
+                  empresa.id,
+                  empresaDocName,
+                  empresaDocType,
+                  empresaDocFile ?? undefined,
+                );
+                if (saved) {
+                  setEmpresaDocName('');
+                  setEmpresaDocType('');
+                  setEmpresaDocFile(null);
+                }
+              }}
+            >
+              <label>
+                <span>Nombre</span>
+                <input
+                  value={empresaDocName}
+                  onChange={(e) => setEmpresaDocName(e.target.value)}
+                  placeholder="Ficha de riesgos"
+                  required
+                />
+              </label>
+              <label>
+                <span>Tipo</span>
+                <input
+                  value={empresaDocType}
+                  onChange={(e) => setEmpresaDocType(e.target.value)}
+                  placeholder="PDF"
+                />
+              </label>
+              <label>
+                <span>Archivo local</span>
+                <input
+                  type="file"
+                  onChange={(e) => setEmpresaDocFile(e.target.files?.[0] ?? null)}
+                />
+              </label>
+              <button
+                type="submit"
+                className="button button--primary button--sm"
+                disabled={savingConvenioDocument || !empresaDocFile}
+              >
+                {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
+              </button>
+            </form>
           </article>
         </div>
 
@@ -2519,6 +2752,7 @@ const selectedConvenio = useMemo(() => {
         .then((data) => {
           setDetail(data);
           setDetailError(null);
+          setConvenioDocuments((prev) => ({ ...prev, [data.id]: data.documents }));
         })
         .catch((err) => {
           const message = err instanceof Error ? err.message : 'No se pudo cargar el detalle del convenio.';
@@ -2648,7 +2882,7 @@ const selectedConvenio = useMemo(() => {
                     Abrir documento
                   </a>
                 ) : (
-                  <p>No hay documentos adjuntos todava.</p>
+                  <p>No hay documentos adjuntos Todavia.</p>
                 )}
               </div>
             </div>
@@ -2748,7 +2982,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No hay datos sincronizados todava. Regresa al dashboard y sincroniza con el backend.</p>
+            <p>No hay datos sincronizados Todavia. Regresa al dashboard y sincroniza con el backend.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3181,7 +3415,7 @@ const selectedConvenio = useMemo(() => {
                       <header>
                         <div>
                           <p className="module-page__eyebrow">Asignaciones</p>
-                          <h4>Talento vinculado</h4>
+                          <h4>Talento vinculado</h4>el
                         </div>
                         <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
                           Abrir pipeline
@@ -3198,14 +3432,14 @@ const selectedConvenio = useMemo(() => {
                           ))}
                         </ul>
                       ) : (
-                        <p className="empresa-panel__placeholder">An no hay asignaciones registradas.</p>
+                        <p className="empresa-panel__placeholder">Aun no hay asignaciones registradas.</p>
                       )}
                     </article>
                     <article className="empresa-panel">
                       <header>
                         <div>
                           <p className="module-page__eyebrow">Contexto adicional</p>
-                          <h4>Sntesis rpida</h4>
+                          <h4>Sintesis rapida</h4>
                         </div>
                       </header>
                       <ul>
@@ -3215,11 +3449,11 @@ const selectedConvenio = useMemo(() => {
                         </li>
                         <li>
                           <strong>Notas colaborativas</strong>
-                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'An no hay notas guardadas.'}</p>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aun no hay notas guardadas.'}</p>
                         </li>
                         <li>
                           <strong>Documentos compartidos</strong>
-                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todava no hay adjuntos.'}</p>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavia no hay adjuntos.'}</p>
                         </li>
                       </ul>
                     </article>
@@ -3282,13 +3516,13 @@ const selectedConvenio = useMemo(() => {
     const workflowIndex = workflowState ? CONVENIO_STEP_FLOW.indexOf(workflowState) : -1;
     const workflowPosition = workflowIndex >= 0 ? workflowIndex + 1 : 0;
 
-    const handleDocumentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleDocumentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedConvenio) {
         return;
       }
 
-      const saved = handleAddConvenioDocument(selectedConvenio.id, documentName, documentType);
+      const saved = await handleAddConvenioDocument(selectedConvenio.id, documentName, documentType);
       if (saved) {
         setDocumentName('');
         setDocumentType('');
@@ -3516,13 +3750,17 @@ const selectedConvenio = useMemo(() => {
                               <strong>{doc.name}</strong>
                               <small>{doc.type} - {formatDate(doc.uploadedAt)}</small>
                             </div>
-                            <button type="button" className="button button--link">
-                              Descargar
-                            </button>
+                            {doc.url ? (
+                              <a className="button button--link" href={doc.url} target="_blank" rel="noreferrer">
+                                Descargar
+                              </a>
+                            ) : (
+                              <span className="chip chip--ghost">Sin enlace</span>
+                            )}
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos todava.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos Todavia.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -3543,8 +3781,8 @@ const selectedConvenio = useMemo(() => {
                           placeholder="PDF"
                         />
                       </label>
-                      <button type="submit" className="button button--primary button--sm">
-                        Aadir documento
+                      <button type="submit" className="button button--primary button--sm" disabled={savingConvenioDocument}>
+                        {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
                       </button>
                     </form>
                   </article>
@@ -3766,7 +4004,7 @@ const selectedConvenio = useMemo(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="student-detail__placeholder">Todava no tiene asignaciones registradas.</p>
+                    <p className="student-detail__placeholder">Todavia no tiene asignaciones registradas.</p>
                   )}
                 </div>
 
@@ -4176,7 +4414,7 @@ const selectedConvenio = useMemo(() => {
             })}
           </div>
         ) : (
-          <p className="detail-placeholder">An no hay estudiantes registrados.</p>
+          <p className="detail-placeholder">Aún no hay estudiantes registrados.</p>
         )}
         {selectedStudent && (
           <div className="student-detail">
@@ -4261,7 +4499,7 @@ const selectedConvenio = useMemo(() => {
                     ))}
                   </div>
                 ) : (
-                  <p className="student-detail__placeholder">Todava no tiene asignaciones registradas.</p>
+                  <p className="student-detail__placeholder">Todavia no tiene asignaciones registradas.</p>
                 )
               )}
               {studentDetailTab === 'seguimiento' && (
@@ -4291,6 +4529,145 @@ const selectedConvenio = useMemo(() => {
    </>
   ) : (
     <div className="app__alert app__alert--info">Cargando datos del backend...</div>
+  );
+
+  const tutorAcademicoColumns: Array<TableColumn<TutorAcademicoSummary>> = [
+    { key: 'nombre', header: 'Nombre', render: (tutor) => `${tutor.nombre} ${tutor.apellido}` },
+    { key: 'departamento', header: 'Departamento', render: (tutor) => tutor.departamento ?? 'No indicado' },
+    { key: 'especialidad', header: 'Especialidad', render: (tutor) => tutor.especialidad ?? 'No indicado' },
+    { key: 'email', header: 'Email', render: (tutor) => tutor.email },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (tutor) => (
+        <span className={`chip chip--ghost ${tutor.activo ? 'chip--success' : ''}`}>
+          {tutor.activo ? 'Activo' : 'Inactivo'}
+        </span>
+      ),
+      align: 'center',
+    },
+  ];
+
+  const tutorProfesionalColumns: Array<TableColumn<TutorProfesionalSummary>> = [
+    { key: 'nombre', header: 'Nombre', render: (tutor) => tutor.nombre },
+    { key: 'empresa', header: 'Empresa', render: (tutor) => tutor.empresa.nombre },
+    { key: 'cargo', header: 'Cargo', render: (tutor) => tutor.cargo ?? 'No indicado' },
+    { key: 'email', header: 'Email', render: (tutor) => tutor.email ?? 'Sin email' },
+    {
+      key: 'estado',
+      header: 'Estado',
+      render: (tutor) => (
+        <span className={`chip chip--ghost ${tutor.activo ? 'chip--success' : ''}`}>
+          {tutor.activo ? 'Activo' : 'Inactivo'}
+        </span>
+      ),
+      align: 'center',
+    },
+  ];
+
+  const tutorAcademicoTotalPages = Math.max(1, Math.ceil(tutorAcademicoTotal / TUTOR_PAGE_SIZE));
+  const tutorProfesionalTotalPages = Math.max(1, Math.ceil(tutorProfesionalTotal / TUTOR_PAGE_SIZE));
+
+  const tutoresElement = (
+    <section className="module-page module-page--wide">
+      <header className="module-page__header">
+        <div>
+          <p className="module-page__eyebrow">Equipo de tutores</p>
+          <h2>Tutores acadmicos y profesionales</h2>
+          <p>Filtra por estado y empresa, revisa contacto y asignaciones asociadas.</p>
+        </div>
+        <div className="module-page__actions">
+          <span className="chip chip--ghost">
+            {tutorAcademicoTotal + tutorProfesionalTotal} registros
+          </span>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
+            onClick={() => {
+              loadTutorAcademicosList(tutorAcademicoPage, tutorAcademicoEstado);
+              loadTutorProfesionalesList(tutorProfesionalPage, tutorProfesionalEstado, tutorProfesionalEmpresa);
+            }}
+            disabled={loadingTutorAcademicos || loadingTutorProfesionales}
+          >
+            {(loadingTutorAcademicos || loadingTutorProfesionales) ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
+      </header>
+
+      <div className="module-page__split">
+        <div className="module-page__panel">
+          <DataTable
+            caption="Tutores acadmicos"
+            columns={tutorAcademicoColumns}
+            data={tutorAcademicosList}
+            emptyMessage="No hay tutores acadmicos registrados."
+          />
+          <div className="table-pagination">
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              disabled={loadingTutorAcademicos || tutorAcademicoPage <= 1}
+              onClick={() => loadTutorAcademicosList(tutorAcademicoPage - 1, tutorAcademicoEstado)}
+            >
+              Anterior
+            </button>
+            <span>
+              Pg {tutorAcademicoPage} de {tutorAcademicoTotalPages}
+            </span>
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              disabled={
+                loadingTutorAcademicos || tutorAcademicoPage >= tutorAcademicoTotalPages
+              }
+              onClick={() => loadTutorAcademicosList(tutorAcademicoPage + 1, tutorAcademicoEstado)}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+        <div className="module-page__panel">
+          <DataTable
+            caption="Tutores profesionales"
+            columns={tutorProfesionalColumns}
+            data={tutorProfesionalesList}
+            emptyMessage="No hay tutores profesionales registrados."
+          />
+          <div className="table-pagination">
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              disabled={loadingTutorProfesionales || tutorProfesionalPage <= 1}
+              onClick={() => loadTutorProfesionalesList(
+                tutorProfesionalPage - 1,
+                tutorProfesionalEstado,
+                tutorProfesionalEmpresa,
+              )}
+            >
+              Anterior
+            </button>
+            <span>
+              Pg {tutorProfesionalPage} de {tutorProfesionalTotalPages}
+            </span>
+            <button
+              type="button"
+              className="button button--ghost button--sm"
+              disabled={
+                loadingTutorProfesionales || tutorProfesionalPage >= tutorProfesionalTotalPages
+              }
+              onClick={() => loadTutorProfesionalesList(
+                tutorProfesionalPage + 1,
+                tutorProfesionalEstado,
+                tutorProfesionalEmpresa,
+              )}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 
   const solicitudesElement = (
@@ -4323,7 +4700,7 @@ const selectedConvenio = useMemo(() => {
       ) : (
         <div className="solicitudes-panel__list solicitudes-panel__list--page">
           {empresaSolicitudes.map((solicitud) => {
-            const canApprove = solicitud.estado === 'email_verificado';
+            const canApprove = solicitud.estado === 'email_verificado' || solicitud.estado === 'pendiente';
             const isProcessing = processingSolicitudId === solicitud.id;
             const estadoLabel = SOLICITUD_ESTADO_LABELS[solicitud.estado] ?? solicitud.estado;
 
@@ -4381,12 +4758,12 @@ const selectedConvenio = useMemo(() => {
               {solicitudMensajes[solicitud.id] && (
                 <div className="solicitud-card__messages">
                   {solicitudMensajes[solicitud.id].length === 0 ? (
-                    <p className="detail-placeholder">Sin mensajes todavia.</p>
+                    <p className="detail-placeholder">Sin mensajes Todavia.</p>
                   ) : (
                     solicitudMensajes[solicitud.id].map((msg) => (
                       <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
                         <p>{msg.texto}</p>
-                        <small>{msg.autor} · {formatDate(msg.createdAt)}</small>
+                        <small>{msg.autor} Â· {formatDate(msg.createdAt)}</small>
                       </div>
                     ))
                   )}
@@ -4544,7 +4921,7 @@ const selectedConvenio = useMemo(() => {
             )}
           </div>
           <div className="topbar__auth">
-            <Link to="/login" className="button button--ghost button--sm" onClick={closeNotifications}>Iniciar sesion</Link>
+            <span className="app__meta">Sesión: admin</span>
             <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
               <span className="topbar__profile-icon">&#128100;</span>
               <span className="topbar__profile-label">Perfil</span>
@@ -4566,7 +4943,19 @@ const selectedConvenio = useMemo(() => {
         <Route path="/asignaciones" element={<AsignacionesOverviewPage />} />
         <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
         <Route path="/documentacion" element={<DocumentationPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/tutores" element={tutoresElement} />
+        <Route
+          path="/login"
+          element={(
+            <LoginPage
+              onLogin={(user) => {
+                setMe(user);
+                setAuthError(null);
+                loadData();
+              }}
+            />
+          )}
+        />
         <Route path="/solicitudes" element={solicitudesElement} />
         <Route path="/perfil" element={profileElement} />
       </Routes>
@@ -4638,6 +5027,18 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

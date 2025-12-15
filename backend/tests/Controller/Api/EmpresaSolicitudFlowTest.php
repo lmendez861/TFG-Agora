@@ -33,7 +33,7 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
 
         $client->request(
             'POST',
-            '/registro-empresa',
+            '/api/empresa-solicitudes',
             content: json_encode($payload, JSON_THROW_ON_ERROR),
             server: ['CONTENT_TYPE' => 'application/json'],
         );

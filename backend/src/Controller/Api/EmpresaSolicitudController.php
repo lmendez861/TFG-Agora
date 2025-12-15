@@ -11,13 +11,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/empresa-solicitudes', name: 'api_empresa_solicitudes_')]
-#[IsGranted('ROLE_API')]
 final class EmpresaSolicitudController extends AbstractController
 {
     use JsonRequestTrait;
@@ -26,10 +26,73 @@ final class EmpresaSolicitudController extends AbstractController
         private readonly EmpresaSolicitudRepository $repository,
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
+    #[Route('', name: 'create', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'nombreEmpresa' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                'cif' => new Assert\Optional([new Assert\Length(max: 32)]),
+                'sector' => new Assert\Optional([new Assert\Length(max: 120)]),
+                'ciudad' => new Assert\Optional([new Assert\Length(max: 100)]),
+                'web' => new Assert\Optional([new Assert\Url(requireTld: false)]),
+                'descripcion' => new Assert\Optional(),
+                'contactoNombre' => new Assert\Optional([new Assert\Length(max: 150)]),
+                'contactoEmail' => new Assert\Optional([new Assert\Email()]),
+                'contactoTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+            ],
+            allowExtraFields: true
+        );
+
+        $violations = $this->validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        $contactoNombre = $payload['contactoNombre'] ?? ($payload['contacto']['nombre'] ?? null);
+        $contactoEmail = $payload['contactoEmail'] ?? ($payload['contacto']['email'] ?? null);
+        $contactoTelefono = $payload['contactoTelefono'] ?? ($payload['contacto']['telefono'] ?? null);
+
+        $solicitud = (new EmpresaSolicitud())
+            ->setNombreEmpresa($payload['nombreEmpresa'])
+            ->setCif($payload['cif'] ?? null)
+            ->setSector($payload['sector'] ?? null)
+            ->setCiudad($payload['ciudad'] ?? null)
+            ->setWeb($payload['web'] ?? null)
+            ->setDescripcion($payload['descripcion'] ?? null)
+            ->setContactoNombre($contactoNombre ?? 'Contacto no indicado')
+            ->setContactoEmail($contactoEmail ?? 'sin-email@pendiente.test')
+            ->setContactoTelefono($contactoTelefono);
+
+        $this->entityManager->persist($solicitud);
+        $this->entityManager->flush();
+
+        $verificationUrl = $this->urlGenerator->generate(
+            'registro_empresa_confirm',
+            ['token' => $solicitud->getToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        return $this->json([
+            'message' => 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.',
+            'id' => $solicitud->getId(),
+            'token' => $solicitud->getToken(),
+            'portalToken' => $solicitud->getPortalToken(),
+            'verificationUrl' => $verificationUrl,
+        ], Response::HTTP_CREATED);
+    }
+
     #[Route('', name: 'index', methods: ['GET'])]
+    #[IsGranted('ROLE_API')]
     public function index(Request $request): JsonResponse
     {
         $estado = $request->query->get('estado');
@@ -53,6 +116,7 @@ final class EmpresaSolicitudController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]
+    #[IsGranted('ROLE_API')]
     public function approve(?EmpresaSolicitud $solicitud): JsonResponse
     {
         if (!$solicitud) {
@@ -102,6 +166,7 @@ final class EmpresaSolicitudController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/rechazar', name: 'reject', methods: ['POST'])]
+    #[IsGranted('ROLE_API')]
     public function reject(?EmpresaSolicitud $solicitud, Request $request): JsonResponse
     {
         if (!$solicitud) {

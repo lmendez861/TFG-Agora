@@ -13,6 +13,14 @@ export interface EmpresaSummary {
   };
 }
 
+export interface EmpresaDocument {
+  id: number;
+  name: string;
+  type: string | null;
+  url: string | null;
+  uploadedAt: string;
+}
+
 export interface EmpresaDetail {
   id: number;
   nombre: string;
@@ -27,6 +35,7 @@ export interface EmpresaDetail {
   estadoColaboracion: string | null;
   fechaAlta: string;
   observaciones: string | null;
+  documentos?: EmpresaDocument[];
 }
 
 export interface EmpresaPayload {
@@ -270,6 +279,13 @@ export interface TutorProfesionalSummary {
     id: number;
     nombre: string;
   };
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  perPage: number;
+  total?: number;
 }
 
 export interface ApiCollections {

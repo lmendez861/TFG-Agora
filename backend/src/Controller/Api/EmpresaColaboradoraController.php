@@ -11,9 +11,12 @@ use App\Repository\EmpresaDocumentoRepository;
 use App\Repository\EmpresaEtiquetaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -24,6 +27,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class EmpresaColaboradoraController extends AbstractController
 {
     use JsonRequestTrait;
+
+    public function __construct(private readonly RequestStack $requestStack)
+    {
+    }
 
     private const ESTADOS_COLABORACION = [
         'activa',
@@ -368,41 +375,81 @@ final class EmpresaColaboradoraController extends AbstractController
         ?EmpresaColaboradora $empresa,
         Request $request,
         ValidatorInterface $validator,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        Filesystem $filesystem
     ): JsonResponse {
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        $payload = $this->decodePayload($request);
-        if ($payload instanceof JsonResponse) {
-            return $payload;
+        // Si viene un fichero (multipart), lo subimos; si no, usamos JSON con URL.
+        if ($request->files->count() > 0) {
+            $file = $request->files->get('file');
+            if (!$file) {
+                return $this->json(['message' => 'Archivo no proporcionado.'], Response::HTTP_BAD_REQUEST);
+            }
+            $originalName = $file->getClientOriginalName();
+            $safeName = pathinfo($originalName, PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $extension ?: 'bin');
+
+            $targetDir = sprintf('%s/var/uploads/empresas/%d', $this->getParameter('kernel.project_dir'), $empresa->getId());
+            if (!$filesystem->exists($targetDir)) {
+                $filesystem->mkdir($targetDir, 0775);
+            }
+            $file->move($targetDir, $finalName);
+            $storedUrl = sprintf('/api/empresas/%d/documentos/%s', $empresa->getId(), $finalName);
+
+            $nombre = $request->request->get('nombre') ?: $originalName;
+            $tipo = $request->request->get('tipo') ?: $extension;
+
+            $documento = (new EmpresaDocumento())
+                ->setEmpresa($empresa)
+                ->setNombre($nombre)
+                ->setTipo($tipo ?: null)
+                ->setUrl($storedUrl);
+        } else {
+            $payload = $this->decodePayload($request);
+            if ($payload instanceof JsonResponse) {
+                return $payload;
+            }
+
+            $constraints = new Assert\Collection(
+                fields: [
+                    'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                    'tipo' => new Assert\Optional([new Assert\Length(max: 80)]),
+                    'url' => new Assert\Optional([new Assert\Length(max: 255)]),
+                ],
+                allowExtraFields: true
+            );
+
+            $violations = $validator->validate($payload, $constraints);
+            if ($violations->count() > 0) {
+                return $this->validationErrorResponse($violations);
+            }
+
+            $documento = (new EmpresaDocumento())
+                ->setEmpresa($empresa)
+                ->setNombre($payload['nombre'])
+                ->setTipo($payload['tipo'] ?? null)
+                ->setUrl($payload['url'] ?? null);
         }
-
-        $constraints = new Assert\Collection(
-            fields: [
-                'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
-                'tipo' => new Assert\Optional([new Assert\Length(max: 80)]),
-                'url' => new Assert\Optional([new Assert\Length(max: 255)]),
-            ],
-            allowExtraFields: true
-        );
-
-        $violations = $validator->validate($payload, $constraints);
-        if ($violations->count() > 0) {
-            return $this->validationErrorResponse($violations);
-        }
-
-        $documento = (new EmpresaDocumento())
-            ->setEmpresa($empresa)
-            ->setNombre($payload['nombre'])
-            ->setTipo($payload['tipo'] ?? null)
-            ->setUrl($payload['url'] ?? null);
 
         $entityManager->persist($documento);
         $entityManager->flush();
 
         return $this->json($this->serializeDocumento($documento), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\\d+>}/documentos/{filename}', name: 'download_document', methods: ['GET'])]
+    public function downloadDocumento(int $id, string $filename): Response
+    {
+        $filePath = sprintf('%s/var/uploads/empresas/%d/%s', $this->getParameter('kernel.project_dir'), $id, $filename);
+        if (!is_file($filePath)) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+        return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
     private function serializeSummary(EmpresaColaboradora $empresa): array
@@ -525,13 +572,37 @@ final class EmpresaColaboradoraController extends AbstractController
      */
     private function serializeDocumento(EmpresaDocumento $documento): array
     {
+        $publicUrl = $documento->getUrl();
+        if ($publicUrl) {
+            $publicUrl = $this->buildAbsoluteUrl($publicUrl);
+        }
+
         return [
             'id' => $documento->getId(),
             'nombre' => $documento->getNombre(),
             'tipo' => $documento->getTipo(),
-            'url' => $documento->getUrl(),
+            'url' => $publicUrl,
             'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
         ];
+    }
+
+    private function buildAbsoluteUrl(string $path): string
+    {
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request) {
+            return rtrim($request->getSchemeAndHttpHost(), '/') . $path;
+        }
+
+        $scheme = (string) ($this->getParameter('router.request_context.scheme') ?? 'http');
+        $host = (string) ($this->getParameter('router.request_context.host') ?? 'localhost');
+        $port = (string) ($this->getParameter($scheme === 'https' ? 'router.request_context.https_port' : 'router.request_context.http_port') ?? '');
+        $portPart = $port && !in_array($port, ['80', '443'], true) ? ':' . $port : '';
+
+        return sprintf('%s://%s%s%s', $scheme, $host, $portPart, $path);
     }
 
     /**

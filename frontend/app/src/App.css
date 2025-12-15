@@ -698,9 +698,10 @@
 }
 
 .convenio-document-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.6rem 0.8rem;
+  align-items: end;
 }
 
 .convenio-document-form label {
@@ -2961,3 +2962,50 @@
   background: rgba(248, 113, 113, 0.2);
   color: #fecaca;
 }
+
+
+/* Ajustes específicos para documentos de empresa/convenio */
+.empresa-documents,
+.convenio-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.empresa-document-form,
+.convenio-document-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.6rem 0.8rem;
+  align-items: end;
+}
+
+.empresa-document-form label,
+.convenio-document-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.empresa-document-form input,
+.convenio-document-form input {
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+}
+
+.empresa-document,
+.convenio-document {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #1a2433;
+}
+
+.empresa-document small,
+.convenio-document small {
+  color: #9fb5cc;
+}
+

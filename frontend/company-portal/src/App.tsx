@@ -1,6 +1,5 @@
-import { useMemo, useState, useEffect } from 'react'
-import type { FormEvent } from 'react'
-import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './App.css'
 
 type SolicitudPayload = {
@@ -28,6 +27,7 @@ const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`
 const HERO_LINKS = [
   { href: '#registro', label: 'Formulario' },
   { href: '/inbox', label: 'Bandeja de verificacion' },
+  { href: '/verificar', label: 'Verificar token' },
   { href: '/chat', label: 'Chat empresa-centro' },
 ]
 
@@ -41,7 +41,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <Link to="/" className="brand__title">Agora · Portal Empresas</Link>
+          <Link to="/" className="brand__title">Agora Portal Empresas</Link>
           <span className="brand__badge">Externo</span>
         </div>
         <nav className="nav">
@@ -56,8 +56,8 @@ function Layout({ children }: { children: React.ReactNode }) {
       </header>
       <main>{children}</main>
       <footer className="site-footer">
-        <p>© Agora · Portal de colaboraciones</p>
-        <small>Los datos se envían a {REGISTRO_ENDPOINT}</small>
+        <p>Agora · Portal de colaboraciones</p>
+        <small>Los datos se envian a {REGISTRO_ENDPOINT}</small>
       </footer>
     </div>
   )
@@ -128,7 +128,7 @@ function LandingPage() {
           <p className="eyebrow">Bienvenida</p>
           <h1>Colabora con nuestro centro educativo</h1>
           <p className="lede">
-            Registra tu empresa, verifica el correo corporativo y habilita un canal directo de comunicación con el
+            Registra tu empresa, verifica el correo corporativo y habilita un canal directo de comunicacion con el
             centro para convenios y asignaciones.
           </p>
           <div className="hero__actions">
@@ -245,7 +245,7 @@ function InboxPage() {
   const query = useQuery()
   const enviada = query.get('enviada') === '1'
   const token = query.get('token') ?? ''
-  const verificationLink = `${API_BASE.replace(/\/$/, '')}/registro-empresa/confirmar?token=${token || 'TU_TOKEN'}`
+  const verificationLink = `/verificar?token=${encodeURIComponent(token || 'TU_TOKEN')}`
   return (
     <div className="page">
       <section className="panel">
@@ -266,9 +266,64 @@ function InboxPage() {
             <span className="chip">Verificacion</span>
           </header>
           <p>Hola, hemos recibido tu solicitud. Pulsa en el enlace para confirmar tu correo.</p>
-          <a className="link" href={verificationLink} target="_blank" rel="noreferrer">{verificationLink}</a>
-          <p className="mail-card__hint">Tras confirmar, el equipo aprobará o rechazará tu solicitud desde el panel interno.</p>
+          <Link className="link" to={verificationLink}>{verificationLink}</Link>
+          <p className="mail-card__hint">Tras confirmar, el equipo aprobara o rechazara tu solicitud desde el panel interno.</p>
         </article>
+      </section>
+    </div>
+  )
+}
+
+function VerifyPage() {
+  const query = useQuery()
+  const token = query.get('token') ?? ''
+  const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
+  const [message, setMessage] = useState<string>('Introduce el token recibido por correo.')
+
+  useEffect(() => {
+    if (!token) {
+      setStatus('idle')
+      setMessage('Incluye ?token=... en la URL para verificar.')
+      return
+    }
+    setStatus('loading')
+    fetch(`${REGISTRO_ENDPOINT}/confirmar?token=${encodeURIComponent(token)}`, {
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (res) => {
+        const payload = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(payload?.message || `Error ${res.status}`)
+        }
+        setStatus('ok')
+        setMessage(payload?.message || 'Verificado correctamente. Avisaremos al centro.')
+      })
+      .catch((err) => {
+        setStatus('error')
+        setMessage(err instanceof Error ? err.message : 'No se pudo verificar el token.')
+      })
+  }, [token])
+
+  return (
+    <div className="page">
+      <section className="panel">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">Verificacion</p>
+            <h2>Confirma tu correo</h2>
+            <p>Usamos el token del email para validar que eres la empresa solicitante.</p>
+          </div>
+        </div>
+        <div className="verify-card">
+          <span className={`chip ${status === 'ok' ? 'chip--success' : status === 'error' ? 'chip--error' : ''}`}>
+            {status === 'loading' ? 'Verificando...' : status === 'ok' ? 'Verificado' : status === 'error' ? 'Error' : 'Pendiente'}
+          </span>
+          <p className="verify-card__message">{message}</p>
+          <div className="verify-card__actions">
+            <Link to="/chat" className="btn btn--ghost">Ir al chat</Link>
+            <Link to="/inbox" className="btn btn--primary">Volver a bandeja</Link>
+          </div>
+        </div>
       </section>
     </div>
   )
@@ -364,6 +419,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/inbox" element={<InboxPage />} />
+        <Route path="/verificar" element={<VerifyPage />} />
         <Route path="/chat" element={<ChatPage />} />
       </Routes>
     </Layout>

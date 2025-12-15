@@ -22,6 +22,7 @@ security:
                 check_path: /api/login
                 username_path: username
                 password_path: password
+            http_basic: ~
             logout:
                 path: /api/logout
                 invalidate_session: true
@@ -35,6 +36,7 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/api/empresa-solicitudes$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: ROLE_API }

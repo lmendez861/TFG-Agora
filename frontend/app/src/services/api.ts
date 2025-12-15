@@ -22,6 +22,8 @@ import type {
   TutorProfesionalSummary,
   EmpresaSolicitudMensaje,
   MeResponse,
+  PaginatedResponse,
+  EmpresaDocument,
 } from '../types';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8000/api';
@@ -31,6 +33,12 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const hasJsonBody = typeof init.body !== 'undefined';
   if (hasJsonBody && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  if (!headers.has('Authorization')) {
+    const user = (import.meta.env.VITE_API_USERNAME as string | undefined) ?? 'admin';
+    const pass = (import.meta.env.VITE_API_PASSWORD as string | undefined) ?? 'admin123';
+    headers.set('Authorization', `Basic ${btoa(`${user}:${pass}`)}`);
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -176,6 +184,52 @@ export async function addConvenioDocument(
   });
 }
 
+export async function addEmpresaDocument(
+  empresaId: number,
+  nombre: string,
+  tipo?: string,
+  urlOrFile?: string | File,
+  maybeFile?: File,
+): Promise<EmpresaDocument> {
+  const file = urlOrFile instanceof File ? urlOrFile : maybeFile;
+  const url = urlOrFile instanceof File ? undefined : urlOrFile;
+  if (file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('nombre', nombre);
+    if (tipo) formData.append('tipo', tipo);
+    if (url) formData.append('url', url);
+
+    const response = await fetch(`${API_BASE_URL}/empresas/${empresaId}/documentos`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      let message = `Error ${response.status}`;
+      try {
+        const payload = await response.json();
+        if (payload?.message) {
+          message = `${message}: ${payload.message}`;
+        }
+      } catch {
+        // ignore
+      }
+      throw new Error(message);
+    }
+    return (await response.json()) as EmpresaDocument;
+  }
+
+  return apiRequest<EmpresaDocument>(`/empresas/${empresaId}/documentos`, {
+    method: 'POST',
+    body: JSON.stringify({
+      nombre,
+      tipo,
+      url,
+    }),
+  });
+}
+
 export async function dismissConvenioAlert(convenioId: number, alertId: number): Promise<ConvenioAlert> {
   return apiRequest<ConvenioAlert>(`/convenios/${convenioId}/alerts/${alertId}`, {
     method: 'PATCH',
@@ -194,13 +248,38 @@ export async function updateAsignacion(id: number, payload: Partial<AsignacionPa
   return apiPut<AsignacionDetail>(`/asignaciones/${id}`, payload);
 }
 
-export async function fetchTutorAcademicos(): Promise<TutorAcademicoSummary[]> {
-  return apiGet<TutorAcademicoSummary[]>('/tutores-academicos');
+interface TutorAcademicoParams {
+  page?: number;
+  perPage?: number;
+  activo?: boolean;
 }
 
-export async function fetchTutorProfesionales(empresaId?: number): Promise<TutorProfesionalSummary[]> {
-  const query = typeof empresaId === 'number' ? `?empresaId=${empresaId}` : '';
-  return apiGet<TutorProfesionalSummary[]>(`/tutores-profesionales${query}`);
+interface TutorProfesionalParams extends TutorAcademicoParams {
+  empresaId?: number;
+}
+
+export async function fetchTutorAcademicos(
+  params?: TutorAcademicoParams,
+): Promise<TutorAcademicoSummary[] | PaginatedResponse<TutorAcademicoSummary>> {
+  const search = new URLSearchParams();
+  if (typeof params?.page === 'number') search.set('page', String(params.page));
+  if (typeof params?.perPage === 'number') search.set('perPage', String(params.perPage));
+  if (typeof params?.activo === 'boolean') search.set('activo', params.activo ? 'true' : 'false');
+  const qs = search.toString() ? `?${search.toString()}` : '';
+  return apiGet<TutorAcademicoSummary[] | PaginatedResponse<TutorAcademicoSummary>>(`/tutores-academicos${qs}`);
+}
+
+export async function fetchTutorProfesionales(
+  params?: TutorProfesionalParams | number,
+): Promise<TutorProfesionalSummary[] | PaginatedResponse<TutorProfesionalSummary>> {
+  const opts: TutorProfesionalParams = typeof params === 'number' ? { empresaId: params } : (params ?? {});
+  const search = new URLSearchParams();
+  if (typeof opts.empresaId === 'number') search.set('empresaId', String(opts.empresaId));
+  if (typeof opts.page === 'number') search.set('page', String(opts.page));
+  if (typeof opts.perPage === 'number') search.set('perPage', String(opts.perPage));
+  if (typeof opts.activo === 'boolean') search.set('activo', opts.activo ? 'true' : 'false');
+  const qs = search.toString() ? `?${search.toString()}` : '';
+  return apiGet<TutorProfesionalSummary[] | PaginatedResponse<TutorProfesionalSummary>>(`/tutores-profesionales${qs}`);
 }
 
 export async function fetchEmpresaSolicitudes(

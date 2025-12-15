@@ -109,26 +109,31 @@ HTML,
     {
         $token = (string) $request->query->get('token');
         if ($token === '') {
-            return $this->renderConfirmationPage('El token de verificacion es obligatorio.', Response::HTTP_BAD_REQUEST);
+            return $this->confirmationResponse('El token de verificacion es obligatorio.', Response::HTTP_BAD_REQUEST, $request);
         }
 
         $solicitud = $this->solicitudRepository->findOneBy(['token' => $token]);
         if (!$solicitud) {
-            return $this->renderConfirmationPage('No encontramos ninguna solicitud asociada a este token.', Response::HTTP_NOT_FOUND);
+            return $this->confirmationResponse('No encontramos ninguna solicitud asociada a este token.', Response::HTTP_NOT_FOUND, $request);
         }
 
         if ($solicitud->isEmailVerified()) {
-            return $this->renderConfirmationPage('La direccion ya habia sido verificada previamente.', Response::HTTP_OK);
+            return $this->confirmationResponse('La direccion ya habia sido verificada previamente.', Response::HTTP_OK, $request);
         }
 
         $solicitud->markEmailVerified();
         $this->entityManager->flush();
 
-        return $this->renderConfirmationPage('Hemos confirmado tu correo. El equipo revisara la solicitud en breve.', Response::HTTP_OK);
+        return $this->confirmationResponse('Hemos confirmado tu correo. El equipo revisara la solicitud en breve.', Response::HTTP_OK, $request);
     }
 
-    private function renderConfirmationPage(string $message, int $status): Response
+    private function confirmationResponse(string $message, int $status, Request $request): Response
     {
+        $wantsJson = $request->getPreferredFormat() === 'json' || in_array('application/json', $request->getAcceptableContentTypes(), true);
+        if ($wantsJson) {
+            return $this->json(['message' => $message], $status);
+        }
+
         $html = <<<HTML
 <!doctype html>
 <html lang="es">

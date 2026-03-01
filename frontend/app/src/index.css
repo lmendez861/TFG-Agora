@@ -1,9 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 :root {
-  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
   color: #f4f2ff;
   background-color: #05060a;
   line-height: 1.5;
   font-weight: 400;
+  --font-mono: 'IBM Plex Mono', 'Fira Code', Consolas, 'Courier New', monospace;
 }
 
 * {

@@ -255,7 +255,7 @@
   background-color: rgba(255, 255, 255, 0.08);
   padding: 0.1rem 0.3rem;
   border-radius: 4px;
-  font-family: 'Fira Code', Consolas, 'Courier New', monospace;
+  font-family: var(--font-mono);
 }
 
 .app__alert {

@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { DataTable, type TableColumn } from './components/DataTable';
 import { EstudianteForm, type EstudianteFormValues } from './components/EstudianteForm';
@@ -66,14 +66,14 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
   empresas: [
     {
       id: 1,
-      nombre: 'Innovar Formacion',
-      sector: 'Tecnologia educativa',
+      nombre: 'Innovar Formación',
+      sector: 'Tecnología educativa',
       ciudad: 'Madrid',
       estadoColaboracion: 'activa',
       conveniosActivos: 2,
-      tutoresProfesionales: 2,
-      contactos: 2,
-      asignaciones: { total: 2, enCurso: 1 },
+      tutoresProfesionales: 3,
+      contactos: 3,
+      asignaciones: { total: 3, enCurso: 2 },
     },
     {
       id: 2,
@@ -89,18 +89,18 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 3,
       nombre: 'LogiMovil Partners',
-      sector: 'Logistica inteligente',
+      sector: 'Logística inteligente',
       ciudad: 'Sevilla',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
       tutoresProfesionales: 2,
       contactos: 2,
-      asignaciones: { total: 1, enCurso: 1 },
+      asignaciones: { total: 2, enCurso: 1 },
     },
     {
       id: 4,
-      nombre: 'Energia Circular Coop.',
-      sector: 'Energia renovable',
+      nombre: 'Energía Circular Coop.',
+      sector: 'Energía renovable',
       ciudad: 'Bilbao',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
@@ -108,15 +108,48 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       contactos: 2,
       asignaciones: { total: 1, enCurso: 0 },
     },
+    {
+      id: 5,
+      nombre: 'Datos Atlántico',
+      sector: 'Ciberseguridad',
+      ciudad: 'A Coruña',
+      estadoColaboracion: 'activa',
+      conveniosActivos: 1,
+      tutoresProfesionales: 1,
+      contactos: 1,
+      asignaciones: { total: 1, enCurso: 1 },
+    },
+    {
+      id: 6,
+      nombre: 'Aula Verde Labs',
+      sector: 'Sostenibilidad',
+      ciudad: 'Granada',
+      estadoColaboracion: 'pendiente_revision',
+      conveniosActivos: 0,
+      tutoresProfesionales: 0,
+      contactos: 1,
+      asignaciones: { total: 0, enCurso: 0 },
+    },
+    {
+      id: 7,
+      nombre: 'Nexo Industrial',
+      sector: 'Automatización industrial',
+      ciudad: 'Zaragoza',
+      estadoColaboracion: 'activa',
+      conveniosActivos: 2,
+      tutoresProfesionales: 3,
+      contactos: 2,
+      asignaciones: { total: 3, enCurso: 2 },
+    },
   ],
   estudiantes: [
     {
       id: 1,
       nombre: 'Ana',
-      apellido: 'Martinez',
+      apellido: 'Martínez',
       dni: '12345678A',
       email: 'ana.martinez@alumnos.es',
-      grado: 'Ingenieria Informatica',
+      grado: 'Ingeniería Informática',
       curso: '4o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -127,7 +160,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Campos',
       dni: '87654321B',
       email: 'luis.campos@alumnos.es',
-      grado: 'Ingenieria Biomedica',
+      grado: 'Ingeniería Biomédica',
       curso: '3o',
       estado: 'disponible',
       asignaciones: { total: 1, enCurso: 0 },
@@ -138,7 +171,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Vega',
       dni: '44556677C',
       email: 'marina.vega@alumnos.es',
-      grado: 'Ingenieria Industrial',
+      grado: 'Ingeniería Industrial',
       curso: '5o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -146,7 +179,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 4,
       nombre: 'Carlos',
-      apellido: 'Ibanez',
+      apellido: 'Ibáñez',
       dni: '99887766D',
       email: 'carlos.ibanez@alumnos.es',
       grado: 'Telecomunicaciones',
@@ -160,17 +193,39 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Herrera',
       dni: '11223344E',
       email: 'sofia.herrera@alumnos.es',
-      grado: 'Administracion y Direccion',
+      grado: 'Administración y Dirección',
       curso: '4o',
       estado: 'finalizado',
       asignaciones: { total: 1, enCurso: 0 },
+    },
+    {
+      id: 6,
+      nombre: 'Diego',
+      apellido: 'Serrano',
+      dni: '22334455F',
+      email: 'diego.serrano@alumnos.es',
+      grado: 'Desarrollo de Aplicaciones Multiplataforma',
+      curso: '2o',
+      estado: 'disponible',
+      asignaciones: { total: 0, enCurso: 0 },
+    },
+    {
+      id: 7,
+      nombre: 'Paula',
+      apellido: 'Ríos',
+      dni: '55667788G',
+      email: 'paula.rios@alumnos.es',
+      grado: 'Administración de Sistemas',
+      curso: '2o',
+      estado: 'en_practicas',
+      asignaciones: { total: 1, enCurso: 1 },
     },
   ],
   convenios: [
     {
       id: 1,
       titulo: 'Convenio IA Educativa 2024/2025',
-      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      empresa: { id: 1, nombre: 'Innovar Formación' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2024-09-01',
@@ -179,7 +234,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 2,
-      titulo: 'Convenio Integraciones Clinicas 2024',
+      titulo: 'Convenio Integraciones Clínicas 2024',
       empresa: { id: 2, nombre: 'Salud Conectada S.L.' },
       tipo: 'extracurricular',
       estado: 'borrador',
@@ -189,7 +244,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 3,
-      titulo: 'Plataforma de Logistica Inteligente 2024',
+      titulo: 'Plataforma de Logística Inteligente 2024',
       empresa: { id: 3, nombre: 'LogiMovil Partners' },
       tipo: 'curricular',
       estado: 'vigente',
@@ -199,8 +254,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 4,
-      titulo: 'Programa Transicion Energetica 2024/25',
-      empresa: { id: 4, nombre: 'Energia Circular Coop.' },
+      titulo: 'Programa Transición Energética 2024/25',
+      empresa: { id: 4, nombre: 'Energía Circular Coop.' },
       tipo: 'extracurricular',
       estado: 'renovacion',
       fechaInicio: '2024-05-01',
@@ -210,12 +265,42 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 5,
       titulo: 'Convenio DataOps 2025',
-      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      empresa: { id: 1, nombre: 'Innovar Formación' },
       tipo: 'curricular',
       estado: 'planificado',
       fechaInicio: '2025-03-01',
       fechaFin: '2025-09-30',
       asignacionesAsociadas: 0,
+    },
+    {
+      id: 6,
+      titulo: 'Acuerdo Ciberseguridad FP Dual 2025',
+      empresa: { id: 5, nombre: 'Datos Atlántico' },
+      tipo: 'curricular',
+      estado: 'vigente',
+      fechaInicio: '2025-02-01',
+      fechaFin: '2025-07-31',
+      asignacionesAsociadas: 1,
+    },
+    {
+      id: 7,
+      titulo: 'Piloto de Sostenibilidad 2025',
+      empresa: { id: 6, nombre: 'Aula Verde Labs' },
+      tipo: 'extracurricular',
+      estado: 'borrador',
+      fechaInicio: '2025-01-10',
+      fechaFin: null,
+      asignacionesAsociadas: 0,
+    },
+    {
+      id: 8,
+      titulo: 'Convenio Automatización Industrial 2024/25',
+      empresa: { id: 7, nombre: 'Nexo Industrial' },
+      tipo: 'curricular',
+      estado: 'vigente',
+      fechaInicio: '2024-09-15',
+      fechaFin: '2025-03-30',
+      asignacionesAsociadas: 2,
     },
   ],
   asignaciones: [
@@ -226,8 +311,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 320,
       fechaInicio: '2024-10-01',
       fechaFin: '2025-01-31',
-      empresa: { id: 1, nombre: 'Innovar Formacion' },
-      estudiante: { id: 1, nombre: 'Ana', apellido: 'Martinez' },
+      empresa: { id: 1, nombre: 'Innovar Formación' },
+      estudiante: { id: 1, nombre: 'Ana', apellido: 'Martínez' },
     },
     {
       id: 2,
@@ -246,7 +331,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 180,
       fechaInicio: '2024-03-01',
       fechaFin: '2024-06-30',
-      empresa: { id: 1, nombre: 'Innovar Formacion' },
+      empresa: { id: 1, nombre: 'Innovar Formación' },
       estudiante: { id: 5, nombre: 'Sofia', apellido: 'Herrera' },
     },
     {
@@ -266,8 +351,38 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 260,
       fechaInicio: '2025-01-15',
       fechaFin: '2025-05-30',
-      empresa: { id: 4, nombre: 'Energia Circular Coop.' },
-      estudiante: { id: 4, nombre: 'Carlos', apellido: 'Ibanez' },
+      empresa: { id: 4, nombre: 'Energía Circular Coop.' },
+      estudiante: { id: 4, nombre: 'Carlos', apellido: 'Ibáñez' },
+    },
+    {
+      id: 6,
+      estado: 'en_curso',
+      modalidad: 'remota',
+      horasTotales: 200,
+      fechaInicio: '2025-02-10',
+      fechaFin: '2025-06-15',
+      empresa: { id: 5, nombre: 'Datos Atlántico' },
+      estudiante: { id: 7, nombre: 'Paula', apellido: 'Ríos' },
+    },
+    {
+      id: 7,
+      estado: 'planificada',
+      modalidad: 'presencial',
+      horasTotales: 260,
+      fechaInicio: '2025-03-01',
+      fechaFin: '2025-07-15',
+      empresa: { id: 7, nombre: 'Nexo Industrial' },
+      estudiante: { id: 6, nombre: 'Diego', apellido: 'Serrano' },
+    },
+    {
+      id: 8,
+      estado: 'en_curso',
+      modalidad: 'hibrida',
+      horasTotales: 300,
+      fechaInicio: '2024-10-15',
+      fechaFin: '2025-03-20',
+      empresa: { id: 7, nombre: 'Nexo Industrial' },
+      estudiante: { id: 3, nombre: 'Marina', apellido: 'Vega' },
     },
   ],
 };
@@ -822,7 +937,7 @@ function DocumentationPage() {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Recursos</p>
-          <h2>Documentacion del proyecto</h2>
+          <h2>Documentación del proyecto</h2>
           <p>Guias rapidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
         </div>
       </header>
@@ -839,7 +954,7 @@ function DocumentationPage() {
         </article>
         <article className="docs-card">
           <h3>Flujos CRUD</h3>
-          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambien los tests en backend/tests.</p>
+          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta también los tests en backend/tests.</p>
         </article>
         <article className="docs-card">
           <h3>Pruebas automatizadas</h3>
@@ -894,7 +1009,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
       setStatus(`Bienvenido ${meData.username}`);
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
+      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesión.';
       setStatus(message);
     }
   };
@@ -903,9 +1018,9 @@ function LoginPage({ onLogin }: LoginPageProps) {
     <section className="auth-section">
       <div className="auth-card">
         <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
-        <h2>Iniciar sesion</h2>
+        <h2>Iniciar sesión</h2>
         <p className="auth-card__description">
-          Inicia sesion con tus credenciales. Las llamadas posteriores usan la sesion del navegador (json_login).
+          Inicia sesión con tus credenciales. Las llamadas posteriores usan la sesión del navegador (json_login).
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -952,7 +1067,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      const message = 'Solicitud registrada. El equipo de TI validara la informacion y activara tu usuario.';
+      const message = 'Solicitud registrada. El equipo de TI validara la información y activara tu usuario.';
       setStatusMessage(message);
       onSuccess(message);
       setValues({ ...EMPTY_STAFF_REGISTRATION_VALUES });
@@ -1001,7 +1116,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
             {submitting ? 'Enviando...' : 'Enviar solicitud'}
           </button>
           <p className="auth-card__hint">
-            Si representas a una empresa colaboradora, utiliza el portal especifico de registros externos.
+            Si representas a una empresa colaboradora, utiliza el portal específico de registros externos.
           </p>
         </form>
       </div>
@@ -1108,12 +1223,12 @@ export default function App() {
     }
     setEmpresaNotes((prev) => {
       const notes = prev[empresaId] ?? [];
-      const newNote: EmpresaNote = {
-        id: Date.now(),
-        author: 'Coordinacin',
-        content: trimmed,
-        timestamp: new Date().toISOString(),
-      };
+        const newNote: EmpresaNote = {
+          id: Date.now(),
+          author: 'Coordinación',
+          content: trimmed,
+          timestamp: new Date().toISOString(),
+        };
       return { ...prev, [empresaId]: [newNote, ...notes] };
     });
     return true;
@@ -1161,7 +1276,7 @@ export default function App() {
         const docs = prev[empresaId] ?? [];
         return { ...prev, [empresaId]: [nuevo, ...docs] };
       });
-      pushToast('success', 'Documento anadido.');
+      pushToast('success', 'Documento añadido.');
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
@@ -1209,7 +1324,7 @@ export default function App() {
           [convenioId]: [nuevo, ...docs],
         };
       });
-      pushToast('success', 'Documento anadido.');
+      pushToast('success', 'Documento añadido.');
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
@@ -1347,7 +1462,7 @@ export default function App() {
         setTutorAcademicoPage(normalized.page);
         setTutorAcademicoTotal(normalized.total);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores acadÃ©micos.';
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores académicos.';
         pushToast('error', message);
       } finally {
         setLoadingTutorAcademicos(false);
@@ -1395,7 +1510,7 @@ export default function App() {
         setAuthError(null);
         await loadData();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
+        const message = err instanceof Error ? err.message : 'No se pudo iniciar sesión.';
         setAuthError(message);
       } finally {
         setLoading(false);
@@ -1455,7 +1570,7 @@ export default function App() {
 
   const handleRejectSolicitud = useCallback(
     async (solicitudId: number) => {
-      const motivo = window.prompt('Cul es el motivo del rechazo?');
+      const motivo = window.prompt('¿Cuál es el motivo del rechazo?');
       if (!motivo || !motivo.trim()) {
         return;
       }
@@ -1736,7 +1851,7 @@ export default function App() {
         });
       })
       .catch((err) => {
-        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignacin.';
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignación.';
         setAsignacionFormError(message);
         pushToast('error', message);
         setAsignacionModal((current) => {
@@ -1771,16 +1886,16 @@ export default function App() {
         const payload = buildAsignacionPayload(values);
         if (asignacionModal.mode === 'create') {
           await createAsignacion(payload);
-          pushToast('success', 'Asignacin creada correctamente.');
+          pushToast('success', 'Asignación creada correctamente.');
         } else if (asignacionModal.entityId) {
           await updateAsignacion(asignacionModal.entityId, payload);
-          pushToast('success', 'Asignacin actualizada correctamente.');
+          pushToast('success', 'Asignación actualizada correctamente.');
         }
 
         await loadData();
         handleCloseAsignacionModal();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignacin.';
+        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignación.';
         setAsignacionFormError(message);
         pushToast('error', message);
       } finally {
@@ -1958,7 +2073,7 @@ export default function App() {
         disabled={!referenceData}
         title={!referenceData ? 'Cargando datos de referencia...' : undefined}
       >
-        Nueva asignacin
+        Nueva asignacion
       </button>
     ),
     [openCreateAsignacion, referenceData],
@@ -1974,7 +2089,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboracin, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -1982,7 +2097,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'Informacin completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -1990,30 +2105,30 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado acadmico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'Prcticas en curso',
-      detail: 'Pipeline Kanban con tutoras, fechas y modalidad.',
+      description: 'Prácticas en curso',
+      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'tutores',
       label: 'Tutores',
       total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-      description: 'AcadÃ©micos y profesionales',
-      detail: 'Filtra por estado y empresa para contactar rÃ¡pido.',
+      description: 'Académicos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rápido.',
       accent: 'cyan',
     },
     {
       id: 'documentacion',
-      label: 'Documentacin',
+      label: 'Documentación',
       total: 3,
-      description: 'Guas y recursos listos',
+      description: 'Guías y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -2034,14 +2149,14 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentacin adjunta.',
+        description: 'Estado, fechas y documentación adjunta.',
         path: '/convenios',
       },
       {
         id: 'estudiantes',
         label: 'Estudiantes',
         total: collections?.estudiantes.length ?? 0,
-        description: 'Ficha acadmica y seguimiento en curso.',
+        description: 'Ficha académica y seguimiento en curso.',
         path: '/estudiantes',
       },
       {
@@ -2055,7 +2170,7 @@ const moduleCards = useMemo(
         id: 'tutores',
         label: 'Tutores',
         total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-        description: 'Equipos acadmicos y de empresa con filtros.',
+        description: 'Equipos académicos y de empresa con filtros.',
         path: '/tutores',
       },
     ],
@@ -2284,6 +2399,12 @@ const selectedConvenio = useMemo(() => {
               content: `Registro inicial de ${empresa.nombre}.`,
               timestamp: new Date().toISOString(),
             },
+            {
+              id: Number(`${empresa.id}002`),
+              author: 'Coordinación',
+              content: 'Contacto principal validado. Pendiente revisar convenio y plan de acogida.',
+              timestamp: new Date().toISOString(),
+            },
           ];
         }
       });
@@ -2298,7 +2419,14 @@ const selectedConvenio = useMemo(() => {
             updated = { ...prev };
           }
           const baseLabel = empresa.sector ? empresa.sector : 'General';
-          updated[empresa.id] = [baseLabel];
+          const labels = [baseLabel, 'FP Dual'];
+          if (empresa.estadoColaboracion === 'pendiente_revision') {
+            labels.push('Pendiente revisión');
+          }
+          if (empresa.conveniosActivos === 0) {
+            labels.push('Sin convenio activo');
+          }
+          updated[empresa.id] = labels;
         }
       });
       return updated;
@@ -2316,6 +2444,20 @@ const selectedConvenio = useMemo(() => {
               id: Number(`${empresa.id}100`),
               name: 'Convenio firmado',
               type: 'PDF',
+              url: null,
+              uploadedAt: new Date().toISOString(),
+            },
+            {
+              id: Number(`${empresa.id}101`),
+              name: 'Ficha de empresa',
+              type: 'PDF',
+              url: null,
+              uploadedAt: new Date().toISOString(),
+            },
+            {
+              id: Number(`${empresa.id}102`),
+              name: 'Plan de acogida',
+              type: 'DOCX',
               url: null,
               uploadedAt: new Date().toISOString(),
             },
@@ -2348,7 +2490,8 @@ const selectedConvenio = useMemo(() => {
           updated[convenio.id] = [
             { id: Number(`${convenio.id}01`), label: 'Documento firmado', completed: false },
             { id: Number(`${convenio.id}02`), label: 'Seguro actualizado', completed: false },
-            { id: Number(`${convenio.id}03`), label: 'Aprobacin tutor acadmico', completed: false },
+            { id: Number(`${convenio.id}03`), label: 'Aprobación tutor académico', completed: false },
+            { id: Number(`${convenio.id}04`), label: 'Plan formativo validado', completed: false },
           ];
         }
       });
@@ -2366,6 +2509,13 @@ const selectedConvenio = useMemo(() => {
             {
               id: Number(`${convenio.id}500`),
               name: 'Borrador inicial',
+              type: 'PDF',
+              url: null,
+              uploadedAt: new Date().toISOString(),
+            },
+            {
+              id: Number(`${convenio.id}501`),
+              name: 'Anexo de prácticas',
               type: 'PDF',
               url: null,
               uploadedAt: new Date().toISOString(),
@@ -2388,6 +2538,12 @@ const selectedConvenio = useMemo(() => {
               id: Number(`${convenio.id}900`),
               message: 'Pendiente de checklist documental.',
               level: 'warning',
+              active: true,
+            },
+            {
+              id: Number(`${convenio.id}901`),
+              message: 'Revisar fechas de fin y renovación.',
+              level: 'info',
               active: true,
             },
           ];
@@ -2448,7 +2604,7 @@ const selectedConvenio = useMemo(() => {
         id: 'estado-general',
         title: 'Sin asignaciones activas',
         status: selectedStudent.estado,
-        date: 'A la espera de nueva asignacin',
+        date: 'A la espera de nueva asignación',
         modalidad: 'Seguimiento coordinador',
       },
     ];
@@ -2542,7 +2698,7 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Planificar asignacin
+              Planificar asignacion
             </button>
           </div>
         </header>
@@ -2582,7 +2738,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{conveniosEmpresa.length} registros</span>
             </header>
             {conveniosEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Todavia no se han generado convenios para esta empresa.</p>
+              <p className="empresa-panel__placeholder">Todavía no se han generado convenios para esta empresa.</p>
             ) : (
               <ul>
                 {conveniosEmpresa.map((convenio) => (
@@ -2602,7 +2758,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{asignacionesEmpresa.length} registros</span>
             </header>
             {asignacionesEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Aun no hay estudiantes asignados.</p>
+              <p className="empresa-panel__placeholder">Aún no hay estudiantes asignados.</p>
             ) : (
               <ul>
                 {asignacionesEmpresa.map((asignacion) => (
@@ -2638,7 +2794,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="empresa-panel__placeholder">Todavia no hay adjuntos.</p>
+                        <p className="empresa-panel__placeholder">Todavía no hay adjuntos.</p>
                       )}
             </div>
             <form
@@ -2697,12 +2853,12 @@ const selectedConvenio = useMemo(() => {
           <header>
             <div>
               <p className="module-page__eyebrow">Actividad reciente</p>
-              <h3>ltimos movimientos</h3>
+              <h3>Últimos movimientos</h3>
             </div>
-            <Link to="/documentacion" className="link">Abrir documentacin</Link>
+            <Link to="/documentacion" className="link">Abrir documentación</Link>
           </header>
           {activityLog.length === 0 ? (
-            <p className="empresa-panel__placeholder">No hay actividad registrada an.</p>
+            <p className="empresa-panel__placeholder">No hay actividad registrada aún.</p>
           ) : (
             <ul>
               {activityLog.map((item) => (
@@ -2778,7 +2934,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No hay datos sincronizados. Regresa al dashboard para cargar la informacin.</p>
+            <p>No hay datos sincronizados. Regresa al dashboard para cargar la información.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -2838,7 +2994,7 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Planificar asignacin
+              Planificar asignacion
             </button>
           </div>
         </header>
@@ -2861,7 +3017,7 @@ const selectedConvenio = useMemo(() => {
               Resumen
             </button>
             <button type="button" className={tab === 'documentacion' ? 'active' : ''} onClick={() => setTab('documentacion')}>
-              Documentacin
+              Documentación
             </button>
           </div>
 
@@ -2876,23 +3032,23 @@ const selectedConvenio = useMemo(() => {
                 <p>{detail?.observaciones ?? 'Aade notas de seguimiento para mantener el contexto.'}</p>
               </div>
               <div>
-                <span className="student-detail__label">Documentacin firmada</span>
+                <span className="student-detail__label">Documentación firmada</span>
                 {detail?.documentoUrl ? (
                   <a className="link" href={detail.documentoUrl} target="_blank" rel="noreferrer">
                     Abrir documento
                   </a>
                 ) : (
-                  <p>No hay documentos adjuntos Todavia.</p>
+                  <p>No hay documentos adjuntos todavía.</p>
                 )}
               </div>
             </div>
           ) : (
             <div className="convenio-docs">
               <article>
-                <h4>Guas recomendadas</h4>
+                <h4>Guías recomendadas</h4>
                 <ul>
                   <li>
-                    <Link to="/documentacion" className="link">Documentacin general del proyecto</Link>
+                    <Link to="/documentacion" className="link">Documentación general del proyecto</Link>
                   </li>
                   <li>
                     <a
@@ -2921,7 +3077,7 @@ const selectedConvenio = useMemo(() => {
                 <ol>
                   <li>Validar el estado (borrador, vigente, finalizado) antes de compartirlo.</li>
                   <li>Confirmar fechas de inicio y fin con la empresa colaboradora.</li>
-                  <li>Adjuntar documentacin firmada o enlazar al repositorio correspondiente.</li>
+                  <li>Adjuntar documentación firmada o enlazar al repositorio correspondiente.</li>
                 </ol>
               </article>
             </div>
@@ -2959,7 +3115,7 @@ const selectedConvenio = useMemo(() => {
           setDetailError(null);
         })
         .catch((err) => {
-          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignacin.';
+          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignación.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
@@ -2969,7 +3125,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No se ha indicado ninguna asignacin.</p>
+            <p>No se ha indicado ninguna asignacion.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al inicio
             </button>
@@ -2982,7 +3138,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No hay datos sincronizados Todavia. Regresa al dashboard y sincroniza con el backend.</p>
+            <p>No hay datos sincronizados todavía. Regresa al dashboard y sincroniza con el backend.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -2995,7 +3151,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No encontramos la asignacin solicitada.</p>
+            <p>No encontramos la asignacion solicitada.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3018,7 +3174,7 @@ const selectedConvenio = useMemo(() => {
       events.push({
         title: 'Inicio planificado',
         date: formatDate(asignacionSummary.fechaInicio),
-        note: 'Aprobado por coordinacin',
+        note: 'Aprobado por coordinación',
       });
       if (asignacionSummary.fechaFin) {
         events.push({
@@ -3029,7 +3185,7 @@ const selectedConvenio = useMemo(() => {
       }
       if (detail) {
         events.push({
-          title: 'Tutor acadmico asignado',
+          title: 'Tutor académico asignado',
           date: new Date().toLocaleDateString('es-ES'),
           note: `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}`,
         });
@@ -3050,7 +3206,7 @@ const selectedConvenio = useMemo(() => {
         href: `mailto:${detail.estudiante.email}`,
       },
       detail?.tutorAcademico.email && {
-        label: 'Tutor acadmico',
+        label: 'Tutor académico',
         href: `mailto:${detail.tutorAcademico.email}`,
       },
       detail?.tutorProfesional?.email && {
@@ -3066,7 +3222,7 @@ const selectedConvenio = useMemo(() => {
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate(-1)}>
               Volver
             </button>
-            <p className="module-page__eyebrow">Detalle de asignacin</p>
+            <p className="module-page__eyebrow">Detalle de asignacion</p>
             <h2>{studentName}  {asignacionSummary.empresa.nombre}</h2>
             <p className="asignacion-page__subtitle">Convenio: {detail?.convenio.titulo ?? 'Sin convenio detallado'}</p>
           </div>
@@ -3089,7 +3245,7 @@ const selectedConvenio = useMemo(() => {
               disabled={!referenceData}
               title={!referenceData ? 'Cargando datos de referencia...' : undefined}
             >
-              Duplicar asignacin
+              Duplicar asignacion
             </button>
           </div>
         </header>
@@ -3133,7 +3289,7 @@ const selectedConvenio = useMemo(() => {
             <h3>Tutores asignados</h3>
             <div className="asignacion-info-grid">
               <div>
-                <span>Tutor acadmico</span>
+                <span>Tutor académico</span>
                 <strong>
                   {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando...'}
                 </strong>
@@ -3195,15 +3351,15 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-docs">
           <article>
             <h4>Informes y anexos</h4>
-            <p>Enlaza actas semanales, evaluaciones y rbricas firmadas.</p>
-            <Link to="/documentacion" className="link">Abrir documentacin general</Link>
+            <p>Enlaza actas semanales, evaluaciones y rúbricas firmadas.</p>
+            <Link to="/documentacion" className="link">Abrir documentación general</Link>
           </article>
           <article>
             <h4>Checklist interno</h4>
             <ul>
               <li>Confirmar asistencia semanal del estudiante.</li>
               <li>Registrar feedback de ambos tutores.</li>
-              <li>Adjuntar informe final antes de cerrar la asignacin.</li>
+              <li>Adjuntar informe final antes de cerrar la asignacion.</li>
             </ul>
           </article>
         </section>
@@ -3217,7 +3373,7 @@ const selectedConvenio = useMemo(() => {
         <div>
           <p className="module-page__eyebrow">{title}</p>
           <h2>Sin datos disponibles</h2>
-          <p>Sincroniza desde el dashboard principal para cargar la informacin.</p>
+          <p>Sincroniza desde el dashboard principal para cargar la información.</p>
         </div>
         <Link className="button button--ghost button--sm" to="/">
           Volver al dashboard
@@ -3243,9 +3399,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Mdulo empresas</p>
+            <p className="module-page__eyebrow">Módulo empresas</p>
             <h2>Empresas colaboradoras</h2>
-            <p>Repasa el estado de colaboracin, contactos y convenios activos.</p>
+            <p>Repasa el estado de colaboración, contactos y convenios activos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3335,7 +3491,7 @@ const selectedConvenio = useMemo(() => {
                     <strong>{selectedEmpresa.ciudad ?? 'No definida'}</strong>
                   </article>
                   <article>
-                    <span>Estado colaboracin</span>
+                    <span>Estado colaboración</span>
                     <strong>{selectedEmpresa.estadoColaboracion}</strong>
                   </article>
                   <article>
@@ -3432,7 +3588,7 @@ const selectedConvenio = useMemo(() => {
                           ))}
                         </ul>
                       ) : (
-                        <p className="empresa-panel__placeholder">Aun no hay asignaciones registradas.</p>
+                        <p className="empresa-panel__placeholder">Aún no hay asignaciones registradas.</p>
                       )}
                     </article>
                     <article className="empresa-panel">
@@ -3449,11 +3605,11 @@ const selectedConvenio = useMemo(() => {
                         </li>
                         <li>
                           <strong>Notas colaborativas</strong>
-                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aun no hay notas guardadas.'}</p>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aún no hay notas guardadas.'}</p>
                         </li>
                         <li>
                           <strong>Documentos compartidos</strong>
-                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavia no hay adjuntos.'}</p>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavía no hay adjuntos.'}</p>
                         </li>
                       </ul>
                     </article>
@@ -3533,9 +3689,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Mdulo convenios</p>
+            <p className="module-page__eyebrow">Módulo convenios</p>
             <h2>Convenios y acuerdos</h2>
-            <p>Controla el workflow, checklist documental y recordatorios crticos.</p>
+            <p>Controla el workflow, checklist documental y recordatorios críticos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3574,7 +3730,7 @@ const selectedConvenio = useMemo(() => {
         <section className="convenio-layout">
           <aside className="convenio-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rpidos</p>
+              <p className="module-page__eyebrow">Filtros rápidos</p>
               <h3>Lista de convenios</h3>
               <p>Acota por estado o empresa y selecciona el convenio que quieras revisar.</p>
             </div>
@@ -3760,7 +3916,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos Todavia.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos todavía.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -3845,9 +4001,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Mdulo estudiantes</p>
+            <p className="module-page__eyebrow">Módulo estudiantes</p>
             <h2>Listado completo de estudiantes</h2>
-            <p>Consulta informacin acadmica, asignaciones y contacto.</p>
+            <p>Consulta información académica, asignaciones y contacto.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3927,7 +4083,7 @@ const selectedConvenio = useMemo(() => {
                         Editar ficha
                       </button>
                       <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
-                        Planificar asignacin
+                        Planificar asignacion
                       </button>
                       <a className="button button--link button--sm" href={`mailto:${selectedStudent.email}`}>
                         Enviar correo
@@ -3953,7 +4109,7 @@ const selectedConvenio = useMemo(() => {
 
                 <div className="student-profile__section">
                   <div className="student-profile__section-header">
-                    <h4>Ficha acadmica</h4>
+                    <h4>Ficha académica</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
                       Actualizar datos
                     </button>
@@ -4004,7 +4160,7 @@ const selectedConvenio = useMemo(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="student-detail__placeholder">Todavia no tiene asignaciones registradas.</p>
+                    <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
                   )}
                 </div>
 
@@ -4063,9 +4219,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Mdulo asignaciones</p>
+            <p className="module-page__eyebrow">Módulo asignaciones</p>
             <h2>Pipeline completo de asignaciones</h2>
-            <p>Repasa cada prctica, tutores asignados y estado actual.</p>
+            <p>Repasa cada práctica, tutores asignados y estado actual.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4104,7 +4260,7 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-layout">
           <aside className="asignacion-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rpidos</p>
+              <p className="module-page__eyebrow">Filtros rápidos</p>
               <h3>Lista de asignaciones</h3>
               <p>Aplica filtros por estado o modalidad y abre cada ficha en un clic.</p>
             </div>
@@ -4172,7 +4328,7 @@ const selectedConvenio = useMemo(() => {
               <>
                 <div className="asignacion-panel__header">
                   <div>
-                    <p className="module-page__eyebrow">Asignacin #{selectedAsignacion.id}</p>
+                    <p className="module-page__eyebrow">Asignación #{selectedAsignacion.id}</p>
                     <h3>{selectedAsignacion.estudiante.nombre} {selectedAsignacion.estudiante.apellido}</h3>
                     <p className="asignacion-panel__company">{selectedAsignacion.empresa.nombre}</p>
                   </div>
@@ -4228,11 +4384,11 @@ const selectedConvenio = useMemo(() => {
                 </div>
 
                 <p className="asignacion-panel__hint">
-                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentacin adjunta.
+                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentación adjunta.
                 </p>
               </>
             ) : (
-              <p className="detail-placeholder">Selecciona una asignacin para revisar su detalle.</p>
+              <p className="detail-placeholder">Selecciona una asignacion para revisar su detalle.</p>
             )}
           </div>
         </section>
@@ -4240,7 +4396,7 @@ const selectedConvenio = useMemo(() => {
         <section className="kanban">
           <header className="kanban__header">
             <h3>Pipeline visual</h3>
-            <p>Visualiza el pipeline completo y accede rpido a cada tutor o empresa.</p>
+            <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
           </header>
           <div className="kanban__columns">
             {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
@@ -4277,14 +4433,14 @@ const selectedConvenio = useMemo(() => {
         <div className="hero__content">
           <p className="hero__eyebrow">Todo tu programa en una sola plataforma</p>
           <h1>
-            Gestion integral de practicas
+            Gestión integral de prácticas
             <span className="hero__highlight hero__highlight--amber"> sencilla </span>
             y
             <span className="hero__highlight hero__highlight--cyan"> eficiente</span>.
           </h1>
           <p className="hero__description">
             Coordina empresas, convenios y estudiantes desde un panel oscuro inspirado en Odoo.
-            Sigue cada asignacion con trazabilidad y planifica nuevas experiencias en segundos.
+            Sigue cada asignación con trazabilidad y planifica nuevas experiencias en segundos.
           </p>
           <div className="hero__actions">
             <button
@@ -4293,10 +4449,10 @@ const selectedConvenio = useMemo(() => {
               onClick={() => openCreateAsignacion()}
               disabled={!referenceData}
             >
-              Planificar nueva asignacion
+              Planificar nueva asignación
             </button>
             <Link className="button button--ghost button--lg hero__link" to="/documentacion">
-              Explorar documentacion
+              Explorar documentación
             </Link>
           </div>
         </div>
@@ -4333,8 +4489,8 @@ const selectedConvenio = useMemo(() => {
       <section className="analytics-card">
         <header className="analytics-card__header">
           <div>
-            <p className="module-page__eyebrow">Dashboard analtico</p>
-            <h3>Distribucin de asignaciones y actividad</h3>
+            <p className="module-page__eyebrow">Dashboard analítico</p>
+            <h3>Distribución de asignaciones y actividad</h3>
           </div>
           <span className="chip chip--ghost">Total registros: {analyticData.reduce((sum, item) => sum + item.value, 0)}</span>
         </header>
@@ -4377,7 +4533,7 @@ const selectedConvenio = useMemo(() => {
         <div className="student-cards__header">
           <div>
             <h3>Perfiles de estudiantes</h3>
-            <p>Resumen rpido del estado acadmico y asignaciones activas.</p>
+            <p>Resumen rápido del estado académico y asignaciones activas.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/estudiantes">
             Ver mdulo completo
@@ -4442,7 +4598,7 @@ const selectedConvenio = useMemo(() => {
                 className={studentDetailTab === 'academico' ? 'active' : ''}
                 onClick={() => setStudentDetailTab('academico')}
               >
-                Informacin acadmica
+                Información académica
               </button>
               <button
                 type="button"
@@ -4499,7 +4655,7 @@ const selectedConvenio = useMemo(() => {
                     ))}
                   </div>
                 ) : (
-                  <p className="student-detail__placeholder">Todavia no tiene asignaciones registradas.</p>
+                  <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
                 )
               )}
               {studentDetailTab === 'seguimiento' && (
@@ -4573,7 +4729,7 @@ const selectedConvenio = useMemo(() => {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Equipo de tutores</p>
-          <h2>Tutores acadmicos y profesionales</h2>
+          <h2>Tutores académicos y profesionales</h2>
           <p>Filtra por estado y empresa, revisa contacto y asignaciones asociadas.</p>
         </div>
         <div className="module-page__actions">
@@ -4597,10 +4753,10 @@ const selectedConvenio = useMemo(() => {
       <div className="module-page__split">
         <div className="module-page__panel">
           <DataTable
-            caption="Tutores acadmicos"
+            caption="Tutores académicos"
             columns={tutorAcademicoColumns}
             data={tutorAcademicosList}
-            emptyMessage="No hay tutores acadmicos registrados."
+            emptyMessage="No hay tutores académicos registrados."
           />
           <div className="table-pagination">
             <button
@@ -4758,7 +4914,7 @@ const selectedConvenio = useMemo(() => {
               {solicitudMensajes[solicitud.id] && (
                 <div className="solicitud-card__messages">
                   {solicitudMensajes[solicitud.id].length === 0 ? (
-                    <p className="detail-placeholder">Sin mensajes Todavia.</p>
+                    <p className="detail-placeholder">Sin mensajes todavía.</p>
                   ) : (
                     solicitudMensajes[solicitud.id].map((msg) => (
                       <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
@@ -4844,7 +5000,7 @@ const selectedConvenio = useMemo(() => {
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
-            <li><Link to="/documentacion">Documentacion</Link></li>
+            <li><Link to="/documentacion">Documentación</Link></li>
           </ul>
         </article>
       </div>
@@ -4857,7 +5013,7 @@ const selectedConvenio = useMemo(() => {
       <header className="topbar">
         <div>
           <Link to="/" className="topbar__logo">Agora</Link>
-          <span className="topbar__badge">Panel de practicas</span>
+          <span className="topbar__badge">Panel de prácticas</span>
         </div>
         <div className="topbar__actions">
           <span className="app__meta">API: <code>{API_BASE_URL}</code></span>
@@ -5005,7 +5161,7 @@ const selectedConvenio = useMemo(() => {
       )}
       {asignacionModal && (
         <Modal
-          title={asignacionModal.mode === 'create' ? 'Crear asignacin' : 'Editar asignacin'}
+          title={asignacionModal.mode === 'create' ? 'Crear asignacion' : 'Editar asignacion'}
           onClose={handleCloseAsignacionModal}
         >
           <AsignacionForm

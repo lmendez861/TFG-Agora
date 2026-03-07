@@ -1240,6 +1240,14 @@
   align-items: flex-start;
 }
 
+.module-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .module-search {
   margin-bottom: 1rem;
   display: flex;

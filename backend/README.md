@@ -22,10 +22,10 @@ Este proyecto Symfony expone la API que consume el frontend de Agora para gestio
    ```
 3. Prepara la base de datos y carga las fixtures de demo (empresas, tutores, estudiantes y el usuario administrador):
    ```bash
-   php bin/console doctrine:database:create --if-not-exists
    php bin/console doctrine:migrations:migrate --no-interaction
    php bin/console doctrine:fixtures:load --no-interaction
    ```
+   Con SQLite por defecto no hace falta ejecutar `doctrine:database:create`: la base se materializa al aplicar la migracion.
 4. Arranca el servidor de desarrollo:
    ```bash
    symfony serve # o php -S 127.0.0.1:8000 -t public

@@ -29,6 +29,7 @@ Siempre que el backend responda y las credenciales sean correctas, el botón **A
 - **Convenios**: permite seleccionar la empresa, definir fechas, tipo y estado. El modal reutiliza la lista de empresas existente para mantener coherencia.
 - **Estudiantes**: alta/edición con validaciones básicas (duplicados gestionados desde el backend) y resumen de asignaciones.
 - **Asignaciones**: crea o modifica la relación estudiante-empresa, filtrando convenios y tutores según la empresa seleccionada. El formulario carga tutores académicos y profesionales mediante los nuevos endpoints de referencia.
+- **Exportación CSV**: el dashboard y los listados principales permiten descargar CSV para empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.
 
 Todos los formularios comparten el mismo patrón de modal, muestran errores específicos en el cuerpo del formulario y generan toasts de éxito o error para reforzar el feedback al usuario. Tras guardar, se recarga el conjunto de colecciones para mantener las tablas sincronizadas.
 
@@ -38,5 +39,6 @@ Todos los formularios comparten el mismo patrón de modal, muestran errores espe
 - `src/components/DataTable.tsx`: tabla estilizada con cabeceras, acciones y estado vacío.
 - `src/components/Modal.tsx` y `src/components/EstudianteForm.tsx`: base para formularios modales reutilizables.
 - `src/services/api.ts`: cliente ligero con helpers `apiGet`, `apiPost` y `apiPut` que añaden la cabecera `Authorization` automáticamente.
+- `src/utils/csv.ts`: utilidad de exportación CSV con escape de campos y descarga directa desde navegador.
 
 Con estos pasos cualquier colaborador puede clonar el repositorio, configurar las variables de entorno y trabajar con el panel en cuestión de minutos.

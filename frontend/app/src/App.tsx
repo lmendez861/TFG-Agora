@@ -8,6 +8,7 @@ import { AsignacionForm, type AsignacionFormValues } from './components/Asignaci
 import { Modal } from './components/Modal';
 import { ToastStack, type ToastMessage } from './components/ToastStack';
 import {
+  advanceConvenioWorkflow,
   approveEmpresaSolicitud,
   createAsignacion,
   createConvenio,
@@ -15,6 +16,7 @@ import {
   createEstudiante,
   addConvenioDocument,
   addEmpresaDocument,
+  dismissConvenioAlert,
   fetchCollections,
   fetchEmpresaSolicitudes,
   fetchTutorAcademicos,
@@ -22,8 +24,10 @@ import {
   getApiBaseUrl,
   getAsignacionDetail,
   getConvenioDetail,
+  getConvenioExtras,
   getEmpresaDetail,
   getEstudianteDetail,
+  toggleConvenioChecklist,
   updateAsignacion,
   updateConvenio,
   rejectEmpresaSolicitud,
@@ -35,12 +39,14 @@ import {
   fetchEmpresaMensajes,
   postEmpresaMensaje,
 } from './services/api';
+import { downloadCsv, type CsvRow } from './utils/csv';
 import type {
   ApiCollections,
   AsignacionDetail,
   AsignacionPayload,
   AsignacionSummary,
   ConvenioDetail,
+  ConvenioExtras,
   ConvenioPayload,
   ConvenioSummary,
   ConvenioDocumentRecord,
@@ -62,12 +68,27 @@ import './App.css';
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' });
 
+function buildExportFilename(scope: string): string {
+  const now = new Date();
+  const stamp = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('');
+  const time = [
+    String(now.getHours()).padStart(2, '0'),
+    String(now.getMinutes()).padStart(2, '0'),
+  ].join('');
+
+  return `agora-${scope}-${stamp}-${time}.csv`;
+}
+
 const FALLBACK_COLLECTIONS: ApiCollections = {
   empresas: [
     {
       id: 1,
-      nombre: 'Innovar Formación',
-      sector: 'Tecnología educativa',
+      nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
+      sector: 'TecnologÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a educativa',
       ciudad: 'Madrid',
       estadoColaboracion: 'activa',
       conveniosActivos: 2,
@@ -89,7 +110,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 3,
       nombre: 'LogiMovil Partners',
-      sector: 'Logística inteligente',
+      sector: 'LogÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­stica inteligente',
       ciudad: 'Sevilla',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
@@ -99,8 +120,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 4,
-      nombre: 'Energía Circular Coop.',
-      sector: 'Energía renovable',
+      nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.',
+      sector: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a renovable',
       ciudad: 'Bilbao',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
@@ -110,9 +131,9 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 5,
-      nombre: 'Datos Atlántico',
+      nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico',
       sector: 'Ciberseguridad',
-      ciudad: 'A Coruña',
+      ciudad: 'A CoruÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±a',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
       tutoresProfesionales: 1,
@@ -133,7 +154,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 7,
       nombre: 'Nexo Industrial',
-      sector: 'Automatización industrial',
+      sector: 'AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n industrial',
       ciudad: 'Zaragoza',
       estadoColaboracion: 'activa',
       conveniosActivos: 2,
@@ -146,10 +167,10 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 1,
       nombre: 'Ana',
-      apellido: 'Martínez',
+      apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nez',
       dni: '12345678A',
       email: 'ana.martinez@alumnos.es',
-      grado: 'Ingeniería Informática',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a InformÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡tica',
       curso: '4o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -160,7 +181,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Campos',
       dni: '87654321B',
       email: 'luis.campos@alumnos.es',
-      grado: 'Ingeniería Biomédica',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a BiomÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dica',
       curso: '3o',
       estado: 'disponible',
       asignaciones: { total: 1, enCurso: 0 },
@@ -171,7 +192,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Vega',
       dni: '44556677C',
       email: 'marina.vega@alumnos.es',
-      grado: 'Ingeniería Industrial',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Industrial',
       curso: '5o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -179,7 +200,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 4,
       nombre: 'Carlos',
-      apellido: 'Ibáñez',
+      apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±ez',
       dni: '99887766D',
       email: 'carlos.ibanez@alumnos.es',
       grado: 'Telecomunicaciones',
@@ -193,7 +214,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Herrera',
       dni: '11223344E',
       email: 'sofia.herrera@alumnos.es',
-      grado: 'Administración y Dirección',
+      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n y DirecciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
       curso: '4o',
       estado: 'finalizado',
       asignaciones: { total: 1, enCurso: 0 },
@@ -212,10 +233,10 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 7,
       nombre: 'Paula',
-      apellido: 'Ríos',
+      apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­os',
       dni: '55667788G',
       email: 'paula.rios@alumnos.es',
-      grado: 'Administración de Sistemas',
+      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de Sistemas',
       curso: '2o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -225,7 +246,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 1,
       titulo: 'Convenio IA Educativa 2024/2025',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2024-09-01',
@@ -234,7 +255,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 2,
-      titulo: 'Convenio Integraciones Clínicas 2024',
+      titulo: 'Convenio Integraciones ClÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nicas 2024',
       empresa: { id: 2, nombre: 'Salud Conectada S.L.' },
       tipo: 'extracurricular',
       estado: 'borrador',
@@ -244,7 +265,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 3,
-      titulo: 'Plataforma de Logística Inteligente 2024',
+      titulo: 'Plataforma de LogÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­stica Inteligente 2024',
       empresa: { id: 3, nombre: 'LogiMovil Partners' },
       tipo: 'curricular',
       estado: 'vigente',
@@ -254,8 +275,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 4,
-      titulo: 'Programa Transición Energética 2024/25',
-      empresa: { id: 4, nombre: 'Energía Circular Coop.' },
+      titulo: 'Programa TransiciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tica 2024/25',
+      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.' },
       tipo: 'extracurricular',
       estado: 'renovacion',
       fechaInicio: '2024-05-01',
@@ -265,7 +286,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 5,
       titulo: 'Convenio DataOps 2025',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
       tipo: 'curricular',
       estado: 'planificado',
       fechaInicio: '2025-03-01',
@@ -275,7 +296,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 6,
       titulo: 'Acuerdo Ciberseguridad FP Dual 2025',
-      empresa: { id: 5, nombre: 'Datos Atlántico' },
+      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2025-02-01',
@@ -294,7 +315,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 8,
-      titulo: 'Convenio Automatización Industrial 2024/25',
+      titulo: 'Convenio AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n Industrial 2024/25',
       empresa: { id: 7, nombre: 'Nexo Industrial' },
       tipo: 'curricular',
       estado: 'vigente',
@@ -311,8 +332,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 320,
       fechaInicio: '2024-10-01',
       fechaFin: '2025-01-31',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
-      estudiante: { id: 1, nombre: 'Ana', apellido: 'Martínez' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
+      estudiante: { id: 1, nombre: 'Ana', apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nez' },
     },
     {
       id: 2,
@@ -331,7 +352,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 180,
       fechaInicio: '2024-03-01',
       fechaFin: '2024-06-30',
-      empresa: { id: 1, nombre: 'Innovar Formación' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
       estudiante: { id: 5, nombre: 'Sofia', apellido: 'Herrera' },
     },
     {
@@ -351,8 +372,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 260,
       fechaInicio: '2025-01-15',
       fechaFin: '2025-05-30',
-      empresa: { id: 4, nombre: 'Energía Circular Coop.' },
-      estudiante: { id: 4, nombre: 'Carlos', apellido: 'Ibáñez' },
+      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.' },
+      estudiante: { id: 4, nombre: 'Carlos', apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±ez' },
     },
     {
       id: 6,
@@ -361,8 +382,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 200,
       fechaInicio: '2025-02-10',
       fechaFin: '2025-06-15',
-      empresa: { id: 5, nombre: 'Datos Atlántico' },
-      estudiante: { id: 7, nombre: 'Paula', apellido: 'Ríos' },
+      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico' },
+      estudiante: { id: 7, nombre: 'Paula', apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­os' },
     },
     {
       id: 7,
@@ -937,8 +958,8 @@ function DocumentationPage() {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Recursos</p>
-          <h2>Documentación del proyecto</h2>
-          <p>Guias rapidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
+          <h2>DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n del proyecto</h2>
+          <p>GuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
         </div>
       </header>
       <div className="docs-grid">
@@ -954,7 +975,7 @@ function DocumentationPage() {
         </article>
         <article className="docs-card">
           <h3>Flujos CRUD</h3>
-          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta también los tests en backend/tests.</p>
+          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©n los tests en backend/tests.</p>
         </article>
         <article className="docs-card">
           <h3>Pruebas automatizadas</h3>
@@ -1009,7 +1030,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
       setStatus(`Bienvenido ${meData.username}`);
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesión.';
+      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.';
       setStatus(message);
     }
   };
@@ -1018,9 +1039,9 @@ function LoginPage({ onLogin }: LoginPageProps) {
     <section className="auth-section">
       <div className="auth-card">
         <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
-        <h2>Iniciar sesión</h2>
+        <h2>Iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</h2>
         <p className="auth-card__description">
-          Inicia sesión con tus credenciales. Las llamadas posteriores usan la sesión del navegador (json_login).
+          Inicia sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n con tus credenciales. Las llamadas posteriores usan la sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n del navegador (json_login).
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -1067,7 +1088,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      const message = 'Solicitud registrada. El equipo de TI validara la información y activara tu usuario.';
+      const message = 'Solicitud registrada. El equipo de TI validara la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n y activara tu usuario.';
       setStatusMessage(message);
       onSuccess(message);
       setValues({ ...EMPTY_STAFF_REGISTRATION_VALUES });
@@ -1116,7 +1137,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
             {submitting ? 'Enviando...' : 'Enviar solicitud'}
           </button>
           <p className="auth-card__hint">
-            Si representas a una empresa colaboradora, utiliza el portal específico de registros externos.
+            Si representas a una empresa colaboradora, utiliza el portal especÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fico de registros externos.
           </p>
         </form>
       </div>
@@ -1165,6 +1186,8 @@ export default function App() {
   const [convenioDocuments, setConvenioDocuments] = useState<Record<number, ConvenioDocumentRecord[]>>({});
   const [convenioAlerts, setConvenioAlerts] = useState<Record<number, ConvenioAlert[]>>({});
   const [convenioWorkflowState, setConvenioWorkflowState] = useState<Record<number, string>>({});
+  const [loadingConvenioExtrasId, setLoadingConvenioExtrasId] = useState<number | null>(null);
+  const [processingConvenioActionId, setProcessingConvenioActionId] = useState<number | null>(null);
   const [empresaSolicitudes, setEmpresaSolicitudes] = useState<EmpresaSolicitudSummary[]>([]);
   const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
   const [processingSolicitudId, setProcessingSolicitudId] = useState<number | null>(null);
@@ -1199,6 +1222,60 @@ export default function App() {
     setToasts((prev) => [...prev, { id, type, message }]);
   }, []);
 
+  const syncConvenioState = useCallback((convenioId: number, estado: string) => {
+    setConvenioWorkflowState((prev) => ({ ...prev, [convenioId]: estado }));
+    setCollections((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        convenios: prev.convenios.map((convenio) =>
+          convenio.id === convenioId ? { ...convenio, estado } : convenio,
+        ),
+      };
+    });
+  }, []);
+
+  const applyConvenioExtras = useCallback((
+    convenioId: number,
+    extras: Pick<ConvenioExtras, 'workflow' | 'checklist' | 'documents' | 'alerts'>,
+  ) => {
+    syncConvenioState(convenioId, extras.workflow.current);
+    setConvenioChecklist((prev) => ({
+      ...prev,
+      [convenioId]: extras.checklist.map((item) => ({
+        id: item.id,
+        label: item.label,
+        completed: item.completed,
+      })),
+    }));
+    setConvenioDocuments((prev) => ({
+      ...prev,
+      [convenioId]: extras.documents,
+    }));
+    setConvenioAlerts((prev) => ({
+      ...prev,
+      [convenioId]: extras.alerts.map((alert) => ({
+        id: alert.id,
+        message: alert.message,
+        level: alert.level === 'warning' ? 'warning' : 'info',
+        active: alert.active,
+      })),
+    }));
+  }, [syncConvenioState]);
+
+  const exportCsv = useCallback((scope: string, rows: CsvRow[], emptyMessage: string) => {
+    if (rows.length === 0) {
+      pushToast('error', emptyMessage);
+      return;
+    }
+
+    downloadCsv(buildExportFilename(scope), rows);
+    pushToast('success', `CSV generado con ${rows.length} registros.`);
+  }, [pushToast]);
+
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
@@ -1225,7 +1302,7 @@ export default function App() {
       const notes = prev[empresaId] ?? [];
         const newNote: EmpresaNote = {
           id: Date.now(),
-          author: 'Coordinación',
+          author: 'CoordinaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
           content: trimmed,
           timestamp: new Date().toISOString(),
         };
@@ -1276,7 +1353,7 @@ export default function App() {
         const docs = prev[empresaId] ?? [];
         return { ...prev, [empresaId]: [nuevo, ...docs] };
       });
-      pushToast('success', 'Documento añadido.');
+      pushToast('success', 'Documento aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±adido.');
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
@@ -1287,27 +1364,66 @@ export default function App() {
     }
   }, [pushToast]);
 
-  const handleToggleChecklistItem = useCallback((convenioId: number, itemId: number) => {
-    setConvenioChecklist((prev) => {
-      const items = prev[convenioId] ?? [];
-      return {
-        ...prev,
-        [convenioId]: items.map((item) =>
-          item.id === itemId ? { ...item, completed: !item.completed } : item,
-        ),
-      };
-    });
-  }, []);
+  const loadConvenioExtras = useCallback(
+    async (convenioId: number, options?: { silent?: boolean; background?: boolean }) => {
+      if (!options?.background) {
+        setLoadingConvenioExtrasId(convenioId);
+      }
 
-  const handleAdvanceConvenioState = useCallback((convenioId: number) => {
-    setConvenioWorkflowState((prev) => {
-      const current = prev[convenioId] ?? 'borrador';
-      const index = CONVENIO_STEP_FLOW.findIndex((step) => step === current);
-      const next = CONVENIO_STEP_FLOW[(index + 1) % CONVENIO_STEP_FLOW.length];
-      pushToast('success', `Convenio ${convenioId} cambia a ${next}.`);
-      return { ...prev, [convenioId]: next };
-    });
+      try {
+        const extras = await getConvenioExtras(convenioId);
+        applyConvenioExtras(convenioId, extras);
+        return extras;
+      } catch (err) {
+        if (!options?.silent) {
+          const message = err instanceof Error ? err.message : 'No se pudieron cargar los extras del convenio.';
+          pushToast('error', message);
+        }
+        return null;
+      } finally {
+        if (!options?.background) {
+          setLoadingConvenioExtrasId((current) => (current === convenioId ? null : current));
+        }
+      }
+    },
+    [applyConvenioExtras, pushToast],
+  );
+
+  const handleToggleChecklistItem = useCallback(async (convenioId: number, itemId: number) => {
+    setProcessingConvenioActionId(convenioId);
+    try {
+      const updated = await toggleConvenioChecklist(convenioId, itemId);
+      setConvenioChecklist((prev) => {
+        const items = prev[convenioId] ?? [];
+        return {
+          ...prev,
+          [convenioId]: items.map((item) =>
+            item.id === itemId ? { ...item, completed: updated.completed } : item,
+          ),
+        };
+      });
+      pushToast('success', 'Checklist actualizado.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo actualizar el checklist.';
+      pushToast('error', message);
+    } finally {
+      setProcessingConvenioActionId((current) => (current === convenioId ? null : current));
+    }
   }, [pushToast]);
+
+  const handleAdvanceConvenioState = useCallback(async (convenioId: number) => {
+    setProcessingConvenioActionId(convenioId);
+    try {
+      const response = await advanceConvenioWorkflow(convenioId);
+      syncConvenioState(convenioId, response.estado);
+      pushToast('success', `Convenio ${convenioId} cambia a ${response.estado}.`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo avanzar el estado del convenio.';
+      pushToast('error', message);
+    } finally {
+      setProcessingConvenioActionId((current) => (current === convenioId ? null : current));
+    }
+  }, [pushToast, syncConvenioState]);
 
   const handleAddConvenioDocument = useCallback(async (convenioId: number, name: string, type: string) => {
     const trimmedName = name.trim();
@@ -1335,17 +1451,27 @@ export default function App() {
     }
   }, [pushToast]);
 
-  const handleDismissConvenioAlert = useCallback((convenioId: number, alertId: number) => {
-    setConvenioAlerts((prev) => {
-      const alerts = prev[convenioId] ?? [];
-      return {
-        ...prev,
-        [convenioId]: alerts.map((alert) =>
-          alert.id === alertId ? { ...alert, active: false } : alert,
-        ),
-      };
-    });
-  }, []);
+  const handleDismissConvenioAlert = useCallback(async (convenioId: number, alertId: number) => {
+    setProcessingConvenioActionId(convenioId);
+    try {
+      const updated = await dismissConvenioAlert(convenioId, alertId);
+      setConvenioAlerts((prev) => {
+        const alerts = prev[convenioId] ?? [];
+        return {
+          ...prev,
+          [convenioId]: alerts.map((alert) =>
+            alert.id === alertId ? { ...alert, active: updated.active } : alert,
+          ),
+        };
+      });
+      pushToast('success', 'Alerta marcada como resuelta.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo actualizar la alerta.';
+      pushToast('error', message);
+    } finally {
+      setProcessingConvenioActionId((current) => (current === convenioId ? null : current));
+    }
+  }, [pushToast]);
 
   const refreshSolicitudes = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -1427,6 +1553,9 @@ export default function App() {
       setTutorProfesionalesList(normalizedProfesionales.items);
       setTutorProfesionalPage(normalizedProfesionales.page);
       setTutorProfesionalTotal(normalizedProfesionales.total);
+      await Promise.allSettled(
+        data.convenios.map((convenio) => loadConvenioExtras(convenio.id, { silent: true, background: true })),
+      );
       setLastUpdated(new Date());
     } catch (err) {
       if (err instanceof Error) {
@@ -1445,7 +1574,7 @@ export default function App() {
       setLoading(false);
     }
     await refreshSolicitudes({ silent: true });
-  }, [refreshSolicitudes]);
+  }, [loadConvenioExtras, refreshSolicitudes]);
 
   const loadTutorAcademicosList = useCallback(
     async (page: number, estado: 'todos' | 'activos' | 'inactivos') => {
@@ -1543,6 +1672,35 @@ export default function App() {
       }
     }
   }, [collections, selectedEmpresaId, selectedConvenioId]);
+
+  useEffect(() => {
+    if (!collections || collections.convenios.length === 0) {
+      return;
+    }
+
+    const convenioId = selectedConvenioId ?? collections.convenios[0].id;
+    const hasCache =
+      Boolean(convenioWorkflowState[convenioId]) &&
+      Array.isArray(convenioChecklist[convenioId]) &&
+      Array.isArray(convenioDocuments[convenioId]) &&
+      Array.isArray(convenioAlerts[convenioId]);
+
+    if (hasCache) {
+      return;
+    }
+
+    loadConvenioExtras(convenioId, { silent: true }).catch(() => {
+      // errores gestionados dentro
+    });
+  }, [
+    collections,
+    convenioAlerts,
+    convenioChecklist,
+    convenioDocuments,
+    convenioWorkflowState,
+    loadConvenioExtras,
+    selectedConvenioId,
+  ]);
 
   const handleRefreshSolicitudes = useCallback(() => {
     refreshSolicitudes().catch(() => {
@@ -2467,9 +2625,10 @@ const selectedConvenio = useMemo(() => {
       return updated;
     });
 
+    if (false) {
     setConvenioWorkflowState((prev) => {
       let updated = prev;
-      collections.convenios.forEach((convenio) => {
+      collections!.convenios.forEach((convenio) => {
         if (!prev[convenio.id]) {
           if (updated === prev) {
             updated = { ...prev };
@@ -2482,7 +2641,7 @@ const selectedConvenio = useMemo(() => {
 
     setConvenioChecklist((prev) => {
       let updated = prev;
-      collections.convenios.forEach((convenio) => {
+      collections!.convenios.forEach((convenio) => {
         if (!prev[convenio.id]) {
           if (updated === prev) {
             updated = { ...prev };
@@ -2500,7 +2659,7 @@ const selectedConvenio = useMemo(() => {
 
     setConvenioDocuments((prev) => {
       let updated = prev;
-      collections.convenios.forEach((convenio) => {
+      collections!.convenios.forEach((convenio) => {
         if (!prev[convenio.id]) {
           if (updated === prev) {
             updated = { ...prev };
@@ -2528,7 +2687,7 @@ const selectedConvenio = useMemo(() => {
 
     setConvenioAlerts((prev) => {
       let updated = prev;
-      collections.convenios.forEach((convenio) => {
+      collections!.convenios.forEach((convenio) => {
         if (!prev[convenio.id]) {
           if (updated === prev) {
             updated = { ...prev };
@@ -2551,6 +2710,7 @@ const selectedConvenio = useMemo(() => {
       });
       return updated;
     });
+    }
   }, [collections]);
 
   const analyticData = useMemo(() => {
@@ -2572,6 +2732,80 @@ const selectedConvenio = useMemo(() => {
     return entries;
   }, [collections, asignacionesPorEstado]);
   const analyticMax = analyticData.reduce((max, entry) => Math.max(max, entry.value), 0) || 1;
+
+  const handleExportDashboard = useCallback(() => {
+    const rows: CsvRow[] = [
+      ...stats.map((stat) => ({
+        seccion: 'kpi',
+        indicador: stat.label,
+        valor: stat.value,
+      })),
+      ...analyticData.map((entry) => ({
+        seccion: 'analitica',
+        indicador: entry.label,
+        valor: entry.value,
+      })),
+    ];
+
+    exportCsv('dashboard', rows, 'No hay metricas disponibles para exportar.');
+  }, [analyticData, exportCsv, stats]);
+
+  const handleExportTutorAcademicos = useCallback(() => {
+    exportCsv(
+      'tutores-academicos',
+      tutorAcademicosList.map((tutor) => ({
+        id: tutor.id,
+        nombre: tutor.nombre,
+        apellido: tutor.apellido,
+        email: tutor.email,
+        telefono: tutor.telefono ?? '',
+        departamento: tutor.departamento ?? '',
+        especialidad: tutor.especialidad ?? '',
+        activo: tutor.activo ? 'si' : 'no',
+      })),
+      'No hay tutores academicos disponibles para exportar.',
+    );
+  }, [exportCsv, tutorAcademicosList]);
+
+  const handleExportTutorProfesionales = useCallback(() => {
+    exportCsv(
+      'tutores-profesionales',
+      tutorProfesionalesList.map((tutor) => ({
+        id: tutor.id,
+        nombre: tutor.nombre,
+        empresa: tutor.empresa.nombre,
+        email: tutor.email ?? '',
+        telefono: tutor.telefono ?? '',
+        cargo: tutor.cargo ?? '',
+        activo: tutor.activo ? 'si' : 'no',
+      })),
+      'No hay tutores profesionales disponibles para exportar.',
+    );
+  }, [exportCsv, tutorProfesionalesList]);
+
+  const handleExportSolicitudes = useCallback(() => {
+    exportCsv(
+      'solicitudes-empresa',
+      empresaSolicitudes.map((solicitud) => ({
+        id: solicitud.id,
+        nombre_empresa: solicitud.nombreEmpresa,
+        cif: solicitud.cif ?? '',
+        sector: solicitud.sector ?? '',
+        ciudad: solicitud.ciudad ?? '',
+        web: solicitud.web ?? '',
+        contacto_nombre: solicitud.contacto.nombre,
+        contacto_email: solicitud.contacto.email,
+        contacto_telefono: solicitud.contacto.telefono ?? '',
+        estado: solicitud.estado,
+        creada_en: formatDate(solicitud.creadaEn),
+        email_verificado_en: formatDate(solicitud.emailVerificadoEn),
+        aprobado_en: formatDate(solicitud.aprobadoEn),
+        motivo_rechazo: solicitud.motivoRechazo ?? '',
+        mensajes_cargados: solicitudMensajes[solicitud.id]?.length ?? 0,
+      })),
+      'No hay solicitudes disponibles para exportar.',
+    );
+  }, [empresaSolicitudes, exportCsv, solicitudMensajes]);
 
 
   const selectedStudentAssignments = useMemo(() => {
@@ -2609,6 +2843,7 @@ const selectedConvenio = useMemo(() => {
       },
     ];
   }, [selectedStudent, selectedStudentAssignments]);
+
 
   const EmpresaManagementPage = () => {
     const { empresaId } = useParams();
@@ -2738,7 +2973,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{conveniosEmpresa.length} registros</span>
             </header>
             {conveniosEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Todavía no se han generado convenios para esta empresa.</p>
+              <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no se han generado convenios para esta empresa.</p>
             ) : (
               <ul>
                 {conveniosEmpresa.map((convenio) => (
@@ -2758,7 +2993,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{asignacionesEmpresa.length} registros</span>
             </header>
             {asignacionesEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">Aún no hay estudiantes asignados.</p>
+              <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay estudiantes asignados.</p>
             ) : (
               <ul>
                 {asignacionesEmpresa.map((asignacion) => (
@@ -2794,7 +3029,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="empresa-panel__placeholder">Todavía no hay adjuntos.</p>
+                        <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no hay adjuntos.</p>
                       )}
             </div>
             <form
@@ -2853,12 +3088,12 @@ const selectedConvenio = useMemo(() => {
           <header>
             <div>
               <p className="module-page__eyebrow">Actividad reciente</p>
-              <h3>Últimos movimientos</h3>
+              <h3>ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ltimos movimientos</h3>
             </div>
-            <Link to="/documentacion" className="link">Abrir documentación</Link>
+            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</Link>
           </header>
           {activityLog.length === 0 ? (
-            <p className="empresa-panel__placeholder">No hay actividad registrada aún.</p>
+            <p className="empresa-panel__placeholder">No hay actividad registrada aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn.</p>
           ) : (
             <ul>
               {activityLog.map((item) => (
@@ -2908,14 +3143,14 @@ const selectedConvenio = useMemo(() => {
         .then((data) => {
           setDetail(data);
           setDetailError(null);
-          setConvenioDocuments((prev) => ({ ...prev, [data.id]: data.documents }));
+          applyConvenioExtras(data.id, data);
         })
         .catch((err) => {
           const message = err instanceof Error ? err.message : 'No se pudo cargar el detalle del convenio.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
-    }, [convenioId, numericId]);
+    }, [applyConvenioExtras, convenioId, numericId]);
 
     if (!convenioId) {
       return (
@@ -2934,7 +3169,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No hay datos sincronizados. Regresa al dashboard para cargar la información.</p>
+            <p>No hay datos sincronizados. Regresa al dashboard para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3017,7 +3252,7 @@ const selectedConvenio = useMemo(() => {
               Resumen
             </button>
             <button type="button" className={tab === 'documentacion' ? 'active' : ''} onClick={() => setTab('documentacion')}>
-              Documentación
+              DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
             </button>
           </div>
 
@@ -3032,23 +3267,23 @@ const selectedConvenio = useMemo(() => {
                 <p>{detail?.observaciones ?? 'Aade notas de seguimiento para mantener el contexto.'}</p>
               </div>
               <div>
-                <span className="student-detail__label">Documentación firmada</span>
+                <span className="student-detail__label">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n firmada</span>
                 {detail?.documentoUrl ? (
                   <a className="link" href={detail.documentoUrl} target="_blank" rel="noreferrer">
                     Abrir documento
                   </a>
                 ) : (
-                  <p>No hay documentos adjuntos todavía.</p>
+                  <p>No hay documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
                 )}
               </div>
             </div>
           ) : (
             <div className="convenio-docs">
               <article>
-                <h4>Guías recomendadas</h4>
+                <h4>GuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as recomendadas</h4>
                 <ul>
                   <li>
-                    <Link to="/documentacion" className="link">Documentación general del proyecto</Link>
+                    <Link to="/documentacion" className="link">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n general del proyecto</Link>
                   </li>
                   <li>
                     <a
@@ -3077,7 +3312,7 @@ const selectedConvenio = useMemo(() => {
                 <ol>
                   <li>Validar el estado (borrador, vigente, finalizado) antes de compartirlo.</li>
                   <li>Confirmar fechas de inicio y fin con la empresa colaboradora.</li>
-                  <li>Adjuntar documentación firmada o enlazar al repositorio correspondiente.</li>
+                  <li>Adjuntar documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n firmada o enlazar al repositorio correspondiente.</li>
                 </ol>
               </article>
             </div>
@@ -3115,7 +3350,7 @@ const selectedConvenio = useMemo(() => {
           setDetailError(null);
         })
         .catch((err) => {
-          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignación.';
+          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
@@ -3138,7 +3373,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No hay datos sincronizados todavía. Regresa al dashboard y sincroniza con el backend.</p>
+            <p>No hay datos sincronizados todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a. Regresa al dashboard y sincroniza con el backend.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3174,7 +3409,7 @@ const selectedConvenio = useMemo(() => {
       events.push({
         title: 'Inicio planificado',
         date: formatDate(asignacionSummary.fechaInicio),
-        note: 'Aprobado por coordinación',
+        note: 'Aprobado por coordinaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
       });
       if (asignacionSummary.fechaFin) {
         events.push({
@@ -3185,7 +3420,7 @@ const selectedConvenio = useMemo(() => {
       }
       if (detail) {
         events.push({
-          title: 'Tutor académico asignado',
+          title: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico asignado',
           date: new Date().toLocaleDateString('es-ES'),
           note: `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}`,
         });
@@ -3206,7 +3441,7 @@ const selectedConvenio = useMemo(() => {
         href: `mailto:${detail.estudiante.email}`,
       },
       detail?.tutorAcademico.email && {
-        label: 'Tutor académico',
+        label: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico',
         href: `mailto:${detail.tutorAcademico.email}`,
       },
       detail?.tutorProfesional?.email && {
@@ -3289,7 +3524,7 @@ const selectedConvenio = useMemo(() => {
             <h3>Tutores asignados</h3>
             <div className="asignacion-info-grid">
               <div>
-                <span>Tutor académico</span>
+                <span>Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico</span>
                 <strong>
                   {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando...'}
                 </strong>
@@ -3310,7 +3545,7 @@ const selectedConvenio = useMemo(() => {
           </article>
 
           <article className="asignacion-card asignacion-card--contacts">
-            <h3>Acciones rpidas</h3>
+            <h3>Acciones rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidas</h3>
             {contactActions.length === 0 ? (
               <p>No hay contactos directos disponibles.</p>
             ) : (
@@ -3351,8 +3586,8 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-docs">
           <article>
             <h4>Informes y anexos</h4>
-            <p>Enlaza actas semanales, evaluaciones y rúbricas firmadas.</p>
-            <Link to="/documentacion" className="link">Abrir documentación general</Link>
+            <p>Enlaza actas semanales, evaluaciones y rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºbricas firmadas.</p>
+            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n general</Link>
           </article>
           <article>
             <h4>Checklist interno</h4>
@@ -3373,7 +3608,7 @@ const selectedConvenio = useMemo(() => {
         <div>
           <p className="module-page__eyebrow">{title}</p>
           <h2>Sin datos disponibles</h2>
-          <p>Sincroniza desde el dashboard principal para cargar la información.</p>
+          <p>Sincroniza desde el dashboard principal para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.</p>
         </div>
         <Link className="button button--ghost button--sm" to="/">
           Volver al dashboard
@@ -3399,9 +3634,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo empresas</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo empresas</p>
             <h2>Empresas colaboradoras</h2>
-            <p>Repasa el estado de colaboración, contactos y convenios activos.</p>
+            <p>Repasa el estado de colaboraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n, contactos y convenios activos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3426,7 +3661,7 @@ const selectedConvenio = useMemo(() => {
             </select>
           </label>
           <button type="submit" className="button button--primary button--sm" disabled={!empresaLookupId}>
-            Ir a gestin
+            Ir a gestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
           </button>
         </form>
         <DataTable
@@ -3491,7 +3726,7 @@ const selectedConvenio = useMemo(() => {
                     <strong>{selectedEmpresa.ciudad ?? 'No definida'}</strong>
                   </article>
                   <article>
-                    <span>Estado colaboración</span>
+                    <span>Estado colaboraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</span>
                     <strong>{selectedEmpresa.estadoColaboracion}</strong>
                   </article>
                   <article>
@@ -3588,7 +3823,7 @@ const selectedConvenio = useMemo(() => {
                           ))}
                         </ul>
                       ) : (
-                        <p className="empresa-panel__placeholder">Aún no hay asignaciones registradas.</p>
+                        <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay asignaciones registradas.</p>
                       )}
                     </article>
                     <article className="empresa-panel">
@@ -3605,11 +3840,11 @@ const selectedConvenio = useMemo(() => {
                         </li>
                         <li>
                           <strong>Notas colaborativas</strong>
-                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'Aún no hay notas guardadas.'}</p>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay notas guardadas.'}</p>
                         </li>
                         <li>
                           <strong>Documentos compartidos</strong>
-                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'Todavía no hay adjuntos.'}</p>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no hay adjuntos.'}</p>
                         </li>
                       </ul>
                     </article>
@@ -3689,9 +3924,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo convenios</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo convenios</p>
             <h2>Convenios y acuerdos</h2>
-            <p>Controla el workflow, checklist documental y recordatorios críticos.</p>
+            <p>Controla el workflow, checklist documental y recordatorios crÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3714,7 +3949,7 @@ const selectedConvenio = useMemo(() => {
             <strong>{conveniosVigentes}</strong>
           </article>
           <article>
-            <span>Por renovar (60 das)</span>
+            <span>Por renovar (60 dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as)</span>
             <strong>{proximosRenovacion}</strong>
           </article>
           <article>
@@ -3730,7 +3965,7 @@ const selectedConvenio = useMemo(() => {
         <section className="convenio-layout">
           <aside className="convenio-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidos</p>
               <h3>Lista de convenios</h3>
               <p>Acota por estado o empresa y selecciona el convenio que quieras revisar.</p>
             </div>
@@ -3916,7 +4151,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos todavía.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -4001,9 +4236,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo estudiantes</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo estudiantes</p>
             <h2>Listado completo de estudiantes</h2>
-            <p>Consulta información académica, asignaciones y contacto.</p>
+            <p>Consulta informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica, asignaciones y contacto.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4109,7 +4344,7 @@ const selectedConvenio = useMemo(() => {
 
                 <div className="student-profile__section">
                   <div className="student-profile__section-header">
-                    <h4>Ficha académica</h4>
+                    <h4>Ficha acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
                       Actualizar datos
                     </button>
@@ -4138,7 +4373,7 @@ const selectedConvenio = useMemo(() => {
                   <div className="student-profile__section-header">
                     <h4>Asignaciones</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
-                      Ver mdulo
+                      Ver mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo
                     </button>
                   </div>
                   {selectedStudentAssignments.length > 0 ? (
@@ -4160,7 +4395,7 @@ const selectedConvenio = useMemo(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
+                    <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
                   )}
                 </div>
 
@@ -4219,9 +4454,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">Módulo asignaciones</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo asignaciones</p>
             <h2>Pipeline completo de asignaciones</h2>
-            <p>Repasa cada práctica, tutores asignados y estado actual.</p>
+            <p>Repasa cada prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ctica, tutores asignados y estado actual.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4260,7 +4495,7 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-layout">
           <aside className="asignacion-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rápidos</p>
+              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidos</p>
               <h3>Lista de asignaciones</h3>
               <p>Aplica filtros por estado o modalidad y abre cada ficha en un clic.</p>
             </div>
@@ -4328,7 +4563,7 @@ const selectedConvenio = useMemo(() => {
               <>
                 <div className="asignacion-panel__header">
                   <div>
-                    <p className="module-page__eyebrow">Asignación #{selectedAsignacion.id}</p>
+                    <p className="module-page__eyebrow">AsignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n #{selectedAsignacion.id}</p>
                     <h3>{selectedAsignacion.estudiante.nombre} {selectedAsignacion.estudiante.apellido}</h3>
                     <p className="asignacion-panel__company">{selectedAsignacion.empresa.nombre}</p>
                   </div>
@@ -4384,7 +4619,7 @@ const selectedConvenio = useMemo(() => {
                 </div>
 
                 <p className="asignacion-panel__hint">
-                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentación adjunta.
+                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n adjunta.
                 </p>
               </>
             ) : (
@@ -4396,7 +4631,7 @@ const selectedConvenio = useMemo(() => {
         <section className="kanban">
           <header className="kanban__header">
             <h3>Pipeline visual</h3>
-            <p>Visualiza el pipeline completo y accede rápido a cada tutor o empresa.</p>
+            <p>Visualiza el pipeline completo y accede rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido a cada tutor o empresa.</p>
           </header>
           <div className="kanban__columns">
             {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
@@ -4433,14 +4668,14 @@ const selectedConvenio = useMemo(() => {
         <div className="hero__content">
           <p className="hero__eyebrow">Todo tu programa en una sola plataforma</p>
           <h1>
-            Gestión integral de prácticas
+            GestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n integral de prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡cticas
             <span className="hero__highlight hero__highlight--amber"> sencilla </span>
             y
             <span className="hero__highlight hero__highlight--cyan"> eficiente</span>.
           </h1>
           <p className="hero__description">
             Coordina empresas, convenios y estudiantes desde un panel oscuro inspirado en Odoo.
-            Sigue cada asignación con trazabilidad y planifica nuevas experiencias en segundos.
+            Sigue cada asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n con trazabilidad y planifica nuevas experiencias en segundos.
           </p>
           <div className="hero__actions">
             <button
@@ -4449,10 +4684,10 @@ const selectedConvenio = useMemo(() => {
               onClick={() => openCreateAsignacion()}
               disabled={!referenceData}
             >
-              Planificar nueva asignación
+              Planificar nueva asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
             </button>
             <Link className="button button--ghost button--lg hero__link" to="/documentacion">
-              Explorar documentación
+              Explorar documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
             </Link>
           </div>
         </div>
@@ -4489,10 +4724,15 @@ const selectedConvenio = useMemo(() => {
       <section className="analytics-card">
         <header className="analytics-card__header">
           <div>
-            <p className="module-page__eyebrow">Dashboard analítico</p>
-            <h3>Distribución de asignaciones y actividad</h3>
+            <p className="module-page__eyebrow">Dashboard analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­tico</p>
+            <h3>DistribuciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de asignaciones y actividad</h3>
           </div>
-          <span className="chip chip--ghost">Total registros: {analyticData.reduce((sum, item) => sum + item.value, 0)}</span>
+          <div className="module-page__actions">
+            <span className="chip chip--ghost">Total registros: {analyticData.reduce((sum, item) => sum + item.value, 0)}</span>
+            <button type="button" className="button button--ghost button--sm" onClick={handleExportDashboard}>
+              Exportar resumen CSV
+            </button>
+          </div>
         </header>
         <div className="analytics-bars analytics-bars--vertical">
           {analyticData.map((item, index) => {
@@ -4523,7 +4763,7 @@ const selectedConvenio = useMemo(() => {
             <strong className="module-link-card__value">{module.total}</strong>
             <p className="module-link-card__description">{module.description}</p>
             <Link className="button button--ghost button--sm module-link-card__cta" to={module.path}>
-              Abrir mdulo
+              Abrir mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo
             </Link>
           </article>
         ))}
@@ -4533,10 +4773,10 @@ const selectedConvenio = useMemo(() => {
         <div className="student-cards__header">
           <div>
             <h3>Perfiles de estudiantes</h3>
-            <p>Resumen rápido del estado académico y asignaciones activas.</p>
+            <p>Resumen rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido del estado acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico y asignaciones activas.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/estudiantes">
-            Ver mdulo completo
+            Ver mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo completo
           </Link>
         </div>
         {studentPreview.length > 0 ? (
@@ -4570,7 +4810,7 @@ const selectedConvenio = useMemo(() => {
             })}
           </div>
         ) : (
-          <p className="detail-placeholder">Aún no hay estudiantes registrados.</p>
+          <p className="detail-placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay estudiantes registrados.</p>
         )}
         {selectedStudent && (
           <div className="student-detail">
@@ -4598,7 +4838,7 @@ const selectedConvenio = useMemo(() => {
                 className={studentDetailTab === 'academico' ? 'active' : ''}
                 onClick={() => setStudentDetailTab('academico')}
               >
-                Información académica
+                InformaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica
               </button>
               <button
                 type="button"
@@ -4655,7 +4895,7 @@ const selectedConvenio = useMemo(() => {
                     ))}
                   </div>
                 ) : (
-                  <p className="student-detail__placeholder">Todavía no tiene asignaciones registradas.</p>
+                  <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
                 )
               )}
               {studentDetailTab === 'seguimiento' && (
@@ -4729,7 +4969,7 @@ const selectedConvenio = useMemo(() => {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Equipo de tutores</p>
-          <h2>Tutores académicos y profesionales</h2>
+          <h2>Tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos y profesionales</h2>
           <p>Filtra por estado y empresa, revisa contacto y asignaciones asociadas.</p>
         </div>
         <div className="module-page__actions">
@@ -4753,10 +4993,15 @@ const selectedConvenio = useMemo(() => {
       <div className="module-page__split">
         <div className="module-page__panel">
           <DataTable
-            caption="Tutores académicos"
+            caption="Tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos"
             columns={tutorAcademicoColumns}
             data={tutorAcademicosList}
-            emptyMessage="No hay tutores académicos registrados."
+            actions={(
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorAcademicos}>
+                Exportar CSV
+              </button>
+            )}
+            emptyMessage="No hay tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos registrados."
           />
           <div className="table-pagination">
             <button
@@ -4768,7 +5013,7 @@ const selectedConvenio = useMemo(() => {
               Anterior
             </button>
             <span>
-              Pg {tutorAcademicoPage} de {tutorAcademicoTotalPages}
+              Pag. {tutorAcademicoPage} de {tutorAcademicoTotalPages}
             </span>
             <button
               type="button"
@@ -4788,6 +5033,11 @@ const selectedConvenio = useMemo(() => {
             caption="Tutores profesionales"
             columns={tutorProfesionalColumns}
             data={tutorProfesionalesList}
+            actions={(
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorProfesionales}>
+                Exportar CSV
+              </button>
+            )}
             emptyMessage="No hay tutores profesionales registrados."
           />
           <div className="table-pagination">
@@ -4804,7 +5054,7 @@ const selectedConvenio = useMemo(() => {
               Anterior
             </button>
             <span>
-              Pg {tutorProfesionalPage} de {tutorProfesionalTotalPages}
+              Pag. {tutorProfesionalPage} de {tutorProfesionalTotalPages}
             </span>
             <button
               type="button"
@@ -4836,6 +5086,14 @@ const selectedConvenio = useMemo(() => {
         </div>
         <div className="module-page__actions">
           <span className="chip chip--ghost">{empresaSolicitudes.length} pendientes</span>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
+            onClick={handleExportSolicitudes}
+            disabled={empresaSolicitudes.length === 0}
+          >
+            Exportar CSV
+          </button>
           <button
             type="button"
             className="button button--ghost button--sm"
@@ -4914,12 +5172,12 @@ const selectedConvenio = useMemo(() => {
               {solicitudMensajes[solicitud.id] && (
                 <div className="solicitud-card__messages">
                   {solicitudMensajes[solicitud.id].length === 0 ? (
-                    <p className="detail-placeholder">Sin mensajes todavía.</p>
+                    <p className="detail-placeholder">Sin mensajes todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
                   ) : (
                     solicitudMensajes[solicitud.id].map((msg) => (
                       <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
                         <p>{msg.texto}</p>
-                        <small>{msg.autor} Â· {formatDate(msg.createdAt)}</small>
+                        <small>{msg.autor} - {formatDate(msg.createdAt)}</small>
                       </div>
                     ))
                   )}
@@ -5000,7 +5258,7 @@ const selectedConvenio = useMemo(() => {
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
-            <li><Link to="/documentacion">Documentación</Link></li>
+            <li><Link to="/documentacion">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</Link></li>
           </ul>
         </article>
       </div>
@@ -5013,7 +5271,7 @@ const selectedConvenio = useMemo(() => {
       <header className="topbar">
         <div>
           <Link to="/" className="topbar__logo">Agora</Link>
-          <span className="topbar__badge">Panel de prácticas</span>
+          <span className="topbar__badge">Panel de prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡cticas</span>
         </div>
         <div className="topbar__actions">
           <span className="app__meta">API: <code>{API_BASE_URL}</code></span>
@@ -5077,7 +5335,7 @@ const selectedConvenio = useMemo(() => {
             )}
           </div>
           <div className="topbar__auth">
-            <span className="app__meta">Sesión: admin</span>
+            <span className="app__meta">SesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n: admin</span>
             <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
               <span className="topbar__profile-icon">&#128100;</span>
               <span className="topbar__profile-label">Perfil</span>
@@ -5183,6 +5441,8 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
+
+
 
 
 

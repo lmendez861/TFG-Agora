@@ -2,27 +2,31 @@
 
 - Autor: Luis Angel
 - Tutora: Elena
-- Fecha de revision: 07/03/2026
-- Repositorio: https://github.com/lmendez861/TFG-gora
+- Fecha de revision: 08/03/2026
+- Repositorio: https://github.com/lmendez861/TFG-Agora
 
 ## 1. Portada
 Titulo: Gestion de Empresas Colaboradoras para FP Dual
 Autor: Luis Angel
 Tutora: Elena
-Fecha: 07/03/2026
+Fecha: 08/03/2026
 
 ## 2. Agradecimientos
-[Pendiente de personalizar con el texto final de agradecimientos.]
+Quiero agradecer a mi tutora Elena su seguimiento, sus observaciones y la orientacion prestada durante el desarrollo de este trabajo. Tambien agradezco al profesorado del ciclo y al centro educativo el contexto real aportado para enfocar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo y la constancia durante el proceso de analisis, implementacion, pruebas y redaccion final de la memoria.
 
 ## 3. Indice
-[Se generara en la maquetacion final, incluyendo indice general, de tablas y de figuras.]
+En la maquetacion final se incluira indice general, indice de tablas e indice de figuras.
 
 ## 4. Resumen
 ### 4.1 Resumen (ES)
 Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema ya permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes y control de acceso por roles. La validacion tecnica actual confirma 47 pruebas backend superadas y compilacion correcta de ambos frontends.
 
+Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.
+
 ### 4.2 Summary (EN)
 This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system already supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, and role-based access control. Current technical validation confirms 47 passing backend tests and successful production builds for both frontends.
+
+Keywords: dual training, partner companies, agreements, Symfony, React, academic management.
 
 ## 5. Antecedentes / Introduccion
 - La gestion inicial de empresas colaboradoras, convenios y practicas se hacia con hojas de calculo, correos y documentos dispersos.
@@ -30,6 +34,7 @@ This project delivers a web platform to manage partner companies, agreements, st
 - El proyecto Agora original se reutilizo solo como base tecnica. La logica previa de chats y bots se archivo en `legacy/`.
 - El nuevo alcance se centra en un problema real del centro: registrar empresas, aprobar solicitudes, formalizar convenios y controlar asignaciones y seguimientos.
 - El sistema esta orientado a coordinacion de practicas, tutores academicos, tutores profesionales y empresas interesadas en colaborar.
+- La propuesta se alinea con la necesidad de profesionalizar la gestion de la FP Dual, donde la coordinacion entre centro y empresa exige trazabilidad documental, control de estados y una comunicacion mas estructurada.
 
 ## 6. Objetivos y alcance
 ### 6.1 Objetivo general
@@ -67,6 +72,13 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - Casos de uso principales: consultar KPI, registrar empresas, crear y actualizar convenios, gestionar estudiantes y asignaciones, revisar solicitudes externas, adjuntar documentos, intercambiar mensajes y consultar detalle historico.
 - Requisitos funcionales: listados con filtros, operaciones CRUD, validaciones de negocio, workflow de convenios, aprobacion y rechazo de solicitudes, detalle de entidades, notificaciones y consulta de tutores.
 - Requisitos no funcionales: interfaz responsive, errores JSON normalizados, seguridad por roles, arquitectura mantenible, base de datos portable y despliegue reproducible en entorno local.
+
+### 9.1.1 Planificacion y metodologia de trabajo
+- Fase 1. Analisis del problema y definicion del alcance real para centrar el proyecto en empresas, convenios, estudiantes, asignaciones y solicitudes externas.
+- Fase 2. Diseno tecnico de arquitectura, entidades y relaciones, separando API, panel interno y portal externo para reducir acoplamiento.
+- Fase 3. Implementacion iterativa por modulos, validando primero CRUD nucleares y despues funcionalidades de valor como workflow de convenios, mensajeria y exportacion CSV.
+- Fase 4. Pruebas tecnicas, correccion de incidencias y preparacion de documentacion de entrega, incluyendo memoria, anexos y guia de demo.
+- La metodologia seguida ha sido incremental: cada bloque funcional se ha cerrado con verificacion tecnica antes de ampliar el alcance.
 
 ### 9.2 Diseno de la solucion
 - La solucion se divide en tres piezas: backend Symfony 7.3, panel interno React 18 + TypeScript + Vite y portal externo React 19 + TypeScript + Vite.
@@ -108,12 +120,12 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
   - Landing con formulario publico.
   - Confirmacion de email mediante token.
   - Chat simple sobre la solicitud mientras esta en revision.
-- Estado actual de implementacion: la funcionalidad principal esta operativa y validada; el panel ya incorpora exportacion CSV de resumenes y listados, y los desarrollos abiertos se concentran en endurecimiento productivo, exportacion PDF y automatizacion E2E.
+- Estado actual de implementacion: la funcionalidad principal esta operativa y validada; el panel ya incorpora exportacion CSV de resumenes y listados, y el modulo de convenios persiste workflow, checklist y alertas mediante la API. Los desarrollos abiertos se concentran en endurecimiento productivo, exportacion PDF y automatizacion E2E.
 
 ### 9.7 Pruebas y validacion
 - El backend dispone de una suite automatizada con 47 pruebas y 264 aserciones.
 - La bateria cubre autenticacion, listado y detalle de empresas, convenios, estudiantes y asignaciones, flujo completo de solicitudes, portal por token, documentos y repositorios.
-- El 07/03/2026 se verifico ademas el arranque real de los tres servicios locales:
+- El 08/03/2026 se verifico ademas el arranque real de los tres servicios locales:
   - API Symfony en `http://127.0.0.1:8000`
   - Panel interno en `http://localhost:5173`
   - Portal externo en `http://localhost:5174`
@@ -127,7 +139,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - Para una entrega productiva se recomienda separar frontends estaticos, API Symfony y almacenamiento documental, ademas de sustituir Basic auth por un mecanismo mas robusto.
 - La guia operativa del proyecto queda recogida en `docs/guia-demo.md`.
 
-### 9.9 Resultados y metricas (07/03/2026)
+### 9.9 Resultados y metricas (08/03/2026)
 - Tres servicios levantados y accesibles de forma concurrente: backend, panel interno y portal externo.
 - La llamada autenticada a `/api/empresas` devuelve respuesta valida y datos de demo.
 - `php bin/phpunit` finaliza en verde con 47 pruebas y 264 aserciones.
@@ -142,7 +154,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - Falta automatizar pruebas E2E del panel y del portal para reducir riesgo de regresion visual o de flujo.
 - La memoria final en PDF todavia requerira maquetacion y capturas finales para entrega academica.
 
-### 9.11 Verificacion tecnica (07/03/2026)
+### 9.11 Verificacion tecnica (08/03/2026)
 - Backend:
   - `php bin/phpunit` -> OK, 47 tests, 264 assertions.
   - `symfony server:start --no-tls -d --port=8000` -> servicio operativo.

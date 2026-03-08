@@ -59,6 +59,11 @@
 6. Solicitudes: revision, aprobacion o rechazo desde el panel interno, con exportacion CSV de seguimiento.
 7. Portal externo: alta de empresa, verificacion y chat empresa-centro.
 
+## Plan B para la defensa
+- Si no da tiempo a toda la demo, priorizar dashboard, convenios, solicitudes y portal externo.
+- Si un servicio no arranca, apoyar la explicacion con `docs/memoria-final.md`, `docs/anexo-c-capturas-y-evidencias.md` y los resultados de pruebas y builds.
+- Si falla una accion puntual, reconducir a la arquitectura, el flujo funcional y la evidencia de validacion ya preparada.
+
 ## Capturas recomendadas
 - Dashboard principal con KPI y notificaciones.
 - Vista de Empresas con detalle lateral.

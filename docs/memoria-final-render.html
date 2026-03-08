@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Memoria final TFG - Gestion de Empresas Colaboradoras</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #1d2430;
+      --muted: #546173;
+      --line: #d9e0e7;
+      --soft: #f6f8fa;
+      --accent: #183153;
+      --accent-soft: #eaf1f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Georgia", "Times New Roman", serif;
+      color: var(--ink);
+      line-height: 1.45;
+      font-size: 11pt;
+      background: white;
+    }
+
+    .cover {
+      min-height: 250mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18mm;
+      padding: 12mm 8mm;
+      text-align: center;
+    }
+
+    .cover__eyebrow {
+      font-family: "Arial", sans-serif;
+      font-size: 10pt;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .cover h1 {
+      margin: 0;
+      font-size: 26pt;
+      line-height: 1.15;
+      color: var(--accent);
+    }
+
+    .cover__meta {
+      max-width: 120mm;
+      margin: 0 auto;
+      padding: 6mm 8mm;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, var(--accent-soft) 100%);
+      border-radius: 3mm;
+    }
+
+    .cover__meta p {
+      margin: 2mm 0;
+    }
+
+    .toc {
+      page-break-before: always;
+      padding-top: 6mm;
+    }
+
+    .toc h2 {
+      margin-top: 0;
+      color: var(--accent);
+    }
+
+    .toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc li {
+      margin: 2.2mm 0;
+    }
+
+    .toc .toc-level-2 {
+      margin-left: 6mm;
+      font-size: 10.5pt;
+      color: var(--muted);
+    }
+
+    .toc a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .document-section {
+      padding-top: 2mm;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      break-after: avoid;
+      color: var(--accent);
+      margin: 5mm 0 2.5mm;
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 20pt;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 2mm;
+    }
+
+    h2 {
+      font-size: 15pt;
+      margin-top: 7mm;
+    }
+
+    h3 {
+      font-size: 12pt;
+    }
+
+    p, li {
+      text-align: justify;
+    }
+
+    p {
+      margin: 0 0 3mm;
+    }
+
+    ul, ol {
+      margin: 0 0 4mm 6mm;
+      padding-left: 5mm;
+    }
+
+    li {
+      margin-bottom: 1.5mm;
+    }
+
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 9.5pt;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 1mm;
+      padding: 0.3mm 1mm;
+    }
+
+    pre {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 2mm;
+      padding: 4mm;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre code {
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+
+    .footer-note {
+      page-break-before: always;
+      border-top: 1px solid var(--line);
+      padding-top: 4mm;
+      color: var(--muted);
+      font-size: 9.5pt;
+    }
+  </style>
+</head>
+<body>
+  <section class="cover">
+    <p class="cover__eyebrow">Trabajo Final de Grado</p>
+    <h1>Gestion de Empresas Colaboradoras para FP Dual</h1>
+    <div class="cover__meta">
+      <p><strong>Autor:</strong> Luis Angel</p>
+      <p><strong>Tutora:</strong> Elena</p>
+      <p><strong>Fecha:</strong> 08/03/2026</p>
+      <p><strong>Repositorio:</strong> https://github.com/lmendez861/TFG-Agora</p>
+    </div>
+  </section>
+  <section class="toc">
+    <h2>Indice</h2>
+    <ul>
+      <li class="toc-level-2"><a href="#1-portada">1. Portada</a></li>
+<li class="toc-level-2"><a href="#2-agradecimientos">2. Agradecimientos</a></li>
+<li class="toc-level-2"><a href="#3-indice">3. Indice</a></li>
+<li class="toc-level-2"><a href="#4-resumen">4. Resumen</a></li>
+<li class="toc-level-2"><a href="#5-antecedentes-introduccion">5. Antecedentes / Introduccion</a></li>
+<li class="toc-level-2"><a href="#6-objetivos-y-alcance">6. Objetivos y alcance</a></li>
+<li class="toc-level-2"><a href="#7-definiciones">7. Definiciones</a></li>
+<li class="toc-level-2"><a href="#8-notaciones-y-simbolos">8. Notaciones y simbolos</a></li>
+<li class="toc-level-2"><a href="#9-desarrollo-del-trabajo-final">9. Desarrollo del trabajo final</a></li>
+<li class="toc-level-2"><a href="#10-conclusiones-y-recomendaciones">10. Conclusiones y recomendaciones</a></li>
+<li class="toc-level-2"><a href="#11-referencias">11. Referencias</a></li>
+<li class="toc-level-2"><a href="#12-bibliografia">12. Bibliografia</a></li>
+<li class="toc-level-2"><a href="#13-anexos">13. Anexos</a></li>
+    </ul>
+  </section>
+  <section class="document-section" data-source="memoria-final.md"><p># Trabajo Final de Grado - Gestion de Empresas Colaboradoras</p>
+<ul>
+<li>Autor: Luis Angel</li>
+<li>Tutora: Elena</li>
+<li>Fecha de revision: 08/03/2026</li>
+<li>Repositorio: https://github.com/lmendez861/TFG-Agora</li>
+</ul>
+<h2 id="1-portada">1. Portada</h2>
+<p>Titulo: Gestion de Empresas Colaboradoras para FP Dual Autor: Luis Angel Tutora: Elena Fecha: 08/03/2026</p>
+<h2 id="2-agradecimientos">2. Agradecimientos</h2>
+<p>Quiero agradecer a mi tutora Elena su seguimiento, sus observaciones y la orientacion prestada durante el desarrollo de este trabajo. Tambien agradezco al profesorado del ciclo y al centro educativo el contexto real aportado para enfocar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo y la constancia durante el proceso de analisis, implementacion, pruebas y redaccion final de la memoria.</p>
+<h2 id="3-indice">3. Indice</h2>
+<p>En la maquetacion final se incluira indice general, indice de tablas e indice de figuras.</p>
+<h2 id="4-resumen">4. Resumen</h2>
+<h3 id="4-1-resumen-es">4.1 Resumen (ES)</h3>
+<p>Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema ya permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes y control de acceso por roles. La validacion tecnica actual confirma 47 pruebas backend superadas y compilacion correcta de ambos frontends.</p>
+<p>Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.</p>
+<h3 id="4-2-summary-en">4.2 Summary (EN)</h3>
+<p>This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system already supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, and role-based access control. Current technical validation confirms 47 passing backend tests and successful production builds for both frontends.</p>
+<p>Keywords: dual training, partner companies, agreements, Symfony, React, academic management.</p>
+<h2 id="5-antecedentes-introduccion">5. Antecedentes / Introduccion</h2>
+<ul>
+<li>La gestion inicial de empresas colaboradoras, convenios y practicas se hacia con hojas de calculo, correos y documentos dispersos.</li>
+<li>Ese enfoque generaba duplicidades, falta de trazabilidad, poca visibilidad de estados y dependencia de conocimiento manual.</li>
+<li>El proyecto Agora original se reutilizo solo como base tecnica. La logica previa de chats y bots se archivo en <code>legacy/</code>.</li>
+<li>El nuevo alcance se centra en un problema real del centro: registrar empresas, aprobar solicitudes, formalizar convenios y controlar asignaciones y seguimientos.</li>
+<li>El sistema esta orientado a coordinacion de practicas, tutores academicos, tutores profesionales y empresas interesadas en colaborar.</li>
+<li>La propuesta se alinea con la necesidad de profesionalizar la gestion de la FP Dual, donde la coordinacion entre centro y empresa exige trazabilidad documental, control de estados y una comunicacion mas estructurada.</li>
+</ul>
+<h2 id="6-objetivos-y-alcance">6. Objetivos y alcance</h2>
+<h3 id="6-1-objetivo-general">6.1 Objetivo general</h3>
+<p>Disenar e implantar una aplicacion web que centralice la gestion de empresas colaboradoras y practicas formativas, unificando informacion operativa, control documental y seguimiento de estados en una unica plataforma.</p>
+<h3 id="6-2-objetivos-especificos">6.2 Objetivos especificos</h3>
+<ol>
+<li>Digitalizar el ciclo de vida de empresa, convenio, estudiante, tutor y asignacion.</li>
+<li>Habilitar un flujo publico de solicitud de empresa con verificacion y aprobacion interna.</li>
+<li>Ofrecer un panel interno con KPI, tablas de gestion, detalle de entidades y acciones CRUD.</li>
+<li>Incorporar workflow documental y alertas para convenios y empresas.</li>
+<li>Proteger la API y el panel con autenticacion y jerarquia de roles.</li>
+</ol>
+<h3 id="6-3-alcance">6.3 Alcance</h3>
+<ul>
+<li>Dentro del alcance: panel interno, portal externo, API REST, base de datos relacional, usuarios demo, solicitudes de empresas, mensajeria vinculada, documentos, checklist, alertas y exportacion CSV de listados operativos.</li>
+<li>Fuera del alcance actual: firma electronica avanzada, integracion con ERP/SGA, exportacion PDF maquetada, almacenamiento documental en nube y pruebas E2E completas.</li>
+</ul>
+<h2 id="7-definiciones">7. Definiciones</h2>
+<ul>
+<li>Empresa colaboradora: organizacion que puede acoger estudiantes del centro.</li>
+<li>Convenio: acuerdo que formaliza la colaboracion entre el centro y una empresa.</li>
+<li>Asignacion: relacion operativa entre estudiante, convenio, empresa y tutores.</li>
+<li>Seguimiento: registro de reuniones, incidencias o acciones de control sobre una asignacion.</li>
+<li>Solicitud de empresa: alta inicial enviada por una empresa desde el portal externo antes de ser aprobada.</li>
+</ul>
+<h2 id="8-notaciones-y-simbolos">8. Notaciones y simbolos</h2>
+<ul>
+<li>API: Application Programming Interface.</li>
+<li>CRUD: Create, Read, Update, Delete.</li>
+<li>FP Dual: Formacion Profesional Dual.</li>
+<li>KPI: Key Performance Indicator.</li>
+<li>RGPD: Reglamento General de Proteccion de Datos.</li>
+<li>SPA: Single Page Application.</li>
+</ul>
+<h2 id="9-desarrollo-del-trabajo-final">9. Desarrollo del trabajo final</h2>
+<h3 id="9-1-analisis-de-requisitos">9.1 Analisis de requisitos</h3>
+<ul>
+<li>Actores principales: coordinador o administrador, tutor academico, tutor profesional, estudiante y empresa externa.</li>
+<li>Casos de uso principales: consultar KPI, registrar empresas, crear y actualizar convenios, gestionar estudiantes y asignaciones, revisar solicitudes externas, adjuntar documentos, intercambiar mensajes y consultar detalle historico.</li>
+<li>Requisitos funcionales: listados con filtros, operaciones CRUD, validaciones de negocio, workflow de convenios, aprobacion y rechazo de solicitudes, detalle de entidades, notificaciones y consulta de tutores.</li>
+<li>Requisitos no funcionales: interfaz responsive, errores JSON normalizados, seguridad por roles, arquitectura mantenible, base de datos portable y despliegue reproducible en entorno local.</li>
+</ul>
+<h3 id="9-1-1-planificacion-y-metodologia-de-trabajo">9.1.1 Planificacion y metodologia de trabajo</h3>
+<ul>
+<li>Fase 1. Analisis del problema y definicion del alcance real para centrar el proyecto en empresas, convenios, estudiantes, asignaciones y solicitudes externas.</li>
+<li>Fase 2. Diseno tecnico de arquitectura, entidades y relaciones, separando API, panel interno y portal externo para reducir acoplamiento.</li>
+<li>Fase 3. Implementacion iterativa por modulos, validando primero CRUD nucleares y despues funcionalidades de valor como workflow de convenios, mensajeria y exportacion CSV.</li>
+<li>Fase 4. Pruebas tecnicas, correccion de incidencias y preparacion de documentacion de entrega, incluyendo memoria, anexos y guia de demo.</li>
+<li>La metodologia seguida ha sido incremental: cada bloque funcional se ha cerrado con verificacion tecnica antes de ampliar el alcance.</li>
+</ul>
+<h3 id="9-2-diseno-de-la-solucion">9.2 Diseno de la solucion</h3>
+<ul>
+<li>La solucion se divide en tres piezas: backend Symfony 7.3, panel interno React 18 + TypeScript + Vite y portal externo React 19 + TypeScript + Vite.</li>
+<li>El backend expone una API REST protegida bajo <code>/api</code>, junto con rutas publicas para registro de empresas y rutas de portal basadas en token.</li>
+<li>El panel interno consume la API mediante un cliente ligero (<code>frontend/app/src/services/api.ts</code>) con cabecera Basic automatica desde variables de entorno.</li>
+<li>El portal externo permite registrar empresas, verificar el correo con token y usar un canal de mensajeria asociado a la solicitud.</li>
+<li>La persistencia se resuelve con Doctrine ORM y SQLite por defecto en desarrollo, aunque la configuracion admite otras bases soportadas por Symfony.</li>
+</ul>
+<h3 id="9-3-modelo-de-datos">9.3 Modelo de datos</h3>
+<ul>
+<li>Entidades nucleares: <code>EmpresaColaboradora</code>, <code>Convenio</code>, <code>Estudiante</code>, <code>TutorAcademico</code>, <code>TutorProfesional</code>, <code>AsignacionPractica</code>, <code>Seguimiento</code> y <code>EvaluacionFinal</code>.</li>
+<li>Entidades de soporte a negocio: <code>EmpresaSolicitud</code>, <code>EmpresaMensaje</code>, <code>EmpresaDocumento</code>, <code>EmpresaEtiqueta</code>, <code>EmpresaNota</code>, <code>ConvenioDocumento</code>, <code>ConvenioChecklistItem</code>, <code>ConvenioAlerta</code> y <code>ConvenioWorkflowEvento</code>.</li>
+<li>Seguridad y acceso: entidad <code>User</code> con roles <code>ROLE_USER</code>, <code>ROLE_API</code> y <code>ROLE_ADMIN</code>.</li>
+<li>Relaciones principales: una empresa tiene convenios, contactos, documentos, notas y tutores; un convenio genera asignaciones y eventos de workflow; cada asignacion enlaza estudiante, empresa y tutores, y produce seguimientos y evaluacion final.</li>
+</ul>
+<h3 id="9-4-seguridad-y-cumplimiento">9.4 Seguridad y cumplimiento</h3>
+<ul>
+<li>La API usa autenticacion HTTP Basic y tambien deja preparado <code>json_login</code> para integraciones futuras.</li>
+<li>La jerarquia de seguridad define <code>ROLE_ADMIN</code> por encima de <code>ROLE_API</code> y <code>ROLE_USER</code>.</li>
+<li>Las rutas publicas se limitan al alta de solicitudes y a la confirmacion de correo/token; el resto de recursos de gestion requieren autenticacion.</li>
+<li>Los controladores devuelven respuestas JSON con mensajes de error consistentes y codigos HTTP adecuados.</li>
+<li>En cumplimiento y privacidad, el sistema trabaja con datos minimos necesarios, separa portal publico y panel interno, y deja como mejora futura la auditoria avanzada y la politica definitiva de conservacion documental.</li>
+</ul>
+<h3 id="9-5-diseno-de-interfaz">9.5 Diseno de interfaz</h3>
+<ul>
+<li>El panel principal se organiza en modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes y documentacion.</li>
+<li>La interfaz combina tablas, tarjetas de detalle, chips de estado, modales de formulario, toasts y un centro de notificaciones para solicitudes pendientes.</li>
+<li>La vista de convenios incluye checklist, workflow, documentos y alertas activas o descartadas.</li>
+<li>La vista de empresas concentra KPI, convenios asociados, asignaciones, notas, etiquetas y documentos.</li>
+<li>El portal externo ofrece una experiencia diferenciada y mas simple: formulario de alta, bandeja de verificacion y chat empresa-centro.</li>
+</ul>
+<h3 id="9-6-implementacion">9.6 Implementacion</h3>
+<ul>
+<li>Backend:</li>
+<p>- Controladores REST para empresas, convenios, estudiantes, asignaciones y tutores. - Controladores especificos para solicitudes de empresa, mensajeria asociada y portal por token. - Fixtures demo con usuarios, empresas, convenios, estudiantes, tutores, asignaciones, checklist, alertas y mensajes.</p>
+<li>Frontend interno:</li>
+<p>- <code>App.tsx</code> actua como shell del panel, rutas, dashboard y modulos de detalle. - Formularios modales reutilizables para empresas, convenios, estudiantes y asignaciones. - Cliente API con helpers <code>apiGet</code>, <code>apiPost</code>, <code>apiPut</code>, <code>PATCH</code> y soporte para subida de documentos.</p>
+<li>Frontend externo:</li>
+<p>- Landing con formulario publico. - Confirmacion de email mediante token. - Chat simple sobre la solicitud mientras esta en revision.</p>
+<li>Estado actual de implementacion: la funcionalidad principal esta operativa y validada; el panel ya incorpora exportacion CSV de resumenes y listados, y el modulo de convenios persiste workflow, checklist y alertas mediante la API. Los desarrollos abiertos se concentran en endurecimiento productivo, exportacion PDF y automatizacion E2E.</li>
+</ul>
+<h3 id="9-7-pruebas-y-validacion">9.7 Pruebas y validacion</h3>
+<ul>
+<li>El backend dispone de una suite automatizada con 47 pruebas y 264 aserciones.</li>
+<li>La bateria cubre autenticacion, listado y detalle de empresas, convenios, estudiantes y asignaciones, flujo completo de solicitudes, portal por token, documentos y repositorios.</li>
+<li>El 08/03/2026 se verifico ademas el arranque real de los tres servicios locales:</li>
+<p>- API Symfony en <code>http://127.0.0.1:8000</code> - Panel interno en <code>http://localhost:5173</code> - Portal externo en <code>http://localhost:5174</code></p>
+<li>Ambos frontends generan build de produccion sin errores con <code>npm run build</code>.</li>
+<li>Como limitacion de validacion, todavia no existe una suite E2E de navegador.</li>
+</ul>
+<h3 id="9-8-despliegue-y-operacion">9.8 Despliegue y operacion</h3>
+<ul>
+<li>En desarrollo local se usa <code>backend/.env.local</code> con SQLite y <code>frontend/app/.env.local</code> para URL base y credenciales de API.</li>
+<li>El backend puede iniciarse con Symfony CLI o servidor PHP local; los dos frontends se ejecutan con Vite en puertos separados.</li>
+<li>La operacion cotidiana requiere unicamente PHP, Composer, Node.js, npm y la base SQLite local.</li>
+<li>Para una entrega productiva se recomienda separar frontends estaticos, API Symfony y almacenamiento documental, ademas de sustituir Basic auth por un mecanismo mas robusto.</li>
+<li>La guia operativa del proyecto queda recogida en <code>docs/guia-demo.md</code>.</li>
+</ul>
+<h3 id="9-9-resultados-y-metricas-08-03-2026">9.9 Resultados y metricas (08/03/2026)</h3>
+<ul>
+<li>Tres servicios levantados y accesibles de forma concurrente: backend, panel interno y portal externo.</li>
+<li>La llamada autenticada a <code>/api/empresas</code> devuelve respuesta valida y datos de demo.</li>
+<li><code>php bin/phpunit</code> finaliza en verde con 47 pruebas y 264 aserciones.</li>
+<li><code>npm run build</code> se completa correctamente en <code>frontend/app</code> y <code>frontend/company-portal</code>.</li>
+<li>El panel interno permite exportar a CSV el dashboard, empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.</li>
+<li>El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido y gestion documental basica.</li>
+</ul>
+<h3 id="9-10-limitaciones-y-riesgos">9.10 Limitaciones y riesgos</h3>
+<ul>
+<li>La autenticacion actual resuelve el entorno academico y de demo, pero no cubre escenarios de SSO, MFA o auditoria avanzada.</li>
+<li>El modulo de asignaciones expone seguimientos y evaluacion final en consulta, pero no incorpora aun un CRUD especifico completo para editar estas piezas desde la API y el panel.</li>
+<li>El modulo de tutores se entrega como consulta operativa con exportacion, pero no como gestion CRUD completa de tutores academicos y profesionales.</li>
+<li>Las entidades principales no disponen todavia de un ciclo completo de archivado o baja logica con endpoints dedicados de cierre de vida.</li>
+<li>El portal externo cubre alta, verificacion y chat, pero no incluye aun un area postaprobacion para empresa ya validada.</li>
+<li>No existe integracion con sistemas corporativos externos ni firma electronica avanzada.</li>
+<li>El almacenamiento de documentos sigue siendo local y debe endurecerse antes de usar datos reales.</li>
+<li>Falta automatizar pruebas E2E del panel y del portal para reducir riesgo de regresion visual o de flujo.</li>
+<li>Las capturas finales y evidencias visuales pueden ampliarse en una revision posterior para una memoria mas visual, aunque el contenido tecnico y de defensa queda ya consolidado.</li>
+</ul>
+<h3 id="9-11-verificacion-tecnica-08-03-2026">9.11 Verificacion tecnica (08/03/2026)</h3>
+<ul>
+<li>Backend:</li>
+<p>- <code>php bin/phpunit</code> -&gt; OK, 47 tests, 264 assertions. - <code>symfony server:start --no-tls -d --port=8000</code> -&gt; servicio operativo.</p>
+<li>Frontend interno:</li>
+<p>- <code>npm run dev -- --host --port 5173 --strictPort</code> -&gt; servicio operativo. - <code>npm run build</code> -&gt; compilacion correcta.</p>
+<li>Portal externo:</li>
+<p>- <code>npm run dev -- --host --port 5174 --strictPort</code> -&gt; servicio operativo. - <code>npm run build</code> -&gt; compilacion correcta.</p>
+<li>Verificacion HTTP:</li>
+<p>- <code>GET /api/empresas</code> con <code>admin/admin123</code> -&gt; <code>200 OK</code>. - <code>GET /</code> en <code>5173</code> y <code>5174</code> -&gt; <code>200 OK</code>.</p>
+</ul>
+<h2 id="10-conclusiones-y-recomendaciones">10. Conclusiones y recomendaciones</h2>
+<ul>
+<li>El proyecto ya cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una plataforma unica y operativa.</li>
+<li>La separacion entre panel interno, portal externo y API permite escalar funcionalidades sin mezclar responsabilidades.</li>
+<li>El mayor valor aportado al centro es la trazabilidad del ciclo completo: solicitud, aprobacion, convenio, asignacion, seguimiento y documentacion.</li>
+<li>Para una siguiente iteracion se recomienda, por este orden, completar el CRUD de seguimientos y evaluacion final, ampliar la gestion de tutores, incorporar archivado o baja logica de entidades, habilitar un portal postaprobacion para empresas y automatizar pruebas E2E.</li>
+<li>A nivel de explotacion real tambien seria recomendable reforzar almacenamiento documental, seguridad avanzada e integraciones corporativas.</li>
+</ul>
+<h2 id="11-referencias">11. Referencias</h2>
+<ol>
+<li>Proyecto TFG Agora. <code>docs/domain-model.md</code>.</li>
+<li>Proyecto TFG Agora. <code>docs/guia-demo.md</code>.</li>
+<li>Symfony. <em>Symfony Documentation</em>.</li>
+<li>Doctrine Project. <em>Doctrine ORM Documentation</em>.</li>
+<li>React Team. <em>React Documentation</em>.</li>
+<li>Parlamento Europeo y Consejo de la Union Europea. <em>Reglamento (UE) 2016/679</em>.</li>
+</ol>
+<h2 id="12-bibliografia">12. Bibliografia</h2>
+<ul>
+<li>Documentacion oficial de Vite y TypeScript para la construccion de SPA modernas.</li>
+<li>Material docente del modulo de proyecto y guias internas del centro.</li>
+<li>Referencias sobre gestion de practicas, modelado REST y seguridad web.</li>
+</ul>
+<h2 id="13-anexos">13. Anexos</h2>
+<h3 id="anexo-a-manual-de-usuario">Anexo A. Manual de usuario</h3>
+<p>Referencia principal: <code>docs/anexo-a-manual-usuario.md</code>.</p>
+<h3 id="anexo-b-manual-tecnico">Anexo B. Manual tecnico</h3>
+<p>Referencia principal: <code>docs/anexo-b-manual-tecnico.md</code>.</p>
+<h3 id="anexo-c-evidencias-de-validacion">Anexo C. Evidencias de validacion</h3>
+<p>Referencia principal: <code>docs/anexo-c-capturas-y-evidencias.md</code>.</p>
+<h3 id="anexo-d-artefactos-de-apoyo">Anexo D. Artefactos de apoyo</h3>
+<p>Referencias principales:</p>
+<ul>
+<li><code>docs/anexo-d-codigo-relevante.md</code></li>
+<li><code>docs/domain-model.md</code></li>
+<li><code>docs/refactor-plan.md</code></li>
+</ul>
+<h3 id="anexo-e-defensa-del-proyecto">Anexo E. Defensa del proyecto</h3>
+<p>Referencias principales:</p>
+<ul>
+<li><code>docs/anexo-e-defensa.md</code></li>
+<li><code>docs/guion-defensa.md</code></li>
+<li><code>docs/preguntas-defensa.md</code></li>
+</ul></section>
+<section class="document-section page-break" data-source="anexo-a-manual-usuario.md"><h1 id="anexo-a-manual-de-usuario">Anexo A. Manual de Usuario</h1>
+<h2 id="1-objetivo">1. Objetivo</h2>
+<p>Este anexo describe el uso funcional de la plataforma &quot;Gestion de Empresas Colaboradoras&quot; desde el punto de vista del usuario interno del centro y del contacto externo de empresa.</p>
+<h2 id="2-perfiles-de-uso">2. Perfiles de uso</h2>
+<ul>
+<li><code>ROLE_ADMIN</code>: administracion general del panel y acceso completo a recursos API.</li>
+<li><code>ROLE_API</code>: operativa de gestion sobre empresas, convenios, estudiantes, asignaciones y solicitudes.</li>
+<li>Empresa externa: uso del portal publico para registrar su interes, verificar el correo y comunicarse con el centro.</li>
+</ul>
+<h2 id="3-acceso-al-sistema">3. Acceso al sistema</h2>
+<h3 id="3-1-panel-interno">3.1 Panel interno</h3>
+<ul>
+<li>URL: <code>http://localhost:5173</code></li>
+<li>Credenciales demo:</li>
+<p>- <code>admin / admin123</code> - <code>coordinador / coordinador123</code></p>
+</ul>
+<h3 id="3-2-portal-externo">3.2 Portal externo</h3>
+<ul>
+<li>URL: <code>http://localhost:5174</code></li>
+<li>No requiere autenticacion previa para registrar una solicitud.</li>
+</ul>
+<h2 id="4-navegacion-principal-del-panel-interno">4. Navegacion principal del panel interno</h2>
+<p>El panel se estructura en los siguientes modulos:</p>
+<ul>
+<li>Dashboard</li>
+<li>Empresas</li>
+<li>Convenios</li>
+<li>Estudiantes</li>
+<li>Asignaciones</li>
+<li>Tutores</li>
+<li>Solicitudes</li>
+<li>Documentacion</li>
+</ul>
+<h2 id="5-dashboard">5. Dashboard</h2>
+<p>Desde el dashboard se puede:</p>
+<ul>
+<li>consultar KPI principales del sistema;</li>
+<li>revisar tarjetas resumen por modulo;</li>
+<li>abrir accesos rapidos a las areas operativas;</li>
+<li>exportar un CSV de resumen con indicadores y analitica.</li>
+</ul>
+<h2 id="6-gestion-de-empresas">6. Gestion de empresas</h2>
+<p>En el modulo de empresas el usuario puede:</p>
+<ul>
+<li>ver el listado general;</li>
+<li>crear una nueva empresa;</li>
+<li>editar una empresa existente;</li>
+<li>consultar la ficha 360;</li>
+<li>revisar convenios asociados;</li>
+<li>revisar asignaciones vinculadas;</li>
+<li>consultar notas, etiquetas y documentos;</li>
+<li>exportar el listado visible a CSV.</li>
+</ul>
+<h2 id="7-gestion-de-convenios">7. Gestion de convenios</h2>
+<p>En el modulo de convenios el usuario puede:</p>
+<ul>
+<li>listar convenios por empresa o estado;</li>
+<li>crear y editar convenios;</li>
+<li>revisar workflow y checklist documental;</li>
+<li>adjuntar documentos de apoyo;</li>
+<li>revisar alertas activas;</li>
+<li>exportar el listado visible a CSV.</li>
+</ul>
+<h2 id="8-gestion-de-estudiantes">8. Gestion de estudiantes</h2>
+<p>En el modulo de estudiantes el usuario puede:</p>
+<ul>
+<li>listar estudiantes registrados;</li>
+<li>dar de alta y editar fichas;</li>
+<li>revisar estado academico y asignaciones;</li>
+<li>consultar seguimiento resumido;</li>
+<li>exportar el listado visible a CSV.</li>
+</ul>
+<h2 id="9-gestion-de-asignaciones">9. Gestion de asignaciones</h2>
+<p>En el modulo de asignaciones el usuario puede:</p>
+<ul>
+<li>consultar el pipeline completo;</li>
+<li>filtrar por estado y modalidad;</li>
+<li>crear nuevas asignaciones;</li>
+<li>editar asignaciones existentes;</li>
+<li>abrir la ficha de detalle;</li>
+<li>exportar el listado visible a CSV.</li>
+</ul>
+<h2 id="10-gestion-de-tutores">10. Gestion de tutores</h2>
+<p>En el modulo de tutores el usuario puede:</p>
+<ul>
+<li>consultar tutores academicos;</li>
+<li>consultar tutores profesionales;</li>
+<li>refrescar datos paginados;</li>
+<li>exportar cada tabla a CSV.</li>
+</ul>
+<h2 id="11-solicitudes-de-empresa">11. Solicitudes de empresa</h2>
+<p>En el modulo de solicitudes el usuario puede:</p>
+<ul>
+<li>revisar nuevas solicitudes enviadas desde el portal;</li>
+<li>aprobar solicitudes verificadas;</li>
+<li>rechazar solicitudes indicando motivo;</li>
+<li>consultar e intercambiar mensajes con la empresa;</li>
+<li>exportar el listado visible a CSV.</li>
+</ul>
+<h2 id="12-portal-externo">12. Portal externo</h2>
+<p>El flujo del portal externo es:</p>
+<ol>
+<li>La empresa completa el formulario de solicitud.</li>
+<li>Recibe un enlace de verificacion por correo.</li>
+<li>Confirma el token desde la vista de verificacion.</li>
+<li>Usa el canal de mensajes mientras su solicitud esta en revision.</li>
+</ol>
+<h2 id="13-errores-y-validaciones-comunes">13. Errores y validaciones comunes</h2>
+<ul>
+<li>Si el backend no responde, el panel mostrara mensajes de error y no cargara las colecciones.</li>
+<li>Si faltan credenciales o son incorrectas, la API devolvera error de autenticacion.</li>
+<li>Si un formulario contiene datos invalidos, el modal mostrara el mensaje correspondiente.</li>
+</ul>
+<h2 id="14-recomendaciones-de-uso">14. Recomendaciones de uso</h2>
+<ul>
+<li>Refrescar solicitudes antes de aprobar o rechazar.</li>
+<li>Revisar el estado documental de convenios antes de avanzar workflow.</li>
+<li>Exportar CSV como apoyo para revision, seguimiento y defensa del TFG.</li>
+</ul></section>
+<section class="document-section page-break" data-source="anexo-b-manual-tecnico.md"><h1 id="anexo-b-manual-tecnico">Anexo B. Manual Tecnico</h1>
+<h2 id="1-arquitectura-general">1. Arquitectura general</h2>
+<p>La solucion se compone de tres aplicaciones:</p>
+<ul>
+<li><code>backend/</code>: API Symfony 7.3 con Doctrine ORM y SQLite por defecto.</li>
+<li><code>frontend/app/</code>: panel interno React 18 + TypeScript + Vite.</li>
+<li><code>frontend/company-portal/</code>: portal externo React 19 + TypeScript + Vite.</li>
+</ul>
+<h2 id="2-requisitos-locales">2. Requisitos locales</h2>
+<ul>
+<li>PHP 8.2</li>
+<li>Composer 2.x</li>
+<li>Node.js 18+</li>
+<li>npm</li>
+<li>SQLite</li>
+<li>Symfony CLI opcional</li>
+</ul>
+<h2 id="3-arranque-del-entorno">3. Arranque del entorno</h2>
+<h3 id="3-1-backend">3.1 Backend</h3>
+<pre><code>cd backend
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:fixtures:load --no-interaction
+symfony server:start --no-tls -d --port=8000</code></pre>
+<h3 id="3-2-frontend-interno">3.2 Frontend interno</h3>
+<pre><code>cd frontend/app
+npm install
+npm run dev -- --host --port 5173 --strictPort</code></pre>
+<h3 id="3-3-portal-externo">3.3 Portal externo</h3>
+<pre><code>cd frontend/company-portal
+npm install
+npm run dev -- --host --port 5174 --strictPort</code></pre>
+<h2 id="4-variables-de-entorno-relevantes">4. Variables de entorno relevantes</h2>
+<h3 id="4-1-backend">4.1 Backend</h3>
+<ul>
+<li><code>DATABASE_URL</code></li>
+<li><code>MAILER_DSN</code></li>
+<li><code>APP_MAIL_FROM</code></li>
+</ul>
+<h3 id="4-2-frontend-interno">4.2 Frontend interno</h3>
+<ul>
+<li><code>VITE_API_BASE_URL</code></li>
+<li><code>VITE_API_USERNAME</code></li>
+<li><code>VITE_API_PASSWORD</code></li>
+</ul>
+<h2 id="5-seguridad">5. Seguridad</h2>
+<ul>
+<li>El backend protege <code>/api</code> mediante seguridad Symfony.</li>
+<li>Se usa HTTP Basic y <code>json_login</code> queda preparado para evolucion posterior.</li>
+<li>Jerarquia de roles:</li>
+<p>- <code>ROLE_ADMIN</code> - <code>ROLE_API</code> - <code>ROLE_USER</code></p>
+</ul>
+<h2 id="6-persistencia">6. Persistencia</h2>
+<p>La base de datos por defecto es SQLite. El esquema actual se crea a partir de la migracion base:</p>
+<ul>
+<li><code>backend/migrations/Version20251113203450.php</code></li>
+</ul>
+<p>La carga de datos demo se realiza mediante:</p>
+<ul>
+<li><code>backend/src/DataFixtures/DemoDominioFixtures.php</code></li>
+</ul>
+<h2 id="7-estructura-funcional-del-backend">7. Estructura funcional del backend</h2>
+<p>Controladores principales:</p>
+<ul>
+<li><code>backend/src/Controller/Api/EmpresaColaboradoraController.php</code></li>
+<li><code>backend/src/Controller/Api/ConvenioController.php</code></li>
+<li><code>backend/src/Controller/Api/EstudianteController.php</code></li>
+<li><code>backend/src/Controller/Api/AsignacionController.php</code></li>
+<li><code>backend/src/Controller/Api/TutorAcademicoController.php</code></li>
+<li><code>backend/src/Controller/Api/TutorProfesionalController.php</code></li>
+<li><code>backend/src/Controller/Api/EmpresaSolicitudController.php</code></li>
+<li><code>backend/src/Controller/Api/EmpresaMensajeController.php</code></li>
+<li><code>backend/src/Controller/RegistroEmpresaController.php</code></li>
+<li><code>backend/src/Controller/Portal/SolicitudPortalController.php</code></li>
+</ul>
+<h2 id="8-estructura-funcional-del-frontend-interno">8. Estructura funcional del frontend interno</h2>
+<p>Archivos clave:</p>
+<ul>
+<li><code>frontend/app/src/App.tsx</code></li>
+<li><code>frontend/app/src/components/DataTable.tsx</code></li>
+<li><code>frontend/app/src/components/EmpresaForm.tsx</code></li>
+<li><code>frontend/app/src/components/ConvenioForm.tsx</code></li>
+<li><code>frontend/app/src/components/EstudianteForm.tsx</code></li>
+<li><code>frontend/app/src/components/AsignacionForm.tsx</code></li>
+<li><code>frontend/app/src/services/api.ts</code></li>
+<li><code>frontend/app/src/utils/csv.ts</code></li>
+</ul>
+<h2 id="9-exportacion-csv">9. Exportacion CSV</h2>
+<p>La exportacion CSV se realiza en cliente mediante:</p>
+<ul>
+<li><code>frontend/app/src/utils/csv.ts</code></li>
+</ul>
+<p>Actualmente se exportan:</p>
+<ul>
+<li>dashboard;</li>
+<li>empresas;</li>
+<li>convenios;</li>
+<li>estudiantes;</li>
+<li>asignaciones;</li>
+<li>tutores;</li>
+<li>solicitudes.</li>
+</ul>
+<h2 id="10-validacion-tecnica">10. Validacion tecnica</h2>
+<p>Comandos principales:</p>
+<pre><code>cd backend
+php bin/phpunit</code></pre>
+<pre><code>cd frontend/app
+npm run build</code></pre>
+<pre><code>cd frontend/company-portal
+npm run build</code></pre>
+<h2 id="11-riesgos-tecnicos-abiertos">11. Riesgos tecnicos abiertos</h2>
+<ul>
+<li>no existe suite E2E de navegador;</li>
+<li>la autenticacion del panel sigue basada en credenciales de entorno;</li>
+<li>la salida PDF de la memoria no se genera desde este repositorio;</li>
+<li>el almacenamiento documental sigue siendo local.</li>
+</ul></section>
+<section class="document-section page-break" data-source="anexo-c-capturas-y-evidencias.md"><h1 id="anexo-c-capturas-y-evidencias">Anexo C. Capturas y Evidencias</h1>
+<h2 id="1-capturas-obligatorias-recomendadas">1. Capturas obligatorias recomendadas</h2>
+<p>Tomar una captura final de cada una de estas vistas:</p>
+<ol>
+<li>Dashboard principal con KPI y analitica.</li>
+<li>Modulo de empresas con listado y ficha 360 abierta.</li>
+<li>Modulo de convenios con workflow, checklist y alertas.</li>
+<li>Modulo de estudiantes con ficha academica y asignaciones.</li>
+<li>Modulo de asignaciones con pipeline y detalle.</li>
+<li>Modulo de tutores con ambas tablas visibles.</li>
+<li>Modulo de solicitudes con mensajes y acciones de aprobacion/rechazo.</li>
+<li>Portal externo con formulario de alta.</li>
+<li>Portal externo con pantalla de verificacion de token.</li>
+<li>Portal externo con canal de mensajes.</li>
+</ol>
+<h2 id="2-evidencias-tecnicas-a-incluir-en-anexos">2. Evidencias tecnicas a incluir en anexos</h2>
+<ul>
+<li>salida de <code>php bin/phpunit</code>;</li>
+<li>salida de <code>npm run build</code> en <code>frontend/app</code>;</li>
+<li>salida de <code>npm run build</code> en <code>frontend/company-portal</code>;</li>
+<li>comprobacion de <code>GET /api/empresas</code> con respuesta <code>200 OK</code>;</li>
+<li>comprobacion visual de exportacion CSV.</li>
+</ul>
+<h2 id="3-nombre-recomendado-para-las-capturas">3. Nombre recomendado para las capturas</h2>
+<ul>
+<li><code>01-dashboard.png</code></li>
+<li><code>02-empresas.png</code></li>
+<li><code>03-convenios.png</code></li>
+<li><code>04-estudiantes.png</code></li>
+<li><code>05-asignaciones.png</code></li>
+<li><code>06-tutores.png</code></li>
+<li><code>07-solicitudes.png</code></li>
+<li><code>08-portal-alta.png</code></li>
+<li><code>09-portal-verificacion.png</code></li>
+<li><code>10-portal-chat.png</code></li>
+</ul>
+<h2 id="4-ubicacion-sugerida">4. Ubicacion sugerida</h2>
+<p>Guardar las capturas finales en:</p>
+<ul>
+<li><code>docs/capturas/</code></li>
+</ul>
+<h2 id="5-comprobacion-antes-de-incrustar-en-la-memoria">5. Comprobacion antes de incrustar en la memoria</h2>
+<ul>
+<li>verificar que la fecha y hora del sistema no distraigan;</li>
+<li>ocultar credenciales o datos irrelevantes;</li>
+<li>mantener una resolucion suficiente para impresion;</li>
+<li>usar siempre el mismo zoom y ancho de ventana;</li>
+<li>capturar tambien una exportacion CSV descargada como prueba funcional.</li>
+</ul></section>
+<section class="document-section page-break" data-source="anexo-d-codigo-relevante.md"><h1 id="anexo-d-codigo-relevante">Anexo D. Codigo Relevante</h1>
+<h2 id="1-backend">1. Backend</h2>
+<h3 id="seguridad-y-autenticacion">Seguridad y autenticacion</h3>
+<ul>
+<li><code>backend/config/packages/security.yaml</code></li>
+<li><code>backend/src/Controller/Api/AuthController.php</code></li>
+<li><code>backend/src/Entity/User.php</code></li>
+</ul>
+<h3 id="dominio-y-persistencia">Dominio y persistencia</h3>
+<ul>
+<li><code>backend/src/Entity/EmpresaColaboradora.php</code></li>
+<li><code>backend/src/Entity/Convenio.php</code></li>
+<li><code>backend/src/Entity/Estudiante.php</code></li>
+<li><code>backend/src/Entity/AsignacionPractica.php</code></li>
+<li><code>backend/src/Entity/EmpresaSolicitud.php</code></li>
+<li><code>backend/migrations/Version20251113203450.php</code></li>
+<li><code>backend/src/DataFixtures/DemoDominioFixtures.php</code></li>
+</ul>
+<h3 id="casos-de-uso-principales">Casos de uso principales</h3>
+<ul>
+<li><code>backend/src/Controller/Api/EmpresaColaboradoraController.php</code></li>
+<li><code>backend/src/Controller/Api/ConvenioController.php</code></li>
+<li><code>backend/src/Controller/Api/EstudianteController.php</code></li>
+<li><code>backend/src/Controller/Api/AsignacionController.php</code></li>
+<li><code>backend/src/Controller/Api/EmpresaSolicitudController.php</code></li>
+<li><code>backend/src/Controller/Portal/SolicitudPortalController.php</code></li>
+</ul>
+<h2 id="2-frontend-interno">2. Frontend interno</h2>
+<h3 id="shell-principal-y-modulos">Shell principal y modulos</h3>
+<ul>
+<li><code>frontend/app/src/App.tsx</code></li>
+</ul>
+<h3 id="formularios-reutilizables">Formularios reutilizables</h3>
+<ul>
+<li><code>frontend/app/src/components/EmpresaForm.tsx</code></li>
+<li><code>frontend/app/src/components/ConvenioForm.tsx</code></li>
+<li><code>frontend/app/src/components/EstudianteForm.tsx</code></li>
+<li><code>frontend/app/src/components/AsignacionForm.tsx</code></li>
+</ul>
+<h3 id="infraestructura-de-ui">Infraestructura de UI</h3>
+<ul>
+<li><code>frontend/app/src/components/DataTable.tsx</code></li>
+<li><code>frontend/app/src/components/Modal.tsx</code></li>
+<li><code>frontend/app/src/components/ToastStack.tsx</code></li>
+</ul>
+<h3 id="cliente-api-y-exportacion">Cliente API y exportacion</h3>
+<ul>
+<li><code>frontend/app/src/services/api.ts</code></li>
+<li><code>frontend/app/src/utils/csv.ts</code></li>
+</ul>
+<h2 id="3-frontend-externo">3. Frontend externo</h2>
+<ul>
+<li><code>frontend/company-portal/src/App.tsx</code></li>
+</ul>
+<h2 id="4-suite-de-pruebas-destacada">4. Suite de pruebas destacada</h2>
+<ul>
+<li><code>backend/tests/Security/AuthenticationTest.php</code></li>
+<li><code>backend/tests/Controller/Portal/SolicitudPortalControllerTest.php</code></li>
+<li><code>backend/tests/Controller/Api/EmpresaSolicitudFlowTest.php</code></li>
+<li><code>backend/tests/Controller/Api/ConvenioControllerTest.php</code></li>
+<li><code>backend/tests/Controller/Api/AsignacionControllerTest.php</code></li>
+<li><code>backend/tests/Controller/Api/EmpresaControllerTest.php</code></li>
+</ul>
+<h2 id="5-criterio-de-seleccion">5. Criterio de seleccion</h2>
+<p>Este anexo recoge las piezas mas representativas para explicar:</p>
+<ul>
+<li>arquitectura;</li>
+<li>seguridad;</li>
+<li>modelo de dominio;</li>
+<li>flujos de negocio;</li>
+<li>validacion tecnica;</li>
+<li>exportacion funcional.</li>
+</ul></section>
+<section class="document-section page-break" data-source="anexo-e-defensa.md"><h1 id="anexo-e-defensa-del-proyecto">Anexo E. Defensa del Proyecto</h1>
+<h2 id="1-objetivo-del-anexo">1. Objetivo del anexo</h2>
+<p>Este anexo recoge el material de apoyo para la exposicion oral del Trabajo Final de Grado. Su funcion es resumir de forma clara el problema abordado, la solucion implementada, los resultados validados y las limitaciones asumidas dentro del alcance academico del proyecto.</p>
+<h2 id="2-mensaje-principal-de-la-defensa">2. Mensaje principal de la defensa</h2>
+<p>La idea central de la presentacion es que el proyecto ya resuelve el ciclo operativo principal de gestion de empresas colaboradoras para FP Dual:</p>
+<ul>
+<li>alta de empresas desde portal externo;</li>
+<li>verificacion mediante token;</li>
+<li>aprobacion interna;</li>
+<li>gestion de empresas, convenios, estudiantes y asignaciones;</li>
+<li>seguimiento documental y exportacion operativa.</li>
+</ul>
+<h2 id="3-guion-breve-de-exposicion">3. Guion breve de exposicion</h2>
+<h3 id="3-1-apertura">3.1 Apertura</h3>
+<p>El proyecto surge para resolver una gestion dispersa basada en hojas de calculo, correos y documentos aislados. La propuesta consiste en una plataforma unica que centraliza empresas colaboradoras, convenios y practicas formativas.</p>
+<h3 id="3-2-problema">3.2 Problema</h3>
+<p>La gestion previa generaba duplicidades, poca trazabilidad, dependencia del conocimiento manual y escasa visibilidad del estado real de convenios, solicitudes y asignaciones.</p>
+<h3 id="3-3-solucion">3.3 Solucion</h3>
+<p>La solucion se ha dividido en tres piezas:</p>
+<ol>
+<li>API REST en Symfony.</li>
+<li>Panel interno en React y TypeScript.</li>
+<li>Portal externo para empresas.</li>
+</ol>
+<h3 id="3-4-valor-funcional">3.4 Valor funcional</h3>
+<p>Las funcionalidades con mas peso en la demo son:</p>
+<ul>
+<li>solicitud externa de empresa;</li>
+<li>verificacion por token;</li>
+<li>aprobacion desde panel interno;</li>
+<li>workflow de convenios con checklist y alertas;</li>
+<li>gestion de entidades principales y exportacion CSV.</li>
+</ul>
+<h3 id="3-5-cierre">3.5 Cierre</h3>
+<p>La conclusion defendible es que el proyecto ya entrega una solucion operativa y escalable para el centro, aunque deja identificadas mejoras futuras claras y razonables.</p>
+<h2 id="4-preguntas-previsibles-y-linea-de-respuesta">4. Preguntas previsibles y linea de respuesta</h2>
+<h3 id="4-1-por-que-esta-arquitectura">4.1 Por que esta arquitectura?</h3>
+<p>Porque separa responsabilidades entre API, panel interno y portal externo, lo que facilita mantenimiento, seguridad y evolucion futura.</p>
+<h3 id="4-2-cual-es-la-aportacion-real-del-proyecto">4.2 Cual es la aportacion real del proyecto?</h3>
+<p>Digitalizar un proceso real del centro y convertirlo en una plataforma trazable con mejor control documental y operativo.</p>
+<h3 id="4-3-que-queda-como-trabajo-futuro">4.3 Que queda como trabajo futuro?</h3>
+<p>CRUD de seguimientos y evaluacion final, gestion completa de tutores, archivado de entidades, portal postaprobacion para empresas, pruebas E2E y seguridad productiva reforzada.</p>
+<h3 id="4-4-por-que-es-valido-como-entrega-final-aunque-queden-mejoras">4.4 Por que es valido como entrega final aunque queden mejoras?</h3>
+<p>Porque el objetivo principal esta cumplido, el flujo clave funciona extremo a extremo y las mejoras pendientes no bloquean la demostracion ni invalidan la solucion entregada.</p>
+<h2 id="5-orden-recomendado-para-la-demo">5. Orden recomendado para la demo</h2>
+<ol>
+<li>Dashboard y KPI.</li>
+<li>Empresas y ficha 360.</li>
+<li>Convenios con workflow, checklist y alertas.</li>
+<li>Asignaciones y relaciones con estudiantes y tutores.</li>
+<li>Solicitudes de empresa.</li>
+<li>Portal externo.</li>
+</ol>
+<h2 id="6-mensaje-de-cierre-recomendado">6. Mensaje de cierre recomendado</h2>
+<p>El TFG no se limita a un prototipo visual, sino que entrega una base funcional completa con modelo de datos, API, panel, portal y documentacion. El valor principal es la centralizacion de la gestion y la trazabilidad del ciclo completo entre centro y empresa.</p></section>
+<section class="document-section page-break" data-source="guion-defensa.md"><h1 id="guion-de-defensa-del-tfg">Guion de Defensa del TFG</h1>
+<h2 id="objetivo">Objetivo</h2>
+<p>Este guion esta pensado para una exposicion breve de 5 a 7 minutos centrada en problema, solucion, demo y cierre.</p>
+<h2 id="1-apertura">1. Apertura</h2>
+<p>Buenos dias. Mi Trabajo Final de Grado consiste en el desarrollo de una plataforma para gestionar empresas colaboradoras, convenios y practicas de FP Dual. El objetivo ha sido sustituir una gestion dispersa basada en hojas de calculo, correos y documentos aislados por una herramienta unica, trazable y utilizable por el centro.</p>
+<h2 id="2-problema-detectado">2. Problema detectado</h2>
+<p>La situacion inicial presentaba tres problemas principales:</p>
+<ul>
+<li>informacion repartida en varias fuentes;</li>
+<li>falta de control sobre estados, convenios y seguimiento;</li>
+<li>dependencia del conocimiento manual de quien coordinaba las practicas.</li>
+</ul>
+<p>Esto generaba duplicidades, retrasos y poca visibilidad del ciclo completo entre centro, empresa y estudiante.</p>
+<h2 id="3-objetivo-y-alcance">3. Objetivo y alcance</h2>
+<p>El objetivo general ha sido crear una aplicacion web que centralice la gestion de empresas colaboradoras y practicas formativas. Dentro del alcance se incluyen empresas, convenios, estudiantes, asignaciones, tutores y solicitudes externas. Quedan fuera de esta version aspectos como firma electronica avanzada, SSO corporativo o una suite E2E completa.</p>
+<h2 id="4-solucion-implementada">4. Solucion implementada</h2>
+<p>La solucion se ha dividido en tres partes:</p>
+<ul>
+<li>una API REST en Symfony;</li>
+<li>un panel interno en React y TypeScript para la gestion diaria;</li>
+<li>un portal externo para que las empresas puedan registrarse, verificar su solicitud y comunicarse con el centro.</li>
+</ul>
+<p>Esta separacion permite mantener responsabilidades claras y hace el sistema mas escalable.</p>
+<h2 id="5-funcionalidades-clave">5. Funcionalidades clave</h2>
+<p>Las funcionalidades mas relevantes son:</p>
+<ul>
+<li>gestion CRUD de empresas, convenios, estudiantes y asignaciones;</li>
+<li>workflow documental de convenios con checklist y alertas;</li>
+<li>solicitudes externas con verificacion por token y aprobacion interna;</li>
+<li>mensajeria asociada a la solicitud;</li>
+<li>exportacion CSV de dashboard y listados operativos.</li>
+</ul>
+<h2 id="6-demo-sugerida">6. Demo sugerida</h2>
+<p>Durante la demostracion voy a seguir este recorrido:</p>
+<ol>
+<li>Dashboard con KPI y exportacion CSV.</li>
+<li>Modulo de empresas con ficha 360.</li>
+<li>Modulo de convenios con workflow, checklist y alertas.</li>
+<li>Modulo de asignaciones y relaciones con estudiantes y tutores.</li>
+<li>Modulo de solicitudes.</li>
+<li>Portal externo con alta, verificacion y chat.</li>
+</ol>
+<h2 id="7-resultados-tecnicos">7. Resultados tecnicos</h2>
+<p>La aplicacion se ha validado con:</p>
+<ul>
+<li>47 pruebas backend y 264 aserciones en verde;</li>
+<li>compilacion correcta de ambos frontends;</li>
+<li>servicios locales funcionales para backend, panel interno y portal externo.</li>
+</ul>
+<p>Ademas, el proyecto queda documentado con memoria, anexos tecnicos, manual de usuario y guia de demo.</p>
+<h2 id="8-limitaciones-y-mejora-futura">8. Limitaciones y mejora futura</h2>
+<p>Las principales limitaciones actuales son:</p>
+<ul>
+<li>autenticacion mejorable para un entorno productivo;</li>
+<li>falta de exportacion PDF maquetada;</li>
+<li>almacenamiento documental local;</li>
+<li>ausencia de pruebas E2E completas.</li>
+</ul>
+<p>Como trabajo futuro, el siguiente paso seria endurecer seguridad, automatizar pruebas y completar la operacion documental.</p>
+<h2 id="9-cierre">9. Cierre</h2>
+<p>En conclusion, el proyecto cumple el objetivo de digitalizar y centralizar la gestion de empresas colaboradoras y practicas. Aporta trazabilidad, mejora operativa y una base tecnica escalable para evolucionar el sistema en futuras iteraciones.</p></section>
+<section class="document-section page-break" data-source="preguntas-defensa.md"><h1 id="preguntas-probables-de-la-defensa">Preguntas Probables de la Defensa</h1>
+<h2 id="1-por-que-elegiste-symfony-y-react">1. Por que elegiste Symfony y React?</h2>
+<p>Porque separan bien backend y frontend, tienen ecosistema maduro y permiten construir una API mantenible con una interfaz moderna y rapida para el usuario.</p>
+<h2 id="2-por-que-has-separado-panel-interno-y-portal-externo">2. Por que has separado panel interno y portal externo?</h2>
+<p>Porque tienen usuarios, flujos y necesidades diferentes. Separarlos reduce complejidad, mejora la seguridad y hace mas clara la arquitectura.</p>
+<h2 id="3-que-problema-real-resuelve-el-proyecto">3. Que problema real resuelve el proyecto?</h2>
+<p>Centraliza una gestion que antes estaba repartida entre correos, hojas de calculo y documentos, aportando trazabilidad y control del ciclo completo.</p>
+<h2 id="4-cual-es-la-funcionalidad-mas-diferencial">4. Cual es la funcionalidad mas diferencial?</h2>
+<p>El flujo completo de solicitud externa, verificacion, aprobacion interna y transformacion en empresa gestionable, junto con el workflow documental de convenios.</p>
+<h2 id="5-por-que-usas-sqlite-en-desarrollo">5. Por que usas SQLite en desarrollo?</h2>
+<p>Porque simplifica la puesta en marcha local y la demo. La arquitectura no queda atada a SQLite; Doctrine permite migrar a otros motores soportados.</p>
+<h2 id="6-como-has-tratado-la-seguridad">6. Como has tratado la seguridad?</h2>
+<p>La API protege rutas internas con autenticacion y roles, y limita las rutas publicas al registro y verificacion de solicitudes. Como mejora futura queda sustituir Basic auth por un mecanismo mas robusto.</p>
+<h2 id="7-que-pruebas-has-realizado">7. Que pruebas has realizado?</h2>
+<p>Pruebas backend automatizadas, builds de ambos frontends y verificacion funcional de los flujos principales durante la demo local.</p>
+<h2 id="8-cual-es-la-principal-limitacion-de-la-version-actual">8. Cual es la principal limitacion de la version actual?</h2>
+<p>La parte mas mejorable es la seguridad productiva y la automatizacion E2E. El proyecto esta bien para entorno academico y demostracion, pero no aun para explotacion real sin endurecimiento adicional.</p>
+<h2 id="9-que-aportacion-personal-destacarias">9. Que aportacion personal destacarias?</h2>
+<p>El redisenio del alcance hacia un problema real del centro y la implementacion de una plataforma coherente de punta a punta: modelo, API, panel, portal y documentacion.</p>
+<h2 id="10-que-haria-en-una-siguiente-iteracion">10. Que haria en una siguiente iteracion?</h2>
+<p>Refuerzo de autenticacion, politicas documentales, pruebas E2E, mejor refactor del frontend y salida PDF maquetada para informes y documentacion.</p></section>
+<section class="document-section page-break" data-source="checklist-defensa-manana.md"><h1 id="checklist-para-la-defensa-de-manana">Checklist para la Defensa de Manana</h1>
+<h2 id="antes-de-salir">Antes de salir</h2>
+<ul>
+<li>llevar la memoria en PDF y el repositorio accesibles localmente;</li>
+<li>tener abierto <code>docs/guion-defensa.md</code> por si necesitas repasar el hilo;</li>
+<li>llevar tambien <code>docs/guia-demo.md</code> y <code>docs/preguntas-defensa.md</code>.</li>
+</ul>
+<h2 id="antes-de-empezar-la-reunion">Antes de empezar la reunion</h2>
+<ul>
+<li>comprobar que backend, panel y portal arrancan;</li>
+<li>dejar preparado el navegador en dashboard, convenios, solicitudes y portal;</li>
+<li>revisar que las credenciales demo estan visibles y correctas;</li>
+<li>tener una carpeta a mano con algun CSV exportado como evidencia.</li>
+</ul>
+<h2 id="orden-recomendado-de-presentacion">Orden recomendado de presentacion</h2>
+<ol>
+<li>Problema real y objetivo.</li>
+<li>Arquitectura en tres piezas.</li>
+<li>Demo funcional.</li>
+<li>Validacion tecnica.</li>
+<li>Limitaciones y trabajo futuro.</li>
+</ol>
+<h2 id="si-algo-falla-en-directo">Si algo falla en directo</h2>
+<ul>
+<li>si falla un servicio, ensena la memoria, la guia de demo y los builds validados;</li>
+<li>si falla una ruta concreta, reconduce al flujo ya preparado en otra vista;</li>
+<li>si no da tiempo a toda la demo, prioriza dashboard, convenios, solicitudes y portal.</li>
+</ul>
+<h2 id="cierre">Cierre</h2>
+<ul>
+<li>remarcar que el proyecto ya digitaliza el ciclo principal del centro;</li>
+<li>explicar brevemente que queda fuera por alcance, no por desconocimiento;</li>
+<li>terminar con una idea clara: trazabilidad, centralizacion y base escalable.</li>
+</ul></section>
+  <section class="footer-note">
+    <p>Documento generado automaticamente a partir de la memoria, anexos y material de defensa del proyecto.</p>
+  </section>
+</body>
+</html>

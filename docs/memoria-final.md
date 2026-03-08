@@ -145,14 +145,18 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - `php bin/phpunit` finaliza en verde con 47 pruebas y 264 aserciones.
 - `npm run build` se completa correctamente en `frontend/app` y `frontend/company-portal`.
 - El panel interno permite exportar a CSV el dashboard, empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.
-- El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle y gestion documental basica.
+- El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido y gestion documental basica.
 
 ### 9.10 Limitaciones y riesgos
 - La autenticacion actual resuelve el entorno academico y de demo, pero no cubre escenarios de SSO, MFA o auditoria avanzada.
-- No hay exportacion PDF maquetada ni integracion con sistemas corporativos externos.
+- El modulo de asignaciones expone seguimientos y evaluacion final en consulta, pero no incorpora aun un CRUD especifico completo para editar estas piezas desde la API y el panel.
+- El modulo de tutores se entrega como consulta operativa con exportacion, pero no como gestion CRUD completa de tutores academicos y profesionales.
+- Las entidades principales no disponen todavia de un ciclo completo de archivado o baja logica con endpoints dedicados de cierre de vida.
+- El portal externo cubre alta, verificacion y chat, pero no incluye aun un area postaprobacion para empresa ya validada.
+- No existe integracion con sistemas corporativos externos ni firma electronica avanzada.
 - El almacenamiento de documentos sigue siendo local y debe endurecerse antes de usar datos reales.
 - Falta automatizar pruebas E2E del panel y del portal para reducir riesgo de regresion visual o de flujo.
-- La memoria final en PDF todavia requerira maquetacion y capturas finales para entrega academica.
+- Las capturas finales y evidencias visuales pueden ampliarse en una revision posterior para una memoria mas visual, aunque el contenido tecnico y de defensa queda ya consolidado.
 
 ### 9.11 Verificacion tecnica (08/03/2026)
 - Backend:
@@ -172,7 +176,8 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - El proyecto ya cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una plataforma unica y operativa.
 - La separacion entre panel interno, portal externo y API permite escalar funcionalidades sin mezclar responsabilidades.
 - El mayor valor aportado al centro es la trazabilidad del ciclo completo: solicitud, aprobacion, convenio, asignacion, seguimiento y documentacion.
-- Como siguientes pasos se recomienda reforzar almacenamiento y seguridad de documentos, completar la salida PDF y automatizar pruebas E2E para consolidar la entrega final.
+- Para una siguiente iteracion se recomienda, por este orden, completar el CRUD de seguimientos y evaluacion final, ampliar la gestion de tutores, incorporar archivado o baja logica de entidades, habilitar un portal postaprobacion para empresas y automatizar pruebas E2E.
+- A nivel de explotacion real tambien seria recomendable reforzar almacenamiento documental, seguridad avanzada e integraciones corporativas.
 
 ## 11. Referencias
 1. Proyecto TFG Agora. `docs/domain-model.md`.
@@ -202,3 +207,9 @@ Referencias principales:
 - `docs/anexo-d-codigo-relevante.md`
 - `docs/domain-model.md`
 - `docs/refactor-plan.md`
+
+### Anexo E. Defensa del proyecto
+Referencias principales:
+- `docs/anexo-e-defensa.md`
+- `docs/guion-defensa.md`
+- `docs/preguntas-defensa.md`

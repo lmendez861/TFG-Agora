@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .bg { fill: #f5f7fb; }
+      .title { font: 700 32px 'Segoe UI', Arial, sans-serif; fill: #15314b; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #44607a; }
+      .box { fill: #ffffff; stroke: #183153; stroke-width: 2; rx: 24; ry: 24; }
+      .box-blue { fill: #eaf2fb; stroke: #183153; stroke-width: 2; rx: 24; ry: 24; }
+      .box-gold { fill: #fff3dc; stroke: #9d6a14; stroke-width: 2; rx: 24; ry: 24; }
+      .head { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #183153; }
+      .text { font: 400 18px 'Segoe UI', Arial, sans-serif; fill: #22364a; }
+      .small { font: 400 16px 'Segoe UI', Arial, sans-serif; fill: #445a70; }
+      .line { stroke: #335c85; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#335c85"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="900"/>
+  <text class="title" x="60" y="70">Esquema de bloques de funcionalidad</text>
+  <text class="subtitle" x="60" y="105">Plataforma de gestion de empresas colaboradoras para FP Dual</text>
+
+  <rect class="box-gold" x="70" y="170" width="360" height="210"/>
+  <text class="head" x="95" y="215">Portal externo de empresa</text>
+  <text class="text" x="95" y="255">- Alta publica de empresa</text>
+  <text class="text" x="95" y="290">- Verificacion por token</text>
+  <text class="text" x="95" y="325">- Chat empresa-centro</text>
+  <text class="small" x="95" y="360">Frontend React + TypeScript + Vite</text>
+
+  <rect class="box-blue" x="520" y="120" width="360" height="300"/>
+  <text class="head" x="545" y="165">API backend</text>
+  <text class="text" x="545" y="205">- Empresas</text>
+  <text class="text" x="545" y="240">- Convenios</text>
+  <text class="text" x="545" y="275">- Estudiantes</text>
+  <text class="text" x="545" y="310">- Asignaciones</text>
+  <text class="text" x="545" y="345">- Solicitudes y mensajeria</text>
+  <text class="small" x="545" y="385">Symfony + Doctrine + Seguridad + JSON API</text>
+
+  <rect class="box" x="970" y="170" width="360" height="210"/>
+  <text class="head" x="995" y="215">Panel interno</text>
+  <text class="text" x="995" y="255">- Dashboard KPI</text>
+  <text class="text" x="995" y="290">- CRUD operativo</text>
+  <text class="text" x="995" y="325">- Workflow de convenios</text>
+  <text class="text" x="995" y="360">- Exportacion CSV</text>
+  <text class="small" x="995" y="395">Frontend React + TypeScript + Vite</text>
+
+  <rect class="box" x="520" y="510" width="360" height="220"/>
+  <text class="head" x="545" y="555">Base de datos</text>
+  <text class="text" x="545" y="595">- Empresas y contactos</text>
+  <text class="text" x="545" y="630">- Convenios y checklist</text>
+  <text class="text" x="545" y="665">- Estudiantes y asignaciones</text>
+  <text class="text" x="545" y="700">- Solicitudes, mensajes y documentos</text>
+  <text class="small" x="545" y="735">SQLite en desarrollo, portable a otros motores</text>
+
+  <path class="line" d="M430 275 H500"/>
+  <path class="line" d="M880 275 H950"/>
+  <path class="line" d="M700 420 V485"/>
+
+  <text class="small" x="460" y="255">HTTP JSON</text>
+  <text class="small" x="900" y="255">HTTP JSON</text>
+  <text class="small" x="720" y="465">Doctrine ORM</text>
+</svg>

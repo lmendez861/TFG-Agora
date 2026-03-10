@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:backend": "tsc -b && vite build --base=/externo/ --outDir ../../backend/public/externo --emptyOutDir",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:backend": "tsc && vite build --base=/app/ --outDir ../../backend/public/app --emptyOutDir",
     "preview": "vite preview"
   },
   "dependencies": {

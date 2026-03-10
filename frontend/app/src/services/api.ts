@@ -26,7 +26,38 @@ import type {
   EmpresaDocument,
 } from '../types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://127.0.0.1:8000/api';
+function resolveDefaultApiBaseUrl(): string {
+  if (typeof window === 'undefined') {
+    return 'http://127.0.0.1:8000/api';
+  }
+
+  if (import.meta.env.DEV) {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:8000/api`;
+  }
+
+  return `${window.location.origin}/api`;
+}
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? resolveDefaultApiBaseUrl();
+const API_USERNAME = (import.meta.env.VITE_API_USERNAME as string | undefined) ?? 'admin';
+const API_PASSWORD = (import.meta.env.VITE_API_PASSWORD as string | undefined) ?? 'admin123';
+let activeUsername = API_USERNAME;
+let activePassword = API_PASSWORD;
+
+function getAuthorizationHeader(): string {
+  return `Basic ${btoa(`${activeUsername}:${activePassword}`)}`;
+}
+
+function setActiveCredentials(username: string, password: string): void {
+  activeUsername = username;
+  activePassword = password;
+}
+
+function resetActiveCredentials(): void {
+  setActiveCredentials(API_USERNAME, API_PASSWORD);
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
 
@@ -36,9 +67,7 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (!headers.has('Authorization')) {
-    const user = (import.meta.env.VITE_API_USERNAME as string | undefined) ?? 'admin';
-    const pass = (import.meta.env.VITE_API_PASSWORD as string | undefined) ?? 'admin123';
-    headers.set('Authorization', `Basic ${btoa(`${user}:${pass}`)}`);
+    headers.set('Authorization', getAuthorizationHeader());
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -105,6 +134,10 @@ export async function fetchCollections(): Promise<ApiCollections> {
 
 export function getApiBaseUrl(): string {
   return API_BASE_URL;
+}
+
+export function getConfiguredAuthUsername(): string {
+  return API_USERNAME;
 }
 
 export async function getEstudianteDetail(id: number): Promise<EstudianteDetail> {
@@ -203,6 +236,9 @@ export async function addEmpresaDocument(
     const response = await fetch(`${API_BASE_URL}/empresas/${empresaId}/documentos`, {
       method: 'POST',
       body: formData,
+      headers: {
+        Authorization: getAuthorizationHeader(),
+      },
       credentials: 'include',
     });
     if (!response.ok) {
@@ -314,15 +350,31 @@ export async function postEmpresaMensaje(
 }
 
 export async function login(username: string, password: string): Promise<void> {
-  await apiRequest('/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const previousUsername = activeUsername;
+  const previousPassword = activePassword;
+  setActiveCredentials(username, password);
+
+  try {
+    await apiRequest('/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: getAuthorizationHeader(),
+      },
+    });
+  } catch (error) {
+    setActiveCredentials(previousUsername, previousPassword);
+    throw error;
+  }
 }
 
 export async function logout(): Promise<void> {
-  await apiRequest('/logout', { method: 'POST' });
+  try {
+    await apiRequest('/logout', { method: 'POST' });
+  } finally {
+    resetActiveCredentials();
+  }
 }
 
 export async function fetchMe(): Promise<MeResponse> {

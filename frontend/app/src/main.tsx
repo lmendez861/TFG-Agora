@@ -5,14 +5,15 @@ import App from './App';
 import './index.css';
 
 const container = document.getElementById('root');
+const routerBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 if (!container) {
-  throw new Error('No se encontró el contenedor raíz de la aplicación.');
+  throw new Error('No se encontro el contenedor raiz de la aplicacion.');
 }
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={routerBase || undefined}>
       <App />
     </BrowserRouter>
   </StrictMode>,

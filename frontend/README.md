@@ -1,29 +1,63 @@
 # Frontend
 
-El directorio `frontend/app` contiene una aplicación React + Vite (TypeScript) que actúa como panel
-de control para la plataforma Agora. La aplicación consume la API REST del backend Symfony y
-presenta listados y métricas de empresas, convenios, estudiantes y asignaciones.
+El directorio `frontend/` contiene dos SPA React independientes:
 
-## Puesta en marcha
+- `frontend/app`: panel interno de gestion
+- `frontend/company-portal`: portal externo para empresas
 
+## Instalacion local
+
+### Panel interno
 ```bash
 cd frontend/app
-cp .env.example .env.local   # ajusta credenciales de la API si es necesario
-npm install                   # requiere Node.js 18+
-npm run dev                   # inicia Vite en http://localhost:5173
+copy .env.example .env.local
+npm install
+npm run dev -- --host --port 5173 --strictPort
 ```
 
-> **Nota:** en el entorno actual no hay Node.js instalado; ejecuta `npm install` y los scripts
-> anteriores una vez que dispongas de Node/npm en tu máquina local o contenedor.
+### Portal externo
+```bash
+cd frontend/company-portal
+copy .env.example .env.local
+npm install
+npm run dev -- --host --port 5174 --strictPort
+```
 
-## Funcionalidades actuales
+## Modo URL unica
 
-- Resumen de métricas clave (empresas registradas, convenios vigentes, horas planificadas, etc.).
-- Listados dinámicos conectados a la API protegida por autenticación básica.
-- Reintento manual de sincronización con botón de recarga y visualización de la URL base consumida.
+```bash
+build-single-url.bat
+cd backend
+start-server.bat
+```
 
-## Próximos pasos sugeridos
+Accesos:
+- `http://127.0.0.1:8000/app`
+- `http://127.0.0.1:8000/externo`
 
-1. Añadir formularios para crear/editar registros desde la interfaz.
-2. Incorporar autenticación integrada (token/JWT) en lugar de Basic Auth.
-3. Añadir filtrado avanzado y paginación para cada listado.
+En este modo, si no defines `VITE_API_BASE_URL`, ambas SPA usan automaticamente el mismo origen publico y consumen la API en `/api`.
+
+## Variables de entorno
+
+### Panel interno
+- `VITE_API_BASE_URL`
+- `VITE_API_USERNAME`
+- `VITE_API_PASSWORD`
+- `VITE_DEV_HOST`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
+
+### Portal externo
+- `VITE_API_BASE_URL`
+- `VITE_DEV_HOST`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
+
+## Versiones de React
+
+- `frontend/app` usa React 18.3.1
+- `frontend/company-portal` usa React 19.2.0
+
+La diferencia no genera conflicto porque ambas aplicaciones compilan y despliegan por separado.

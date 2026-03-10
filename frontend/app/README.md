@@ -1,44 +1,53 @@
 # Agora Frontend
 
-Aplicación Vite + React + TypeScript para visualizar y gestionar los datos del backend Symfony.
+Aplicacion React + TypeScript + Vite para el panel interno de gestion.
 
 ## Scripts disponibles
 
 ```bash
-npm run dev      # Arranca el servidor de desarrollo en http://localhost:5173
-npm run build    # Genera la build de producción en la carpeta dist
-npm run preview  # Sirve la build generada localmente
+npm run dev
+npm run build
+npm run build:backend
+npm run preview
 ```
 
 ## Puesta en marcha
 
 1. Ejecuta `npm install` dentro de `frontend/app`.
-2. Copia `.env.example` a `.env.local` y ajusta las credenciales para la API expuesta desde Symfony:
+2. Copia `.env.example` a `.env.local` y ajusta:
    ```ini
-   VITE_API_BASE_URL=http://127.0.0.1:8000/api
+   # Opcional. En produccion usa el mismo origen publico.
+   # En desarrollo con Vite apunta automaticamente a :8000.
+   # VITE_API_BASE_URL=http://127.0.0.1:8000/api
    VITE_API_USERNAME=admin
    VITE_API_PASSWORD=admin123
+   VITE_DEV_HOST=0.0.0.0
+
+   VITE_DEV_HTTPS=false
+   # VITE_DEV_HTTPS_KEY=certs/localhost-key.pem
+   # VITE_DEV_HTTPS_CERT=certs/localhost.pem
    ```
-3. Levanta el panel con `npm run dev` y visita `http://localhost:5173/`.
+3. Lanza `npm run dev -- --host --port 5173 --strictPort`.
 
-Siempre que el backend responda y las credenciales sean correctas, el botón **Actualizar datos** refresca las cuatro colecciones sin recargar la página.
+## Build integrada en el backend
 
-## Formularios y flujo actual
+```bash
+npm run build:backend
+```
 
-- **Empresas**: botón “Nueva empresa” y acciones de edición en la tabla. El formulario cubre datos de contacto, estado y observaciones.
-- **Convenios**: permite seleccionar la empresa, definir fechas, tipo y estado. El modal reutiliza la lista de empresas existente para mantener coherencia.
-- **Estudiantes**: alta/edición con validaciones básicas (duplicados gestionados desde el backend) y resumen de asignaciones.
-- **Asignaciones**: crea o modifica la relación estudiante-empresa, filtrando convenios y tutores según la empresa seleccionada. El formulario carga tutores académicos y profesionales mediante los nuevos endpoints de referencia.
-- **Exportación CSV**: el dashboard y los listados principales permiten descargar CSV para empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.
+Genera la SPA en `backend/public/app` con base `/app/`, lista para servirse desde Symfony en una URL unica junto con el portal externo.
 
-Todos los formularios comparten el mismo patrón de modal, muestran errores específicos en el cuerpo del formulario y generan toasts de éxito o error para reforzar el feedback al usuario. Tras guardar, se recarga el conjunto de colecciones para mantener las tablas sincronizadas.
+## Funcionalidades principales
 
-## Componentes y servicios clave
+- Dashboard con KPI y resumen operativo
+- Gestion de empresas, convenios, estudiantes y asignaciones
+- Modulo de solicitudes de empresa
+- Exportacion CSV de dashboard y listados principales
+- Subida de documentos reutilizando las credenciales definidas en `.env.local`
 
-- `src/App.tsx`: vista principal, estado compartido y orquestación de los modales.
-- `src/components/DataTable.tsx`: tabla estilizada con cabeceras, acciones y estado vacío.
-- `src/components/Modal.tsx` y `src/components/EstudianteForm.tsx`: base para formularios modales reutilizables.
-- `src/services/api.ts`: cliente ligero con helpers `apiGet`, `apiPost` y `apiPut` que añaden la cabecera `Authorization` automáticamente.
-- `src/utils/csv.ts`: utilidad de exportación CSV con escape de campos y descarga directa desde navegador.
+## Archivos clave
 
-Con estos pasos cualquier colaborador puede clonar el repositorio, configurar las variables de entorno y trabajar con el panel en cuestión de minutos.
+- `src/App.tsx`
+- `src/services/api.ts`
+- `src/components/DataTable.tsx`
+- `src/utils/csv.ts`

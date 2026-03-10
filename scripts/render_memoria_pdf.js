@@ -27,6 +27,7 @@ function escapeHtml(value) {
 
 function renderInline(text) {
   let html = escapeHtml(text);
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
@@ -83,6 +84,18 @@ function markdownToHtml(markdown) {
     if (!line.trim()) {
       flushParagraph();
       closeList();
+      continue;
+    }
+
+    const image = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      flushParagraph();
+      closeList();
+      const caption = image[1].trim();
+      const src = image[2].trim();
+      parts.push(
+        `<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(caption)}">${caption ? `<figcaption>${renderInline(caption)}</figcaption>` : ''}</figure>`
+      );
       continue;
     }
 
@@ -269,6 +282,11 @@ const html = `<!doctype html>
       text-decoration: none;
     }
 
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
     .document-section {
       padding-top: 2mm;
     }
@@ -339,6 +357,28 @@ const html = `<!doctype html>
       background: transparent;
       border: 0;
       padding: 0;
+    }
+
+    figure {
+      margin: 5mm 0 6mm;
+      text-align: center;
+      break-inside: avoid;
+    }
+
+    figure img {
+      max-width: 100%;
+      max-height: 180mm;
+      border: 1px solid var(--line);
+      border-radius: 2mm;
+      box-shadow: 0 2mm 6mm rgba(0, 0, 0, 0.08);
+    }
+
+    figcaption {
+      margin-top: 2mm;
+      font-size: 9.5pt;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
     }
 
     .footer-note {

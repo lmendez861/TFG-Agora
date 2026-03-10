@@ -1,15 +1,10 @@
 # Anexo E. Defensa del Proyecto
 
 ## 1. Objetivo del anexo
-Este anexo recoge el material de apoyo para la exposicion oral del Trabajo Final de Grado. Su funcion es resumir de forma clara el problema abordado, la solucion implementada, los resultados validados y las limitaciones asumidas dentro del alcance academico del proyecto.
+Este anexo recoge material de apoyo para la exposicion oral del Trabajo Final de Grado. El enfoque no es solo explicar el proyecto, sino justificar el trabajo realizado, las decisiones tomadas y el aprendizaje obtenido.
 
 ## 2. Mensaje principal de la defensa
-La idea central de la presentacion es que el proyecto ya resuelve el ciclo operativo principal de gestion de empresas colaboradoras para FP Dual:
-- alta de empresas desde portal externo;
-- verificacion mediante token;
-- aprobacion interna;
-- gestion de empresas, convenios, estudiantes y asignaciones;
-- seguimiento documental y exportacion operativa.
+La idea central de la presentacion es que el proyecto resuelve un problema real del centro mediante una solucion operativa y, al mismo tiempo, demuestra capacidad personal para analizar necesidades, acotar alcance, implementar una arquitectura completa y documentarla.
 
 ## 3. Guion breve de exposicion
 ### 3.1 Apertura
@@ -24,29 +19,27 @@ La solucion se ha dividido en tres piezas:
 2. Panel interno en React y TypeScript.
 3. Portal externo para empresas.
 
-### 3.4 Valor funcional
-Las funcionalidades con mas peso en la demo son:
-- solicitud externa de empresa;
-- verificacion por token;
-- aprobacion desde panel interno;
-- workflow de convenios con checklist y alertas;
-- gestion de entidades principales y exportacion CSV.
+### 3.4 Aportacion personal
+- Identificacion del problema y redefinicion del alcance.
+- Modelado de datos y arquitectura separada por responsabilidades.
+- Implementacion completa de backend y dos frontends.
+- Validacion tecnica y redaccion de memoria, anexos y material de defensa.
 
 ### 3.5 Cierre
-La conclusion defendible es que el proyecto ya entrega una solucion operativa y escalable para el centro, aunque deja identificadas mejoras futuras claras y razonables.
+La conclusion defendible es que el TFG no solo entrega una aplicacion funcional, sino tambien una muestra clara del proceso seguido, de las decisiones tecnicas adoptadas y del aprendizaje adquirido.
 
 ## 4. Preguntas previsibles y linea de respuesta
-### 4.1 Por que esta arquitectura?
-Porque separa responsabilidades entre API, panel interno y portal externo, lo que facilita mantenimiento, seguridad y evolucion futura.
+### 4.1 Por que elegiste este tema?
+Porque resolvia una necesidad concreta y permitia desarrollar una solucion util, no solo un ejercicio tecnico.
 
-### 4.2 Cual es la aportacion real del proyecto?
-Digitalizar un proceso real del centro y convertirlo en una plataforma trazable con mejor control documental y operativo.
+### 4.2 Que has hecho tu directamente?
+Analisis, arquitectura, implementacion, validacion y documentacion principal del proyecto.
 
-### 4.3 Que queda como trabajo futuro?
-CRUD de seguimientos y evaluacion final, gestion completa de tutores, archivado de entidades, portal postaprobacion para empresas, pruebas E2E y seguridad productiva reforzada.
+### 4.3 Que ha sido lo mas complicado?
+Mantener el equilibrio entre alcance realista, coherencia tecnica y tiempo disponible.
 
-### 4.4 Por que es valido como entrega final aunque queden mejoras?
-Porque el objetivo principal esta cumplido, el flujo clave funciona extremo a extremo y las mejoras pendientes no bloquean la demostracion ni invalidan la solucion entregada.
+### 4.4 Que mejorarias con una iteracion adicional?
+Seguridad productiva, pruebas E2E, gestion completa de algunos modulos y endurecimiento del despliegue.
 
 ## 5. Orden recomendado para la demo
 1. Dashboard y KPI.
@@ -57,4 +50,4 @@ Porque el objetivo principal esta cumplido, el flujo clave funciona extremo a ex
 6. Portal externo.
 
 ## 6. Mensaje de cierre recomendado
-El TFG no se limita a un prototipo visual, sino que entrega una base funcional completa con modelo de datos, API, panel, portal y documentacion. El valor principal es la centralizacion de la gestion y la trazabilidad del ciclo completo entre centro y empresa.
+El valor del TFG esta en haber convertido una necesidad real en una solucion completa, trazable y defendible, mostrando capacidad para analizar, decidir, implementar y justificar tecnicamente el trabajo realizado.

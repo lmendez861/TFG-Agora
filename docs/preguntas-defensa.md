@@ -1,31 +1,33 @@
 # Preguntas Probables de la Defensa
 
-## 1. Por que elegiste Symfony y React?
-Porque separan bien backend y frontend, tienen ecosistema maduro y permiten construir una API mantenible con una interfaz moderna y rapida para el usuario.
+Estas preguntas estan orientadas a la persona que presenta el TFG, no al proyecto en abstracto.
 
-## 2. Por que has separado panel interno y portal externo?
-Porque tienen usuarios, flujos y necesidades diferentes. Separarlos reduce complejidad, mejora la seguridad y hace mas clara la arquitectura.
+## 1. Por que elegiste este tema para el TFG?
+Porque detecte que habia un problema real y concreto en la gestion de empresas colaboradoras y me parecia una oportunidad util para desarrollar una solucion con valor practico.
 
-## 3. Que problema real resuelve el proyecto?
-Centraliza una gestion que antes estaba repartida entre correos, hojas de calculo y documentos, aportando trazabilidad y control del ciclo completo.
+## 2. Que parte del trabajo has realizado personalmente?
+He definido el alcance, el modelo de datos, la arquitectura, la implementacion del backend y los frontends, las pruebas y la documentacion principal del proyecto.
 
-## 4. Cual es la funcionalidad mas diferencial?
-El flujo completo de solicitud externa, verificacion, aprobacion interna y transformacion en empresa gestionable, junto con el workflow documental de convenios.
+## 3. Que ha sido lo mas dificil durante el desarrollo?
+Acotar bien el alcance para no dispersarme y mantener coherencia entre modelo, API, panel interno, portal externo y documentacion.
 
-## 5. Por que usas SQLite en desarrollo?
-Porque simplifica la puesta en marcha local y la demo. La arquitectura no queda atada a SQLite; Doctrine permite migrar a otros motores soportados.
+## 4. Como organizaste el trabajo?
+Lo hice por fases: analisis del problema, diseno tecnico, implementacion por modulos, validacion tecnica y preparacion de memoria y defensa.
 
-## 6. Como has tratado la seguridad?
-La API protege rutas internas con autenticacion y roles, y limita las rutas publicas al registro y verificacion de solicitudes. Como mejora futura queda sustituir Basic auth por un mecanismo mas robusto.
+## 5. Que has aprendido con este proyecto?
+He reforzado diseno de APIs, modelado relacional, separacion frontend-backend, gestion de estados de negocio, pruebas y documentacion tecnica orientada a una entrega real.
 
-## 7. Que pruebas has realizado?
-Pruebas backend automatizadas, builds de ambos frontends y verificacion funcional de los flujos principales durante la demo local.
+## 6. Que harias diferente si empezaras otra vez?
+Definiria antes algunas decisiones de seguridad y automatizacion de pruebas para reducir retrabajo en la fase final.
 
-## 8. Cual es la principal limitacion de la version actual?
-La parte mas mejorable es la seguridad productiva y la automatizacion E2E. El proyecto esta bien para entorno academico y demostracion, pero no aun para explotacion real sin endurecimiento adicional.
+## 7. Como justificas las decisiones tecnicas tomadas?
+He priorizado una arquitectura clara y mantenible: Symfony para la API, React para dos frontends separados, SQLite para facilitar la demo local y variables de entorno para desacoplar configuracion y codigo.
 
-## 9. Que aportacion personal destacarias?
-El redisenio del alcance hacia un problema real del centro y la implementacion de una plataforma coherente de punta a punta: modelo, API, panel, portal y documentacion.
+## 8. Cual consideras tu principal aportacion personal?
+Haber transformado una idea amplia en una solucion concreta, funcional y defendible, conectando problema real, implementacion tecnica y documentacion.
 
-## 10. Que haria en una siguiente iteracion?
-Refuerzo de autenticacion, politicas documentales, pruebas E2E, mejor refactor del frontend y salida PDF maquetada para informes y documentacion.
+## 9. Que limitacion reconoces con mas claridad?
+La seguridad productiva aun necesita un paso adicional antes de una explotacion real, especialmente en autenticacion avanzada, auditoria y endurecimiento del despliegue.
+
+## 10. Si tuvieras mas tiempo, en que invertiras el siguiente mes?
+En reforzar seguridad, automatizar pruebas E2E y completar algunos modulos abiertos como seguimientos, tutores y ciclo de vida documental.

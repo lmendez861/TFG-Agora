@@ -20,7 +20,20 @@ type ChatMessage = {
   createdAt: string
 }
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://127.0.0.1:8000'
+function resolveDefaultApiBase(): string {
+  if (typeof window === 'undefined') {
+    return 'http://127.0.0.1:8000'
+  }
+
+  if (import.meta.env.DEV) {
+    const { protocol, hostname } = window.location
+    return `${protocol}//${hostname}:8000`
+  }
+
+  return window.location.origin
+}
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || resolveDefaultApiBase()
 const REGISTRO_ENDPOINT = `${API_BASE.replace(/\/$/, '')}/registro-empresa`
 const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`
 

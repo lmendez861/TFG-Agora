@@ -1,29 +1,26 @@
 @echo off
+setlocal
+
+if "%APP_SERVER_HOST%"=="" set "APP_SERVER_HOST=0.0.0.0"
+if "%APP_SERVER_PORT%"=="" set "APP_SERVER_PORT=8000"
+
 echo ===================================
 echo    AGORA - SERVIDOR BACKEND
 echo ===================================
 echo.
-echo Iniciando servidor Symfony en modo desarrollo...
-echo URL: http://127.0.0.1:8000
+echo Iniciando backend Symfony/PHP...
+echo URL local: http://127.0.0.1:%APP_SERVER_PORT%
+echo Host de escucha: %APP_SERVER_HOST%
 echo.
 echo CTRL+C para detener el servidor
 echo.
 
-cd /d "C:\Users\lourd\Desktop\TFG - Agora\Backend-Symfony"
+cd /d "%~dp0"
 
-:: Verificar si existe el directorio
 if not exist "public" (
     echo ERROR: No se encontro el directorio public/
-    echo Asegurate de estar en la carpeta correcta del proyecto Symfony
     pause
     exit /b 1
 )
 
-:: Iniciar el servidor
-echo Servidor iniciando...
-php -S 127.0.0.1:8000 -t public
-
-:: Si llegamos aquí, el servidor se detuvo
-echo.
-echo Servidor detenido.
-pause
+php -S %APP_SERVER_HOST%:%APP_SERVER_PORT% -t public

@@ -25,3 +25,9 @@ yarn-error.log
 
 # Logs
 *.log
+
+# Artefactos locales del proyecto
+backend/public/app/
+backend/public/externo/
+tools/cloudflared.exe
+docs/~$*.docx

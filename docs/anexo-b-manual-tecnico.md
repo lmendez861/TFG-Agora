@@ -15,9 +15,12 @@ La solucion se compone de tres aplicaciones:
 - Symfony CLI opcional
 
 ## 3. Arranque del entorno
+El repositorio no queda operativo solo con clonar desde Git. Hace falta instalar dependencias y crear los `.env.local`.
+
 ### 3.1 Backend
 ```bash
 cd backend
+copy .env.local.example .env.local
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
@@ -27,6 +30,7 @@ symfony server:start --no-tls -d --port=8000
 ### 3.2 Frontend interno
 ```bash
 cd frontend/app
+copy .env.example .env.local
 npm install
 npm run dev -- --host --port 5173 --strictPort
 ```
@@ -34,6 +38,7 @@ npm run dev -- --host --port 5173 --strictPort
 ### 3.3 Portal externo
 ```bash
 cd frontend/company-portal
+copy .env.example .env.local
 npm install
 npm run dev -- --host --port 5174 --strictPort
 ```
@@ -43,28 +48,48 @@ npm run dev -- --host --port 5174 --strictPort
 - `DATABASE_URL`
 - `MAILER_DSN`
 - `APP_MAIL_FROM`
+- `DEFAULT_URI`
+- `CORS_ALLOW_ORIGIN`
 
 ### 4.2 Frontend interno
 - `VITE_API_BASE_URL`
 - `VITE_API_USERNAME`
 - `VITE_API_PASSWORD`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
+
+### 4.3 Portal externo
+- `VITE_API_BASE_URL`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
 
 ## 5. Seguridad
 - El backend protege `/api` mediante seguridad Symfony.
 - Se usa HTTP Basic y `json_login` queda preparado para evolucion posterior.
+- Las credenciales del panel se importan desde `frontend/app/.env.local`.
+- Las subidas de documentos reutilizan esas mismas credenciales de entorno.
+- El soporte HTTPS queda preparado mediante `DEFAULT_URI`, `CORS_ALLOW_ORIGIN` y configuracion TLS opcional en ambos Vite.
 - Jerarquia de roles:
   - `ROLE_ADMIN`
   - `ROLE_API`
   - `ROLE_USER`
 
-## 6. Persistencia
+## 6. Versiones de React
+- `frontend/app`: React 18.3.1.
+- `frontend/company-portal`: React 19.2.0.
+
+La coexistencia es valida porque ambas aplicaciones son independientes, se compilan por separado y no comparten runtime en navegador.
+
+## 7. Persistencia
 La base de datos por defecto es SQLite. El esquema actual se crea a partir de la migracion base:
 - `backend/migrations/Version20251113203450.php`
 
 La carga de datos demo se realiza mediante:
 - `backend/src/DataFixtures/DemoDominioFixtures.php`
 
-## 7. Estructura funcional del backend
+## 8. Estructura funcional del backend
 Controladores principales:
 - `backend/src/Controller/Api/EmpresaColaboradoraController.php`
 - `backend/src/Controller/Api/ConvenioController.php`
@@ -77,7 +102,7 @@ Controladores principales:
 - `backend/src/Controller/RegistroEmpresaController.php`
 - `backend/src/Controller/Portal/SolicitudPortalController.php`
 
-## 8. Estructura funcional del frontend interno
+## 9. Estructura funcional del frontend interno
 Archivos clave:
 - `frontend/app/src/App.tsx`
 - `frontend/app/src/components/DataTable.tsx`
@@ -88,7 +113,7 @@ Archivos clave:
 - `frontend/app/src/services/api.ts`
 - `frontend/app/src/utils/csv.ts`
 
-## 9. Exportacion CSV
+## 10. Exportacion CSV
 La exportacion CSV se realiza en cliente mediante:
 - `frontend/app/src/utils/csv.ts`
 
@@ -101,7 +126,7 @@ Actualmente se exportan:
 - tutores;
 - solicitudes.
 
-## 10. Validacion tecnica
+## 11. Validacion tecnica
 Comandos principales:
 ```bash
 cd backend
@@ -118,8 +143,8 @@ cd frontend/company-portal
 npm run build
 ```
 
-## 11. Riesgos tecnicos abiertos
+## 12. Riesgos tecnicos abiertos
 - no existe suite E2E de navegador;
 - la autenticacion del panel sigue basada en credenciales de entorno;
-- la salida PDF de la memoria no se genera desde este repositorio;
+- la salida PDF final de la memoria requiere maquetacion posterior;
 - el almacenamiento documental sigue siendo local.

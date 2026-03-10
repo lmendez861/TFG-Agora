@@ -22,6 +22,7 @@ import {
   fetchTutorAcademicos,
   fetchTutorProfesionales,
   getApiBaseUrl,
+  getConfiguredAuthUsername,
   getAsignacionDetail,
   getConvenioDetail,
   getConvenioExtras,
@@ -988,7 +989,7 @@ function DocumentationPage() {
           <h3>Checklist de despliegue</h3>
           <ul>
             <li>Backend: composer install, configurar .env.local y ejecutar migraciones.</li>
-            <li>Frontend: npm install, definir VITE_API_BASE_URL y lanzar npm run dev.</li>
+            <li>Frontend: npm install, revisar credenciales del .env y lanzar npm run dev.</li>
             <li>Datos demo: php bin/console doctrine:fixtures:load para poblar empresas y asignaciones.</li>
             <li>Validar /api/empresas antes de compartir acceso con coordinadores.</li>
           </ul>
@@ -1015,7 +1016,7 @@ interface LoginPageProps {
 }
 
 function LoginPage({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(getConfiguredAuthUsername());
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -1063,7 +1064,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
           </button>
           {status && <p className="form__error">{status}</p>}
           <p className="auth-card__hint">
-            Credenciales demo: admin/admin123 (ROLE_ADMIN), coordinador/coordinador123 (ROLE_API), lectura/lectura123 (ROLE_USER).
+            Usuario por defecto leido desde `.env.local`: {getConfiguredAuthUsername()}. Si cambias las credenciales de la API, actualiza tambien `VITE_API_USERNAME` y `VITE_API_PASSWORD`.
           </p>
         </form>
       </div>
@@ -1147,6 +1148,66 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 
 const API_BASE_URL = getApiBaseUrl();
 
+const MOJIBAKE_REPLACEMENTS: Array<[string, string]> = [
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'áñ'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡', 'Ú'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³', 'ó'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡', 'á'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'é'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­', 'í'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº', 'ú'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'ñ'],
+  ['Ã³', 'ó'],
+  ['Ã¡', 'á'],
+  ['Ã©', 'é'],
+  ['Ã­', 'í'],
+  ['Ãº', 'ú'],
+  ['Ã±', 'ñ'],
+  ['Ãš', 'Ú'],
+  ['Â·', '·'],
+  ['Â°', '°'],
+  ['â€¦', '...'],
+];
+
+function repairMojibakeText(value: string): string {
+  let repaired = value;
+  for (const [broken, fixed] of MOJIBAKE_REPLACEMENTS) {
+    if (repaired.includes(broken)) {
+      repaired = repaired.split(broken).join(fixed);
+    }
+  }
+  return repaired;
+}
+
+function repairMojibakeDom(root: ParentNode): void {
+  const textWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let textNode = textWalker.nextNode();
+  while (textNode) {
+    const current = textNode.nodeValue ?? '';
+    const repaired = repairMojibakeText(current);
+    if (current !== repaired) {
+      textNode.nodeValue = repaired;
+    }
+    textNode = textWalker.nextNode();
+  }
+
+  if ('querySelectorAll' in root) {
+    const elements = root.querySelectorAll<HTMLElement>('*');
+    elements.forEach((element) => {
+      ['placeholder', 'title', 'aria-label'].forEach((attribute) => {
+        const current = element.getAttribute(attribute);
+        if (!current) {
+          return;
+        }
+        const repaired = repairMojibakeText(current);
+        if (current !== repaired) {
+          element.setAttribute(attribute, repaired);
+        }
+      });
+    });
+  }
+}
+
 export default function App() {
   const [collections, setCollections] = useState<ApiCollections | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1206,6 +1267,37 @@ export default function App() {
   const [tutorProfesionalEstado, setTutorProfesionalEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
   const [tutorProfesionalEmpresa, setTutorProfesionalEmpresa] = useState<string>('todas');
   const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
+
+  useEffect(() => {
+    const root = document.querySelector('.app') ?? document.body;
+    let scheduled = false;
+
+    const runRepair = () => {
+      scheduled = false;
+      repairMojibakeDom(root);
+    };
+
+    const scheduleRepair = () => {
+      if (scheduled) {
+        return;
+      }
+      scheduled = true;
+      requestAnimationFrame(runRepair);
+    };
+
+    scheduleRepair();
+
+    const observer = new MutationObserver(scheduleRepair);
+    observer.observe(root, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['placeholder', 'title', 'aria-label'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
   const [savingConvenioDocument, setSavingConvenioDocument] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -1633,8 +1725,7 @@ export default function App() {
     const bootstrap = async () => {
       setLoading(true);
       try {
-        await login('admin', 'admin123');
-        const user: MeResponse = { username: 'admin', roles: ['ROLE_ADMIN'] };
+        const user = await fetchMe();
         setMe(user);
         setAuthError(null);
         await loadData();
@@ -5234,7 +5325,7 @@ const selectedConvenio = useMemo(() => {
             </div>
             <div>
               <dt>Autenticacion</dt>
-              <dd>Basica (admin/admin123) hasta migrar a usuarios</dd>
+              <dd>Basica con credenciales cargadas desde `frontend/app/.env.local`</dd>
             </div>
           </dl>
           <p className="profile-hint">

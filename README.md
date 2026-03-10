@@ -1,25 +1,116 @@
-# Gestión de Empresas Colaboradoras
+# Gestion de Empresas Colaboradoras
 
-Proyecto de Trabajo Final de Grado para el desarrollo de una aplicación web que permita a un centro educativo gestionar sus empresas colaboradoras, convenios, tutores y estudiantes en prácticas.
+Proyecto de Trabajo Final de Grado orientado a la gestion de empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un contexto de FP Dual.
 
-## Estructura del repositorio
+## Arquitectura
+- `backend/`: API Symfony 7.3, Doctrine ORM y SQLite por defecto.
+- `frontend/app/`: panel interno React 18 + TypeScript + Vite.
+- `frontend/company-portal/`: portal externo React 19 + TypeScript + Vite.
+- `docs/`: memoria, anexos, guion de defensa y material de apoyo.
+- `legacy/`: codigo archivado del proyecto Agora original.
+
+## Instalacion local
+El repositorio no es ejecutable de forma inmediata tras clonar. Hay que instalar dependencias y preparar variables de entorno.
+
+### 1. Backend
+```bash
+cd backend
+copy .env.local.example .env.local
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:fixtures:load --no-interaction
+start-server.bat
 ```
-TFG - Agora/
-├── backend/          # Backend (Symfony) preparado para la nueva temática
-├── frontend/         # Frontend web a renovar
-├── docs/             # Documentación viva del TFG
-└── legacy/           # Código y documentos del proyecto Ágora original
+
+### 2. Panel interno
+```bash
+cd frontend/app
+copy .env.example .env.local
+npm install
+npm run dev
 ```
 
-## Próximos pasos
-1. Definir el modelo de datos (Empresa, Convenio, Tutor, Estudiante, Seguimiento).
-2. Reconfigurar el backend Symfony con las nuevas entidades y controladores.
-3. Diseñar la interfaz de usuario adaptada al flujo de gestión de empresas.
-4. Actualizar la memoria del TFG con el avance de cada fase.
+### 3. Portal externo
+```bash
+cd frontend/company-portal
+copy .env.example .env.local
+npm install
+npm run dev
+```
 
-## Documentación relevante
-- `docs/TFG_MEMORIA_PLANTILLA.md`: plantilla oficial para la memoria.
-- `docs/refactor-plan.md`: plan de transición desde el proyecto anterior.
+## Accesos de desarrollo
+- Panel interno: `http://127.0.0.1:5173`
+- Portal externo: `http://127.0.0.1:5174`
+- API: `http://127.0.0.1:8000/api`
 
----
-> El código y la documentación del proyecto Ágora original se han archivado en `legacy/` por si es necesario reutilizar componentes específicos.
+## Modo URL unica
+Si quieres servir todo desde una sola URL y un solo puerto del backend:
+
+```bash
+build-single-url.bat
+cd backend
+start-server.bat
+```
+
+Con eso quedan disponibles:
+- Panel interno: `http://127.0.0.1:8000/app`
+- Portal externo: `http://127.0.0.1:8000/externo`
+- API: `http://127.0.0.1:8000/api`
+
+Este modo evita depender de `5173` y `5174` para la demo o para exponer el proyecto hacia fuera.
+Si no defines `VITE_API_BASE_URL`, ambas builds usan automaticamente la misma URL publica desde la que se abren. Solo en desarrollo con Vite se sigue resolviendo la API en `:8000`.
+
+## URL publica temporal
+Si quieres compartirlo por internet sin comprar dominio ni abrir mas puertos, puedes usar Cloudflare Quick Tunnel:
+
+```bash
+start-demo-public.bat
+```
+
+Ese script:
+- genera la build unificada;
+- lanza el backend en `0.0.0.0:8000`;
+- abre un tunel temporal y muestra una URL `https://...trycloudflare.com`.
+
+En la primera ejecucion, `start-public-url.bat` descarga automaticamente `cloudflared`.
+
+Con la URL que aparezca, abre:
+- `URL/app`
+- `URL/externo`
+
+Tambien puedes abrir solo el tunel si el backend ya esta arrancado:
+
+```bash
+start-public-url.bat
+```
+
+## Variables de entorno relevantes
+### Backend
+- `DATABASE_URL`
+- `MAILER_DSN`
+- `APP_MAIL_FROM`
+- `DEFAULT_URI`
+- `CORS_ALLOW_ORIGIN`
+
+### Panel interno
+- `VITE_API_BASE_URL`
+- `VITE_API_USERNAME`
+- `VITE_API_PASSWORD`
+- `VITE_DEV_HOST`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
+
+### Portal externo
+- `VITE_API_BASE_URL`
+- `VITE_DEV_HOST`
+- `VITE_DEV_HTTPS`
+- `VITE_DEV_HTTPS_KEY`
+- `VITE_DEV_HTTPS_CERT`
+
+## Nota sobre React
+Actualmente conviven dos versiones de React porque son dos aplicaciones independientes:
+- el panel interno se mantiene en React 18;
+- el portal externo se levanto despues con React 19.
+
+No comparten bundle ni runtime, por lo que la diferencia no genera conflicto funcional.

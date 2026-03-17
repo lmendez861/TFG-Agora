@@ -22,9 +22,46 @@ import type {
   TutorProfesionalSummary,
   EmpresaSolicitudMensaje,
   MeResponse,
+  MonitorOverview,
   PaginatedResponse,
+  PublicAccessSnapshot,
   EmpresaDocument,
 } from '../types';
+import { downloadBlobFile } from '../utils/download.ts';
+
+type EmpresaDocumentApi = {
+  id: number;
+  nombre: string;
+  tipo: string | null;
+  url: string | null;
+  uploadedAt: string;
+};
+
+type EmpresaDetailApi = Omit<EmpresaDetail, 'documentos'> & {
+  documentos?: EmpresaDocumentApi[];
+};
+
+type ImportMetaEnvLike = {
+  VITE_API_BASE_URL?: string;
+  VITE_API_USERNAME?: string;
+  VITE_API_PASSWORD?: string;
+};
+
+type CsvExportParamValue = string | number | boolean | null | undefined;
+
+const ENV = ((import.meta as ImportMeta & { env?: ImportMetaEnvLike }).env ?? {});
+
+export const CSV_EXPORT_PATHS = {
+  empresas: '/export/empresas.csv',
+  convenios: '/export/convenios.csv',
+  estudiantes: '/export/estudiantes.csv',
+  asignaciones: '/export/asignaciones.csv',
+  'tutores-academicos': '/export/tutores-academicos.csv',
+  'tutores-profesionales': '/export/tutores-profesionales.csv',
+  'solicitudes-empresa': '/export/empresa-solicitudes.csv',
+} as const;
+
+export type CsvExportScope = keyof typeof CSV_EXPORT_PATHS;
 
 function resolveDefaultApiBaseUrl(): string {
   if (typeof window === 'undefined') {
@@ -39,9 +76,9 @@ function resolveDefaultApiBaseUrl(): string {
   return `${window.location.origin}/api`;
 }
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? resolveDefaultApiBaseUrl();
-const API_USERNAME = (import.meta.env.VITE_API_USERNAME as string | undefined) ?? 'admin';
-const API_PASSWORD = (import.meta.env.VITE_API_PASSWORD as string | undefined) ?? 'admin123';
+const API_BASE_URL = ENV.VITE_API_BASE_URL ?? resolveDefaultApiBaseUrl();
+const API_USERNAME = ENV.VITE_API_USERNAME ?? 'admin';
+const API_PASSWORD = ENV.VITE_API_PASSWORD ?? 'admin123';
 let activeUsername = API_USERNAME;
 let activePassword = API_PASSWORD;
 
@@ -56,6 +93,47 @@ function setActiveCredentials(username: string, password: string): void {
 
 function resetActiveCredentials(): void {
   setActiveCredentials(API_USERNAME, API_PASSWORD);
+}
+
+function mapEmpresaDocument(document: EmpresaDocument | EmpresaDocumentApi): EmpresaDocument {
+  if ('name' in document) {
+    return document;
+  }
+
+  return {
+    id: document.id,
+    name: document.nombre,
+    type: document.tipo,
+    url: document.url,
+    uploadedAt: document.uploadedAt,
+  };
+}
+
+function mapEmpresaDetail(detail: EmpresaDetailApi): EmpresaDetail {
+  return {
+    ...detail,
+    documentos: (detail.documentos ?? []).map(mapEmpresaDocument),
+  };
+}
+
+function buildQueryString(params?: Record<string, CsvExportParamValue>): string {
+  if (!params) {
+    return '';
+  }
+
+  const search = new URLSearchParams();
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === null || typeof value === 'undefined' || value === '') {
+      return;
+    }
+
+    search.set(key, typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value));
+  });
+
+  const query = search.toString();
+
+  return query ? `?${query}` : '';
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -116,6 +194,41 @@ async function apiPut<T>(path: string, body: unknown): Promise<T> {
   });
 }
 
+export function getCsvExportPath(scope: CsvExportScope, params?: Record<string, CsvExportParamValue>): string {
+  return `${CSV_EXPORT_PATHS[scope]}${buildQueryString(params)}`;
+}
+
+export async function downloadCsvExport(
+  scope: CsvExportScope,
+  filename: string,
+  params?: Record<string, CsvExportParamValue>,
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}${getCsvExportPath(scope, params)}`, {
+    headers: {
+      Accept: 'text/csv',
+      Authorization: getAuthorizationHeader(),
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    let message = `Error ${response.status}`;
+
+    try {
+      const payload = await response.json();
+      if (payload?.message) {
+        message = `${message}: ${payload.message}`;
+      }
+    } catch {
+      // Ignored: fallback to default message when the body is not JSON.
+    }
+
+    throw new Error(message);
+  }
+
+  downloadBlobFile(filename, await response.blob());
+}
+
 export async function fetchCollections(): Promise<ApiCollections> {
   const [empresas, estudiantes, convenios, asignaciones] = await Promise.all([
     apiGet<EmpresaSummary[]>('/empresas'),
@@ -153,7 +266,7 @@ export async function updateEstudiante(id: number, payload: Partial<EstudiantePa
 }
 
 export async function getEmpresaDetail(id: number): Promise<EmpresaDetail> {
-  return apiGet<EmpresaDetail>(`/empresas/${id}`);
+  return mapEmpresaDetail(await apiGet<EmpresaDetailApi>(`/empresas/${id}`));
 }
 
 export async function createEmpresa(payload: EmpresaPayload): Promise<EmpresaDetail> {
@@ -253,17 +366,17 @@ export async function addEmpresaDocument(
       }
       throw new Error(message);
     }
-    return (await response.json()) as EmpresaDocument;
+    return mapEmpresaDocument((await response.json()) as EmpresaDocumentApi);
   }
 
-  return apiRequest<EmpresaDocument>(`/empresas/${empresaId}/documentos`, {
+  return mapEmpresaDocument(await apiRequest<EmpresaDocumentApi>(`/empresas/${empresaId}/documentos`, {
     method: 'POST',
     body: JSON.stringify({
       nombre,
       tipo,
       url,
     }),
-  });
+  }));
 }
 
 export async function dismissConvenioAlert(convenioId: number, alertId: number): Promise<ConvenioAlert> {
@@ -379,4 +492,24 @@ export async function logout(): Promise<void> {
 
 export async function fetchMe(): Promise<MeResponse> {
   return apiGet<MeResponse>('/me');
+}
+
+export async function fetchMonitorOverview(): Promise<MonitorOverview> {
+  return apiGet<MonitorOverview>('/monitor');
+}
+
+export async function fetchPublicAccessSnapshot(): Promise<PublicAccessSnapshot> {
+  return apiGet<PublicAccessSnapshot>('/public-access');
+}
+
+export async function startPublicAccess(): Promise<PublicAccessSnapshot> {
+  return apiRequest<PublicAccessSnapshot>('/public-access/start', {
+    method: 'POST',
+  });
+}
+
+export async function stopPublicAccess(): Promise<PublicAccessSnapshot> {
+  return apiRequest<PublicAccessSnapshot>('/public-access/stop', {
+    method: 'POST',
+  });
 }

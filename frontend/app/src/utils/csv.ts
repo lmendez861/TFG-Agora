@@ -1,3 +1,5 @@
+import { downloadBlobFile } from './download.ts';
+
 export type CsvRowValue = string | number | boolean | null | undefined;
 export type CsvRow = Record<string, CsvRowValue>;
 
@@ -19,9 +21,9 @@ function escapeCell(value: CsvRowValue, delimiter: string): string {
   return normalized;
 }
 
-export function downloadCsv(filename: string, rows: CsvRow[], delimiter = ';'): void {
+export function buildCsvContent(rows: CsvRow[], delimiter = ';'): string {
   if (rows.length === 0) {
-    return;
+    return '';
   }
 
   const headers = Object.keys(rows[0]);
@@ -30,17 +32,14 @@ export function downloadCsv(filename: string, rows: CsvRow[], delimiter = ';'): 
     ...rows.map((row) => headers.map((header) => escapeCell(row[header], delimiter)).join(delimiter)),
   ];
 
-  const content = `\uFEFF${lines.join('\r\n')}`;
-  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
+  return `\uFEFF${lines.join('\r\n')}`;
+}
 
-  link.href = url;
-  link.download = filename;
-  link.style.display = 'none';
+export function downloadCsv(filename: string, rows: CsvRow[], delimiter = ';'): void {
+  const content = buildCsvContent(rows, delimiter);
+  if (!content) {
+    return;
+  }
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  downloadBlobFile(filename, new Blob([content], { type: 'text/csv;charset=utf-8;' }));
 }

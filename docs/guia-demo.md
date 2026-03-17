@@ -1,9 +1,9 @@
 # Guia de demo (TFG Agora)
 
-## Servicios verificados el 10/03/2026
+## Servicios verificados el 17/03/2026
 - Backend API Symfony: http://127.0.0.1:8000
-- Panel interno React: http://localhost:5173
-- Portal externo React: http://localhost:5174
+- Panel interno integrado: http://127.0.0.1:8000/app
+- Portal externo integrado: http://127.0.0.1:8000/externo
 
 ## Requisitos previos
 - PHP 8.2
@@ -40,6 +40,9 @@
   - `http://127.0.0.1:8000/app`
   - `http://127.0.0.1:8000/externo`
   - `http://127.0.0.1:8000/api`
+  - `http://127.0.0.1:8000/app/documentacion`
+  - `http://127.0.0.1:8000/app/control`
+  - `http://127.0.0.1:8000/app/monitor`
 
 ## URL publica temporal
 - `start-demo-public.bat`
@@ -47,6 +50,8 @@
 - En la primera ejecucion, `start-public-url.bat` descarga `cloudflared` automaticamente.
 - Con la URL mostrada, abre `URL/app` y `URL/externo`.
 - Si el backend ya esta arrancado, puedes usar solo `start-public-url.bat`.
+- Desde el panel interno tambien puede activarse o bajarse el acceso externo en `/app/control`.
+- La guia de documentacion sigue accesible en local aunque el acceso publico temporal este apagado.
 
 ## Nota de instalacion
 - Si descargas el proyecto desde Git, no queda funcional automaticamente.
@@ -74,20 +79,23 @@
 - `lectura / lectura123` (`ROLE_USER`)
 
 ## Verificaciones tecnicas
-- `php bin/phpunit` -> OK, 47 tests y 264 assertions.
+- `php bin/phpunit` -> OK, 61 tests y 344 assertions.
+- `npm test` en `frontend/app` -> OK, 13 tests.
 - `npm run build` en `frontend/app` -> OK.
+- `npm run build:backend` en `frontend/app` -> OK.
 - `npm run build` en `frontend/company-portal` -> OK.
 - `GET /api/empresas` con Basic auth (`admin/admin123`) -> `200 OK`.
+- `GET /app/documentacion`, `/app/control` y `/app/monitor` -> `200 OK`.
 - El panel interno permite exportar CSV desde dashboard, tablas principales, tutores y solicitudes.
 
 ## Recorrido sugerido para la demo
 1. Dashboard del panel interno: KPI, resumen de convenios, solicitudes pendientes y exportacion CSV.
-2. Empresas: detalle, notas, etiquetas, documentos, relaciones con convenios y exportacion CSV.
-3. Convenios: workflow, checklist, documentos, alertas y exportacion CSV.
-4. Estudiantes: ficha individual, asignaciones relacionadas y exportacion CSV.
-5. Asignaciones: pipeline, detalle, seguimientos, evaluacion final y exportacion CSV.
-6. Solicitudes: revision, aprobacion o rechazo desde el panel interno, con exportacion CSV.
-7. Portal externo: alta de empresa, verificacion y chat empresa-centro.
+2. Guia de documentacion: recorrido funcional del proyecto sin mezclarlo con la capa tecnica.
+3. Empresas: detalle, notas, etiquetas, documentos, relaciones con convenios y exportacion CSV.
+4. Convenios: workflow, checklist, documentos, alertas y exportacion CSV.
+5. Solicitudes: revision, aprobacion o rechazo desde el panel interno, con exportacion CSV.
+6. Portal externo: alta de empresa, verificacion y chat empresa-centro.
+7. Centro privado y monitor: solo si la tutora pide justificar despliegue, acceso externo o estado tecnico.
 
 ## Plan B para la defensa
 - Si no da tiempo a toda la demo, priorizar dashboard, convenios, solicitudes y portal externo.

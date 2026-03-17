@@ -327,3 +327,82 @@ export interface MeResponse {
   username: string;
   roles: string[];
 }
+
+export type MonitorHealth = 'healthy' | 'warning';
+
+export interface MonitorServiceStatus {
+  id: string;
+  name: string;
+  status: MonitorHealth;
+  detail: string;
+  target: string | null;
+}
+
+export interface MonitorMetric {
+  id: string;
+  label: string;
+  value: number;
+  hint: string;
+}
+
+export interface MonitorActivityItem {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  timestamp: string;
+}
+
+export interface MonitorLogSnapshot {
+  file: string;
+  updatedAt: string | null;
+  lines: string[];
+}
+
+export interface MonitorTestSuite {
+  id: string;
+  name: string;
+  scope: 'backend' | 'frontend';
+  status: MonitorHealth;
+  command: string;
+  totalFiles: number;
+  files: string[];
+  focus: string[];
+}
+
+export interface MonitorDocumentRecord {
+  id: string;
+  name: string;
+  type: string | null;
+  url: string | null;
+  uploadedAt: string;
+  source: 'empresa' | 'convenio';
+  sourceLabel: string;
+}
+
+export interface MonitorOverview {
+  generatedAt: string;
+  environment: {
+    appEnv: string;
+    debug: boolean;
+    phpVersion: string;
+    timezone: string;
+  };
+  services: MonitorServiceStatus[];
+  metrics: MonitorMetric[];
+  activity: MonitorActivityItem[];
+  logs: MonitorLogSnapshot[];
+  tests: MonitorTestSuite[];
+  documents: MonitorDocumentRecord[];
+}
+
+export type PublicAccessStatus = 'inactive' | 'starting' | 'active' | 'error';
+
+export interface PublicAccessSnapshot {
+  status: PublicAccessStatus;
+  detail: string;
+  publicUrl: string | null;
+  targetUrl: string;
+  startedAt: string | null;
+  processId: number | null;
+}

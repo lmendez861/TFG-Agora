@@ -2,14 +2,14 @@
 
 - Autor: Luis Angel
 - Tutora: Elena
-- Fecha de revision: 10/03/2026
+- Fecha de revision: 17/03/2026
 - Repositorio: https://github.com/lmendez861/TFG-Agora
 
 ## 1. Portada
 Titulo: Gestion de Empresas Colaboradoras para FP Dual
 Autor: Luis Angel
 Tutora: Elena
-Fecha: 10/03/2026
+Fecha: 17/03/2026
 
 ## 2. Agradecimientos
 Quiero agradecer a mi tutora Elena su seguimiento, sus observaciones y la orientacion prestada durante el desarrollo de este trabajo. Tambien agradezco al profesorado del ciclo y al centro educativo el contexto real aportado para enfocar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo y la constancia durante el proceso de analisis, implementacion, pruebas y redaccion final de la memoria.
@@ -26,12 +26,12 @@ En la maquetacion final se incluira indice general, indice de tablas e indice de
 
 ## 4. Resumen
 ### 4.1 Resumen (ES)
-Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes y control de acceso por roles. La validacion tecnica actual confirma 47 pruebas backend superadas y compilacion correcta de ambos frontends.
+Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes, exportacion CSV y supervision operativa del despliegue. La validacion tecnica actual confirma 61 pruebas backend superadas, 13 pruebas frontend y compilacion correcta de la build integrada.
 
 Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.
 
 ### 4.2 Summary (EN)
-This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, and role-based access control. Current technical validation confirms 47 passing backend tests and successful production builds for both frontends.
+This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, CSV exports, and operational supervision for demo deployment. Current technical validation confirms 61 passing backend tests, 13 frontend tests, and successful integrated production builds.
 
 Keywords: dual training, partner companies, agreements, Symfony, React, academic management.
 
@@ -123,7 +123,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - En cumplimiento y privacidad, el sistema trabaja con datos minimos necesarios, separa portal publico y panel interno, y deja como mejora futura la auditoria avanzada y la politica definitiva de conservacion documental.
 
 ### 9.5 Diseno de interfaz
-- El panel principal se organiza en modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes y documentacion.
+- El panel principal se organiza en modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes y una guia de documentacion separada del centro privado de control y del monitor operativo.
 - La interfaz combina tablas, tarjetas de detalle, chips de estado, modales de formulario, toasts y un centro de notificaciones para solicitudes pendientes.
 - La vista de convenios incluye checklist, workflow, documentos y alertas activas o descartadas.
 - La vista de empresas concentra KPI, convenios asociados, asignaciones, notas, etiquetas y documentos.
@@ -143,7 +143,8 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - Frontend interno:
   - `App.tsx` actua como shell del panel, dashboard y modulos de detalle.
   - Formularios modales reutilizables para empresas, convenios, estudiantes y asignaciones.
-  - Cliente API con helpers `apiGet`, `apiPost`, `apiPut`, `PATCH` y soporte para subida de documentos.
+  - Cliente API con helpers `apiGet`, `apiPost`, `apiPut`, `PATCH`, soporte para subida de documentos y descarga de CSV desde endpoints dedicados.
+  - Separacion entre guia funcional (`/app/documentacion`), centro privado de control (`/app/control`) y monitor operativo (`/app/monitor`).
 - Frontend externo:
   - Landing con formulario publico.
   - Confirmacion de email mediante token.
@@ -151,36 +152,41 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 - Estado actual de implementacion: la funcionalidad principal esta operativa y validada; el panel ya incorpora exportacion CSV de resumenes y listados, y el modulo de convenios persiste workflow, checklist y alertas mediante la API.
 
 ### 9.6.1 Ejemplo funcional implementado: exportacion CSV
-El panel interno incorpora exportacion CSV como funcionalidad transversal. La utilidad `frontend/app/src/utils/csv.ts` transforma los datos mostrados en pantalla en un fichero descargable desde el navegador. El flujo aplicado es el siguiente:
-1. El usuario visualiza un modulo como dashboard, empresas, convenios o solicitudes.
-2. El frontend compone un conjunto de filas normalizadas a partir del estado cargado desde la API.
-3. La utilidad CSV escapa campos, genera el contenido con cabeceras y dispara la descarga local.
-4. El resultado permite conservar una evidencia operativa fuera de la aplicacion, util para seguimiento o revision academica.
+El panel interno incorpora exportacion CSV como funcionalidad transversal. En la version actual conviven dos flujos complementarios:
+1. El dashboard genera un resumen CSV desde frontend para exportar rapidamente los KPI principales.
+2. Los listados operativos de empresas, convenios, estudiantes, asignaciones, tutores y solicitudes consumen endpoints CSV especificos del backend.
+3. El frontend invoca esas rutas, descarga el `blob` y asigna un nombre de fichero coherente para la evidencia.
+4. El resultado permite conservar una traza operativa externa a la aplicacion, util para seguimiento, revision academica o defensa del proyecto.
 
 ### 9.7 Pruebas y validacion
-- El backend dispone de una suite automatizada con 47 pruebas y 264 aserciones.
+- El backend dispone de una suite automatizada con 61 pruebas y 344 aserciones.
 - La bateria cubre autenticacion, listado y detalle de empresas, convenios, estudiantes y asignaciones, flujo completo de solicitudes, portal por token, documentos y repositorios.
-- El 10/03/2026 se verifico ademas el arranque real de los tres servicios locales:
+- El 17/03/2026 se verifico ademas el arranque real de los servicios locales integrados:
   - API Symfony en `http://127.0.0.1:8000`
-  - Panel interno en `http://localhost:5173`
-  - Portal externo en `http://localhost:5174`
-- Ambos frontends generan build de produccion sin errores con `npm run build`.
+  - Panel interno en `http://127.0.0.1:8000/app`
+  - Portal externo en `http://127.0.0.1:8000/externo`
+  - Guia de documentacion en `http://127.0.0.1:8000/app/documentacion`
+  - Centro privado de control en `http://127.0.0.1:8000/app/control`
+  - Monitor operativo en `http://127.0.0.1:8000/app/monitor`
+- Se valido tambien que la documentacion local sigue accesible aunque el acceso publico temporal se encuentre apagado.
+- El frontend genera build de produccion sin errores con `npm run build` y `npm run build:backend`.
 - Como limitacion de validacion, todavia no existe una suite E2E de navegador.
 
 ### 9.8 Despliegue y operacion
 - Tras descargar el proyecto desde Git no queda funcional de forma inmediata: es necesario ejecutar `composer install`, `npm install` y preparar los `.env.local`.
 - En desarrollo local se usa `backend/.env.local` con SQLite y los `.env.local` de ambos frontends para URL base, credenciales y HTTPS opcional.
-- El backend puede iniciarse con Symfony CLI o servidor PHP local; los dos frontends se ejecutan con Vite en puertos separados.
+- El backend puede iniciarse con Symfony CLI o servidor PHP local; para la defensa se utiliza una build integrada en modo URL unica bajo `/app` y `/externo`.
 - La operacion cotidiana requiere unicamente PHP, Composer, Node.js, npm y la base SQLite local.
+- El acceso externo temporal puede exponerse mediante tunel Cloudflare, gestionado desde el centro privado de control.
 - Para una entrega productiva se recomienda separar frontends estaticos, API Symfony y almacenamiento documental, ademas de sustituir Basic auth por un mecanismo mas robusto.
 
-### 9.9 Resultados y metricas (10/03/2026)
-- Tres servicios levantados y accesibles de forma concurrente: backend, panel interno y portal externo.
+### 9.9 Resultados y metricas (17/03/2026)
+- Servicios locales levantados y accesibles de forma concurrente: backend, panel interno integrado, portal externo, guia de documentacion, centro privado y monitor.
 - La llamada autenticada a `/api/empresas` devuelve respuesta valida y datos de demo.
-- `php bin/phpunit` finaliza en verde con 47 pruebas y 264 aserciones.
-- `npm run build` se completa correctamente en `frontend/app` y `frontend/company-portal`.
+- `php bin/phpunit` finaliza en verde con 61 pruebas y 344 aserciones.
+- `npm test`, `npm run build` y `npm run build:backend` se completan correctamente en `frontend/app`.
 - El panel interno permite exportar a CSV el dashboard, empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.
-- El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido y gestion documental basica.
+- El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido, gestion documental basica y supervision de acceso publico.
 
 ### 9.10 Limitaciones y riesgos
 - La autenticacion actual resuelve el entorno academico y de demo, pero no cubre escenarios de SSO, MFA o auditoria avanzada.
@@ -192,19 +198,20 @@ El panel interno incorpora exportacion CSV como funcionalidad transversal. La ut
 - El almacenamiento de documentos sigue siendo local y debe endurecerse antes de usar datos reales.
 - Falta automatizar pruebas E2E del panel y del portal para reducir riesgo de regresion visual o de flujo.
 
-### 9.11 Verificacion tecnica (10/03/2026)
+### 9.11 Verificacion tecnica (17/03/2026)
 - Backend:
-  - `php bin/phpunit` -> OK, 47 tests, 264 assertions.
+  - `php bin/phpunit` -> OK, 61 tests, 344 assertions.
   - `symfony server:start --no-tls -d --port=8000` -> servicio operativo.
 - Frontend interno:
-  - `npm run dev -- --host --port 5173 --strictPort` -> servicio operativo.
+  - `npm test` -> validacion de utilidades y endpoints de control.
   - `npm run build` -> compilacion correcta.
+  - `npm run build:backend` -> build integrada publicada en `backend/public/app`.
 - Portal externo:
-  - `npm run dev -- --host --port 5174 --strictPort` -> servicio operativo.
-  - `npm run build` -> compilacion correcta.
+  - `GET /externo` en la URL integrada -> `200 OK`.
 - Verificacion HTTP:
   - `GET /api/empresas` con `admin/admin123` -> `200 OK`.
-  - `GET /` en `5173` y `5174` -> `200 OK`.
+  - `GET /app`, `/app/documentacion`, `/app/control` y `/app/monitor` -> `200 OK`.
+  - `GET /api/monitor` y `GET /api/public-access` -> `200 OK`.
 
 ## 10. Conclusiones y recomendaciones
 - El proyecto ya cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una plataforma unica y operativa.

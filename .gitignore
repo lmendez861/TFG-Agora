@@ -29,5 +29,12 @@ yarn-error.log
 # Artefactos locales del proyecto
 backend/public/app/
 backend/public/externo/
+backend/var/public-access/
 tools/cloudflared.exe
 docs/~$*.docx
+
+# Variables y secretos locales
+backend/.env.local
+frontend/app/.env.local
+frontend/company-portal/.env.local
+duckdns-config.local.bat

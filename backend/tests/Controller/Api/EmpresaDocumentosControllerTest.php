@@ -9,6 +9,7 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
 final class EmpresaDocumentosControllerTest extends WebTestCase
@@ -77,5 +78,52 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayHasKey('documentos', $payload);
+    }
+
+    public function testDocumentoPdfSubidoSeSirveEnLinea(): void
+    {
+        $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
+        self::assertNotNull($empresa);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-pdf');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'manual.pdf',
+            'application/pdf',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/empresas/%d/documentos', $empresa->getId()),
+            parameters: [
+                'nombre' => 'Manual PDF',
+                'tipo' => 'PDF',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('url', $payload);
+
+        $this->client->request('GET', parse_url($payload['url'], PHP_URL_PATH) ?: $payload['url']);
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            'application/pdf',
+            $this->client->getResponse()->headers->get('content-type', '')
+        );
+        self::assertStringContainsString(
+            'inline',
+            $this->client->getResponse()->headers->get('content-disposition', '')
+        );
     }
 }

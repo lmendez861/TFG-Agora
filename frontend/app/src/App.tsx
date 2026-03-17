@@ -1,11 +1,15 @@
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
-import { Link, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DataTable, type TableColumn } from './components/DataTable';
+import { DocumentationGuidePage } from './components/DocumentationGuidePage';
+import { DocumentationPage as DocumentationControlPage } from './components/DocumentationPage';
 import { EstudianteForm, type EstudianteFormValues } from './components/EstudianteForm';
 import { EmpresaForm, type EmpresaFormValues } from './components/EmpresaForm';
 import { ConvenioForm, type ConvenioFormValues } from './components/ConvenioForm';
 import { AsignacionForm, type AsignacionFormValues } from './components/AsignacionForm';
+import { DocumentPreviewModal } from './components/DocumentPreviewModal';
 import { Modal } from './components/Modal';
+import { MonitorPage } from './components/MonitorPage';
 import { ToastStack, type ToastMessage } from './components/ToastStack';
 import {
   advanceConvenioWorkflow,
@@ -17,6 +21,7 @@ import {
   addConvenioDocument,
   addEmpresaDocument,
   dismissConvenioAlert,
+  downloadCsvExport,
   fetchCollections,
   fetchEmpresaSolicitudes,
   fetchTutorAcademicos,
@@ -39,8 +44,15 @@ import {
   fetchMe,
   fetchEmpresaMensajes,
   postEmpresaMensaje,
+  type CsvExportScope,
 } from './services/api';
 import { downloadCsv, type CsvRow } from './utils/csv';
+import {
+  buildDashboardAnalytics,
+  buildDashboardStats,
+  getDashboardBaseRecordCount,
+} from './utils/dashboard';
+import { canPreviewDocument, resolveDocumentUrl } from './utils/documents';
 import type {
   ApiCollections,
   AsignacionDetail,
@@ -417,6 +429,12 @@ const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string>
 };
 
 const TUTOR_PAGE_SIZE = 8;
+const EMPTY_COLLECTIONS: ApiCollections = {
+  empresas: [],
+  estudiantes: [],
+  convenios: [],
+  asignaciones: [],
+};
 
 function normalizeListResponse<T>(
   value: T[] | PaginatedResponse<T>,
@@ -946,6 +964,11 @@ type ConvenioAlert = {
   active: boolean;
 };
 
+type DocumentPreviewState = {
+  title: string;
+  url: string | null;
+};
+
 const CONVENIO_STEP_FLOW = ['borrador', 'revisado', 'firmado', 'vigente', 'renovacion', 'finalizado'];
 
 interface StaffRegistrationPageProps {
@@ -1228,6 +1251,7 @@ export default function App() {
   const [referenceData, setReferenceData] = useState<ReferenceData | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<number | null>(null);
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
@@ -1267,39 +1291,19 @@ export default function App() {
   const [tutorProfesionalEstado, setTutorProfesionalEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
   const [tutorProfesionalEmpresa, setTutorProfesionalEmpresa] = useState<string>('todas');
   const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState<DocumentPreviewState | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const skipInitialTutorFilterLoad = useRef(false);
 
   useEffect(() => {
     const root = document.querySelector('.app') ?? document.body;
-    let scheduled = false;
-
-    const runRepair = () => {
-      scheduled = false;
+    const frame = requestAnimationFrame(() => {
       repairMojibakeDom(root);
-    };
-
-    const scheduleRepair = () => {
-      if (scheduled) {
-        return;
-      }
-      scheduled = true;
-      requestAnimationFrame(runRepair);
-    };
-
-    scheduleRepair();
-
-    const observer = new MutationObserver(scheduleRepair);
-    observer.observe(root, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['placeholder', 'title', 'aria-label'],
     });
 
-    return () => observer.disconnect();
-  }, []);
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname, loading, notificationsOpen, authError, error, toasts.length]);
   const [savingConvenioDocument, setSavingConvenioDocument] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   const openCreateStudent = useCallback(() => {
     setStudentFormError(null);
@@ -1367,6 +1371,30 @@ export default function App() {
     downloadCsv(buildExportFilename(scope), rows);
     pushToast('success', `CSV generado con ${rows.length} registros.`);
   }, [pushToast]);
+
+  const exportApiCsv = useCallback(async (
+    scope: CsvExportScope,
+    hasRows: boolean,
+    emptyMessage: string,
+    params?: Record<string, string | number | boolean | null | undefined>,
+  ) => {
+    if (!hasRows) {
+      pushToast('error', emptyMessage);
+      return;
+    }
+
+    try {
+      await downloadCsvExport(scope, buildExportFilename(scope), params);
+      pushToast('success', 'CSV descargado correctamente.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo descargar el CSV.';
+      pushToast('error', message);
+    }
+  }, [pushToast]);
+
+  const openDocumentPreview = useCallback((title: string, url: string | null) => {
+    setDocumentPreview({ title, url });
+  }, []);
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -1567,7 +1595,6 @@ export default function App() {
 
   const refreshSolicitudes = useCallback(
     async (options?: { silent?: boolean }) => {
-      if (!me) return;
       setLoadingSolicitudes(true);
       try {
         const data = await fetchEmpresaSolicitudes();
@@ -1627,27 +1654,37 @@ export default function App() {
     setError(null);
 
     try {
-      const [data, tutoresAcademicos, tutoresProfesionales] = await Promise.all([
-        fetchCollections(),
+      const data = await fetchCollections();
+      setCollections(data);
+
+      const [tutoresAcademicos, tutoresProfesionales] = await Promise.allSettled([
         fetchTutorAcademicos(),
         fetchTutorProfesionales(),
       ]);
-      setCollections(data);
-      const normalizedAcademicos = normalizeListResponse(tutoresAcademicos);
-      const normalizedProfesionales = normalizeListResponse(tutoresProfesionales);
-      setReferenceData({
-        tutoresAcademicos: normalizedAcademicos.items,
-        tutoresProfesionales: normalizedProfesionales.items,
-      });
-      setTutorAcademicosList(normalizedAcademicos.items);
-      setTutorAcademicoPage(normalizedAcademicos.page);
-      setTutorAcademicoTotal(normalizedAcademicos.total);
-      setTutorProfesionalesList(normalizedProfesionales.items);
-      setTutorProfesionalPage(normalizedProfesionales.page);
-      setTutorProfesionalTotal(normalizedProfesionales.total);
-      await Promise.allSettled(
-        data.convenios.map((convenio) => loadConvenioExtras(convenio.id, { silent: true, background: true })),
-      );
+
+      if (tutoresAcademicos.status === 'fulfilled') {
+        const normalizedAcademicos = normalizeListResponse(tutoresAcademicos.value);
+        setReferenceData((prev) => ({
+          tutoresAcademicos: normalizedAcademicos.items,
+          tutoresProfesionales: prev?.tutoresProfesionales ?? [],
+        }));
+        setTutorAcademicosList(normalizedAcademicos.items);
+        setTutorAcademicoPage(normalizedAcademicos.page);
+        setTutorAcademicoTotal(normalizedAcademicos.total);
+        skipInitialTutorFilterLoad.current = true;
+      }
+
+      if (tutoresProfesionales.status === 'fulfilled') {
+        const normalizedProfesionales = normalizeListResponse(tutoresProfesionales.value);
+        setReferenceData((prev) => ({
+          tutoresAcademicos: prev?.tutoresAcademicos ?? [],
+          tutoresProfesionales: normalizedProfesionales.items,
+        }));
+        setTutorProfesionalesList(normalizedProfesionales.items);
+        setTutorProfesionalPage(normalizedProfesionales.page);
+        setTutorProfesionalTotal(normalizedProfesionales.total);
+        skipInitialTutorFilterLoad.current = true;
+      }
       setLastUpdated(new Date());
     } catch (err) {
       if (err instanceof Error) {
@@ -1655,7 +1692,7 @@ export default function App() {
       } else {
         setError('Error desconocido al cargar los datos.');
       }
-      setCollections((prev) => prev ?? FALLBACK_COLLECTIONS);
+      setCollections((prev) => prev ?? EMPTY_COLLECTIONS);
       setReferenceData((prev) => prev ?? {
         tutoresAcademicos: [],
         tutoresProfesionales: [],
@@ -1741,6 +1778,16 @@ export default function App() {
   }, [loadData]);
 
   useEffect(() => {
+    if (
+      skipInitialTutorFilterLoad.current &&
+      tutorAcademicoEstado === 'todos' &&
+      tutorProfesionalEstado === 'todos' &&
+      tutorProfesionalEmpresa === 'todas'
+    ) {
+      skipInitialTutorFilterLoad.current = false;
+      return;
+    }
+
     setTutorAcademicoPage(1);
     setTutorProfesionalPage(1);
     loadTutorAcademicosList(1, tutorAcademicoEstado);
@@ -1752,6 +1799,39 @@ export default function App() {
     loadTutorAcademicosList,
     loadTutorProfesionalesList,
   ]);
+
+  useEffect(() => {
+    if (!collections || collections.empresas.length === 0) {
+      return;
+    }
+
+    const empresaId = selectedEmpresaId ?? collections.empresas[0].id;
+    if (Array.isArray(empresaDocs[empresaId])) {
+      return;
+    }
+
+    let cancelled = false;
+
+    getEmpresaDetail(empresaId)
+      .then((detail) => {
+        if (cancelled) {
+          return;
+        }
+
+        setEmpresaDocs((prev) => (
+          Array.isArray(prev[empresaId])
+            ? prev
+            : { ...prev, [empresaId]: detail.documentos ?? [] }
+        ));
+      })
+      .catch(() => {
+        // Carga diferida silenciosa: la ficha puede seguir funcionando sin bloquear el panel.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [collections, empresaDocs, selectedEmpresaId]);
 
   useEffect(() => {
     if (collections) {
@@ -2192,23 +2272,7 @@ export default function App() {
       return [];
     }
 
-    const conveniosVigentes = collections.convenios.filter((convenio) =>
-      convenio.estado.toLowerCase().includes('vig'),
-    ).length;
-    const asignacionesEnCurso = collections.asignaciones.filter((asignacion) =>
-      asignacion.estado.toLowerCase() === 'en_curso',
-    ).length;
-    const horasPlanificadas = collections.asignaciones.reduce((total, asignacion) => {
-      return total + (asignacion.horasTotales ?? 0);
-    }, 0);
-
-    return [
-      { label: 'Empresas registradas', value: collections.empresas.length },
-      { label: 'Estudiantes registrados', value: collections.estudiantes.length },
-      { label: 'Convenios vigentes', value: conveniosVigentes },
-      { label: 'Asignaciones en curso', value: asignacionesEnCurso },
-      { label: 'Horas totales planificadas', value: horasPlanificadas.toLocaleString('es-ES') },
-    ];
+    return buildDashboardStats(collections);
   }, [collections]);
 
   const estudianteColumns = useMemo<Array<TableColumn<EstudianteSummary>>>(() => [
@@ -2809,20 +2873,16 @@ const selectedConvenio = useMemo(() => {
       return [];
     }
 
-    const entries = Object.entries(asignacionesPorEstado).map(([estado, items]) => ({
-      label: estado,
-      value: items.length,
-    }));
-
-    const conveniosVigentes = collections.convenios.filter((c) => c.estado?.toLowerCase().includes('vig')).length;
-    const empresasActivas = collections.empresas.filter((e) => e.estadoColaboracion === 'activa').length;
-
-    entries.push({ label: 'Convenios vigentes', value: conveniosVigentes });
-    entries.push({ label: 'Empresas activas', value: empresasActivas });
-
-    return entries;
-  }, [collections, asignacionesPorEstado]);
+    return buildDashboardAnalytics(collections);
+  }, [collections]);
   const analyticMax = analyticData.reduce((max, entry) => Math.max(max, entry.value), 0) || 1;
+  const dashboardBaseRecordCount = useMemo(() => {
+    if (!collections) {
+      return 0;
+    }
+
+    return getDashboardBaseRecordCount(collections);
+  }, [collections]);
 
   const handleExportDashboard = useCallback(() => {
     const rows: CsvRow[] = [
@@ -2841,62 +2901,75 @@ const selectedConvenio = useMemo(() => {
     exportCsv('dashboard', rows, 'No hay metricas disponibles para exportar.');
   }, [analyticData, exportCsv, stats]);
 
-  const handleExportTutorAcademicos = useCallback(() => {
-    exportCsv(
-      'tutores-academicos',
-      tutorAcademicosList.map((tutor) => ({
-        id: tutor.id,
-        nombre: tutor.nombre,
-        apellido: tutor.apellido,
-        email: tutor.email,
-        telefono: tutor.telefono ?? '',
-        departamento: tutor.departamento ?? '',
-        especialidad: tutor.especialidad ?? '',
-        activo: tutor.activo ? 'si' : 'no',
-      })),
-      'No hay tutores academicos disponibles para exportar.',
+  const handleExportEmpresas = useCallback(() => {
+    void exportApiCsv(
+      'empresas',
+      (collections?.empresas.length ?? 0) > 0,
+      'No hay empresas disponibles para exportar.',
     );
-  }, [exportCsv, tutorAcademicosList]);
+  }, [collections?.empresas.length, exportApiCsv]);
+
+  const handleExportConvenios = useCallback(() => {
+    void exportApiCsv(
+      'convenios',
+      (collections?.convenios.length ?? 0) > 0,
+      'No hay convenios disponibles para exportar.',
+    );
+  }, [collections?.convenios.length, exportApiCsv]);
+
+  const handleExportEstudiantes = useCallback(() => {
+    void exportApiCsv(
+      'estudiantes',
+      (collections?.estudiantes.length ?? 0) > 0,
+      'No hay estudiantes disponibles para exportar.',
+    );
+  }, [collections?.estudiantes.length, exportApiCsv]);
+
+  const handleExportAsignaciones = useCallback(() => {
+    void exportApiCsv(
+      'asignaciones',
+      (collections?.asignaciones.length ?? 0) > 0,
+      'No hay asignaciones disponibles para exportar.',
+    );
+  }, [collections?.asignaciones.length, exportApiCsv]);
+
+  const handleExportTutorAcademicos = useCallback(() => {
+    const activo = tutorAcademicoEstado === 'todos'
+      ? undefined
+      : tutorAcademicoEstado === 'activos';
+
+    void exportApiCsv(
+      'tutores-academicos',
+      tutorAcademicoTotal > 0,
+      'No hay tutores academicos disponibles para exportar.',
+      activo === undefined ? undefined : { activo },
+    );
+  }, [exportApiCsv, tutorAcademicoEstado, tutorAcademicoTotal]);
 
   const handleExportTutorProfesionales = useCallback(() => {
-    exportCsv(
+    const activo = tutorProfesionalEstado === 'todos'
+      ? undefined
+      : tutorProfesionalEstado === 'activos';
+    const empresaId = tutorProfesionalEmpresa !== 'todas' ? tutorProfesionalEmpresa : undefined;
+
+    void exportApiCsv(
       'tutores-profesionales',
-      tutorProfesionalesList.map((tutor) => ({
-        id: tutor.id,
-        nombre: tutor.nombre,
-        empresa: tutor.empresa.nombre,
-        email: tutor.email ?? '',
-        telefono: tutor.telefono ?? '',
-        cargo: tutor.cargo ?? '',
-        activo: tutor.activo ? 'si' : 'no',
-      })),
+      tutorProfesionalTotal > 0,
       'No hay tutores profesionales disponibles para exportar.',
+      {
+        activo,
+        empresaId,
+      },
     );
-  }, [exportCsv, tutorProfesionalesList]);
+  }, [exportApiCsv, tutorProfesionalEmpresa, tutorProfesionalEstado, tutorProfesionalTotal]);
 
   const handleExportSolicitudes = useCallback(() => {
-    exportCsv(
+    void exportApiCsv(
       'solicitudes-empresa',
-      empresaSolicitudes.map((solicitud) => ({
-        id: solicitud.id,
-        nombre_empresa: solicitud.nombreEmpresa,
-        cif: solicitud.cif ?? '',
-        sector: solicitud.sector ?? '',
-        ciudad: solicitud.ciudad ?? '',
-        web: solicitud.web ?? '',
-        contacto_nombre: solicitud.contacto.nombre,
-        contacto_email: solicitud.contacto.email,
-        contacto_telefono: solicitud.contacto.telefono ?? '',
-        estado: solicitud.estado,
-        creada_en: formatDate(solicitud.creadaEn),
-        email_verificado_en: formatDate(solicitud.emailVerificadoEn),
-        aprobado_en: formatDate(solicitud.aprobadoEn),
-        motivo_rechazo: solicitud.motivoRechazo ?? '',
-        mensajes_cargados: solicitudMensajes[solicitud.id]?.length ?? 0,
-      })),
+      empresaSolicitudes.length > 0,
       'No hay solicitudes disponibles para exportar.',
     );
-  }, [empresaSolicitudes, exportCsv, solicitudMensajes]);
+  }, [empresaSolicitudes.length, exportApiCsv]);
 
 
   const selectedStudentAssignments = useMemo(() => {
@@ -3110,13 +3183,29 @@ const selectedConvenio = useMemo(() => {
                       <strong>{doc.name}</strong>
                       <small>{doc.type ?? 'Documento'} - {formatDate(doc.uploadedAt)}</small>
                     </div>
-                            {doc.url ? (
-                              <a className="button button--link" href={doc.url} target="_blank" rel="noopener">
-                                Ver
-                              </a>
-                            ) : (
-                              <span className="chip chip--ghost">Archivo local</span>
-                            )}
+                    {doc.url ? (
+                      <div className="document-actions">
+                        {canPreviewDocument(doc, API_BASE_URL) && (
+                          <button
+                            type="button"
+                            className="button button--ghost button--sm"
+                            onClick={() => openDocumentPreview(doc.name, doc.url)}
+                          >
+                            Vista previa PDF
+                          </button>
+                        )}
+                        <a
+                          className="button button--link"
+                          href={resolveDocumentUrl(doc.url, API_BASE_URL) ?? undefined}
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          Abrir
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="chip chip--ghost">Archivo local</span>
+                    )}
                           </div>
                         ))
                       ) : (
@@ -3759,7 +3848,14 @@ const selectedConvenio = useMemo(() => {
           caption="Empresas"
           data={collections.empresas}
           columns={empresaColumns}
-          actions={empresaActions}
+          actions={(
+            <>
+              {empresaActions}
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportEmpresas}>
+                Exportar CSV
+              </button>
+            </>
+          )}
         />
 
         <div className="detail-grid">
@@ -4027,7 +4123,14 @@ const selectedConvenio = useMemo(() => {
           caption="Convenios"
           data={collections.convenios}
           columns={convenioColumns}
-          actions={convenioActions}
+          actions={(
+            <>
+              {convenioActions}
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportConvenios}>
+                Exportar CSV
+              </button>
+            </>
+          )}
         />
 
         <section className="convenio-insights">
@@ -4233,9 +4336,25 @@ const selectedConvenio = useMemo(() => {
                               <small>{doc.type} - {formatDate(doc.uploadedAt)}</small>
                             </div>
                             {doc.url ? (
-                              <a className="button button--link" href={doc.url} target="_blank" rel="noreferrer">
-                                Descargar
-                              </a>
+                              <div className="document-actions">
+                                {canPreviewDocument(doc, API_BASE_URL) && (
+                                  <button
+                                    type="button"
+                                    className="button button--ghost button--sm"
+                                    onClick={() => openDocumentPreview(doc.name, doc.url)}
+                                  >
+                                    Vista previa PDF
+                                  </button>
+                                )}
+                                <a
+                                  className="button button--link"
+                                  href={resolveDocumentUrl(doc.url, API_BASE_URL) ?? undefined}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  Descargar
+                                </a>
+                              </div>
                             ) : (
                               <span className="chip chip--ghost">Sin enlace</span>
                             )}
@@ -4339,7 +4458,14 @@ const selectedConvenio = useMemo(() => {
           caption="Estudiantes"
           data={collections.estudiantes}
           columns={estudianteColumns}
-          actions={estudianteActions}
+          actions={(
+            <>
+              {estudianteActions}
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportEstudiantes}>
+                Exportar CSV
+              </button>
+            </>
+          )}
         />
 
         <section className="student-layout">
@@ -4557,7 +4683,14 @@ const selectedConvenio = useMemo(() => {
           caption="Asignaciones"
           data={collections.asignaciones}
           columns={asignacionColumns}
-          actions={asignacionActions}
+          actions={(
+            <>
+              {asignacionActions}
+              <button type="button" className="button button--ghost button--sm" onClick={handleExportAsignaciones}>
+                Exportar CSV
+              </button>
+            </>
+          )}
         />
 
         <section className="asignacion-insights">
@@ -4819,7 +4952,7 @@ const selectedConvenio = useMemo(() => {
             <h3>DistribuciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de asignaciones y actividad</h3>
           </div>
           <div className="module-page__actions">
-            <span className="chip chip--ghost">Total registros: {analyticData.reduce((sum, item) => sum + item.value, 0)}</span>
+            <span className="chip chip--ghost">Registros base: {dashboardBaseRecordCount}</span>
             <button type="button" className="button button--ghost button--sm" onClick={handleExportDashboard}>
               Exportar resumen CSV
             </button>
@@ -5298,6 +5431,24 @@ const selectedConvenio = useMemo(() => {
     </section>
   );
 
+  const handleSyncPanel = useCallback(() => {
+    loadData().catch(() => {
+      // errores gestionados dentro
+    });
+  }, [loadData]);
+
+  const monitorElement = (
+    <MonitorPage
+      collections={collections}
+      pendingSolicitudes={empresaSolicitudes.length}
+      currentUser={me}
+      lastUpdated={lastUpdated}
+      syncInProgress={loading}
+      onSync={handleSyncPanel}
+      apiBaseUrl={API_BASE_URL}
+    />
+  );
+
   const profileElement = (
     <section className="module-page">
       <header className="module-page__header">
@@ -5349,6 +5500,8 @@ const selectedConvenio = useMemo(() => {
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
+            <li><Link to="/monitor">Monitor operativo</Link></li>
+            <li><Link to="/control">Centro de control privado</Link></li>
             <li><Link to="/documentacion">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</Link></li>
           </ul>
         </article>
@@ -5447,7 +5600,9 @@ const selectedConvenio = useMemo(() => {
         <Route path="/estudiantes" element={<EstudiantesOverviewPage />} />
         <Route path="/asignaciones" element={<AsignacionesOverviewPage />} />
         <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
-        <Route path="/documentacion" element={<DocumentationPage />} />
+        <Route path="/documentacion" element={<DocumentationGuidePage />} />
+        <Route path="/control" element={<DocumentationControlPage />} />
+        <Route path="/monitor" element={monitorElement} />
         <Route path="/tutores" element={tutoresElement} />
         <Route
           path="/login"

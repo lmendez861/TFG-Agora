@@ -244,11 +244,11 @@
 <ul>
 <li>Autor: Luis Angel</li>
 <li>Tutora: Elena</li>
-<li>Fecha de revision: 10/03/2026</li>
+<li>Fecha de revision: 17/03/2026</li>
 <li>Repositorio: https://github.com/lmendez861/TFG-Agora</li>
 </ul>
 <h2 id="1-portada">1. Portada</h2>
-<p>Titulo: Gestion de Empresas Colaboradoras para FP Dual Autor: Luis Angel Tutora: Elena Fecha: 10/03/2026</p>
+<p>Titulo: Gestion de Empresas Colaboradoras para FP Dual Autor: Luis Angel Tutora: Elena Fecha: 17/03/2026</p>
 <h2 id="2-agradecimientos">2. Agradecimientos</h2>
 <p>Quiero agradecer a mi tutora Elena su seguimiento, sus observaciones y la orientacion prestada durante el desarrollo de este trabajo. Tambien agradezco al profesorado del ciclo y al centro educativo el contexto real aportado para enfocar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo y la constancia durante el proceso de analisis, implementacion, pruebas y redaccion final de la memoria.</p>
 <h2 id="3-indice">3. Indice</h2>
@@ -263,10 +263,10 @@
 </ol>
 <h2 id="4-resumen">4. Resumen</h2>
 <h3 id="4-1-resumen-es">4.1 Resumen (ES)</h3>
-<p>Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes y control de acceso por roles. La validacion tecnica actual confirma 47 pruebas backend superadas y compilacion correcta de ambos frontends.</p>
+<p>Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion combina una API en Symfony, un panel interno en React/TypeScript y un portal externo para empresas. El sistema permite CRUD de entidades principales, seguimiento documental, workflow de convenios, mensajeria asociada a solicitudes, exportacion CSV y supervision operativa del despliegue. La validacion tecnica actual confirma 61 pruebas backend superadas, 13 pruebas frontend y compilacion correcta de la build integrada.</p>
 <p>Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.</p>
 <h3 id="4-2-summary-en">4.2 Summary (EN)</h3>
-<p>This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, and role-based access control. Current technical validation confirms 47 passing backend tests and successful production builds for both frontends.</p>
+<p>This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React/TypeScript dashboard, and an external company portal. The system supports CRUD operations for the main entities, document handling, agreement workflow, request messaging, CSV exports, and operational supervision for demo deployment. Current technical validation confirms 61 passing backend tests, 13 frontend tests, and successful integrated production builds.</p>
 <p>Keywords: dual training, partner companies, agreements, Symfony, React, academic management.</p>
 <h2 id="5-antecedentes-introduccion">5. Antecedentes / Introduccion</h2>
 <ul>
@@ -366,7 +366,7 @@
 </ul>
 <h3 id="9-5-diseno-de-interfaz">9.5 Diseno de interfaz</h3>
 <ul>
-<li>El panel principal se organiza en modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes y documentacion.</li>
+<li>El panel principal se organiza en modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes y una guia de documentacion separada del centro privado de control y del monitor operativo.</li>
 <li>La interfaz combina tablas, tarjetas de detalle, chips de estado, modales de formulario, toasts y un centro de notificaciones para solicitudes pendientes.</li>
 <li>La vista de convenios incluye checklist, workflow, documentos y alertas activas o descartadas.</li>
 <li>La vista de empresas concentra KPI, convenios asociados, asignaciones, notas, etiquetas y documentos.</li>
@@ -380,44 +380,46 @@
 <li>Backend:</li>
 <p>- Controladores REST para empresas, convenios, estudiantes, asignaciones y tutores. - Controladores especificos para solicitudes de empresa, mensajeria asociada y portal por token. - Fixtures demo con usuarios, empresas, convenios, estudiantes, tutores, asignaciones, checklist, alertas y mensajes.</p>
 <li>Frontend interno:</li>
-<p>- <code>App.tsx</code> actua como shell del panel, dashboard y modulos de detalle. - Formularios modales reutilizables para empresas, convenios, estudiantes y asignaciones. - Cliente API con helpers <code>apiGet</code>, <code>apiPost</code>, <code>apiPut</code>, <code>PATCH</code> y soporte para subida de documentos.</p>
+<p>- <code>App.tsx</code> actua como shell del panel, dashboard y modulos de detalle. - Formularios modales reutilizables para empresas, convenios, estudiantes y asignaciones. - Cliente API con helpers <code>apiGet</code>, <code>apiPost</code>, <code>apiPut</code>, <code>PATCH</code>, soporte para subida de documentos y descarga de CSV desde endpoints dedicados. - Separacion entre guia funcional (<code>/app/documentacion</code>), centro privado de control (<code>/app/control</code>) y monitor operativo (<code>/app/monitor</code>).</p>
 <li>Frontend externo:</li>
 <p>- Landing con formulario publico. - Confirmacion de email mediante token. - Chat simple sobre la solicitud mientras esta en revision.</p>
 <li>Estado actual de implementacion: la funcionalidad principal esta operativa y validada; el panel ya incorpora exportacion CSV de resumenes y listados, y el modulo de convenios persiste workflow, checklist y alertas mediante la API.</li>
 </ul>
 <h3 id="9-6-1-ejemplo-funcional-implementado-exportacion-csv">9.6.1 Ejemplo funcional implementado: exportacion CSV</h3>
-<p>El panel interno incorpora exportacion CSV como funcionalidad transversal. La utilidad <code>frontend/app/src/utils/csv.ts</code> transforma los datos mostrados en pantalla en un fichero descargable desde el navegador. El flujo aplicado es el siguiente:</p>
+<p>El panel interno incorpora exportacion CSV como funcionalidad transversal. En la version actual conviven dos flujos complementarios:</p>
 <ol>
-<li>El usuario visualiza un modulo como dashboard, empresas, convenios o solicitudes.</li>
-<li>El frontend compone un conjunto de filas normalizadas a partir del estado cargado desde la API.</li>
-<li>La utilidad CSV escapa campos, genera el contenido con cabeceras y dispara la descarga local.</li>
-<li>El resultado permite conservar una evidencia operativa fuera de la aplicacion, util para seguimiento o revision academica.</li>
+<li>El dashboard genera un resumen CSV desde frontend para exportar rapidamente los KPI principales.</li>
+<li>Los listados operativos de empresas, convenios, estudiantes, asignaciones, tutores y solicitudes consumen endpoints CSV especificos del backend.</li>
+<li>El frontend invoca esas rutas, descarga el <code>blob</code> y asigna un nombre de fichero coherente para la evidencia.</li>
+<li>El resultado permite conservar una traza operativa externa a la aplicacion, util para seguimiento, revision academica o defensa del proyecto.</li>
 </ol>
 <h3 id="9-7-pruebas-y-validacion">9.7 Pruebas y validacion</h3>
 <ul>
-<li>El backend dispone de una suite automatizada con 47 pruebas y 264 aserciones.</li>
+<li>El backend dispone de una suite automatizada con 61 pruebas y 344 aserciones.</li>
 <li>La bateria cubre autenticacion, listado y detalle de empresas, convenios, estudiantes y asignaciones, flujo completo de solicitudes, portal por token, documentos y repositorios.</li>
-<li>El 10/03/2026 se verifico ademas el arranque real de los tres servicios locales:</li>
-<p>- API Symfony en <code>http://127.0.0.1:8000</code> - Panel interno en <code>http://localhost:5173</code> - Portal externo en <code>http://localhost:5174</code></p>
-<li>Ambos frontends generan build de produccion sin errores con <code>npm run build</code>.</li>
+<li>El 17/03/2026 se verifico ademas el arranque real de los servicios locales integrados:</li>
+<p>- API Symfony en <code>http://127.0.0.1:8000</code> - Panel interno en <code>http://127.0.0.1:8000/app</code> - Portal externo en <code>http://127.0.0.1:8000/externo</code> - Guia de documentacion en <code>http://127.0.0.1:8000/app/documentacion</code> - Centro privado de control en <code>http://127.0.0.1:8000/app/control</code> - Monitor operativo en <code>http://127.0.0.1:8000/app/monitor</code></p>
+<li>Se valido tambien que la documentacion local sigue accesible aunque el acceso publico temporal se encuentre apagado.</li>
+<li>El frontend genera build de produccion sin errores con <code>npm run build</code> y <code>npm run build:backend</code>.</li>
 <li>Como limitacion de validacion, todavia no existe una suite E2E de navegador.</li>
 </ul>
 <h3 id="9-8-despliegue-y-operacion">9.8 Despliegue y operacion</h3>
 <ul>
 <li>Tras descargar el proyecto desde Git no queda funcional de forma inmediata: es necesario ejecutar <code>composer install</code>, <code>npm install</code> y preparar los <code>.env.local</code>.</li>
 <li>En desarrollo local se usa <code>backend/.env.local</code> con SQLite y los <code>.env.local</code> de ambos frontends para URL base, credenciales y HTTPS opcional.</li>
-<li>El backend puede iniciarse con Symfony CLI o servidor PHP local; los dos frontends se ejecutan con Vite en puertos separados.</li>
+<li>El backend puede iniciarse con Symfony CLI o servidor PHP local; para la defensa se utiliza una build integrada en modo URL unica bajo <code>/app</code> y <code>/externo</code>.</li>
 <li>La operacion cotidiana requiere unicamente PHP, Composer, Node.js, npm y la base SQLite local.</li>
+<li>El acceso externo temporal puede exponerse mediante tunel Cloudflare, gestionado desde el centro privado de control.</li>
 <li>Para una entrega productiva se recomienda separar frontends estaticos, API Symfony y almacenamiento documental, ademas de sustituir Basic auth por un mecanismo mas robusto.</li>
 </ul>
-<h3 id="9-9-resultados-y-metricas-10-03-2026">9.9 Resultados y metricas (10/03/2026)</h3>
+<h3 id="9-9-resultados-y-metricas-17-03-2026">9.9 Resultados y metricas (17/03/2026)</h3>
 <ul>
-<li>Tres servicios levantados y accesibles de forma concurrente: backend, panel interno y portal externo.</li>
+<li>Servicios locales levantados y accesibles de forma concurrente: backend, panel interno integrado, portal externo, guia de documentacion, centro privado y monitor.</li>
 <li>La llamada autenticada a <code>/api/empresas</code> devuelve respuesta valida y datos de demo.</li>
-<li><code>php bin/phpunit</code> finaliza en verde con 47 pruebas y 264 aserciones.</li>
-<li><code>npm run build</code> se completa correctamente en <code>frontend/app</code> y <code>frontend/company-portal</code>.</li>
+<li><code>php bin/phpunit</code> finaliza en verde con 61 pruebas y 344 aserciones.</li>
+<li><code>npm test</code>, <code>npm run build</code> y <code>npm run build:backend</code> se completan correctamente en <code>frontend/app</code>.</li>
 <li>El panel interno permite exportar a CSV el dashboard, empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.</li>
-<li>El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido y gestion documental basica.</li>
+<li>El flujo funcional mas relevante queda cubierto: solicitud externa, confirmacion por token, aprobacion interna, consulta de detalle, workflow de convenios persistido, gestion documental basica y supervision de acceso publico.</li>
 </ul>
 <h3 id="9-10-limitaciones-y-riesgos">9.10 Limitaciones y riesgos</h3>
 <ul>
@@ -430,16 +432,16 @@
 <li>El almacenamiento de documentos sigue siendo local y debe endurecerse antes de usar datos reales.</li>
 <li>Falta automatizar pruebas E2E del panel y del portal para reducir riesgo de regresion visual o de flujo.</li>
 </ul>
-<h3 id="9-11-verificacion-tecnica-10-03-2026">9.11 Verificacion tecnica (10/03/2026)</h3>
+<h3 id="9-11-verificacion-tecnica-17-03-2026">9.11 Verificacion tecnica (17/03/2026)</h3>
 <ul>
 <li>Backend:</li>
-<p>- <code>php bin/phpunit</code> -&gt; OK, 47 tests, 264 assertions. - <code>symfony server:start --no-tls -d --port=8000</code> -&gt; servicio operativo.</p>
+<p>- <code>php bin/phpunit</code> -&gt; OK, 61 tests, 344 assertions. - <code>symfony server:start --no-tls -d --port=8000</code> -&gt; servicio operativo.</p>
 <li>Frontend interno:</li>
-<p>- <code>npm run dev -- --host --port 5173 --strictPort</code> -&gt; servicio operativo. - <code>npm run build</code> -&gt; compilacion correcta.</p>
+<p>- <code>npm test</code> -&gt; validacion de utilidades y endpoints de control. - <code>npm run build</code> -&gt; compilacion correcta. - <code>npm run build:backend</code> -&gt; build integrada publicada en <code>backend/public/app</code>.</p>
 <li>Portal externo:</li>
-<p>- <code>npm run dev -- --host --port 5174 --strictPort</code> -&gt; servicio operativo. - <code>npm run build</code> -&gt; compilacion correcta.</p>
+<p>- <code>GET /externo</code> en la URL integrada -&gt; <code>200 OK</code>.</p>
 <li>Verificacion HTTP:</li>
-<p>- <code>GET /api/empresas</code> con <code>admin/admin123</code> -&gt; <code>200 OK</code>. - <code>GET /</code> en <code>5173</code> y <code>5174</code> -&gt; <code>200 OK</code>.</p>
+<p>- <code>GET /api/empresas</code> con <code>admin/admin123</code> -&gt; <code>200 OK</code>. - <code>GET /app</code>, <code>/app/documentacion</code>, <code>/app/control</code> y <code>/app/monitor</code> -&gt; <code>200 OK</code>. - <code>GET /api/monitor</code> y <code>GET /api/public-access</code> -&gt; <code>200 OK</code>.</p>
 </ul>
 <h2 id="10-conclusiones-y-recomendaciones">10. Conclusiones y recomendaciones</h2>
 <ul>
@@ -760,6 +762,8 @@ npm run build</code></pre>
 <li>Portal externo con formulario de alta.</li>
 <li>Portal externo con pantalla de verificacion de token.</li>
 <li>Portal externo con canal de mensajes.</li>
+<li>Guia de documentacion con recorrido funcional.</li>
+<li>Centro privado de control o monitor operativo, solo como apoyo tecnico.</li>
 </ol>
 <h2 id="2-evidencias-tecnicas-a-incluir-en-anexos">2. Evidencias tecnicas a incluir en anexos</h2>
 <ul>
@@ -781,19 +785,35 @@ npm run build</code></pre>
 <li><code>08-portal-alta.png</code></li>
 <li><code>09-portal-verificacion.png</code></li>
 <li><code>10-portal-chat.png</code></li>
+<li><code>11-documentacion-guia.png</code></li>
+<li><code>12-control-monitor.png</code></li>
 </ul>
 <h2 id="4-ubicacion-sugerida">4. Ubicacion sugerida</h2>
 <p>Guardar las capturas finales en:</p>
 <ul>
 <li><code>docs/capturas/</code></li>
 </ul>
-<h2 id="5-comprobacion-antes-de-incrustar-en-la-memoria">5. Comprobacion antes de incrustar en la memoria</h2>
+<h2 id="5-indice-actual-y-objetivo-de-capturas">5. Indice actual y objetivo de capturas</h2>
+<ul>
+<li><code>01-bloques-funcionalidad.png</code>: vista general de bloques funcionales.</li>
+<li><code>02-esquema-relacional.png</code>: esquema relacional de entidades y tablas.</li>
+<li><code>03-panel-interno-dashboard.png</code>: dashboard del panel interno.</li>
+<li><code>04-panel-interno-solicitudes.png</code>: modulo de solicitudes del panel interno.</li>
+<li><code>05-portal-externo.png</code>: portada operativa del portal externo.</li>
+<li><code>06-documentacion-guia.png</code>: guia funcional de la plataforma. Pendiente de refresco visual final.</li>
+<li><code>07-centro-control.png</code>: panel privado para acceso publico y soporte de demo. Pendiente de refresco visual final.</li>
+<li><code>08-monitor-operativo.png</code>: supervision operativa, tests y logs. Pendiente de refresco visual final.</li>
+<li><code>03-panel-interno-dashboard.html</code>: copia HTML de apoyo para la captura 03.</li>
+<li><code>04-panel-interno-solicitudes.html</code>: copia HTML de apoyo para la captura 04.</li>
+</ul>
+<h2 id="6-comprobacion-antes-de-incrustar-en-la-memoria">6. Comprobacion antes de incrustar en la memoria</h2>
 <ul>
 <li>verificar que la fecha y hora del sistema no distraigan;</li>
 <li>ocultar credenciales o datos irrelevantes;</li>
 <li>mantener una resolucion suficiente para impresion;</li>
 <li>usar siempre el mismo zoom y ancho de ventana;</li>
 <li>capturar tambien una exportacion CSV descargada como prueba funcional.</li>
+<li>comprobar que la guia publica y el centro privado son paginas distintas antes de capturar.</li>
 </ul></section>
 <section class="document-section page-break" data-source="anexo-d-codigo-relevante.md"><h1 id="anexo-d-codigo-relevante">Anexo D. Codigo Relevante</h1>
 <h2 id="1-backend">1. Backend</h2>

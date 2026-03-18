@@ -25,6 +25,27 @@ final class FrontendController extends AbstractController
         return $this->serveFrontendIndex('app');
     }
 
+    #[Route('/documentacion', name: 'frontend_documentation_index', methods: ['GET'])]
+    #[Route('/documentacion/{path}', name: 'frontend_documentation_path', requirements: ['path' => '.*'], methods: ['GET'])]
+    public function documentation(): Response
+    {
+        return $this->serveFrontendIndex('app');
+    }
+
+    #[Route('/monitor', name: 'frontend_monitor_index', methods: ['GET'])]
+    #[Route('/monitor/{path}', name: 'frontend_monitor_path', requirements: ['path' => '.*'], methods: ['GET'])]
+    public function monitor(): Response
+    {
+        return $this->serveFrontendIndex('app');
+    }
+
+    #[Route('/control', name: 'frontend_control_redirect', methods: ['GET'])]
+    #[Route('/control/{path}', name: 'frontend_control_path_redirect', requirements: ['path' => '.*'], methods: ['GET'])]
+    public function control(): RedirectResponse
+    {
+        return $this->redirect('/documentacion');
+    }
+
     #[Route('/externo', name: 'frontend_portal_index', methods: ['GET'])]
     #[Route('/externo/{path}', name: 'frontend_portal_path', requirements: ['path' => '.*'], methods: ['GET'])]
     public function externo(): Response

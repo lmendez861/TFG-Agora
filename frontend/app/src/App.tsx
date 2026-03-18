@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DataTable, type TableColumn } from './components/DataTable';
 import { DocumentationGuidePage } from './components/DocumentationGuidePage';
-import { DocumentationPage as DocumentationControlPage } from './components/DocumentationPage';
 import { EstudianteForm, type EstudianteFormValues } from './components/EstudianteForm';
 import { EmpresaForm, type EmpresaFormValues } from './components/EmpresaForm';
 import { ConvenioForm, type ConvenioFormValues } from './components/ConvenioForm';
@@ -27,6 +26,7 @@ import {
   fetchTutorAcademicos,
   fetchTutorProfesionales,
   getApiBaseUrl,
+  getConfiguredAuthPassword,
   getConfiguredAuthUsername,
   getAsignacionDetail,
   getConvenioDetail,
@@ -100,8 +100,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
   empresas: [
     {
       id: 1,
-      nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
-      sector: 'TecnologÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a educativa',
+      nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
+      sector: 'TecnologÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a educativa',
       ciudad: 'Madrid',
       estadoColaboracion: 'activa',
       conveniosActivos: 2,
@@ -123,7 +123,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 3,
       nombre: 'LogiMovil Partners',
-      sector: 'LogÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­stica inteligente',
+      sector: 'LogÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica inteligente',
       ciudad: 'Sevilla',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
@@ -133,8 +133,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 4,
-      nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.',
-      sector: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a renovable',
+      nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a Circular Coop.',
+      sector: 'EnergÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a renovable',
       ciudad: 'Bilbao',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
@@ -144,9 +144,9 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 5,
-      nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico',
+      nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ntico',
       sector: 'Ciberseguridad',
-      ciudad: 'A CoruÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±a',
+      ciudad: 'A CoruÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a',
       estadoColaboracion: 'activa',
       conveniosActivos: 1,
       tutoresProfesionales: 1,
@@ -167,7 +167,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 7,
       nombre: 'Nexo Industrial',
-      sector: 'AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n industrial',
+      sector: 'AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n industrial',
       ciudad: 'Zaragoza',
       estadoColaboracion: 'activa',
       conveniosActivos: 2,
@@ -180,10 +180,10 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 1,
       nombre: 'Ana',
-      apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nez',
+      apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nez',
       dni: '12345678A',
       email: 'ana.martinez@alumnos.es',
-      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a InformÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡tica',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a InformÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡tica',
       curso: '4o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -194,7 +194,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Campos',
       dni: '87654321B',
       email: 'luis.campos@alumnos.es',
-      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a BiomÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©dica',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a BiomÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©dica',
       curso: '3o',
       estado: 'disponible',
       asignaciones: { total: 1, enCurso: 0 },
@@ -205,7 +205,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Vega',
       dni: '44556677C',
       email: 'marina.vega@alumnos.es',
-      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Industrial',
+      grado: 'IngenierÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a Industrial',
       curso: '5o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -213,7 +213,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 4,
       nombre: 'Carlos',
-      apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±ez',
+      apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±ez',
       dni: '99887766D',
       email: 'carlos.ibanez@alumnos.es',
       grado: 'Telecomunicaciones',
@@ -227,7 +227,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       apellido: 'Herrera',
       dni: '11223344E',
       email: 'sofia.herrera@alumnos.es',
-      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n y DirecciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
+      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n y DirecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
       curso: '4o',
       estado: 'finalizado',
       asignaciones: { total: 1, enCurso: 0 },
@@ -246,10 +246,10 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 7,
       nombre: 'Paula',
-      apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­os',
+      apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­os',
       dni: '55667788G',
       email: 'paula.rios@alumnos.es',
-      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de Sistemas',
+      grado: 'AdministraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de Sistemas',
       curso: '2o',
       estado: 'en_practicas',
       asignaciones: { total: 1, enCurso: 1 },
@@ -259,7 +259,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 1,
       titulo: 'Convenio IA Educativa 2024/2025',
-      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2024-09-01',
@@ -268,7 +268,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 2,
-      titulo: 'Convenio Integraciones ClÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nicas 2024',
+      titulo: 'Convenio Integraciones ClÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nicas 2024',
       empresa: { id: 2, nombre: 'Salud Conectada S.L.' },
       tipo: 'extracurricular',
       estado: 'borrador',
@@ -278,7 +278,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 3,
-      titulo: 'Plataforma de LogÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­stica Inteligente 2024',
+      titulo: 'Plataforma de LogÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­stica Inteligente 2024',
       empresa: { id: 3, nombre: 'LogiMovil Partners' },
       tipo: 'curricular',
       estado: 'vigente',
@@ -288,8 +288,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 4,
-      titulo: 'Programa TransiciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©tica 2024/25',
-      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.' },
+      titulo: 'Programa TransiciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n EnergÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©tica 2024/25',
+      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a Circular Coop.' },
       tipo: 'extracurricular',
       estado: 'renovacion',
       fechaInicio: '2024-05-01',
@@ -299,7 +299,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 5,
       titulo: 'Convenio DataOps 2025',
-      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n' },
       tipo: 'curricular',
       estado: 'planificado',
       fechaInicio: '2025-03-01',
@@ -309,7 +309,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     {
       id: 6,
       titulo: 'Acuerdo Ciberseguridad FP Dual 2025',
-      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico' },
+      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ntico' },
       tipo: 'curricular',
       estado: 'vigente',
       fechaInicio: '2025-02-01',
@@ -328,7 +328,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
     },
     {
       id: 8,
-      titulo: 'Convenio AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n Industrial 2024/25',
+      titulo: 'Convenio AutomatizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n Industrial 2024/25',
       empresa: { id: 7, nombre: 'Nexo Industrial' },
       tipo: 'curricular',
       estado: 'vigente',
@@ -345,8 +345,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 320,
       fechaInicio: '2024-10-01',
       fechaFin: '2025-01-31',
-      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
-      estudiante: { id: 1, nombre: 'Ana', apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­nez' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n' },
+      estudiante: { id: 1, nombre: 'Ana', apellido: 'MartÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­nez' },
     },
     {
       id: 2,
@@ -365,7 +365,7 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 180,
       fechaInicio: '2024-03-01',
       fechaFin: '2024-06-30',
-      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n' },
+      empresa: { id: 1, nombre: 'Innovar FormaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n' },
       estudiante: { id: 5, nombre: 'Sofia', apellido: 'Herrera' },
     },
     {
@@ -385,8 +385,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 260,
       fechaInicio: '2025-01-15',
       fechaFin: '2025-05-30',
-      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a Circular Coop.' },
-      estudiante: { id: 4, nombre: 'Carlos', apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±ez' },
+      empresa: { id: 4, nombre: 'EnergÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a Circular Coop.' },
+      estudiante: { id: 4, nombre: 'Carlos', apellido: 'IbÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±ez' },
     },
     {
       id: 6,
@@ -395,8 +395,8 @@ const FALLBACK_COLLECTIONS: ApiCollections = {
       horasTotales: 200,
       fechaInicio: '2025-02-10',
       fechaFin: '2025-06-15',
-      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ntico' },
-      estudiante: { id: 7, nombre: 'Paula', apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­os' },
+      empresa: { id: 5, nombre: 'Datos AtlÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ntico' },
+      estudiante: { id: 7, nombre: 'Paula', apellido: 'RÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­os' },
     },
     {
       id: 7,
@@ -982,8 +982,8 @@ function DocumentationPage() {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Recursos</p>
-          <h2>DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n del proyecto</h2>
-          <p>GuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
+          <h2>DocumentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n del proyecto</h2>
+          <p>GuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pidas para desplegar backend y frontend, checklist operativos y enlaces internos.</p>
         </div>
       </header>
       <div className="docs-grid">
@@ -999,7 +999,7 @@ function DocumentationPage() {
         </article>
         <article className="docs-card">
           <h3>Flujos CRUD</h3>
-          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©n los tests en backend/tests.</p>
+          <p>Resumen de endpoints para empresas, convenios, estudiantes y asignaciones. Consulta tambiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©n los tests en backend/tests.</p>
         </article>
         <article className="docs-card">
           <h3>Pruebas automatizadas</h3>
@@ -1035,12 +1035,12 @@ function DocumentationPage() {
 }
 
 interface LoginPageProps {
-  onLogin: (user: MeResponse) => void;
+  onLogin: (user: MeResponse) => Promise<void> | void;
 }
 
 function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState(getConfiguredAuthUsername());
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(getConfiguredAuthPassword());
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -1050,11 +1050,11 @@ function LoginPage({ onLogin }: LoginPageProps) {
     try {
       await login(email, password);
       const meData = await fetchMe();
-      onLogin(meData);
+      await onLogin(meData);
       setStatus(`Bienvenido ${meData.username}`);
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.';
+      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.';
       setStatus(message);
     }
   };
@@ -1063,9 +1063,9 @@ function LoginPage({ onLogin }: LoginPageProps) {
     <section className="auth-section">
       <div className="auth-card">
         <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
-        <h2>Iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</h2>
+        <h2>Iniciar sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</h2>
         <p className="auth-card__description">
-          Inicia sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n con tus credenciales. Las llamadas posteriores usan la sesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n del navegador (json_login).
+          Inicia sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n con tus credenciales. Las llamadas posteriores usan la sesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n del navegador (json_login).
         </p>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="form__field">
@@ -1112,7 +1112,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 600));
-      const message = 'Solicitud registrada. El equipo de TI validara la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n y activara tu usuario.';
+      const message = 'Solicitud registrada. El equipo de TI validara la informaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n y activara tu usuario.';
       setStatusMessage(message);
       onSuccess(message);
       setValues({ ...EMPTY_STAFF_REGISTRATION_VALUES });
@@ -1161,7 +1161,7 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
             {submitting ? 'Enviando...' : 'Enviar solicitud'}
           </button>
           <p className="auth-card__hint">
-            Si representas a una empresa colaboradora, utiliza el portal especÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­fico de registros externos.
+            Si representas a una empresa colaboradora, utiliza el portal especÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­fico de registros externos.
           </p>
         </form>
       </div>
@@ -1172,24 +1172,24 @@ function StaffRegistrationPage({ onSuccess, onError }: StaffRegistrationPageProp
 const API_BASE_URL = getApiBaseUrl();
 
 const MOJIBAKE_REPLACEMENTS: Array<[string, string]> = [
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'áñ'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡', 'Ú'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³', 'ó'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡', 'á'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'é'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­', 'í'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº', 'ú'],
-  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'ñ'],
-  ['Ã³', 'ó'],
-  ['Ã¡', 'á'],
-  ['Ã©', 'é'],
-  ['Ã­', 'í'],
-  ['Ãº', 'ú'],
-  ['Ã±', 'ñ'],
-  ['Ãš', 'Ú'],
-  ['Â·', '·'],
-  ['Â°', '°'],
-  ['â€¦', '...'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡', 'ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚Â¡'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âº', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âº'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±', 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡', 'ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚Â¡'],
+  ['ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â·', 'ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â·'],
+  ['ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°', 'ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°'],
+  ['ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦', '...'],
 ];
 
 function repairMojibakeText(value: string): string {
@@ -1231,6 +1231,21 @@ function repairMojibakeDom(root: ParentNode): void {
   }
 }
 
+function repairMojibakeNode(node: Node): void {
+  if (node.nodeType === Node.TEXT_NODE) {
+    const current = node.nodeValue ?? '';
+    const repaired = repairMojibakeText(current);
+    if (current !== repaired) {
+      node.nodeValue = repaired;
+    }
+    return;
+  }
+
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    repairMojibakeDom(node as ParentNode);
+  }
+}
+
 export default function App() {
   const [collections, setCollections] = useState<ApiCollections | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -1252,6 +1267,15 @@ export default function App() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const rawPathname = typeof window === 'undefined' ? location.pathname : window.location.pathname;
+  const isDocumentationRoute = rawPathname === '/documentacion'
+    || rawPathname.startsWith('/documentacion/')
+    || rawPathname === '/app/documentacion'
+    || rawPathname.startsWith('/app/documentacion/');
+  const isMonitorRoute = rawPathname === '/monitor'
+    || rawPathname.startsWith('/monitor/')
+    || rawPathname === '/app/monitor'
+    || rawPathname.startsWith('/app/monitor/');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<number | null>(null);
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
@@ -1293,16 +1317,35 @@ export default function App() {
   const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
   const [documentPreview, setDocumentPreview] = useState<DocumentPreviewState | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authResolved, setAuthResolved] = useState(false);
   const skipInitialTutorFilterLoad = useRef(false);
 
-  useEffect(() => {
-    const root = document.querySelector('.app') ?? document.body;
-    const frame = requestAnimationFrame(() => {
-      repairMojibakeDom(root);
+  useLayoutEffect(() => {
+    const root = document.querySelector('.app, .monitor-app') ?? document.body;
+    repairMojibakeDom(root);
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'characterData') {
+          repairMojibakeNode(mutation.target);
+        }
+
+        mutation.addedNodes.forEach((node) => {
+          repairMojibakeNode(node);
+        });
+      });
     });
 
-    return () => cancelAnimationFrame(frame);
-  }, [location.pathname, loading, notificationsOpen, authError, error, toasts.length]);
+    observer.observe(root, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [rawPathname, loading, notificationsOpen, authError, error, toasts.length]);
   const [savingConvenioDocument, setSavingConvenioDocument] = useState(false);
 
   const openCreateStudent = useCallback(() => {
@@ -1422,7 +1465,7 @@ export default function App() {
       const notes = prev[empresaId] ?? [];
         const newNote: EmpresaNote = {
           id: Date.now(),
-          author: 'CoordinaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
+          author: 'CoordinaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
           content: trimmed,
           timestamp: new Date().toISOString(),
         };
@@ -1473,7 +1516,7 @@ export default function App() {
         const docs = prev[empresaId] ?? [];
         return { ...prev, [empresaId]: [nuevo, ...docs] };
       });
-      pushToast('success', 'Documento aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â±adido.');
+      pushToast('success', 'Documento aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±adido.');
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
@@ -1560,7 +1603,7 @@ export default function App() {
           [convenioId]: [nuevo, ...docs],
         };
       });
-      pushToast('success', 'Documento añadido.');
+      pushToast('success', 'Documento aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±adido.');
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo subir el documento.';
@@ -1720,7 +1763,7 @@ export default function App() {
         setTutorAcademicoPage(normalized.page);
         setTutorAcademicoTotal(normalized.total);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores académicos.';
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los tutores acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos.';
         pushToast('error', message);
       } finally {
         setLoadingTutorAcademicos(false);
@@ -1759,24 +1802,57 @@ export default function App() {
   );
 
   useEffect(() => {
+    if (isDocumentationRoute || authResolved) {
+      if (isDocumentationRoute) {
+        setLoading(false);
+        setAuthError(null);
+        setAuthResolved(true);
+      }
+      return undefined;
+    }
+
+    let cancelled = false;
+
     const bootstrap = async () => {
       setLoading(true);
       try {
         const user = await fetchMe();
+        if (cancelled) {
+          return;
+        }
+
         setMe(user);
         setAuthError(null);
         await loadData();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudo iniciar sesión.';
-        setAuthError(message);
+        if (cancelled) {
+          return;
+        }
+
+        const message = err instanceof Error ? err.message : 'No se pudo iniciar sesiÃƒÆ’Ã‚Â³n.';
+        if (message.startsWith('Error 401')) {
+          setMe(null);
+          setAuthError(null);
+          setCollections(null);
+          setReferenceData(null);
+          setLastUpdated(null);
+        } else {
+          setAuthError(message);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setAuthResolved(true);
+        }
       }
     };
 
-    bootstrap();
-  }, [loadData]);
+    void bootstrap();
 
+    return () => {
+      cancelled = true;
+    };
+  }, [authResolved, isDocumentationRoute, loadData]);
   useEffect(() => {
     if (
       skipInitialTutorFilterLoad.current &&
@@ -1899,7 +1975,7 @@ export default function App() {
 
   const handleRejectSolicitud = useCallback(
     async (solicitudId: number) => {
-      const motivo = window.prompt('¿Cuál es el motivo del rechazo?');
+      const motivo = window.prompt('ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¿CuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡l es el motivo del rechazo?');
       if (!motivo || !motivo.trim()) {
         return;
       }
@@ -2180,7 +2256,7 @@ export default function App() {
         });
       })
       .catch((err) => {
-        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignación.';
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los datos de la asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.';
         setAsignacionFormError(message);
         pushToast('error', message);
         setAsignacionModal((current) => {
@@ -2215,16 +2291,16 @@ export default function App() {
         const payload = buildAsignacionPayload(values);
         if (asignacionModal.mode === 'create') {
           await createAsignacion(payload);
-          pushToast('success', 'Asignación creada correctamente.');
+          pushToast('success', 'AsignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n creada correctamente.');
         } else if (asignacionModal.entityId) {
           await updateAsignacion(asignacionModal.entityId, payload);
-          pushToast('success', 'Asignación actualizada correctamente.');
+          pushToast('success', 'AsignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n actualizada correctamente.');
         }
 
         await loadData();
         handleCloseAsignacionModal();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignación.';
+        const message = err instanceof Error ? err.message : 'No se pudo guardar la asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.';
         setAsignacionFormError(message);
         pushToast('error', message);
       } finally {
@@ -2402,7 +2478,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -2410,7 +2486,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'InformaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -2418,30 +2494,30 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'Prácticas en curso',
-      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
+      description: 'PrÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡cticas en curso',
+      detail: 'Pipeline Kanban con tutorÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'tutores',
       label: 'Tutores',
       total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-      description: 'Académicos y profesionales',
-      detail: 'Filtra por estado y empresa para contactar rápido.',
+      description: 'AcadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pido.',
       accent: 'cyan',
     },
     {
       id: 'documentacion',
-      label: 'Documentación',
+      label: 'DocumentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
       total: 3,
-      description: 'Guías y recursos listos',
+      description: 'GuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -2462,14 +2538,14 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentación adjunta.',
+        description: 'Estado, fechas y documentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n adjunta.',
         path: '/convenios',
       },
       {
         id: 'estudiantes',
         label: 'Estudiantes',
         total: collections?.estudiantes.length ?? 0,
-        description: 'Ficha académica y seguimiento en curso.',
+        description: 'Ficha acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mica y seguimiento en curso.',
         path: '/estudiantes',
       },
       {
@@ -2483,7 +2559,7 @@ const moduleCards = useMemo(
         id: 'tutores',
         label: 'Tutores',
         total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-        description: 'Equipos académicos y de empresa con filtros.',
+        description: 'Equipos acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos y de empresa con filtros.',
         path: '/tutores',
       },
     ],
@@ -2714,7 +2790,7 @@ const selectedConvenio = useMemo(() => {
             },
             {
               id: Number(`${empresa.id}002`),
-              author: 'Coordinación',
+              author: 'CoordinaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
               content: 'Contacto principal validado. Pendiente revisar convenio y plan de acogida.',
               timestamp: new Date().toISOString(),
             },
@@ -2734,7 +2810,7 @@ const selectedConvenio = useMemo(() => {
           const baseLabel = empresa.sector ? empresa.sector : 'General';
           const labels = [baseLabel, 'FP Dual'];
           if (empresa.estadoColaboracion === 'pendiente_revision') {
-            labels.push('Pendiente revisión');
+            labels.push('Pendiente revisiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n');
           }
           if (empresa.conveniosActivos === 0) {
             labels.push('Sin convenio activo');
@@ -2804,7 +2880,7 @@ const selectedConvenio = useMemo(() => {
           updated[convenio.id] = [
             { id: Number(`${convenio.id}01`), label: 'Documento firmado', completed: false },
             { id: Number(`${convenio.id}02`), label: 'Seguro actualizado', completed: false },
-            { id: Number(`${convenio.id}03`), label: 'Aprobación tutor académico', completed: false },
+            { id: Number(`${convenio.id}03`), label: 'AprobaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n tutor acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico', completed: false },
             { id: Number(`${convenio.id}04`), label: 'Plan formativo validado', completed: false },
           ];
         }
@@ -2829,7 +2905,7 @@ const selectedConvenio = useMemo(() => {
             },
             {
               id: Number(`${convenio.id}501`),
-              name: 'Anexo de prácticas',
+              name: 'Anexo de prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡cticas',
               type: 'PDF',
               url: null,
               uploadedAt: new Date().toISOString(),
@@ -2856,7 +2932,7 @@ const selectedConvenio = useMemo(() => {
             },
             {
               id: Number(`${convenio.id}901`),
-              message: 'Revisar fechas de fin y renovación.',
+              message: 'Revisar fechas de fin y renovaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.',
               level: 'info',
               active: true,
             },
@@ -3002,7 +3078,7 @@ const selectedConvenio = useMemo(() => {
         id: 'estado-general',
         title: 'Sin asignaciones activas',
         status: selectedStudent.estado,
-        date: 'A la espera de nueva asignación',
+        date: 'A la espera de nueva asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
         modalidad: 'Seguimiento coordinador',
       },
     ];
@@ -3137,7 +3213,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{conveniosEmpresa.length} registros</span>
             </header>
             {conveniosEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no se han generado convenios para esta empresa.</p>
+              <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a no se han generado convenios para esta empresa.</p>
             ) : (
               <ul>
                 {conveniosEmpresa.map((convenio) => (
@@ -3157,7 +3233,7 @@ const selectedConvenio = useMemo(() => {
               <span className="chip chip--ghost">{asignacionesEmpresa.length} registros</span>
             </header>
             {asignacionesEmpresa.length === 0 ? (
-              <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay estudiantes asignados.</p>
+              <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºn no hay estudiantes asignados.</p>
             ) : (
               <ul>
                 {asignacionesEmpresa.map((asignacion) => (
@@ -3209,7 +3285,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no hay adjuntos.</p>
+                        <p className="empresa-panel__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a no hay adjuntos.</p>
                       )}
             </div>
             <form
@@ -3268,12 +3344,12 @@ const selectedConvenio = useMemo(() => {
           <header>
             <div>
               <p className="module-page__eyebrow">Actividad reciente</p>
-              <h3>ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ltimos movimientos</h3>
+              <h3>ÃƒÆ’Ã†â€™Ãƒâ€¦Ã‚Â¡ltimos movimientos</h3>
             </div>
-            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</Link>
+            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</Link>
           </header>
           {activityLog.length === 0 ? (
-            <p className="empresa-panel__placeholder">No hay actividad registrada aÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn.</p>
+            <p className="empresa-panel__placeholder">No hay actividad registrada aÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºn.</p>
           ) : (
             <ul>
               {activityLog.map((item) => (
@@ -3349,7 +3425,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No hay datos sincronizados. Regresa al dashboard para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.</p>
+            <p>No hay datos sincronizados. Regresa al dashboard para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3432,7 +3508,7 @@ const selectedConvenio = useMemo(() => {
               Resumen
             </button>
             <button type="button" className={tab === 'documentacion' ? 'active' : ''} onClick={() => setTab('documentacion')}>
-              DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
+              DocumentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
             </button>
           </div>
 
@@ -3447,23 +3523,23 @@ const selectedConvenio = useMemo(() => {
                 <p>{detail?.observaciones ?? 'Aade notas de seguimiento para mantener el contexto.'}</p>
               </div>
               <div>
-                <span className="student-detail__label">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n firmada</span>
+                <span className="student-detail__label">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n firmada</span>
                 {detail?.documentoUrl ? (
                   <a className="link" href={detail.documentoUrl} target="_blank" rel="noreferrer">
                     Abrir documento
                   </a>
                 ) : (
-                  <p>No hay documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
+                  <p>No hay documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a.</p>
                 )}
               </div>
             </div>
           ) : (
             <div className="convenio-docs">
               <article>
-                <h4>GuÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as recomendadas</h4>
+                <h4>GuÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as recomendadas</h4>
                 <ul>
                   <li>
-                    <Link to="/documentacion" className="link">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n general del proyecto</Link>
+                    <Link to="/documentacion" className="link">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n general del proyecto</Link>
                   </li>
                   <li>
                     <a
@@ -3492,7 +3568,7 @@ const selectedConvenio = useMemo(() => {
                 <ol>
                   <li>Validar el estado (borrador, vigente, finalizado) antes de compartirlo.</li>
                   <li>Confirmar fechas de inicio y fin con la empresa colaboradora.</li>
-                  <li>Adjuntar documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n firmada o enlazar al repositorio correspondiente.</li>
+                  <li>Adjuntar documentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n firmada o enlazar al repositorio correspondiente.</li>
                 </ol>
               </article>
             </div>
@@ -3530,7 +3606,7 @@ const selectedConvenio = useMemo(() => {
           setDetailError(null);
         })
         .catch((err) => {
-          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.';
+          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
@@ -3553,7 +3629,7 @@ const selectedConvenio = useMemo(() => {
       return (
         <div className="asignacion-page">
           <div className="asignacion-page__panel">
-            <p>No hay datos sincronizados todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a. Regresa al dashboard y sincroniza con el backend.</p>
+            <p>No hay datos sincronizados todavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a. Regresa al dashboard y sincroniza con el backend.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al dashboard
             </button>
@@ -3589,7 +3665,7 @@ const selectedConvenio = useMemo(() => {
       events.push({
         title: 'Inicio planificado',
         date: formatDate(asignacionSummary.fechaInicio),
-        note: 'Aprobado por coordinaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n',
+        note: 'Aprobado por coordinaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n',
       });
       if (asignacionSummary.fechaFin) {
         events.push({
@@ -3600,7 +3676,7 @@ const selectedConvenio = useMemo(() => {
       }
       if (detail) {
         events.push({
-          title: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico asignado',
+          title: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico asignado',
           date: new Date().toLocaleDateString('es-ES'),
           note: `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}`,
         });
@@ -3621,7 +3697,7 @@ const selectedConvenio = useMemo(() => {
         href: `mailto:${detail.estudiante.email}`,
       },
       detail?.tutorAcademico.email && {
-        label: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico',
+        label: 'Tutor acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico',
         href: `mailto:${detail.tutorAcademico.email}`,
       },
       detail?.tutorProfesional?.email && {
@@ -3704,7 +3780,7 @@ const selectedConvenio = useMemo(() => {
             <h3>Tutores asignados</h3>
             <div className="asignacion-info-grid">
               <div>
-                <span>Tutor acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico</span>
+                <span>Tutor acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico</span>
                 <strong>
                   {detail ? `${detail.tutorAcademico.nombre} ${detail.tutorAcademico.apellido}` : 'Cargando...'}
                 </strong>
@@ -3725,7 +3801,7 @@ const selectedConvenio = useMemo(() => {
           </article>
 
           <article className="asignacion-card asignacion-card--contacts">
-            <h3>Acciones rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidas</h3>
+            <h3>Acciones rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pidas</h3>
             {contactActions.length === 0 ? (
               <p>No hay contactos directos disponibles.</p>
             ) : (
@@ -3766,8 +3842,8 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-docs">
           <article>
             <h4>Informes y anexos</h4>
-            <p>Enlaza actas semanales, evaluaciones y rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºbricas firmadas.</p>
-            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n general</Link>
+            <p>Enlaza actas semanales, evaluaciones y rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºbricas firmadas.</p>
+            <Link to="/documentacion" className="link">Abrir documentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n general</Link>
           </article>
           <article>
             <h4>Checklist interno</h4>
@@ -3788,7 +3864,7 @@ const selectedConvenio = useMemo(() => {
         <div>
           <p className="module-page__eyebrow">{title}</p>
           <h2>Sin datos disponibles</h2>
-          <p>Sincroniza desde el dashboard principal para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n.</p>
+          <p>Sincroniza desde el dashboard principal para cargar la informaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n.</p>
         </div>
         <Link className="button button--ghost button--sm" to="/">
           Volver al dashboard
@@ -3814,9 +3890,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo empresas</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo empresas</p>
             <h2>Empresas colaboradoras</h2>
-            <p>Repasa el estado de colaboraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n, contactos y convenios activos.</p>
+            <p>Repasa el estado de colaboraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n, contactos y convenios activos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -3841,7 +3917,7 @@ const selectedConvenio = useMemo(() => {
             </select>
           </label>
           <button type="submit" className="button button--primary button--sm" disabled={!empresaLookupId}>
-            Ir a gestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
+            Ir a gestiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
           </button>
         </form>
         <DataTable
@@ -3913,7 +3989,7 @@ const selectedConvenio = useMemo(() => {
                     <strong>{selectedEmpresa.ciudad ?? 'No definida'}</strong>
                   </article>
                   <article>
-                    <span>Estado colaboraciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</span>
+                    <span>Estado colaboraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n</span>
                     <strong>{selectedEmpresa.estadoColaboracion}</strong>
                   </article>
                   <article>
@@ -4010,7 +4086,7 @@ const selectedConvenio = useMemo(() => {
                           ))}
                         </ul>
                       ) : (
-                        <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay asignaciones registradas.</p>
+                        <p className="empresa-panel__placeholder">AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºn no hay asignaciones registradas.</p>
                       )}
                     </article>
                     <article className="empresa-panel">
@@ -4027,11 +4103,11 @@ const selectedConvenio = useMemo(() => {
                         </li>
                         <li>
                           <strong>Notas colaborativas</strong>
-                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay notas guardadas.'}</p>
+                          <p>{notes.length > 0 ? `${notes.length} notas internas` : 'AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºn no hay notas guardadas.'}</p>
                         </li>
                         <li>
                           <strong>Documentos compartidos</strong>
-                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no hay adjuntos.'}</p>
+                          <p>{documents.length > 0 ? `${documents.length} archivos disponibles` : 'TodavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a no hay adjuntos.'}</p>
                         </li>
                       </ul>
                     </article>
@@ -4111,9 +4187,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo convenios</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo convenios</p>
             <h2>Convenios y acuerdos</h2>
-            <p>Controla el workflow, checklist documental y recordatorios crÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­ticos.</p>
+            <p>Controla el workflow, checklist documental y recordatorios crÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ticos.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4143,7 +4219,7 @@ const selectedConvenio = useMemo(() => {
             <strong>{conveniosVigentes}</strong>
           </article>
           <article>
-            <span>Por renovar (60 dÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­as)</span>
+            <span>Por renovar (60 dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­as)</span>
             <strong>{proximosRenovacion}</strong>
           </article>
           <article>
@@ -4159,7 +4235,7 @@ const selectedConvenio = useMemo(() => {
         <section className="convenio-layout">
           <aside className="convenio-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidos</p>
+              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pidos</p>
               <h3>Lista de convenios</h3>
               <p>Acota por estado o empresa y selecciona el convenio que quieras revisar.</p>
             </div>
@@ -4361,7 +4437,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos todavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -4446,9 +4522,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo estudiantes</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo estudiantes</p>
             <h2>Listado completo de estudiantes</h2>
-            <p>Consulta informaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica, asignaciones y contacto.</p>
+            <p>Consulta informaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mica, asignaciones y contacto.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4561,7 +4637,7 @@ const selectedConvenio = useMemo(() => {
 
                 <div className="student-profile__section">
                   <div className="student-profile__section-header">
-                    <h4>Ficha acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica</h4>
+                    <h4>Ficha acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mica</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
                       Actualizar datos
                     </button>
@@ -4590,7 +4666,7 @@ const selectedConvenio = useMemo(() => {
                   <div className="student-profile__section-header">
                     <h4>Asignaciones</h4>
                     <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
-                      Ver mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo
+                      Ver mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo
                     </button>
                   </div>
                   {selectedStudentAssignments.length > 0 ? (
@@ -4612,7 +4688,7 @@ const selectedConvenio = useMemo(() => {
                       ))}
                     </div>
                   ) : (
-                    <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
+                    <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
                   )}
                 </div>
 
@@ -4671,9 +4747,9 @@ const selectedConvenio = useMemo(() => {
       <section className="module-page module-page--wide">
         <header className="module-page__header">
           <div>
-            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo asignaciones</p>
+            <p className="module-page__eyebrow">MÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo asignaciones</p>
             <h2>Pipeline completo de asignaciones</h2>
-            <p>Repasa cada prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ctica, tutores asignados y estado actual.</p>
+            <p>Repasa cada prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ctica, tutores asignados y estado actual.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/">
             Volver al dashboard
@@ -4719,7 +4795,7 @@ const selectedConvenio = useMemo(() => {
         <section className="asignacion-layout">
           <aside className="asignacion-sidebar">
             <div>
-              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pidos</p>
+              <p className="module-page__eyebrow">Filtros rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pidos</p>
               <h3>Lista de asignaciones</h3>
               <p>Aplica filtros por estado o modalidad y abre cada ficha en un clic.</p>
             </div>
@@ -4787,7 +4863,7 @@ const selectedConvenio = useMemo(() => {
               <>
                 <div className="asignacion-panel__header">
                   <div>
-                    <p className="module-page__eyebrow">AsignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n #{selectedAsignacion.id}</p>
+                    <p className="module-page__eyebrow">AsignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n #{selectedAsignacion.id}</p>
                     <h3>{selectedAsignacion.estudiante.nombre} {selectedAsignacion.estudiante.apellido}</h3>
                     <p className="asignacion-panel__company">{selectedAsignacion.empresa.nombre}</p>
                   </div>
@@ -4843,7 +4919,7 @@ const selectedConvenio = useMemo(() => {
                 </div>
 
                 <p className="asignacion-panel__hint">
-                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n adjunta.
+                  Consulta la ficha completa para visualizar tutores asignados, timeline de hitos y documentaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n adjunta.
                 </p>
               </>
             ) : (
@@ -4855,7 +4931,7 @@ const selectedConvenio = useMemo(() => {
         <section className="kanban">
           <header className="kanban__header">
             <h3>Pipeline visual</h3>
-            <p>Visualiza el pipeline completo y accede rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido a cada tutor o empresa.</p>
+            <p>Visualiza el pipeline completo y accede rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pido a cada tutor o empresa.</p>
           </header>
           <div className="kanban__columns">
             {Object.entries(asignacionesPorEstado).map(([estado, items]) => (
@@ -4892,14 +4968,14 @@ const selectedConvenio = useMemo(() => {
         <div className="hero__content">
           <p className="hero__eyebrow">Todo tu programa en una sola plataforma</p>
           <h1>
-            GestiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n integral de prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡cticas
+            GestiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n integral de prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡cticas
             <span className="hero__highlight hero__highlight--amber"> sencilla </span>
             y
             <span className="hero__highlight hero__highlight--cyan"> eficiente</span>.
           </h1>
           <p className="hero__description">
             Coordina empresas, convenios y estudiantes desde un panel oscuro inspirado en Odoo.
-            Sigue cada asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n con trazabilidad y planifica nuevas experiencias en segundos.
+            Sigue cada asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n con trazabilidad y planifica nuevas experiencias en segundos.
           </p>
           <div className="hero__actions">
             <button
@@ -4908,11 +4984,11 @@ const selectedConvenio = useMemo(() => {
               onClick={() => openCreateAsignacion()}
               disabled={!referenceData}
             >
-              Planificar nueva asignaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
+              Planificar nueva asignaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n
             </button>
-            <Link className="button button--ghost button--lg hero__link" to="/documentacion">
-              Explorar documentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n
-            </Link>
+            <a className="button button--ghost button--lg hero__link" href="/documentacion">
+              Explorar documentación
+            </a>
           </div>
         </div>
         <div className="hero__scribble hero__scribble--violet" />
@@ -4948,8 +5024,8 @@ const selectedConvenio = useMemo(() => {
       <section className="analytics-card">
         <header className="analytics-card__header">
           <div>
-            <p className="module-page__eyebrow">Dashboard analÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­tico</p>
-            <h3>DistribuciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n de asignaciones y actividad</h3>
+            <p className="module-page__eyebrow">Dashboard analÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­tico</p>
+            <h3>DistribuciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de asignaciones y actividad</h3>
           </div>
           <div className="module-page__actions">
             <span className="chip chip--ghost">Registros base: {dashboardBaseRecordCount}</span>
@@ -4987,7 +5063,7 @@ const selectedConvenio = useMemo(() => {
             <strong className="module-link-card__value">{module.total}</strong>
             <p className="module-link-card__description">{module.description}</p>
             <Link className="button button--ghost button--sm module-link-card__cta" to={module.path}>
-              Abrir mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo
+              Abrir mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo
             </Link>
           </article>
         ))}
@@ -4997,10 +5073,10 @@ const selectedConvenio = useMemo(() => {
         <div className="student-cards__header">
           <div>
             <h3>Perfiles de estudiantes</h3>
-            <p>Resumen rÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡pido del estado acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mico y asignaciones activas.</p>
+            <p>Resumen rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡pido del estado acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mico y asignaciones activas.</p>
           </div>
           <Link className="button button--ghost button--sm" to="/estudiantes">
-            Ver mÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³dulo completo
+            Ver mÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³dulo completo
           </Link>
         </div>
         {studentPreview.length > 0 ? (
@@ -5034,7 +5110,7 @@ const selectedConvenio = useMemo(() => {
             })}
           </div>
         ) : (
-          <p className="detail-placeholder">AÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Âºn no hay estudiantes registrados.</p>
+          <p className="detail-placeholder">AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Âºn no hay estudiantes registrados.</p>
         )}
         {selectedStudent && (
           <div className="student-detail">
@@ -5062,7 +5138,7 @@ const selectedConvenio = useMemo(() => {
                 className={studentDetailTab === 'academico' ? 'active' : ''}
                 onClick={() => setStudentDetailTab('academico')}
               >
-                InformaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©mica
+                InformaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©mica
               </button>
               <button
                 type="button"
@@ -5119,7 +5195,7 @@ const selectedConvenio = useMemo(() => {
                     ))}
                   </div>
                 ) : (
-                  <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
+                  <p className="student-detail__placeholder">TodavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a no tiene asignaciones registradas.</p>
                 )
               )}
               {studentDetailTab === 'seguimiento' && (
@@ -5193,7 +5269,7 @@ const selectedConvenio = useMemo(() => {
       <header className="module-page__header">
         <div>
           <p className="module-page__eyebrow">Equipo de tutores</p>
-          <h2>Tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos y profesionales</h2>
+          <h2>Tutores acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos y profesionales</h2>
           <p>Filtra por estado y empresa, revisa contacto y asignaciones asociadas.</p>
         </div>
         <div className="module-page__actions">
@@ -5217,7 +5293,7 @@ const selectedConvenio = useMemo(() => {
       <div className="module-page__split">
         <div className="module-page__panel">
           <DataTable
-            caption="Tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos"
+            caption="Tutores acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos"
             columns={tutorAcademicoColumns}
             data={tutorAcademicosList}
             actions={(
@@ -5225,7 +5301,7 @@ const selectedConvenio = useMemo(() => {
                 Exportar CSV
               </button>
             )}
-            emptyMessage="No hay tutores acadÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â©micos registrados."
+            emptyMessage="No hay tutores acadÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©micos registrados."
           />
           <div className="table-pagination">
             <button
@@ -5396,7 +5472,7 @@ const selectedConvenio = useMemo(() => {
               {solicitudMensajes[solicitud.id] && (
                 <div className="solicitud-card__messages">
                   {solicitudMensajes[solicitud.id].length === 0 ? (
-                    <p className="detail-placeholder">Sin mensajes todavÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­a.</p>
+                    <p className="detail-placeholder">Sin mensajes todavÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­a.</p>
                   ) : (
                     solicitudMensajes[solicitud.id].map((msg) => (
                       <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
@@ -5431,11 +5507,33 @@ const selectedConvenio = useMemo(() => {
     </section>
   );
 
-  const handleSyncPanel = useCallback(() => {
-    loadData().catch(() => {
-      // errores gestionados dentro
-    });
+  const handleSyncPanel = useCallback(async () => {
+    await loadData();
   }, [loadData]);
+
+  const handleLoginSuccess = useCallback(async (user: MeResponse) => {
+    setMe(user);
+    setAuthError(null);
+    setAuthResolved(true);
+    await loadData();
+  }, [loadData]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } catch {
+      // Se fuerza la salida local aunque falle el endpoint.
+    } finally {
+      setMe(null);
+      setCollections(null);
+      setReferenceData(null);
+      setAuthResolved(true);
+      setEmpresaSolicitudes([]);
+      setLastUpdated(null);
+      setNotificationsOpen(false);
+      navigate('/login');
+    }
+  }, [navigate]);
 
   const monitorElement = (
     <MonitorPage
@@ -5500,14 +5598,51 @@ const selectedConvenio = useMemo(() => {
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
-            <li><Link to="/monitor">Monitor operativo</Link></li>
-            <li><Link to="/control">Centro de control privado</Link></li>
-            <li><Link to="/documentacion">DocumentaciÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n</Link></li>
+            <li><a href="/monitor">Monitor privado</a></li>
+            <li><a href="/documentacion">DocumentaciÃƒÂ³n</a></li>
           </ul>
         </article>
       </div>
     </section>
   );
+
+  if (isDocumentationRoute) {
+    return (
+      <div className="app app--dark app--docs">
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        <DocumentationGuidePage />
+      </div>
+    );
+  }
+
+  if (!me && !authResolved) {
+    return (
+      <div className="app app--dark app--auth">
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        {authError && <div className="app__alert app__alert--error">{authError}</div>}
+        {loading && <div className="app__alert app__alert--info">Validando acceso...</div>}
+      </div>
+    );
+  }
+
+  if (!me) {
+    return (
+      <div className="app app--dark app--auth">
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        {authError && <div className="app__alert app__alert--error">{authError}</div>}
+        <LoginPage onLogin={handleLoginSuccess} />
+      </div>
+    );
+  }
+
+  if (isMonitorRoute) {
+    return (
+      <div className="monitor-app">
+        <ToastStack toasts={toasts} onDismiss={dismissToast} />
+        {monitorElement}
+      </div>
+    );
+  }
 
   return (
     <div className="app app--dark">
@@ -5515,7 +5650,7 @@ const selectedConvenio = useMemo(() => {
       <header className="topbar">
         <div>
           <Link to="/" className="topbar__logo">Agora</Link>
-          <span className="topbar__badge">Panel de prÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡cticas</span>
+          <span className="topbar__badge">Panel de prÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡cticas</span>
         </div>
         <div className="topbar__actions">
           <span className="app__meta">API: <code>{API_BASE_URL}</code></span>
@@ -5579,11 +5714,14 @@ const selectedConvenio = useMemo(() => {
             )}
           </div>
           <div className="topbar__auth">
-            <span className="app__meta">SesiÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â³n: admin</span>
+            <span className="app__meta">SesiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: admin</span>
             <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
               <span className="topbar__profile-icon">&#128100;</span>
               <span className="topbar__profile-label">Perfil</span>
             </Link>
+            <button type="button" className="button button--ghost button--sm" onClick={handleLogout}>
+              Salir
+            </button>
           </div>
         </div>
       </header>
@@ -5601,23 +5739,15 @@ const selectedConvenio = useMemo(() => {
         <Route path="/asignaciones" element={<AsignacionesOverviewPage />} />
         <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
         <Route path="/documentacion" element={<DocumentationGuidePage />} />
-        <Route path="/control" element={<DocumentationControlPage />} />
-        <Route path="/monitor" element={monitorElement} />
         <Route path="/tutores" element={tutoresElement} />
         <Route
           path="/login"
-          element={(
-            <LoginPage
-              onLogin={(user) => {
-                setMe(user);
-                setAuthError(null);
-                loadData();
-              }}
-            />
-          )}
+          element={<Navigate to="/" replace />}
         />
         <Route path="/solicitudes" element={solicitudesElement} />
         <Route path="/perfil" element={profileElement} />
+        <Route path="/control" element={<Navigate to="/documentacion" replace />} />
+        <Route path="/monitor" element={<Navigate to="/" replace />} />
       </Routes>
 
       {studentModal && (

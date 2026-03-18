@@ -79,10 +79,14 @@ function resolveDefaultApiBaseUrl(): string {
 const API_BASE_URL = ENV.VITE_API_BASE_URL ?? resolveDefaultApiBaseUrl();
 const API_USERNAME = ENV.VITE_API_USERNAME ?? 'admin';
 const API_PASSWORD = ENV.VITE_API_PASSWORD ?? 'admin123';
-let activeUsername = API_USERNAME;
-let activePassword = API_PASSWORD;
+let activeUsername = '';
+let activePassword = '';
 
-function getAuthorizationHeader(): string {
+function getAuthorizationHeader(): string | null {
+  if (!activeUsername || !activePassword) {
+    return null;
+  }
+
   return `Basic ${btoa(`${activeUsername}:${activePassword}`)}`;
 }
 
@@ -92,7 +96,7 @@ function setActiveCredentials(username: string, password: string): void {
 }
 
 function resetActiveCredentials(): void {
-  setActiveCredentials(API_USERNAME, API_PASSWORD);
+  setActiveCredentials('', '');
 }
 
 function mapEmpresaDocument(document: EmpresaDocument | EmpresaDocumentApi): EmpresaDocument {
@@ -145,7 +149,10 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (!headers.has('Authorization')) {
-    headers.set('Authorization', getAuthorizationHeader());
+    const authorizationHeader = getAuthorizationHeader();
+    if (authorizationHeader) {
+      headers.set('Authorization', authorizationHeader);
+    }
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -203,10 +210,11 @@ export async function downloadCsvExport(
   filename: string,
   params?: Record<string, CsvExportParamValue>,
 ): Promise<void> {
+  const authorizationHeader = getAuthorizationHeader();
   const response = await fetch(`${API_BASE_URL}${getCsvExportPath(scope, params)}`, {
     headers: {
       Accept: 'text/csv',
-      Authorization: getAuthorizationHeader(),
+      ...(authorizationHeader ? { Authorization: authorizationHeader } : {}),
     },
     credentials: 'include',
   });
@@ -251,6 +259,10 @@ export function getApiBaseUrl(): string {
 
 export function getConfiguredAuthUsername(): string {
   return API_USERNAME;
+}
+
+export function getConfiguredAuthPassword(): string {
+  return API_PASSWORD;
 }
 
 export async function getEstudianteDetail(id: number): Promise<EstudianteDetail> {
@@ -346,12 +358,11 @@ export async function addEmpresaDocument(
     if (tipo) formData.append('tipo', tipo);
     if (url) formData.append('url', url);
 
+    const authorizationHeader = getAuthorizationHeader();
     const response = await fetch(`${API_BASE_URL}/empresas/${empresaId}/documentos`, {
       method: 'POST',
       body: formData,
-      headers: {
-        Authorization: getAuthorizationHeader(),
-      },
+      headers: authorizationHeader ? { Authorization: authorizationHeader } : undefined,
       credentials: 'include',
     });
     if (!response.ok) {
@@ -463,23 +474,31 @@ export async function postEmpresaMensaje(
 }
 
 export async function login(username: string, password: string): Promise<void> {
-  const previousUsername = activeUsername;
-  const previousPassword = activePassword;
-  setActiveCredentials(username, password);
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+    credentials: 'include',
+  });
 
-  try {
-    await apiRequest('/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: getAuthorizationHeader(),
-      },
-    });
-  } catch (error) {
-    setActiveCredentials(previousUsername, previousPassword);
-    throw error;
+  if (!response.ok) {
+    let message = `Error ${response.status}`;
+
+    try {
+      const payload = await response.json();
+      if (payload?.message) {
+        message = `${message}: ${payload.message}`;
+      }
+    } catch {
+      // Ignored: fallback to default message when the body is not JSON.
+    }
+
+    throw new Error(message);
   }
+
+  setActiveCredentials(username, password);
 }
 
 export async function logout(): Promise<void> {

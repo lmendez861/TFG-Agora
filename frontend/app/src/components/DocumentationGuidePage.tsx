@@ -1,111 +1,92 @@
-import { Link } from 'react-router-dom';
-
-const walkthroughSteps = [
+const documentationAssets = [
   {
-    id: '01',
-    title: 'Abrir el dashboard interno',
-    detail: 'Empieza en /app para mostrar KPI, modulos y el boton de exportacion CSV del resumen.',
+    title: 'Memoria final',
+    detail: 'Documento principal del proyecto con arquitectura, validacion y conclusiones.',
+    path: 'docs/memoria-final.md',
   },
   {
-    id: '02',
-    title: 'Recorrer empresas y convenios',
-    detail: 'Ensenar los listados principales permite justificar el CRUD y la exportacion por tabla.',
+    title: 'Guia de demo',
+    detail: 'Recorrido breve para defensa, pruebas de CSV y orden de pantallas.',
+    path: 'docs/guia-demo.md',
   },
   {
-    id: '03',
-    title: 'Revisar solicitudes',
-    detail: 'La bandeja de solicitudes muestra el flujo entre el portal externo y la aprobacion interna.',
+    title: 'Capturas y evidencias',
+    detail: 'Indice de imagenes, pruebas tecnicas y material de apoyo para anexos.',
+    path: 'docs/anexo-c-capturas-y-evidencias.md',
   },
   {
-    id: '04',
-    title: 'Abrir el portal externo',
-    detail: 'Completa la demo con el formulario publico y el acceso desde movil o URL publica.',
+    title: 'Memoria PDF y DOCX',
+    detail: 'Entregables listos para revision academica y entrega final.',
+    path: 'docs/memoria-final.pdf / docs/memoria-final.docx',
   },
 ];
 
-const moduleHighlights = [
+const explanationCards = [
   {
-    title: 'Panel interno',
-    description: 'Dashboard, CRUD, detalle de entidades, workflow de convenios y exportacion CSV.',
-    route: '/empresas',
-    action: 'Ver gestion',
+    title: 'Portal interno',
+    detail: 'Gestiona empresas, convenios, estudiantes, asignaciones, tutores y solicitudes con exportacion CSV.',
   },
   {
-    title: 'Solicitudes externas',
-    description: 'Alta publica, verificacion, mensajeria y aprobacion desde el panel.',
-    route: '/solicitudes',
-    action: 'Abrir solicitudes',
+    title: 'Portal externo',
+    detail: 'Canaliza el alta de empresas interesadas y entrega la solicitud al equipo interno.',
   },
   {
-    title: 'Tutores y asignaciones',
-    description: 'Seguimiento de tutores academicos y profesionales junto al estado de practicas.',
-    route: '/tutores',
-    action: 'Abrir tutores',
+    title: 'API Symfony',
+    detail: 'Centraliza seguridad, reglas de negocio, persistencia y exportaciones desde backend.',
   },
 ];
 
-const exportChecklist = [
-  'Dashboard: resumen ejecutivo para la defensa.',
-  'Empresas y convenios: vision general de la colaboracion.',
-  'Estudiantes y asignaciones: seguimiento academico y operativo.',
-  'Tutores y solicitudes: evidencia de soporte y pipeline externo.',
+const functionalHighlights = [
+  'Exportacion CSV desde dashboard y tablas principales.',
+  'Workflow de convenios con checklist, alertas y documentos.',
+  'Gestion de solicitudes recibidas desde el portal externo.',
+  'Material documental y tecnico centralizado para defensa y memoria.',
 ];
 
-const captureIndex = [
-  '01-bloques-funcionalidad.png',
-  '02-esquema-relacional.png',
-  '03-panel-interno-dashboard.png',
-  '04-panel-interno-solicitudes.png',
-  '05-portal-externo.png',
-];
-
-const deliveryItems = [
-  'Memoria final en Markdown, HTML, PDF y DOCX.',
-  'Anexos tecnicos, guia de demo y evidencias visuales.',
-  'Centro privado de control para acceso publico y monitor operativo.',
-];
+const repositoryUrl = 'https://github.com/lmendez861/TFG-Agora';
 
 export function DocumentationGuidePage() {
   const currentOrigin = typeof window === 'undefined' ? 'http://127.0.0.1:8000' : window.location.origin;
 
   return (
     <section className="guide-page">
-      <header className="guide-hero">
+      <header className="guide-hero guide-hero--documentation">
         <div className="guide-hero__copy">
-          <p className="guide-hero__eyebrow">Guia del proyecto</p>
-          <h2>Documentacion funcional para recorrer la plataforma con un tono profesional y directo.</h2>
+          <p className="guide-hero__eyebrow">Documentacion</p>
+          <h2>Centro documental del proyecto con memoria, repositorio y contexto funcional.</h2>
           <p className="guide-hero__description">
-            Esta pagina vuelve a ser la guia de exploracion del sistema. El control del acceso publico y la
-            supervision operativa quedan separados en paginas privadas para no mezclar la demo con la capa tecnica.
+            Esta pagina queda reservada para documentacion y apoyo academico. Aqui se resume la arquitectura del
+            sistema, el material entregable y las referencias utiles para revisar el proyecto sin mezclarlo con el
+            monitor tecnico ni con el control de servicios.
           </p>
           <div className="guide-hero__actions">
-            <a href={`${currentOrigin}/app`} target="_blank" rel="noreferrer" className="button button--primary button--sm">
-              Abrir panel interno
+            <a href={repositoryUrl} target="_blank" rel="noreferrer" className="button button--primary button--sm">
+              Abrir repositorio
+            </a>
+            <a href={`${currentOrigin}/app`} target="_blank" rel="noreferrer" className="button button--ghost button--sm">
+              Ir al portal interno
             </a>
             <a href={`${currentOrigin}/externo`} target="_blank" rel="noreferrer" className="button button--ghost button--sm">
-              Abrir portal externo
+              Ir al portal externo
             </a>
-            <Link to="/solicitudes" className="button button--ghost button--sm">
-              Ver solicitudes
-            </Link>
           </div>
         </div>
 
         <aside className="guide-hero__summary">
           <article className="guide-summary-card">
-            <span>Ruta principal</span>
-            <strong>/app/documentacion</strong>
-            <small>Guia funcional y recorrido recomendado.</small>
+            <span>Ruta</span>
+            <strong>/documentacion</strong>
+            <small>Centro documental independiente del monitor privado.</small>
           </article>
           <article className="guide-summary-card">
-            <span>Control privado</span>
-            <strong>/app/control</strong>
-            <small>Estado del acceso publico y enlaces de demo.</small>
+            <span>Repositorio</span>
+            <strong>TFG-Agora</strong>
+            <small>Fuente unica para codigo, docs y entregables.</small>
           </article>
           <article className="guide-summary-card">
-            <span>Monitor</span>
-            <strong>/app/monitor</strong>
-            <small>Servicios, logs, tests y supervision operativa.</small>
+            <span>Enfoque</span>
+            <strong>Memoria y contexto</strong>
+            <small>Sin controles de servicios ni herramientas de supervision.</small>
           </article>
         </aside>
       </header>
@@ -114,67 +95,18 @@ export function DocumentationGuidePage() {
         <article className="guide-card guide-card--wide">
           <header className="guide-card__header">
             <div>
-              <p className="guide-card__eyebrow">Recorrido recomendado</p>
-              <h3>Secuencia de demo para la tutora</h3>
+              <p className="guide-card__eyebrow">Material principal</p>
+              <h3>Documentos del proyecto</h3>
             </div>
-            <span className="guide-badge">4 pasos</span>
+            <span className="guide-badge">{documentationAssets.length} piezas</span>
           </header>
 
-          <div className="guide-timeline">
-            {walkthroughSteps.map((step) => (
-              <article key={step.id} className="guide-timeline__item">
-                <span className="guide-timeline__index">{step.id}</span>
-                <div>
-                  <strong>{step.title}</strong>
-                  <p>{step.detail}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </article>
-
-        <article className="guide-card">
-          <header className="guide-card__header">
-            <div>
-              <p className="guide-card__eyebrow">Exportacion CSV</p>
-              <h3>Puntos que conviene ensenar</h3>
-            </div>
-          </header>
-          <ul className="guide-list">
-            {exportChecklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </article>
-      </section>
-
-      <section className="guide-modules">
-        {moduleHighlights.map((module) => (
-          <article key={module.title} className="guide-module-card">
-            <p className="guide-module-card__label">Modulo</p>
-            <h3>{module.title}</h3>
-            <p>{module.description}</p>
-            <Link to={module.route} className="guide-module-card__link">
-              {module.action}
-            </Link>
-          </article>
-        ))}
-      </section>
-
-      <section className="guide-layout">
-        <article className="guide-card">
-          <header className="guide-card__header">
-            <div>
-              <p className="guide-card__eyebrow">Capturas</p>
-              <h3>Indice visual actual</h3>
-            </div>
-            <span className="guide-badge">{captureIndex.length} archivos</span>
-          </header>
           <div className="guide-file-list">
-            {captureIndex.map((item) => (
-              <div key={item} className="guide-file-list__item">
-                <strong>{item}</strong>
-                <span>Disponible en docs/capturas</span>
+            {documentationAssets.map((asset) => (
+              <div key={asset.title} className="guide-file-list__item">
+                <strong>{asset.title}</strong>
+                <span>{asset.detail}</span>
+                <code>{asset.path}</code>
               </div>
             ))}
           </div>
@@ -183,19 +115,58 @@ export function DocumentationGuidePage() {
         <article className="guide-card">
           <header className="guide-card__header">
             <div>
-              <p className="guide-card__eyebrow">Entregables</p>
-              <h3>Material de apoyo</h3>
+              <p className="guide-card__eyebrow">Resumen funcional</p>
+              <h3>Que hace la aplicacion</h3>
             </div>
           </header>
           <ul className="guide-list">
-            {deliveryItems.map((item) => (
+            {functionalHighlights.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <div className="guide-links">
-            <Link to="/control">Abrir centro de control privado</Link>
-            <Link to="/monitor">Abrir monitor operativo</Link>
-          </div>
+        </article>
+      </section>
+
+      <section className="guide-modules">
+        {explanationCards.map((card) => (
+          <article key={card.title} className="guide-module-card">
+            <p className="guide-module-card__label">Componente</p>
+            <h3>{card.title}</h3>
+            <p>{card.detail}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="guide-layout">
+        <article className="guide-card">
+          <header className="guide-card__header">
+            <div>
+              <p className="guide-card__eyebrow">Repositorio</p>
+              <h3>Referencia tecnica</h3>
+            </div>
+          </header>
+          <p className="guide-card__copy">
+            El repositorio concentra backend Symfony, frontend interno, portal externo, memoria, anexos y scripts de
+            generacion documental. Es la referencia recomendada para revisar cambios, entregables y trazabilidad.
+          </p>
+          <a href={repositoryUrl} target="_blank" rel="noreferrer" className="guide-inline-link">
+            {repositoryUrl}
+          </a>
+        </article>
+
+        <article className="guide-card">
+          <header className="guide-card__header">
+            <div>
+              <p className="guide-card__eyebrow">Separacion de espacios</p>
+              <h3>Lectura de la plataforma</h3>
+            </div>
+          </header>
+          <ul className="guide-list">
+            <li>`/app` queda para gestion academica y operativa.</li>
+            <li>`/externo` queda para la entrada de empresas interesadas.</li>
+            <li>`/documentacion` queda como soporte de memoria, anexos y contexto.</li>
+            <li>`/monitor` queda reservado para supervision tecnica privada.</li>
+          </ul>
         </article>
       </section>
     </section>

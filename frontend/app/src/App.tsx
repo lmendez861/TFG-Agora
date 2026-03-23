@@ -725,6 +725,18 @@ export default function App() {
     || rawPathname.startsWith('/monitor/')
     || rawPathname === '/app/monitor'
     || rawPathname.startsWith('/app/monitor/');
+  const isEmpresasRoute = rawPathname === '/empresas'
+    || rawPathname.startsWith('/empresas/')
+    || rawPathname === '/app/empresas'
+    || rawPathname.startsWith('/app/empresas/');
+  const isConveniosRoute = rawPathname === '/convenios'
+    || rawPathname.startsWith('/convenios/')
+    || rawPathname === '/app/convenios'
+    || rawPathname.startsWith('/app/convenios/');
+  const isTutoresRoute = rawPathname === '/tutores'
+    || rawPathname.startsWith('/tutores/')
+    || rawPathname === '/app/tutores'
+    || rawPathname.startsWith('/app/tutores/');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<number | null>(null);
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
@@ -764,6 +776,7 @@ export default function App() {
   const [tutorProfesionalEstado, setTutorProfesionalEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
   const [tutorProfesionalEmpresa, setTutorProfesionalEmpresa] = useState<string>('todas');
   const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
+  const [loadingReferenceData, setLoadingReferenceData] = useState(false);
   const [documentPreview, setDocumentPreview] = useState<DocumentPreviewState | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
@@ -1079,6 +1092,74 @@ export default function App() {
     [pushToast, me],
   );
 
+  const loadReferenceData = useCallback(
+    async (options?: { silent?: boolean }) => {
+      if (loadingReferenceData) {
+        return;
+      }
+
+      setLoadingReferenceData(true);
+
+      try {
+        const [tutoresAcademicos, tutoresProfesionales] = await Promise.allSettled([
+          fetchTutorAcademicos(),
+          fetchTutorProfesionales(),
+        ]);
+
+        let academicosItems: TutorAcademicoSummary[] = [];
+        let academicosPage = 1;
+        let academicosTotal = 0;
+
+        if (tutoresAcademicos.status === 'fulfilled') {
+          const normalizedAcademicos = normalizeListResponse(tutoresAcademicos.value);
+          academicosItems = normalizedAcademicos.items;
+          academicosPage = normalizedAcademicos.page;
+          academicosTotal = normalizedAcademicos.total;
+          setTutorAcademicosList(normalizedAcademicos.items);
+          setTutorAcademicoPage(normalizedAcademicos.page);
+          setTutorAcademicoTotal(normalizedAcademicos.total);
+        }
+
+        let profesionalesItems: TutorProfesionalSummary[] = [];
+        let profesionalesPage = 1;
+        let profesionalesTotal = 0;
+
+        if (tutoresProfesionales.status === 'fulfilled') {
+          const normalizedProfesionales = normalizeListResponse(tutoresProfesionales.value);
+          profesionalesItems = normalizedProfesionales.items;
+          profesionalesPage = normalizedProfesionales.page;
+          profesionalesTotal = normalizedProfesionales.total;
+          setTutorProfesionalesList(normalizedProfesionales.items);
+          setTutorProfesionalPage(normalizedProfesionales.page);
+          setTutorProfesionalTotal(normalizedProfesionales.total);
+        }
+
+        setReferenceData({
+          tutoresAcademicos: academicosItems,
+          tutoresProfesionales: profesionalesItems,
+        });
+
+        if (academicosItems.length > 0 || profesionalesItems.length > 0) {
+          skipInitialTutorFilterLoad.current = true;
+        }
+
+        if (tutoresAcademicos.status !== 'fulfilled' && tutoresProfesionales.status !== 'fulfilled' && !options?.silent) {
+          pushToast('error', 'No se pudieron cargar los datos de referencia de tutores.');
+        }
+
+        return {
+          academicosPage,
+          academicosTotal,
+          profesionalesPage,
+          profesionalesTotal,
+        };
+      } finally {
+        setLoadingReferenceData(false);
+      }
+    },
+    [loadingReferenceData, pushToast],
+  );
+
   const loadMensajes = useCallback(async (solicitudId: number) => {
     setLoadingMensajesId(solicitudId);
     try {
@@ -1123,35 +1204,6 @@ export default function App() {
     try {
       const data = await fetchCollections();
       setCollections(data);
-
-      const [tutoresAcademicos, tutoresProfesionales] = await Promise.allSettled([
-        fetchTutorAcademicos(),
-        fetchTutorProfesionales(),
-      ]);
-
-      if (tutoresAcademicos.status === 'fulfilled') {
-        const normalizedAcademicos = normalizeListResponse(tutoresAcademicos.value);
-        setReferenceData((prev) => ({
-          tutoresAcademicos: normalizedAcademicos.items,
-          tutoresProfesionales: prev?.tutoresProfesionales ?? [],
-        }));
-        setTutorAcademicosList(normalizedAcademicos.items);
-        setTutorAcademicoPage(normalizedAcademicos.page);
-        setTutorAcademicoTotal(normalizedAcademicos.total);
-        skipInitialTutorFilterLoad.current = true;
-      }
-
-      if (tutoresProfesionales.status === 'fulfilled') {
-        const normalizedProfesionales = normalizeListResponse(tutoresProfesionales.value);
-        setReferenceData((prev) => ({
-          tutoresAcademicos: prev?.tutoresAcademicos ?? [],
-          tutoresProfesionales: normalizedProfesionales.items,
-        }));
-        setTutorProfesionalesList(normalizedProfesionales.items);
-        setTutorProfesionalPage(normalizedProfesionales.page);
-        setTutorProfesionalTotal(normalizedProfesionales.total);
-        skipInitialTutorFilterLoad.current = true;
-      }
       setLastUpdated(new Date());
     } catch (err) {
       if (err instanceof Error) {
@@ -1169,8 +1221,11 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-    await refreshSolicitudes({ silent: true });
-  }, [loadConvenioExtras, refreshSolicitudes]);
+
+    refreshSolicitudes({ silent: true }).catch(() => {
+      // Se refresca en segundo plano para no bloquear el arranque del panel.
+    });
+  }, [refreshSolicitudes]);
 
   const loadTutorAcademicosList = useCallback(
     async (page: number, estado: 'todos' | 'activos' | 'inactivos') => {
@@ -1278,6 +1333,17 @@ export default function App() {
     };
   }, [authResolved, isDocumentationRoute, loadData]);
   useEffect(() => {
+    if (isTutoresRoute && !referenceData && !loadingReferenceData) {
+      loadReferenceData({ silent: true }).catch(() => {
+        // errores gestionados dentro
+      });
+      return;
+    }
+
+    if (!isTutoresRoute) {
+      return;
+    }
+
     if (
       skipInitialTutorFilterLoad.current &&
       tutorAcademicoEstado === 'todos' &&
@@ -1293,14 +1359,22 @@ export default function App() {
     loadTutorAcademicosList(1, tutorAcademicoEstado);
     loadTutorProfesionalesList(1, tutorProfesionalEstado, tutorProfesionalEmpresa);
   }, [
+    isTutoresRoute,
     tutorAcademicoEstado,
     tutorProfesionalEstado,
     tutorProfesionalEmpresa,
+    loadReferenceData,
     loadTutorAcademicosList,
     loadTutorProfesionalesList,
+    loadingReferenceData,
+    referenceData,
   ]);
 
   useEffect(() => {
+    if (!isEmpresasRoute) {
+      return;
+    }
+
     if (!collections || collections.empresas.length === 0) {
       return;
     }
@@ -1331,7 +1405,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [collections, empresaDocs, selectedEmpresaId]);
+  }, [collections, empresaDocs, isEmpresasRoute, selectedEmpresaId]);
 
   useEffect(() => {
     if (collections) {
@@ -1345,6 +1419,10 @@ export default function App() {
   }, [collections, selectedEmpresaId, selectedConvenioId]);
 
   useEffect(() => {
+    if (!isConveniosRoute) {
+      return;
+    }
+
     if (!collections || collections.convenios.length === 0) {
       return;
     }
@@ -1369,6 +1447,7 @@ export default function App() {
     convenioChecklist,
     convenioDocuments,
     convenioWorkflowState,
+    isConveniosRoute,
     loadConvenioExtras,
     selectedConvenioId,
   ]);
@@ -1644,8 +1723,22 @@ export default function App() {
     [convenioModal, loadData, handleCloseConvenioModal, pushToast],
   );
 
-  const openCreateAsignacion = useCallback((defaults?: Partial<AsignacionFormValues>) => {
+  const openCreateAsignacion = useCallback(async (defaults?: Partial<AsignacionFormValues>) => {
     setAsignacionFormError(null);
+
+    if (!referenceData) {
+      setAsignacionModal({
+        mode: 'create',
+        initialValues: cloneAsignacionForm({
+          ...EMPTY_ASIGNACION_VALUES,
+          ...defaults,
+        }),
+        loadingValues: true,
+      });
+
+      await loadReferenceData();
+    }
+
     setAsignacionModal({
       mode: 'create',
       initialValues: cloneAsignacionForm({
@@ -1654,7 +1747,7 @@ export default function App() {
       }),
       loadingValues: false,
     });
-  }, []);
+  }, [loadReferenceData, referenceData]);
 
   const handleEditAsignacion = useCallback((asignacion: AsignacionSummary) => {
     setAsignacionFormError(null);
@@ -1664,6 +1757,12 @@ export default function App() {
       initialValues: mapAsignacionSummaryToForm(asignacion),
       loadingValues: true,
     });
+
+    if (!referenceData) {
+      loadReferenceData({ silent: true }).catch(() => {
+        // errores gestionados dentro
+      });
+    }
 
     getAsignacionDetail(asignacion.id)
       .then((detail) => {
@@ -1694,7 +1793,7 @@ export default function App() {
           };
         });
       });
-  }, [pushToast]);
+  }, [loadReferenceData, pushToast, referenceData]);
 
   const handleCloseAsignacionModal = useCallback(() => {
     setAsignacionModal(null);
@@ -1883,8 +1982,8 @@ export default function App() {
         type="button"
         className="button button--primary button--sm"
         onClick={() => openCreateAsignacion()}
-        disabled={!referenceData}
-        title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+        disabled={loadingReferenceData}
+        title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
       >
         Nueva asignacion
       </button>
@@ -2594,8 +2693,8 @@ const selectedConvenio = useMemo(() => {
               type="button"
               className="button button--primary button--sm"
               onClick={() => openCreateAsignacion({ empresaId: String(empresa.id) })}
-              disabled={!referenceData}
-              title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+              disabled={loadingReferenceData}
+              title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
             >
               Planificar asignacion
             </button>
@@ -2906,8 +3005,8 @@ const selectedConvenio = useMemo(() => {
                 convenioId: String(convenioSummary.id),
                 empresaId: String(convenioSummary.empresa.id),
               })}
-              disabled={!referenceData}
-              title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+              disabled={loadingReferenceData}
+              title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
             >
               Planificar asignacion
             </button>
@@ -3157,8 +3256,8 @@ const selectedConvenio = useMemo(() => {
                 estudianteId: String(asignacionSummary.estudiante.id),
                 convenioId: detail ? String(detail.convenio.id) : '',
               })}
-              disabled={!referenceData}
-              title={!referenceData ? 'Cargando datos de referencia...' : undefined}
+              disabled={loadingReferenceData}
+              title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
             >
               Duplicar asignacion
             </button>
@@ -4406,7 +4505,7 @@ const selectedConvenio = useMemo(() => {
               type="button"
               className="button button--primary button--lg"
               onClick={() => openCreateAsignacion()}
-              disabled={!referenceData}
+              disabled={loadingReferenceData}
             >
               Planificar nueva asignacion
             </button>

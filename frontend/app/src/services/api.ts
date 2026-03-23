@@ -238,19 +238,23 @@ export async function downloadCsvExport(
 }
 
 export async function fetchCollections(): Promise<ApiCollections> {
-  const [empresas, estudiantes, convenios, asignaciones] = await Promise.all([
-    apiGet<EmpresaSummary[]>('/empresas'),
-    apiGet<EstudianteSummary[]>('/estudiantes'),
-    apiGet<ConvenioSummary[]>('/convenios'),
-    apiGet<AsignacionSummary[]>('/asignaciones'),
-  ]);
+  try {
+    return await apiGet<ApiCollections>('/bootstrap');
+  } catch {
+    const [empresas, estudiantes, convenios, asignaciones] = await Promise.all([
+      apiGet<EmpresaSummary[]>('/empresas'),
+      apiGet<EstudianteSummary[]>('/estudiantes'),
+      apiGet<ConvenioSummary[]>('/convenios'),
+      apiGet<AsignacionSummary[]>('/asignaciones'),
+    ]);
 
-  return {
-    empresas,
-    estudiantes,
-    convenios,
-    asignaciones,
-  };
+    return {
+      empresas,
+      estudiantes,
+      convenios,
+      asignaciones,
+    };
+  }
 }
 
 export function getApiBaseUrl(): string {

@@ -77,7 +77,7 @@ export function ConvenioForm({
           </select>
         </label>
         <label className="form__field">
-          <span>Título*</span>
+          <span>Titulo*</span>
           <input name="titulo" value={values.titulo} onChange={handleChange} required />
         </label>
         <label className="form__field">
@@ -103,7 +103,7 @@ export function ConvenioForm({
       </div>
 
       <label className="form__field">
-        <span>Descripción</span>
+        <span>Descripcion</span>
         <textarea name="descripcion" rows={3} value={values.descripcion} onChange={handleChange} />
       </label>
 

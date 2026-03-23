@@ -68,9 +68,11 @@ export function AsignacionForm({
   useEffect(() => {
     setValues((prev) => {
       let updated = prev;
+
       if (prev.convenioId && !conveniosDisponibles.some((convenio) => String(convenio.id) === prev.convenioId)) {
         updated = { ...updated, convenioId: '' };
       }
+
       if (
         prev.tutorProfesionalId &&
         !tutoresProfesionalesDisponibles.some((tutor) => String(tutor.id) === prev.tutorProfesionalId)
@@ -96,7 +98,7 @@ export function AsignacionForm({
   };
 
   if (loadingValues) {
-    return <p className="form__loading">Cargando datos de la asignación...</p>;
+    return <p className="form__loading">Cargando datos de la asignacion...</p>;
   }
 
   return (
@@ -139,9 +141,9 @@ export function AsignacionForm({
         </label>
 
         <label className="form__field">
-          <span>Tutor académico*</span>
+          <span>Tutor academico*</span>
           <select name="tutorAcademicoId" value={values.tutorAcademicoId} onChange={handleChange} required>
-            <option value="">Selecciona un tutor académico</option>
+            <option value="">Selecciona un tutor academico</option>
             {tutoresAcademicos.map((tutor) => (
               <option key={tutor.id} value={tutor.id}>
                 {tutor.nombre} {tutor.apellido}
@@ -195,7 +197,7 @@ export function AsignacionForm({
           Cancelar
         </button>
         <button type="submit" className="button button--primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : mode === 'create' ? 'Crear asignación' : 'Guardar cambios'}
+          {submitting ? 'Guardando...' : mode === 'create' ? 'Crear asignacion' : 'Guardar cambios'}
         </button>
       </div>
     </form>

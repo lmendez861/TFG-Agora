@@ -6,6 +6,7 @@ import { EstudianteForm, type EstudianteFormValues } from './components/Estudian
 import { EmpresaForm, type EmpresaFormValues } from './components/EmpresaForm';
 import { ConvenioForm, type ConvenioFormValues } from './components/ConvenioForm';
 import { AsignacionForm, type AsignacionFormValues } from './components/AsignacionForm';
+import { DashboardHomePage } from './components/DashboardHomePage';
 import { DocumentPreviewModal } from './components/DocumentPreviewModal';
 import { Modal } from './components/Modal';
 import { MonitorPage } from './components/MonitorPage';
@@ -104,12 +105,74 @@ const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string>
 };
 
 const TUTOR_PAGE_SIZE = 8;
+const APP_BOOTSTRAP_CACHE_KEY = 'agora.internal.bootstrap.v1';
 const EMPTY_COLLECTIONS: ApiCollections = {
   empresas: [],
   estudiantes: [],
   convenios: [],
   asignaciones: [],
 };
+
+interface BootstrapCachePayload {
+  collections: ApiCollections;
+  updatedAt: string;
+}
+
+function isCollectionArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+function readBootstrapCache(): { collections: ApiCollections | null; updatedAt: Date | null } {
+  if (typeof window === 'undefined') {
+    return { collections: null, updatedAt: null };
+  }
+
+  try {
+    const rawValue = window.localStorage.getItem(APP_BOOTSTRAP_CACHE_KEY);
+    if (!rawValue) {
+      return { collections: null, updatedAt: null };
+    }
+
+    const parsed = JSON.parse(rawValue) as Partial<BootstrapCachePayload>;
+    const collections = parsed.collections;
+
+    if (
+      !collections ||
+      !isCollectionArray(collections.empresas) ||
+      !isCollectionArray(collections.estudiantes) ||
+      !isCollectionArray(collections.convenios) ||
+      !isCollectionArray(collections.asignaciones)
+    ) {
+      return { collections: null, updatedAt: null };
+    }
+
+    const updatedAt = parsed.updatedAt ? new Date(parsed.updatedAt) : null;
+
+    return {
+      collections,
+      updatedAt: updatedAt && !Number.isNaN(updatedAt.getTime()) ? updatedAt : null,
+    };
+  } catch {
+    return { collections: null, updatedAt: null };
+  }
+}
+
+function persistBootstrapCache(collections: ApiCollections, updatedAt: Date): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const payload: BootstrapCachePayload = {
+      collections,
+      updatedAt: updatedAt.toISOString(),
+    };
+
+    window.localStorage.setItem(APP_BOOTSTRAP_CACHE_KEY, JSON.stringify(payload));
+  } catch {
+    // Ignorado: el panel funciona igualmente aunque no se pueda persistir el snapshot.
+  }
+}
 
 function normalizeListResponse<T>(
   value: T[] | PaginatedResponse<T>,
@@ -696,10 +759,11 @@ function LoginPage({ onLogin }: LoginPageProps) {
 const API_BASE_URL = getApiBaseUrl();
 
 export default function App() {
-  const [collections, setCollections] = useState<ApiCollections | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const cachedBootstrap = useMemo(() => readBootstrapCache(), []);
+  const [collections, setCollections] = useState<ApiCollections | null>(cachedBootstrap.collections);
+  const [loading, setLoading] = useState<boolean>(cachedBootstrap.collections === null);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(cachedBootstrap.updatedAt);
   const [studentModal, setStudentModal] = useState<StudentModalState | null>(null);
   const [studentFormError, setStudentFormError] = useState<string | null>(null);
   const [savingStudent, setSavingStudent] = useState(false);
@@ -1203,8 +1267,10 @@ export default function App() {
 
     try {
       const data = await fetchCollections();
+      const updatedAt = new Date();
       setCollections(data);
-      setLastUpdated(new Date());
+      setLastUpdated(updatedAt);
+      persistBootstrapCache(data, updatedAt);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -1874,6 +1940,68 @@ export default function App() {
     return buildDashboardStats(collections);
   }, [collections]);
 
+  const dashboardHeroMetrics = useMemo(() => {
+    if (!collections) {
+      return [];
+    }
+
+    const empresasActivas = collections.empresas.filter((empresa) => empresa.estadoColaboracion === 'activa').length;
+    const conveniosVigentes = collections.convenios.filter((convenio) =>
+      convenio.estado.toLowerCase().includes('vig'),
+    ).length;
+    const asignacionesEnCurso = collections.asignaciones.filter((asignacion) => asignacion.estado === 'en_curso').length;
+
+    return [
+      {
+        label: 'Empresas activas',
+        value: empresasActivas,
+        detail: 'Colaboraciones listas para operar',
+      },
+      {
+        label: 'Solicitudes pendientes',
+        value: empresaSolicitudes.length,
+        detail: 'Entradas desde el portal externo',
+      },
+      {
+        label: 'Convenios vigentes',
+        value: conveniosVigentes,
+        detail: 'Cobertura documental operativa',
+      },
+      {
+        label: 'Asignaciones en curso',
+        value: asignacionesEnCurso,
+        detail: 'Seguimiento abierto esta semana',
+      },
+    ];
+  }, [collections, empresaSolicitudes.length]);
+
+  const dashboardHeroUpdates = useMemo(() => {
+    const referenceStatus = loadingReferenceData
+      ? 'Cargando catálogo de tutores bajo demanda para no penalizar el arranque.'
+      : referenceData
+        ? `${referenceData.tutoresAcademicos.length} tutores académicos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
+        : 'Los tutores se cargan a demanda cuando entras en el módulo o preparas una asignación.';
+
+    return [
+      {
+        title: 'Estado del panel',
+        detail: lastUpdated
+          ? `Datos sincronizados a las ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`
+          : 'Esperando la primera sincronización completa.',
+      },
+      {
+        title: 'Revisión externa',
+        detail: empresaSolicitudes.length > 0
+          ? `${empresaSolicitudes.length} solicitudes requieren revisión desde el equipo interno.`
+          : 'No hay solicitudes pendientes de revisar en este momento.',
+      },
+      {
+        title: 'Cobertura docente',
+        detail: referenceStatus,
+      },
+    ];
+  }, [empresaSolicitudes.length, lastUpdated, loadingReferenceData, referenceData]);
+
   const estudianteColumns = useMemo<Array<TableColumn<EstudianteSummary>>>(() => [
     {
       key: 'nombre',
@@ -2001,7 +2129,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboracion, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -2009,7 +2137,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'Informacion completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -2017,30 +2145,30 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado academico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'Practicas en curso',
-      detail: 'Pipeline Kanban con tutorias, fechas y modalidad.',
+      description: 'Prácticas en curso',
+      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'tutores',
       label: 'Tutores',
       total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-      description: 'Academicos y profesionales',
-      detail: 'Filtra por estado y empresa para contactar rapido.',
+      description: 'Académicos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rápido.',
       accent: 'cyan',
     },
     {
       id: 'documentacion',
-      label: 'Documentacion',
+      label: 'Documentación',
       total: 3,
-      description: 'Guias y recursos listos',
+      description: 'Guías y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -2061,7 +2189,7 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentacion adjunta.',
+        description: 'Estado, fechas y documentación adjunta.',
         path: '/convenios',
       },
       {
@@ -2082,7 +2210,7 @@ const moduleCards = useMemo(
         id: 'tutores',
         label: 'Tutores',
         total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-        description: 'Equipos academicos y de empresa con filtros.',
+        description: 'Equipos académicos y de empresa con filtros.',
         path: '/tutores',
       },
     ],
@@ -4483,272 +4611,7 @@ const selectedConvenio = useMemo(() => {
       </section>
     );
   };
-  const dashboardElement = authError ? (
-    <div className="app__alert app__alert--error">{authError}</div>
-  ) : collections ? (
-    <>
-            <section className="hero">
-        <div className="hero__content">
-          <p className="hero__eyebrow">Todo tu programa en una sola plataforma</p>
-          <h1>
-            Gestion integral de practicas
-            <span className="hero__highlight hero__highlight--amber"> sencilla </span>
-            y
-            <span className="hero__highlight hero__highlight--cyan"> eficiente</span>.
-          </h1>
-          <p className="hero__description">
-            Coordina empresas, convenios y estudiantes desde un panel oscuro inspirado en Odoo.
-            Sigue cada asignacion con trazabilidad y planifica nuevas experiencias en segundos.
-          </p>
-          <div className="hero__actions">
-            <button
-              type="button"
-              className="button button--primary button--lg"
-              onClick={() => openCreateAsignacion()}
-              disabled={loadingReferenceData}
-            >
-              Planificar nueva asignacion
-            </button>
-            <a className="button button--ghost button--lg hero__link" href="/documentacion">
-              Explorar documentación
-            </a>
-          </div>
-        </div>
-        <div className="hero__scribble hero__scribble--violet" />
-      </section>
-<section className="modules-grid">
-      {moduleCards.map((module) => (
-        <article key={module.id} className={`module-card module-card--${module.accent}`}>
-          <div className="module-card__inner">
-            <div className="module-card__front">
-              <div className="module-card__meta">
-                <span className="module-card__label">{module.label}</span>
-                <strong className="module-card__total">{module.total}</strong>
-              </div>
-              <p className="module-card__description">{module.description}</p>
-            </div>
-            <div className="module-card__back">
-              <p>{module.detail}</p>
-            </div>
-          </div>
-        </article>
-      ))}
-      </section>
-
-      <section className="stats-grid">
-        {stats.map((stat) => (
-          <article className="stat-card" key={stat.label}>
-            <span className="stat-card__label">{stat.label}</span>
-            <strong className="stat-card__value">{stat.value}</strong>
-          </article>
-        ))}
-      </section>
-
-      <section className="analytics-card">
-        <header className="analytics-card__header">
-          <div>
-            <p className="module-page__eyebrow">Dashboard analitico</p>
-            <h3>Distribucion de asignaciones y actividad</h3>
-          </div>
-          <div className="module-page__actions">
-            <span className="chip chip--ghost">Registros base: {dashboardBaseRecordCount}</span>
-            <button type="button" className="button button--ghost button--sm" onClick={handleExportDashboard}>
-              Exportar resumen CSV
-            </button>
-          </div>
-        </header>
-        <div className="analytics-bars analytics-bars--vertical">
-          {analyticData.map((item, index) => {
-            const height = Math.max((item.value / analyticMax) * 100, 5);
-            return (
-              <div key={item.label} className="analytics-column">
-                <div
-                  className="analytics-column__fill"
-                  style={{
-                    height: `${height}%`,
-                    animationDelay: `${index * 0.35}s`,
-                    animationDuration: `${3 + (index % 3)}s`,
-                  }}
-                >
-                  <span className="analytics-column__value">{item.value}</span>
-                </div>
-                <span className="analytics-column__label">{item.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="module-links">
-        {moduleQuickLinks.map((module) => (
-          <article key={module.id} className="module-link-card">
-            <p className="module-link-card__label">{module.label}</p>
-            <strong className="module-link-card__value">{module.total}</strong>
-            <p className="module-link-card__description">{module.description}</p>
-            <Link className="button button--ghost button--sm module-link-card__cta" to={module.path}>
-              Abrir modulo
-            </Link>
-          </article>
-        ))}
-      </section>
-
-      <section className="student-cards">
-        <div className="student-cards__header">
-          <div>
-            <h3>Perfiles de estudiantes</h3>
-            <p>Resumen rapido del estado academico y asignaciones activas.</p>
-          </div>
-          <Link className="button button--ghost button--sm" to="/estudiantes">
-            Ver modulo completo
-          </Link>
-        </div>
-        {studentPreview.length > 0 ? (
-          <div className="student-cards__grid">
-            {studentPreview.map((estudiante) => {
-              const isActive = selectedStudent?.id === estudiante.id;
-              return (
-                <button
-                  type="button"
-                  key={estudiante.id}
-                  className={`student-card ${isActive ? 'active' : ''}`}
-                  onClick={() => setSelectedStudent((current) => (current?.id === estudiante.id ? null : estudiante))}
-                  aria-pressed={isActive}
-                >
-                  <div className="student-card__avatar">
-                    {estudiante.nombre.charAt(0)}
-                    {estudiante.apellido.charAt(0)}
-                  </div>
-                  <div className="student-card__body">
-                    <h4>{estudiante.nombre} {estudiante.apellido}</h4>
-                    <p>{estudiante.grado ?? 'Grado no especificado'}</p>
-                    <div className="student-card__chips">
-                      <span className="chip chip--ghost">{estudiante.estado}</span>
-                      <span className="chip chip--ghost">
-                        {estudiante.asignaciones.enCurso} en curso / {estudiante.asignaciones.total} total
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="detail-placeholder">Aun no hay estudiantes registrados.</p>
-        )}
-        {selectedStudent && (
-          <div className="student-detail">
-            <div className="student-detail__header">
-              <div>
-                <p className="module-page__eyebrow">Detalle de estudiante</p>
-                <h4>{selectedStudent.nombre} {selectedStudent.apellido}</h4>
-                <p className="student-detail__subtitle">{selectedStudent.email}</p>
-              </div>
-              <div className="student-detail__header-actions">
-                <span className="chip chip--ghost">{selectedStudent.estado}</span>
-                <div className="student-detail__header-buttons">
-                  <button type="button" className="button button--ghost button--sm" onClick={() => handleEditStudent(selectedStudent)}>
-                    Editar ficha
-                  </button>
-                  <button type="button" className="button button--link button--sm" onClick={() => setSelectedStudent(null)}>
-                    Cerrar
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="student-detail__tabs">
-              <button
-                type="button"
-                className={studentDetailTab === 'academico' ? 'active' : ''}
-                onClick={() => setStudentDetailTab('academico')}
-              >
-                Informacion academica
-              </button>
-              <button
-                type="button"
-                className={studentDetailTab === 'asignaciones' ? 'active' : ''}
-                onClick={() => setStudentDetailTab('asignaciones')}
-              >
-                Asignaciones
-              </button>
-              <button
-                type="button"
-                className={studentDetailTab === 'seguimiento' ? 'active' : ''}
-                onClick={() => setStudentDetailTab('seguimiento')}
-              >
-                Seguimiento
-              </button>
-            </div>
-            <div className="student-detail__content">
-              {studentDetailTab === 'academico' && (
-                <div className="student-detail__grid">
-                  <div>
-                    <span className="student-detail__label">DNI</span>
-                    <strong>{selectedStudent.dni}</strong>
-                  </div>
-                  <div>
-                    <span className="student-detail__label">Grado</span>
-                    <strong>{selectedStudent.grado ?? 'No especificado'}</strong>
-                  </div>
-                  <div>
-                    <span className="student-detail__label">Curso</span>
-                    <strong>{selectedStudent.curso ?? 'No indicado'}</strong>
-                  </div>
-                  <div>
-                    <span className="student-detail__label">Email</span>
-                    <strong>{selectedStudent.email}</strong>
-                  </div>
-                </div>
-              )}
-              {studentDetailTab === 'asignaciones' && (
-                selectedStudentAssignments.length > 0 ? (
-                  <div className="student-detail__list">
-                    {selectedStudentAssignments.map((asignacion) => (
-                      <article className="student-detail__card" key={asignacion.id}>
-                        <header>
-                          <h5>{asignacion.empresa.nombre}</h5>
-                          <span className="chip chip--ghost">{asignacion.estado}</span>
-                        </header>
-                        <p>{formatDate(asignacion.fechaInicio)}  {formatDate(asignacion.fechaFin)}</p>
-                        <div className="student-detail__links">
-                          <Link to={`/empresas/${asignacion.empresa.id}`} className="link">
-                            Gestionar empresa
-                          </Link>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                    <p className="student-detail__placeholder">Todavia no tiene asignaciones registradas.</p>
-                )
-              )}
-              {studentDetailTab === 'seguimiento' && (
-                <div className="student-timeline">
-                  {studentTimeline.map((milestone, index) => (
-                    <article key={milestone.id} className="student-timeline__item">
-                      <div className="student-timeline__bullet">
-                        <span>{index + 1}</span>
-                      </div>
-                      <div>
-                        <h5>{milestone.title}</h5>
-                        <p>{milestone.date}</p>
-                        <div className="student-card__chips">
-                          <span className="chip chip--ghost">{milestone.status}</span>
-                          <span className="chip chip--ghost">{milestone.modalidad}</span>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </section>
-
-   </>
-  ) : (
-    <div className="app__alert app__alert--info">Cargando datos del backend...</div>
-  );
+  const dashboardElement = null;
 
   const tutorAcademicoColumns: Array<TableColumn<TutorAcademicoSummary>> = [
     { key: 'nombre', header: 'Nombre', render: (tutor) => `${tutor.nombre} ${tutor.apellido}` },
@@ -5252,7 +5115,137 @@ const selectedConvenio = useMemo(() => {
       {loading && <div className="app__alert app__alert--info">Cargando datos...</div>}
 
       <Routes>
-        <Route path="/" element={dashboardElement} />
+        <Route
+          path="/"
+          element={(
+            <DashboardHomePage
+              authError={authError}
+              heroMetrics={dashboardHeroMetrics}
+              heroUpdates={[
+                {
+                  title: 'Estado del panel',
+                  detail: lastUpdated
+                    ? `Datos sincronizados a las ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`
+                    : 'Esperando la primera sincronizacion completa.',
+                },
+                {
+                  title: 'Revision externa',
+                  detail: empresaSolicitudes.length > 0
+                    ? `${empresaSolicitudes.length} solicitudes requieren revision desde el equipo interno.`
+                    : 'No hay solicitudes pendientes de revisar en este momento.',
+                },
+                {
+                  title: 'Cobertura docente',
+                  detail: loadingReferenceData
+                    ? 'Cargando catalogo de tutores bajo demanda para no penalizar el arranque.'
+                    : referenceData
+                      ? `${referenceData.tutoresAcademicos.length} tutores academicos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
+                      : 'Los tutores se cargan a demanda cuando entras en el modulo o preparas una asignacion.',
+                },
+              ]}
+              moduleCards={[
+                {
+                  id: 'empresas',
+                  label: 'Empresas',
+                  total: collections?.empresas.length ?? 0,
+                  description: 'Colaboradoras activas',
+                  detail: 'Incluye estados de colaboracion, contactos y convenios relacionados.',
+                  accent: 'orchid',
+                },
+                {
+                  id: 'convenios',
+                  label: 'Convenios',
+                  total: collections?.convenios.length ?? 0,
+                  description: 'Acuerdos vigentes',
+                  detail: 'Informacion completa sobre fechas, estado y asignaciones vinculadas.',
+                  accent: 'amber',
+                },
+                {
+                  id: 'estudiantes',
+                  label: 'Estudiantes',
+                  total: collections?.estudiantes.length ?? 0,
+                  description: 'Participantes registrados',
+                  detail: 'Fichas con estado academico, asignaciones y datos de contacto.',
+                  accent: 'cyan',
+                },
+                {
+                  id: 'asignaciones',
+                  label: 'Asignaciones',
+                  total: collections?.asignaciones.length ?? 0,
+                  description: 'Practicas en curso',
+                  detail: 'Pipeline Kanban con tutores, fechas y modalidad.',
+                  accent: 'violet',
+                },
+                {
+                  id: 'tutores',
+                  label: 'Tutores',
+                  total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
+                  description: 'Academicos y profesionales',
+                  detail: 'Filtra por estado y empresa para contactar rapido.',
+                  accent: 'cyan',
+                },
+                {
+                  id: 'documentacion',
+                  label: 'Documentacion',
+                  total: 3,
+                  description: 'Guias y recursos listos',
+                  detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
+                  accent: 'orchid',
+                },
+              ]}
+              stats={stats}
+              analytics={analyticData}
+              analyticsMax={analyticMax}
+              dashboardBaseRecordCount={dashboardBaseRecordCount}
+              moduleQuickLinks={[
+                {
+                  id: 'empresas',
+                  label: 'Empresas',
+                  total: collections?.empresas.length ?? 0,
+                  description: 'Control de colaboraciones y convenios asociados.',
+                  path: '/empresas',
+                },
+                {
+                  id: 'convenios',
+                  label: 'Convenios',
+                  total: collections?.convenios.length ?? 0,
+                  description: 'Estado, fechas y documentacion adjunta.',
+                  path: '/convenios',
+                },
+                {
+                  id: 'estudiantes',
+                  label: 'Estudiantes',
+                  total: collections?.estudiantes.length ?? 0,
+                  description: 'Ficha academica y seguimiento en curso.',
+                  path: '/estudiantes',
+                },
+                {
+                  id: 'asignaciones',
+                  label: 'Asignaciones',
+                  total: collections?.asignaciones.length ?? 0,
+                  description: 'Pipeline completo, tutores y horas planificadas.',
+                  path: '/asignaciones',
+                },
+                {
+                  id: 'tutores',
+                  label: 'Tutores',
+                  total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
+                  description: 'Equipos academicos y de empresa con filtros.',
+                  path: '/tutores',
+                },
+              ]}
+              studentPreview={studentPreview}
+              selectedStudent={selectedStudent}
+              selectedStudentAssignments={selectedStudentAssignments}
+              lastUpdated={lastUpdated}
+              loadingReferenceData={loadingReferenceData}
+              onCreateAsignacion={() => void openCreateAsignacion()}
+              onExportDashboard={handleExportDashboard}
+              onToggleStudent={(student) => setSelectedStudent((current) => (current?.id === student.id ? null : student))}
+              onEditStudent={handleEditStudent}
+            />
+          )}
+        />
         <Route path="/empresas" element={<EmpresasOverviewPage />} />
         <Route path="/empresas/:empresaId" element={<EmpresaManagementPage />} />
         <Route path="/convenios" element={<ConveniosOverviewPage />} />

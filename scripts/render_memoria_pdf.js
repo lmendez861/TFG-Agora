@@ -11,11 +11,41 @@ const sections = [
   { file: 'anexo-b-manual-tecnico.md', title: 'Anexo B. Manual tecnico', pageBreak: true },
   { file: 'anexo-c-capturas-y-evidencias.md', title: 'Anexo C. Capturas y evidencias', pageBreak: true },
   { file: 'anexo-d-codigo-relevante.md', title: 'Anexo D. Codigo relevante', pageBreak: true },
-  { file: 'anexo-e-defensa.md', title: 'Anexo E. Defensa del proyecto', pageBreak: true },
-  { file: 'guion-defensa.md', title: 'Material complementario. Guion de defensa', pageBreak: true },
-  { file: 'preguntas-defensa.md', title: 'Material complementario. Preguntas de defensa', pageBreak: true },
-  { file: 'checklist-defensa-manana.md', title: 'Material complementario. Checklist de defensa', pageBreak: true },
 ];
+
+function parseFrontMatter(markdown) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!match) {
+    return { attributes: {}, body: markdown };
+  }
+
+  const attributes = {};
+  match[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex === -1) {
+        return;
+      }
+
+      const key = line.slice(0, separatorIndex).trim();
+      const value = line.slice(separatorIndex + 1).trim();
+      attributes[key] = value;
+    });
+
+  return {
+    attributes,
+    body: markdown.slice(match[0].length),
+  };
+}
+
+function readMarkdownDocument(fileName) {
+  const raw = fs.readFileSync(path.join(docsDir, fileName), 'utf8');
+  const { attributes, body } = parseFrontMatter(raw);
+  return { file: fileName, attributes, body };
+}
 
 function escapeHtml(value) {
   return value
@@ -34,7 +64,16 @@ function renderInline(text) {
   return html;
 }
 
-function markdownToHtml(markdown) {
+function buildAnchorId(text, prefix = '') {
+  const slug = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  return prefix ? `${prefix}-${slug}` : slug;
+}
+
+function markdownToHtml(markdown, idPrefix = '') {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const parts = [];
   let paragraph = [];
@@ -93,8 +132,9 @@ function markdownToHtml(markdown) {
       closeList();
       const caption = image[1].trim();
       const src = image[2].trim();
+      const figureId = buildAnchorId(caption || src, `${idPrefix}-figure`);
       parts.push(
-        `<figure><img src="${escapeHtml(src)}" alt="${escapeHtml(caption)}">${caption ? `<figcaption>${renderInline(caption)}</figcaption>` : ''}</figure>`
+        `<figure id="${figureId}"><img src="${escapeHtml(src)}" alt="${escapeHtml(caption)}">${caption ? `<figcaption>${renderInline(caption)}</figcaption>` : ''}</figure>`
       );
       continue;
     }
@@ -105,10 +145,7 @@ function markdownToHtml(markdown) {
       closeList();
       const level = heading[1].length;
       const text = heading[2].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+      const id = buildAnchorId(text, idPrefix);
       parts.push(`<h${level} id="${id}">${renderInline(text)}</h${level}>`);
       continue;
     }
@@ -146,7 +183,7 @@ function markdownToHtml(markdown) {
   return parts.join('\n');
 }
 
-function extractHeadings(markdown) {
+function extractHeadings(markdown, idPrefix = '') {
   return markdown
     .replace(/\r\n/g, '\n')
     .split('\n')
@@ -155,27 +192,64 @@ function extractHeadings(markdown) {
     .map((match) => ({
       level: match[1].length,
       text: match[2].trim(),
-      id: match[2]
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, ''),
+      id: buildAnchorId(match[2].trim(), idPrefix),
     }));
 }
 
-const memoryContent = fs.readFileSync(path.join(docsDir, 'memoria-final.md'), 'utf8');
-const tocItems = extractHeadings(memoryContent).filter((item) => item.level <= 2);
+function extractFigures(markdown, idPrefix = '') {
+  return markdown
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/))
+    .filter(Boolean)
+    .map((match) => {
+      const caption = match[1].trim();
+      const src = match[2].trim();
+      return {
+        text: caption || src,
+        id: buildAnchorId(caption || src, `${idPrefix}-figure`),
+      };
+    });
+}
 
-const renderedSections = sections.map((section) => {
-  const filePath = path.join(docsDir, section.file);
-  const markdown = fs.readFileSync(filePath, 'utf8');
-  const html = markdownToHtml(markdown);
+const memoryDocument = readMarkdownDocument('memoria-final.md');
+const metadata = {
+  title: memoryDocument.attributes.title || 'Gestion de Empresas Colaboradoras para FP Dual',
+  author: memoryDocument.attributes.author || 'Luis Angel',
+  tutor: memoryDocument.attributes.tutor || 'Elena',
+  reviewDate: memoryDocument.attributes.reviewDate || '23/03/2026',
+  repository: memoryDocument.attributes.repository || 'https://github.com/lmendez861/TFG-Agora',
+};
+
+const sectionDocuments = sections.map((section) => {
+  const document = section.file === 'memoria-final.md'
+    ? memoryDocument
+    : readMarkdownDocument(section.file);
+  const prefix = path.basename(section.file, path.extname(section.file));
+
+  return {
+    ...section,
+    prefix,
+    markdown: document.body,
+    headings: extractHeadings(document.body, prefix).filter((item) => item.level <= 2),
+    figures: extractFigures(document.body, prefix),
+  };
+});
+
+const tocItems = sectionDocuments.flatMap((section) => section.headings);
+const figureItems = sectionDocuments.flatMap((section) => section.figures);
+
+const renderedSections = sectionDocuments.map((section) => {
+  const html = markdownToHtml(section.markdown, section.prefix);
   const className = section.pageBreak ? 'document-section page-break' : 'document-section';
   return `<section class="${className}" data-source="${section.file}">${html}</section>`;
 });
 
 const tocHtml = tocItems
   .map((item) => `<li class="toc-level-${item.level}"><a href="#${item.id}">${escapeHtml(item.text)}</a></li>`)
+  .join('\n');
+const figuresHtml = figureItems
+  .map((item) => `<li class="toc-level-2"><a href="#${item.id}">${escapeHtml(item.text)}</a></li>`)
   .join('\n');
 
 const html = `<!doctype html>
@@ -253,6 +327,8 @@ const html = `<!doctype html>
 
     .toc {
       page-break-before: always;
+      page-break-after: always;
+      min-height: 250mm;
       padding-top: 6mm;
     }
 
@@ -381,24 +457,17 @@ const html = `<!doctype html>
       text-align: center;
     }
 
-    .footer-note {
-      page-break-before: always;
-      border-top: 1px solid var(--line);
-      padding-top: 4mm;
-      color: var(--muted);
-      font-size: 9.5pt;
-    }
   </style>
 </head>
 <body>
   <section class="cover">
     <p class="cover__eyebrow">Trabajo Final de Grado</p>
-    <h1>Gestion de Empresas Colaboradoras para FP Dual</h1>
+    <h1>${escapeHtml(metadata.title)}</h1>
     <div class="cover__meta">
-      <p><strong>Autor:</strong> Luis Angel</p>
-      <p><strong>Tutora:</strong> Elena</p>
-      <p><strong>Fecha:</strong> 08/03/2026</p>
-      <p><strong>Repositorio:</strong> https://github.com/lmendez861/TFG-Agora</p>
+      <p><strong>Autor:</strong> ${escapeHtml(metadata.author)}</p>
+      <p><strong>Tutora:</strong> ${escapeHtml(metadata.tutor)}</p>
+      <p><strong>Fecha:</strong> ${escapeHtml(metadata.reviewDate)}</p>
+      <p><strong>Repositorio:</strong> ${escapeHtml(metadata.repository)}</p>
     </div>
   </section>
   <section class="toc">
@@ -406,11 +475,9 @@ const html = `<!doctype html>
     <ul>
       ${tocHtml}
     </ul>
+    ${figureItems.length > 0 ? `<h3>Indice de imagenes</h3><ul>${figuresHtml}</ul>` : ''}
   </section>
   ${renderedSections.join('\n')}
-  <section class="footer-note">
-    <p>Documento generado automaticamente a partir de la memoria, anexos y material de defensa del proyecto.</p>
-  </section>
 </body>
 </html>`;
 

@@ -6,16 +6,60 @@ const rootDir = path.resolve(__dirname, '..');
 const docsDir = path.join(rootDir, 'docs');
 const tempDir = path.join(docsDir, '.tmp-docx');
 const zipPath = path.join(docsDir, 'memoria-final.zip');
-const outputDocx = path.join(docsDir, 'memoria-final.docx');
+const outputDocx = process.env.OUTPUT_DOCX
+  ? path.resolve(rootDir, process.env.OUTPUT_DOCX)
+  : path.join(docsDir, 'memoria-final.docx');
 
 const sections = [
-  'memoria-final.md',
-  'anexo-a-manual-usuario.md',
-  'anexo-b-manual-tecnico.md',
-  'anexo-c-capturas-y-evidencias.md',
-  'anexo-d-codigo-relevante.md',
-  'anexo-e-defensa.md',
+  { file: 'memoria-final.md', tocLevels: [1, 2] },
+  { file: 'anexo-a-manual-usuario.md', tocLevels: [1, 2] },
+  { file: 'anexo-b-manual-tecnico.md', tocLevels: [1, 2] },
+  { file: 'anexo-c-capturas-y-evidencias.md', tocLevels: [1, 2] },
+  { file: 'anexo-d-codigo-relevante.md', tocLevels: [1, 2] },
 ];
+
+function parseFrontMatter(markdown) {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!match) {
+    return { attributes: {}, body: markdown };
+  }
+
+  const attributes = {};
+  match[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .forEach((line) => {
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex === -1) {
+        return;
+      }
+
+      const key = line.slice(0, separatorIndex).trim();
+      const value = line.slice(separatorIndex + 1).trim();
+      attributes[key] = value;
+    });
+
+  return {
+    attributes,
+    body: markdown.slice(match[0].length),
+  };
+}
+
+function readMarkdownDocument(fileName) {
+  const raw = fs.readFileSync(path.join(docsDir, fileName), 'utf8');
+  const { attributes, body } = parseFrontMatter(raw);
+  return { file: fileName, attributes, body };
+}
+
+const memoryDocument = readMarkdownDocument('memoria-final.md');
+const metadata = {
+  title: memoryDocument.attributes.title || 'Gestion de Empresas Colaboradoras para FP Dual',
+  author: memoryDocument.attributes.author || 'Luis Angel',
+  tutor: memoryDocument.attributes.tutor || 'Elena',
+  reviewDate: memoryDocument.attributes.reviewDate || '23/03/2026',
+  repository: memoryDocument.attributes.repository || 'https://github.com/lmendez861/TFG-Agora',
+};
 
 const CONTENT_TYPES = {
   png: 'image/png',
@@ -26,6 +70,7 @@ const CONTENT_TYPES = {
 let relationshipId = 2;
 let imageId = 1;
 let drawingId = 1;
+let bookmarkId = 1;
 
 const relationships = [
   {
@@ -37,6 +82,23 @@ const relationships = [
 
 const extraContentTypes = new Set();
 const bodyParts = [];
+
+function slugify(value) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function buildBookmarkName(sectionFile, index) {
+  const prefix = slugify(path.basename(sectionFile, path.extname(sectionFile))).slice(0, 18) || 'section';
+  return `bk_${prefix}_${index + 1}`;
+}
+
+function buildFigureBookmarkName(sectionFile, index) {
+  const prefix = slugify(path.basename(sectionFile, path.extname(sectionFile))).slice(0, 16) || 'figure';
+  return `fig_${prefix}_${index + 1}`;
+}
 
 function ensureCleanDir(dir) {
   fs.rmSync(dir, { recursive: true, force: true });
@@ -60,16 +122,27 @@ function normalizeInline(text) {
     .replace(/\*([^*]+)\*/g, '$1');
 }
 
-function textRun(text) {
+function textRun(text, options = {}) {
+  const { style, bold = false } = options;
   const safe = xmlEscape(text);
-  if (safe === '') {
-    return '<w:r><w:t xml:space="preserve"></w:t></w:r>';
+  const runProperties = [];
+
+  if (style) {
+    runProperties.push(`<w:rStyle w:val="${style}"/>`);
   }
-  return `<w:r><w:t xml:space="preserve">${safe}</w:t></w:r>`;
+  if (bold) {
+    runProperties.push('<w:b/>');
+  }
+
+  const rPr = runProperties.length > 0 ? `<w:rPr>${runProperties.join('')}</w:rPr>` : '';
+  if (safe === '') {
+    return `<w:r>${rPr}<w:t xml:space="preserve"></w:t></w:r>`;
+  }
+  return `<w:r>${rPr}<w:t xml:space="preserve">${safe}</w:t></w:r>`;
 }
 
-function paragraph(text = '', options = {}) {
-  const { style = 'Normal', align, pageBreakBefore = false } = options;
+function paragraphXml(innerXml = '', options = {}) {
+  const { style = 'Normal', align, pageBreakBefore = false, indentLeft, bookmarkName } = options;
   const paragraphProperties = [];
 
   if (style) {
@@ -81,9 +154,26 @@ function paragraph(text = '', options = {}) {
   if (pageBreakBefore) {
     paragraphProperties.push('<w:pageBreakBefore/>');
   }
+  if (indentLeft) {
+    paragraphProperties.push(`<w:ind w:left="${indentLeft}"/>`);
+  }
 
   const pPr = paragraphProperties.length > 0 ? `<w:pPr>${paragraphProperties.join('')}</w:pPr>` : '';
-  return `<w:p>${pPr}${textRun(text)}</w:p>`;
+  const bookmarkXml = bookmarkName
+    ? `<w:bookmarkStart w:id="${bookmarkId}" w:name="${xmlEscape(bookmarkName)}"/>${innerXml}<w:bookmarkEnd w:id="${bookmarkId++}"/>`
+    : innerXml;
+  return `<w:p>${pPr}${bookmarkXml}</w:p>`;
+}
+
+function paragraph(text = '', options = {}) {
+  return paragraphXml(textRun(text), options);
+}
+
+function hyperlinkParagraph(text, anchor, options = {}) {
+  return paragraphXml(
+    `<w:hyperlink w:anchor="${xmlEscape(anchor)}" w:history="1">${textRun(text, { style: 'Hyperlink' })}</w:hyperlink>`,
+    options
+  );
 }
 
 function pageBreak() {
@@ -141,7 +231,7 @@ function scaleImage(widthPx, heightPx) {
   return { width, height };
 }
 
-function addImage(relativeSourcePath, baseDir, caption) {
+function addImage(relativeSourcePath, baseDir, caption, bookmarkName) {
   const sourcePath = path.resolve(baseDir, relativeSourcePath);
   if (!fs.existsSync(sourcePath)) {
     bodyParts.push(paragraph(`[Imagen no encontrada: ${relativeSourcePath}]`, { style: 'Caption', align: 'center' }));
@@ -202,7 +292,7 @@ function addImage(relativeSourcePath, baseDir, caption) {
   `);
 
   if (caption) {
-    bodyParts.push(paragraph(caption, { style: 'Caption', align: 'center' }));
+    bodyParts.push(paragraph(caption, { style: 'Caption', align: 'center', bookmarkName }));
   }
 
   relationshipId += 1;
@@ -225,11 +315,38 @@ function addCodeBlock(lines) {
   }
 }
 
-function parseMarkdown(markdown, baseDir) {
+function extractHeadings(markdown, sectionFile) {
+  return markdown
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.match(/^(#{1,6})\s+(.*)$/))
+    .filter(Boolean)
+    .map((match, index) => ({
+      level: Math.min(3, match[1].length),
+      text: normalizeInline(match[2].trim()),
+      bookmarkName: buildBookmarkName(sectionFile, index),
+    }));
+}
+
+function extractFigures(markdown, sectionFile) {
+  return markdown
+    .replace(/\r\n/g, '\n')
+    .split('\n')
+    .map((line) => line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/))
+    .filter(Boolean)
+    .map((match, index) => ({
+      text: normalizeInline(match[1].trim() || match[2].trim()),
+      bookmarkName: buildFigureBookmarkName(sectionFile, index),
+    }));
+}
+
+function parseMarkdown(markdown, baseDir, headings = [], figures = []) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const paragraphBuffer = [];
   let inCodeBlock = false;
   let codeBuffer = [];
+  const headingQueue = [...headings];
+  const figureQueue = [...figures];
 
   for (const line of lines) {
     if (line.startsWith('```')) {
@@ -257,7 +374,8 @@ function parseMarkdown(markdown, baseDir) {
     const image = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (image) {
       flushParagraph(paragraphBuffer);
-      addImage(image[2].trim(), baseDir, normalizeInline(image[1].trim()));
+      const figureMeta = figureQueue.shift();
+      addImage(image[2].trim(), baseDir, normalizeInline(image[1].trim()), figureMeta?.bookmarkName);
       continue;
     }
 
@@ -265,7 +383,13 @@ function parseMarkdown(markdown, baseDir) {
     if (heading) {
       flushParagraph(paragraphBuffer);
       const level = Math.min(3, heading[1].length);
-      bodyParts.push(paragraph(normalizeInline(heading[2].trim()), { style: `Heading${level}` }));
+      const headingMeta = headingQueue.shift();
+      bodyParts.push(
+        paragraph(normalizeInline(heading[2].trim()), {
+          style: `Heading${level}`,
+          bookmarkName: headingMeta?.bookmarkName,
+        })
+      );
       continue;
     }
 
@@ -290,6 +414,38 @@ function parseMarkdown(markdown, baseDir) {
   if (codeBuffer.length > 0) {
     addCodeBlock(codeBuffer);
   }
+}
+
+function buildCoverPage() {
+  bodyParts.push(paragraph('Trabajo Final de Grado', { style: 'CoverKicker', align: 'center' }));
+  bodyParts.push(paragraph(metadata.title, { style: 'Title', align: 'center' }));
+  bodyParts.push(paragraph(`Autor: ${metadata.author}`, { style: 'CoverMeta', align: 'center' }));
+  bodyParts.push(paragraph(`Tutora: ${metadata.tutor}`, { style: 'CoverMeta', align: 'center' }));
+  bodyParts.push(paragraph(`Fecha de revision: ${metadata.reviewDate}`, { style: 'CoverMeta', align: 'center' }));
+  bodyParts.push(paragraph(`Repositorio: ${metadata.repository}`, { style: 'CoverMeta', align: 'center' }));
+  bodyParts.push(pageBreak());
+}
+
+function buildToc(sectionData) {
+  bodyParts.push(paragraph('Indice', { style: 'Heading1' }));
+
+  const tocEntries = sectionData.flatMap(({ section, headings }) =>
+    headings.filter((heading) => section.tocLevels.includes(heading.level))
+  );
+
+  for (const item of tocEntries) {
+    bodyParts.push(hyperlinkParagraph(item.text, item.bookmarkName, { style: 'TocEntry', indentLeft: (item.level - 1) * 360 }));
+  }
+
+  const figureEntries = sectionData.flatMap(({ figures = [] }) => figures);
+  if (figureEntries.length > 0) {
+    bodyParts.push(paragraph('Indice de imagenes', { style: 'Heading2' }));
+    for (const item of figureEntries) {
+      bodyParts.push(hyperlinkParagraph(item.text, item.bookmarkName, { style: 'TocEntry', indentLeft: 360 }));
+    }
+  }
+
+  bodyParts.push(pageBreak());
 }
 
 function buildDocumentXml() {
@@ -341,6 +497,25 @@ function buildStylesXml() {
     <w:name w:val="Normal"/>
     <w:qFormat/>
   </w:style>
+  <w:style w:type="paragraph" w:styleId="Title">
+    <w:name w:val="Title"/>
+    <w:basedOn w:val="Normal"/>
+    <w:qFormat/>
+    <w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:rPr><w:b/><w:sz w:val="40"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="CoverKicker">
+    <w:name w:val="CoverKicker"/>
+    <w:basedOn w:val="Normal"/>
+    <w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:rPr><w:b/><w:sz w:val="22"/></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="CoverMeta">
+    <w:name w:val="CoverMeta"/>
+    <w:basedOn w:val="Normal"/>
+    <w:pPr><w:jc w:val="center"/></w:pPr>
+    <w:rPr><w:sz w:val="22"/></w:rPr>
+  </w:style>
   <w:style w:type="paragraph" w:styleId="Heading1">
     <w:name w:val="heading 1"/>
     <w:basedOn w:val="Normal"/>
@@ -378,6 +553,19 @@ function buildStylesXml() {
     <w:rPr>
       <w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/>
       <w:sz w:val="18"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="TocEntry">
+    <w:name w:val="TocEntry"/>
+    <w:basedOn w:val="Normal"/>
+    <w:rPr><w:sz w:val="22"/></w:rPr>
+  </w:style>
+  <w:style w:type="character" w:styleId="Hyperlink">
+    <w:name w:val="Hyperlink"/>
+    <w:unhideWhenUsed/>
+    <w:rPr>
+      <w:color w:val="0563C1"/>
+      <w:u w:val="single"/>
     </w:rPr>
   </w:style>
 </w:styles>`;
@@ -454,14 +642,30 @@ function writeStructure() {
   fs.mkdirSync(path.join(tempDir, 'word', 'media'), { recursive: true });
   fs.mkdirSync(path.join(tempDir, 'docProps'), { recursive: true });
 
-  for (const [index, fileName] of sections.entries()) {
+  const sectionData = sections.map((section) => {
+    const document = section.file === 'memoria-final.md'
+      ? memoryDocument
+      : readMarkdownDocument(section.file);
+    const filePath = path.join(docsDir, section.file);
+    const markdown = document.body;
+    return {
+      section,
+      filePath,
+      markdown,
+      headings: extractHeadings(markdown, section.file),
+      figures: extractFigures(markdown, section.file),
+    };
+  });
+
+  buildCoverPage();
+  buildToc(sectionData);
+
+  for (const [index, entry] of sectionData.entries()) {
     if (index > 0) {
       bodyParts.push(pageBreak());
     }
 
-    const filePath = path.join(docsDir, fileName);
-    const markdown = fs.readFileSync(filePath, 'utf8');
-    parseMarkdown(markdown, path.dirname(filePath));
+    parseMarkdown(entry.markdown, path.dirname(entry.filePath), entry.headings, entry.figures);
   }
 
   fs.writeFileSync(path.join(tempDir, '[Content_Types].xml'), buildContentTypesXml(), 'utf8');

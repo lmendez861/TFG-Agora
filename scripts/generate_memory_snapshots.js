@@ -33,25 +33,20 @@ function baseTemplate(title, body) {
   <title>${title}</title>
   <style>
     :root {
-      --bg: #041225;
-      --panel: #0b1b31;
-      --panel-soft: #102443;
-      --line: rgba(255,255,255,0.08);
-      --text: #e9f1fb;
-      --muted: #9fb4cd;
-      --accent: #ffb152;
-      --ok: #6fd3a7;
-      --warn: #ffd166;
-      --radius: 20px;
+      --bg: #eef3f8;
+      --panel: #ffffff;
+      --panel-soft: #f5f8fc;
+      --line: #d8e2ee;
+      --text: #18222f;
+      --muted: #5d6e82;
+      --accent: #1d4f8c;
+      --ok: #2d8f63;
+      --warn: #b27b17;
     }
-    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(11,60,110,0.45), transparent 32%),
-        radial-gradient(circle at top right, rgba(255,177,82,0.12), transparent 18%),
-        var(--bg);
+      font-family: Arial, sans-serif;
+      background: var(--bg);
       color: var(--text);
     }
     .frame {
@@ -60,66 +55,77 @@ function baseTemplate(title, body) {
       margin: 0 auto;
       padding: 32px;
     }
+    .clearfix:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(7, 24, 48, 0.94);
+      background: #11243c;
       border: 1px solid var(--line);
-      border-radius: 26px;
+      border-radius: 18px;
       padding: 18px 24px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.2);
     }
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      float: left;
     }
     .brand strong {
-      font-size: 28px;
+      font-size: 26px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: #ffffff;
     }
-    .badge, .pill {
+    .brand .badge {
+      display: inline-block;
+      margin-left: 14px;
       border-radius: 999px;
       padding: 7px 12px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-    }
-    .badge {
-      background: rgba(255,177,82,0.14);
+      background: #e6eff9;
       color: var(--accent);
+      vertical-align: top;
+      margin-top: 3px;
     }
     .topbar__meta {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+      float: right;
       color: var(--muted);
+      font-size: 15px;
+    }
+    .topbar__meta span {
+      display: inline-block;
+      margin-left: 14px;
+      color: #d7e4f5;
+    }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #e8f4ee;
+      color: var(--ok);
     }
     .page {
-      display: grid;
-      gap: 24px;
       margin-top: 28px;
     }
     .hero, .section, .table-card {
-      background: linear-gradient(180deg, rgba(10,27,49,0.96), rgba(7,20,37,0.96));
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 28px;
+      border-radius: 22px;
       padding: 26px 28px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.16);
+      margin-bottom: 22px;
     }
     .hero h1 {
       margin: 0 0 10px;
-      font-size: 52px;
+      font-size: 50px;
       line-height: 1.06;
-      max-width: 980px;
     }
     .hero p {
       margin: 0;
       color: var(--muted);
       font-size: 22px;
       line-height: 1.5;
-      max-width: 920px;
     }
     .hero__eyebrow, .section__eyebrow {
       margin: 0 0 12px;
@@ -130,31 +136,34 @@ function baseTemplate(title, body) {
       font-weight: 700;
     }
     .cta-row {
-      display: flex;
-      gap: 12px;
       margin-top: 26px;
     }
     .cta {
+      display: inline-block;
+      margin-right: 12px;
       padding: 12px 18px;
       border-radius: 14px;
       font-weight: 700;
       font-size: 16px;
+      border: 1px solid transparent;
     }
     .cta--primary {
-      background: linear-gradient(135deg, #1c4b82, #16365c);
+      background: #1c4b82;
       color: white;
     }
     .cta--secondary {
-      background: rgba(255,177,82,0.16);
+      background: #f4f7fb;
       color: var(--accent);
+      border-color: var(--line);
     }
     .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 18px 0;
+      table-layout: fixed;
     }
     .stat {
-      background: rgba(255,255,255,0.03);
+      background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: 20px;
       padding: 18px;
@@ -165,10 +174,40 @@ function baseTemplate(title, body) {
       margin: 0 0 14px;
       font-size: 30px;
     }
+    .muted {
+      color: var(--muted);
+    }
+    .meta-grid {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 18px 18px;
+      table-layout: fixed;
+    }
+    .meta-card {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      vertical-align: top;
+    }
+    .meta-card h3 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+    .meta-card p {
+      margin: 0 0 10px;
+      line-height: 1.45;
+    }
+    .note-list {
+      margin: 0;
+      padding-left: 22px;
+      line-height: 1.6;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 16px;
+      background: #ffffff;
     }
     th, td {
       padding: 14px 12px;
@@ -200,14 +239,14 @@ async function buildDashboardSnapshot() {
 
   const body = `
   <div class="frame">
-    <div class="topbar">
+    <div class="topbar clearfix">
       <div class="brand">
         <strong>Agora</strong>
         <span class="badge">Panel interno</span>
       </div>
       <div class="topbar__meta">
-        <span>API ${API_BASE}</span>
-        <span class="pill">Sesion: admin</span>
+        <span>Panel de practicas</span>
+        <span class="pill">Sesion admin</span>
       </div>
     </div>
     <div class="page">
@@ -222,12 +261,14 @@ async function buildDashboardSnapshot() {
       </section>
       <section class="section">
         <p class="section__eyebrow">Indicadores</p>
-        <div class="grid">
-          <article class="stat"><div class="stat__label">Empresas</div><div class="stat__value">${empresas.length}</div></article>
-          <article class="stat"><div class="stat__label">Convenios</div><div class="stat__value">${convenios.length}</div></article>
-          <article class="stat"><div class="stat__label">Estudiantes</div><div class="stat__value">${estudiantes.length}</div></article>
-          <article class="stat"><div class="stat__label">Asignaciones</div><div class="stat__value">${asignaciones.length}</div></article>
-        </div>
+        <table class="grid">
+          <tr>
+            <td><article class="stat"><div class="stat__label">Empresas</div><div class="stat__value">${empresas.length}</div></article></td>
+            <td><article class="stat"><div class="stat__label">Convenios</div><div class="stat__value">${convenios.length}</div></article></td>
+            <td><article class="stat"><div class="stat__label">Estudiantes</div><div class="stat__value">${estudiantes.length}</div></article></td>
+            <td><article class="stat"><div class="stat__label">Asignaciones</div><div class="stat__value">${asignaciones.length}</div></article></td>
+          </tr>
+        </table>
       </section>
     </div>
   </div>`;
@@ -250,7 +291,7 @@ async function buildSolicitudesSnapshot() {
 
   const body = `
   <div class="frame">
-    <div class="topbar">
+    <div class="topbar clearfix">
       <div class="brand">
         <strong>Agora</strong>
         <span class="badge">Panel interno</span>
@@ -283,10 +324,173 @@ async function buildSolicitudesSnapshot() {
   writeFile('04-panel-interno-solicitudes.html', baseTemplate('Panel interno - solicitudes', body));
 }
 
+async function buildDocumentationGuideSnapshot() {
+  const body = `
+  <div class="frame">
+    <div class="topbar clearfix">
+      <div class="brand">
+        <strong>Agora</strong>
+        <span class="badge">Documentacion</span>
+      </div>
+      <div class="topbar__meta">
+        <span>Guia funcional</span>
+        <span class="pill">Lista para defensa</span>
+      </div>
+    </div>
+    <div class="page">
+      <section class="hero">
+        <p class="hero__eyebrow">Recorrido recomendado</p>
+        <h1>Guia de la plataforma para la memoria y la defensa</h1>
+        <p>Vista publica de documentacion con resumen funcional, rutas clave y orden sugerido para la demostracion.</p>
+      </section>
+      <section class="section">
+        <p class="section__eyebrow">Bloques principales</p>
+        <table class="meta-grid">
+          <tr>
+            <td class="meta-card">
+              <h3>Portal interno</h3>
+              <p>Gestion de empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.</p>
+              <p class="muted">Ruta integrada: /app</p>
+            </td>
+            <td class="meta-card">
+              <h3>Portal externo</h3>
+              <p>Alta de empresa, verificacion por token y seguimiento de la solicitud.</p>
+              <p class="muted">Ruta integrada: /externo</p>
+            </td>
+            <td class="meta-card">
+              <h3>Monitor privado</h3>
+              <p>Supervision de servicios, pruebas y estado del acceso externo temporal.</p>
+              <p class="muted">Ruta integrada: /monitor</p>
+            </td>
+          </tr>
+        </table>
+      </section>
+      <section class="section">
+        <p class="section__eyebrow">Orden de demostracion</p>
+        <ol class="note-list">
+          <li>Abrir el dashboard del portal interno y mostrar los KPI principales.</li>
+          <li>Entrar en solicitudes y ensenar el flujo de revision del portal externo.</li>
+          <li>Ejecutar la exportacion CSV desde dashboard o desde un listado operativo.</li>
+          <li>Pasar al portal externo para ensenar alta y seguimiento.</li>
+          <li>Cerrar con monitor y documentacion como apoyo tecnico.</li>
+        </ol>
+      </section>
+    </div>
+  </div>`;
+
+  writeFile('06-documentacion-guia.html', baseTemplate('Documentacion - guia', body));
+}
+
+async function buildMonitorSnapshot() {
+  const [monitor, publicAccess] = await Promise.all([apiGet('/monitor'), apiGet('/public-access')]);
+
+  const serviceRows = monitor.services
+    .map(
+      (service) => `
+      <tr>
+        <td>${service.name}</td>
+        <td>${service.status}</td>
+        <td>${service.detail}</td>
+      </tr>`
+    )
+    .join('');
+
+  const metricRows = monitor.metrics
+    .slice(0, 6)
+    .map(
+      (metric) => `
+      <tr>
+        <td>${metric.label}</td>
+        <td>${metric.value}</td>
+        <td>${metric.hint}</td>
+      </tr>`
+    )
+    .join('');
+
+  const testRows = monitor.tests
+    .map(
+      (test) => `
+      <tr>
+        <td>${test.name}</td>
+        <td>${test.status}</td>
+        <td>${test.command}</td>
+      </tr>`
+    )
+    .join('');
+
+  const body = `
+  <div class="frame">
+    <div class="topbar clearfix">
+      <div class="brand">
+        <strong>Agora</strong>
+        <span class="badge">Monitor privado</span>
+      </div>
+      <div class="topbar__meta">
+        <span>Supervision tecnica</span>
+        <span class="pill">${publicAccess.status === 'active' ? 'Acceso externo activo' : 'Acceso externo detenido'}</span>
+      </div>
+    </div>
+    <div class="page">
+      <section class="hero">
+        <p class="hero__eyebrow">Estado operativo</p>
+        <h1>Control de servicios, metricas y pruebas</h1>
+        <p>Centro tecnico para comprobar salud de la API, paneles, acceso externo y resultados de validacion.</p>
+      </section>
+      <section class="section">
+        <p class="section__eyebrow">Resumen</p>
+        <table class="meta-grid">
+          <tr>
+            <td class="meta-card">
+              <h3>Entorno</h3>
+              <p>APP_ENV: ${monitor.environment.appEnv}</p>
+              <p>PHP: ${monitor.environment.phpVersion}</p>
+              <p>Zona horaria: ${monitor.environment.timezone}</p>
+            </td>
+            <td class="meta-card">
+              <h3>Acceso externo</h3>
+              <p>${publicAccess.detail}</p>
+              <p class="muted">Objetivo local: ${publicAccess.targetUrl ?? 'n/d'}</p>
+            </td>
+            <td class="meta-card">
+              <h3>Generado</h3>
+              <p>${monitor.generatedAt}</p>
+              <p class="muted">Snapshot tecnico para la memoria y la defensa.</p>
+            </td>
+          </tr>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Servicios</p>
+        <h2>Componentes supervisados</h2>
+        <table>
+          <thead><tr><th>Servicio</th><th>Estado</th><th>Detalle</th></tr></thead>
+          <tbody>${serviceRows}</tbody>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Metricas y pruebas</p>
+        <h2>Indicadores operativos</h2>
+        <table>
+          <thead><tr><th>Metrica</th><th>Valor</th><th>Detalle</th></tr></thead>
+          <tbody>${metricRows}</tbody>
+        </table>
+        <table style="margin-top:20px">
+          <thead><tr><th>Suite</th><th>Estado</th><th>Comando</th></tr></thead>
+          <tbody>${testRows}</tbody>
+        </table>
+      </section>
+    </div>
+  </div>`;
+
+  writeFile('07-monitor-operativo.html', baseTemplate('Monitor privado', body));
+}
+
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   await buildDashboardSnapshot();
   await buildSolicitudesSnapshot();
+  await buildDocumentationGuideSnapshot();
+  await buildMonitorSnapshot();
 }
 
 main().catch((error) => {

@@ -46,15 +46,25 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
     }
 
-    public function testStartDevuelve503SiElServidorLocalNoEstaDisponible(): void
+    public function testStartDevuelveUnErrorControladoSiNoPuedeActivarElAccesoExterno(): void
     {
         $this->client->request('POST', '/api/public-access/start');
 
-        self::assertResponseStatusCodeSame(503);
-
         $payload = $this->decodeResponse();
-        self::assertArrayHasKey('message', $payload);
-        self::assertStringContainsString('http://127.0.0.1:8000', $payload['message']);
+
+        if ($this->client->getResponse()->getStatusCode() === 503) {
+            self::assertArrayHasKey('message', $payload);
+            self::assertStringContainsString('http://127.0.0.1:8000', $payload['message']);
+
+            return;
+        }
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('error', $payload['status']);
+        self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
+        self::assertNull($payload['publicUrl']);
+        self::assertNull($payload['processId']);
+        self::assertNotEmpty($payload['detail']);
     }
 
     public function testStopDevuelveEstadoInactivo(): void

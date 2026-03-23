@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel interno - dashboard</title>
+  <title>Monitor privado</title>
   <style>
     :root {
       --bg: #eef3f8;
@@ -198,32 +198,125 @@
     <div class="topbar clearfix">
       <div class="brand">
         <strong>Agora</strong>
-        <span class="badge">Panel interno</span>
+        <span class="badge">Monitor privado</span>
       </div>
       <div class="topbar__meta">
-        <span>Panel de practicas</span>
-        <span class="pill">Sesion admin</span>
+        <span>Supervision tecnica</span>
+        <span class="pill">Acceso externo detenido</span>
       </div>
     </div>
     <div class="page">
       <section class="hero">
-        <p class="hero__eyebrow">Dashboard principal</p>
-        <h1>Gestion integral de practicas, empresas y convenios</h1>
-        <p>Vista general del panel interno con KPI, accesos rapidos y exportacion CSV del resumen operativo.</p>
-        <div class="cta-row">
-          <div class="cta cta--primary">Exportar CSV</div>
-          <div class="cta cta--secondary">Sincronizar datos</div>
-        </div>
+        <p class="hero__eyebrow">Estado operativo</p>
+        <h1>Control de servicios, metricas y pruebas</h1>
+        <p>Centro tecnico para comprobar salud de la API, paneles, acceso externo y resultados de validacion.</p>
       </section>
       <section class="section">
-        <p class="section__eyebrow">Indicadores</p>
-        <table class="grid">
+        <p class="section__eyebrow">Resumen</p>
+        <table class="meta-grid">
           <tr>
-            <td><article class="stat"><div class="stat__label">Empresas</div><div class="stat__value">8</div></article></td>
-            <td><article class="stat"><div class="stat__label">Convenios</div><div class="stat__value">3</div></article></td>
-            <td><article class="stat"><div class="stat__label">Estudiantes</div><div class="stat__value">3</div></article></td>
-            <td><article class="stat"><div class="stat__label">Asignaciones</div><div class="stat__value">3</div></article></td>
+            <td class="meta-card">
+              <h3>Entorno</h3>
+              <p>APP_ENV: dev</p>
+              <p>PHP: 8.2.12</p>
+              <p>Zona horaria: Europe/Berlin</p>
+            </td>
+            <td class="meta-card">
+              <h3>Acceso externo</h3>
+              <p>El acceso externo esta detenido.</p>
+              <p class="muted">Objetivo local: http://127.0.0.1:8000</p>
+            </td>
+            <td class="meta-card">
+              <h3>Generado</h3>
+              <p>2026-03-23T21:07:14+01:00</p>
+              <p class="muted">Snapshot tecnico para la memoria y la defensa.</p>
+            </td>
           </tr>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Servicios</p>
+        <h2>Componentes supervisados</h2>
+        <table>
+          <thead><tr><th>Servicio</th><th>Estado</th><th>Detalle</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>API Symfony</td>
+        <td>healthy</td>
+        <td>Endpoint autenticado y operativo para supervision interna.</td>
+      </tr>
+      <tr>
+        <td>Panel interno React</td>
+        <td>healthy</td>
+        <td>Build del panel disponible bajo /app.</td>
+      </tr>
+      <tr>
+        <td>Portal externo</td>
+        <td>healthy</td>
+        <td>Build del portal disponible bajo /externo.</td>
+      </tr>
+      <tr>
+        <td>Acceso externo</td>
+        <td>warning</td>
+        <td>El acceso externo esta detenido.</td>
+      </tr>
+      <tr>
+        <td>Supervision automatizada</td>
+        <td>healthy</td>
+        <td>Hay suites registradas para backend y frontend.</td>
+      </tr></tbody>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Metricas y pruebas</p>
+        <h2>Indicadores operativos</h2>
+        <table>
+          <thead><tr><th>Metrica</th><th>Valor</th><th>Detalle</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>Empresas</td>
+        <td>8</td>
+        <td>Empresas colaboradoras disponibles en la base de datos.</td>
+      </tr>
+      <tr>
+        <td>Convenios</td>
+        <td>3</td>
+        <td>Convenios con workflow y documentos asociados.</td>
+      </tr>
+      <tr>
+        <td>Estudiantes</td>
+        <td>3</td>
+        <td>Estudiantes listados en el panel.</td>
+      </tr>
+      <tr>
+        <td>Asignaciones</td>
+        <td>3</td>
+        <td>Asignaciones de practicas registradas.</td>
+      </tr>
+      <tr>
+        <td>Solicitudes activas</td>
+        <td>1</td>
+        <td>Solicitudes de empresa pendientes o verificadas por email.</td>
+      </tr>
+      <tr>
+        <td>Documentos</td>
+        <td>15</td>
+        <td>Adjuntos empresariales y de convenio almacenados.</td>
+      </tr></tbody>
+        </table>
+        <table style="margin-top:20px">
+          <thead><tr><th>Suite</th><th>Estado</th><th>Comando</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>PHPUnit backend</td>
+        <td>healthy</td>
+        <td>php bin/phpunit</td>
+      </tr>
+      <tr>
+        <td>Node test frontend</td>
+        <td>healthy</td>
+        <td>npm test</td>
+      </tr></tbody>
         </table>
       </section>
     </div>

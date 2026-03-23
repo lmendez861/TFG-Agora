@@ -6,25 +6,20 @@
   <title>Panel interno - solicitudes</title>
   <style>
     :root {
-      --bg: #041225;
-      --panel: #0b1b31;
-      --panel-soft: #102443;
-      --line: rgba(255,255,255,0.08);
-      --text: #e9f1fb;
-      --muted: #9fb4cd;
-      --accent: #ffb152;
-      --ok: #6fd3a7;
-      --warn: #ffd166;
-      --radius: 20px;
+      --bg: #eef3f8;
+      --panel: #ffffff;
+      --panel-soft: #f5f8fc;
+      --line: #d8e2ee;
+      --text: #18222f;
+      --muted: #5d6e82;
+      --accent: #1d4f8c;
+      --ok: #2d8f63;
+      --warn: #b27b17;
     }
-    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(11,60,110,0.45), transparent 32%),
-        radial-gradient(circle at top right, rgba(255,177,82,0.12), transparent 18%),
-        var(--bg);
+      font-family: Arial, sans-serif;
+      background: var(--bg);
       color: var(--text);
     }
     .frame {
@@ -33,66 +28,77 @@
       margin: 0 auto;
       padding: 32px;
     }
+    .clearfix:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(7, 24, 48, 0.94);
+      background: #11243c;
       border: 1px solid var(--line);
-      border-radius: 26px;
+      border-radius: 18px;
       padding: 18px 24px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.2);
     }
     .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      float: left;
     }
     .brand strong {
-      font-size: 28px;
+      font-size: 26px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      color: #ffffff;
     }
-    .badge, .pill {
+    .brand .badge {
+      display: inline-block;
+      margin-left: 14px;
       border-radius: 999px;
       padding: 7px 12px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
-    }
-    .badge {
-      background: rgba(255,177,82,0.14);
+      background: #e6eff9;
       color: var(--accent);
+      vertical-align: top;
+      margin-top: 3px;
     }
     .topbar__meta {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+      float: right;
       color: var(--muted);
+      font-size: 15px;
+    }
+    .topbar__meta span {
+      display: inline-block;
+      margin-left: 14px;
+      color: #d7e4f5;
+    }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #e8f4ee;
+      color: var(--ok);
     }
     .page {
-      display: grid;
-      gap: 24px;
       margin-top: 28px;
     }
     .hero, .section, .table-card {
-      background: linear-gradient(180deg, rgba(10,27,49,0.96), rgba(7,20,37,0.96));
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 28px;
+      border-radius: 22px;
       padding: 26px 28px;
-      box-shadow: 0 18px 50px rgba(0,0,0,0.16);
+      margin-bottom: 22px;
     }
     .hero h1 {
       margin: 0 0 10px;
-      font-size: 52px;
+      font-size: 50px;
       line-height: 1.06;
-      max-width: 980px;
     }
     .hero p {
       margin: 0;
       color: var(--muted);
       font-size: 22px;
       line-height: 1.5;
-      max-width: 920px;
     }
     .hero__eyebrow, .section__eyebrow {
       margin: 0 0 12px;
@@ -103,31 +109,34 @@
       font-weight: 700;
     }
     .cta-row {
-      display: flex;
-      gap: 12px;
       margin-top: 26px;
     }
     .cta {
+      display: inline-block;
+      margin-right: 12px;
       padding: 12px 18px;
       border-radius: 14px;
       font-weight: 700;
       font-size: 16px;
+      border: 1px solid transparent;
     }
     .cta--primary {
-      background: linear-gradient(135deg, #1c4b82, #16365c);
+      background: #1c4b82;
       color: white;
     }
     .cta--secondary {
-      background: rgba(255,177,82,0.16);
+      background: #f4f7fb;
       color: var(--accent);
+      border-color: var(--line);
     }
     .grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 18px;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 18px 0;
+      table-layout: fixed;
     }
     .stat {
-      background: rgba(255,255,255,0.03);
+      background: var(--panel-soft);
       border: 1px solid var(--line);
       border-radius: 20px;
       padding: 18px;
@@ -138,10 +147,40 @@
       margin: 0 0 14px;
       font-size: 30px;
     }
+    .muted {
+      color: var(--muted);
+    }
+    .meta-grid {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 18px 18px;
+      table-layout: fixed;
+    }
+    .meta-card {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      vertical-align: top;
+    }
+    .meta-card h3 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+    .meta-card p {
+      margin: 0 0 10px;
+      line-height: 1.45;
+    }
+    .note-list {
+      margin: 0;
+      padding-left: 22px;
+      line-height: 1.6;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 16px;
+      background: #ffffff;
     }
     th, td {
       padding: 14px 12px;
@@ -156,7 +195,7 @@
 <body>
   
   <div class="frame">
-    <div class="topbar">
+    <div class="topbar clearfix">
       <div class="brand">
         <strong>Agora</strong>
         <span class="badge">Panel interno</span>
@@ -186,7 +225,7 @@
         <td>Empresa Demo Portal 20260309-094441</td>
         <td>Contacto</td>
         <td>sin-email</td>
-        <td><span class="pill pill--pending">pendiente</span></td>
+        <td><span class="pill ">aprobada</span></td>
       </tr>
       <tr>
         <td>5</td>

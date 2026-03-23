@@ -5,8 +5,8 @@ const documentationAssets = [
     path: 'docs/memoria-final.md',
   },
   {
-    title: 'Guia de demo',
-    detail: 'Recorrido breve para defensa, pruebas de CSV y orden de pantallas.',
+    title: 'Guia operativa',
+    detail: 'Recorrido funcional de la plataforma, modulos clave y validaciones recomendadas.',
     path: 'docs/guia-demo.md',
   },
   {
@@ -76,7 +76,7 @@ export function DocumentationGuidePage() {
           <article className="guide-summary-card">
             <span>Ruta</span>
             <strong>/documentacion</strong>
-            <small>Centro documental independiente del monitor privado.</small>
+            <small>Centro documental independiente del monitor tecnico privado.</small>
           </article>
           <article className="guide-summary-card">
             <span>Repositorio</span>
@@ -86,7 +86,7 @@ export function DocumentationGuidePage() {
           <article className="guide-summary-card">
             <span>Enfoque</span>
             <strong>Memoria y contexto</strong>
-            <small>Sin controles de servicios ni herramientas de supervision.</small>
+            <small>Sin controles de servicios ni herramientas de monitorizacion.</small>
           </article>
         </aside>
       </header>
@@ -165,7 +165,7 @@ export function DocumentationGuidePage() {
             <li>`/app` queda para gestion academica y operativa.</li>
             <li>`/externo` queda para la entrada de empresas interesadas.</li>
             <li>`/documentacion` queda como soporte de memoria, anexos y contexto.</li>
-            <li>`/monitor` queda reservado para supervision tecnica privada.</li>
+            <li>`/monitor` queda reservado para monitorizacion tecnica privada.</li>
           </ul>
         </article>
       </section>

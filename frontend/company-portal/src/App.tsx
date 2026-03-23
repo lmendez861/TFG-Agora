@@ -40,8 +40,8 @@ const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`
 const HERO_LINKS = [
   { href: '#registro', label: 'Formulario' },
   { href: '/inbox', label: 'Bandeja de verificacion' },
-  { href: '/verificar', label: 'Verificar token' },
-  { href: '/chat', label: 'Chat empresa-centro' },
+  { href: '/verificar', label: 'Confirmar correo' },
+  { href: '/chat', label: 'Mensajeria' },
 ]
 
 function useQuery() {
@@ -69,7 +69,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       </header>
       <main>{children}</main>
       <footer className="site-footer">
-        <p>Agora · Portal de colaboraciones</p>
+        <p>Agora - Portal de colaboraciones</p>
         <small>Los datos se envian a {REGISTRO_ENDPOINT}</small>
       </footer>
     </div>
@@ -146,7 +146,7 @@ function LandingPage() {
           </p>
           <div className="hero__actions">
             <a className="btn btn--primary" href="#registro">Solicitar colaboracion</a>
-            <Link className="btn btn--ghost" to="/chat">Abrir chat</Link>
+            <Link className="btn btn--ghost" to="/chat">Abrir mensajeria</Link>
           </div>
         </div>
         <div className="hero__panel">
@@ -167,8 +167,8 @@ function LandingPage() {
             <p>Usa un correo corporativo para agilizar la validacion.</p>
           </div>
           <div className="panel__meta">
-            <span className="chip">API</span>
-            <code>{REGISTRO_ENDPOINT}</code>
+            <span className="chip">Registro seguro</span>
+            <code>Validacion por correo corporativo</code>
           </div>
         </div>
 
@@ -258,7 +258,7 @@ function InboxPage() {
   const query = useQuery()
   const enviada = query.get('enviada') === '1'
   const token = query.get('token') ?? ''
-  const verificationLink = `/verificar?token=${encodeURIComponent(token || 'TU_TOKEN')}`
+  const verificationLink = token ? `/verificar?token=${encodeURIComponent(token)}` : '/verificar'
   return (
     <div className="page">
       <section className="panel">
@@ -266,10 +266,10 @@ function InboxPage() {
           <div>
             <p className="eyebrow">Bandeja</p>
             <h2>Verificacion por correo</h2>
-            <p>Revisa el enlace enviado al email corporativo. Este es un ejemplo de mensaje.</p>
+            <p>Revisa el mensaje enviado al correo corporativo para completar la validacion del registro.</p>
           </div>
         </div>
-        {enviada && <div className="alert alert--success">Solicitud enviada. Ya puedes revisar el correo.</div>}
+        {enviada && <div className="alert alert--success">Solicitud enviada. Revisa el correo corporativo para continuar.</div>}
         <article className="mail-card">
           <header>
             <div>
@@ -278,9 +278,9 @@ function InboxPage() {
             </div>
             <span className="chip">Verificacion</span>
           </header>
-          <p>Hola, hemos recibido tu solicitud. Pulsa en el enlace para confirmar tu correo.</p>
-          <Link className="link" to={verificationLink}>{verificationLink}</Link>
-          <p className="mail-card__hint">Tras confirmar, el equipo aprobara o rechazara tu solicitud desde el panel interno.</p>
+          <p>Hemos recibido tu solicitud. Utiliza el enlace de verificacion enviado al correo corporativo para confirmar el acceso.</p>
+          {token ? <Link className="link" to={verificationLink}>{verificationLink}</Link> : <p className="mail-card__hint">El enlace personalizado se envia unicamente al correo registrado.</p>}
+          <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisara la solicitud desde el portal interno.</p>
         </article>
       </section>
     </div>
@@ -291,12 +291,12 @@ function VerifyPage() {
   const query = useQuery()
   const token = query.get('token') ?? ''
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
-  const [message, setMessage] = useState<string>('Introduce el token recibido por correo.')
+  const [message, setMessage] = useState<string>('Abre el enlace completo recibido por correo para validar tu cuenta.')
 
   useEffect(() => {
     if (!token) {
       setStatus('idle')
-      setMessage('Incluye ?token=... en la URL para verificar.')
+      setMessage('Abre el enlace completo recibido por correo para verificar tu cuenta.')
       return
     }
     setStatus('loading')
@@ -313,7 +313,7 @@ function VerifyPage() {
       })
       .catch((err) => {
         setStatus('error')
-        setMessage(err instanceof Error ? err.message : 'No se pudo verificar el token.')
+        setMessage(err instanceof Error ? err.message : 'No se pudo validar el enlace de verificacion.')
       })
   }, [token])
 
@@ -324,7 +324,7 @@ function VerifyPage() {
           <div>
             <p className="eyebrow">Verificacion</p>
             <h2>Confirma tu correo</h2>
-            <p>Usamos el token del email para validar que eres la empresa solicitante.</p>
+            <p>Validamos el enlace remitido al correo corporativo para confirmar la identidad de la empresa solicitante.</p>
           </div>
         </div>
         <div className="verify-card">
@@ -333,7 +333,7 @@ function VerifyPage() {
           </span>
           <p className="verify-card__message">{message}</p>
           <div className="verify-card__actions">
-            <Link to="/chat" className="btn btn--ghost">Ir al chat</Link>
+            <Link to="/chat" className="btn btn--ghost">Ir a mensajeria</Link>
             <Link to="/inbox" className="btn btn--primary">Volver a bandeja</Link>
           </div>
         </div>
@@ -394,9 +394,9 @@ function ChatPage() {
         <div className="panel__header">
           <div>
             <p className="eyebrow">Canal</p>
-            <h2>Chat empresa - centro</h2>
-            <p>Usa este canal para resolver dudas mientras se aprueba la solicitud.</p>
-            {!token && <p className="alert alert--error">Añade ?token=... a la URL para ver tu chat.</p>}
+            <h2>Mensajeria con el centro</h2>
+            <p>Utiliza este canal para resolver dudas y compartir aclaraciones durante la revision de la solicitud.</p>
+            {!token && <p className="alert alert--error">Abre el enlace de acceso recibido por correo para consultar la mensajeria.</p>}
           </div>
         </div>
         <div className="chat">
@@ -406,7 +406,7 @@ function ChatPage() {
             {messages.map((msg) => (
               <div key={msg.id} className={`chat__bubble chat__bubble--${msg.author}`}>
                 <p>{msg.text}</p>
-                <small>{msg.author === 'empresa' ? 'Tú' : 'Centro'} · {new Date(msg.createdAt).toLocaleTimeString()}</small>
+                <small>{msg.author === 'empresa' ? 'Empresa' : 'Centro'} - {new Date(msg.createdAt).toLocaleTimeString()}</small>
               </div>
             ))}
           </div>

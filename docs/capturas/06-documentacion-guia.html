@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel interno - dashboard</title>
+  <title>Documentacion - guia</title>
   <style>
     :root {
       --bg: #eef3f8;
@@ -198,33 +198,50 @@
     <div class="topbar clearfix">
       <div class="brand">
         <strong>Agora</strong>
-        <span class="badge">Panel interno</span>
+        <span class="badge">Documentacion</span>
       </div>
       <div class="topbar__meta">
-        <span>Panel de practicas</span>
-        <span class="pill">Sesion admin</span>
+        <span>Guia funcional</span>
+        <span class="pill">Lista para defensa</span>
       </div>
     </div>
     <div class="page">
       <section class="hero">
-        <p class="hero__eyebrow">Dashboard principal</p>
-        <h1>Gestion integral de practicas, empresas y convenios</h1>
-        <p>Vista general del panel interno con KPI, accesos rapidos y exportacion CSV del resumen operativo.</p>
-        <div class="cta-row">
-          <div class="cta cta--primary">Exportar CSV</div>
-          <div class="cta cta--secondary">Sincronizar datos</div>
-        </div>
+        <p class="hero__eyebrow">Recorrido recomendado</p>
+        <h1>Guia de la plataforma para la memoria y la defensa</h1>
+        <p>Vista publica de documentacion con resumen funcional, rutas clave y orden sugerido para la demostracion.</p>
       </section>
       <section class="section">
-        <p class="section__eyebrow">Indicadores</p>
-        <table class="grid">
+        <p class="section__eyebrow">Bloques principales</p>
+        <table class="meta-grid">
           <tr>
-            <td><article class="stat"><div class="stat__label">Empresas</div><div class="stat__value">8</div></article></td>
-            <td><article class="stat"><div class="stat__label">Convenios</div><div class="stat__value">3</div></article></td>
-            <td><article class="stat"><div class="stat__label">Estudiantes</div><div class="stat__value">3</div></article></td>
-            <td><article class="stat"><div class="stat__label">Asignaciones</div><div class="stat__value">3</div></article></td>
+            <td class="meta-card">
+              <h3>Portal interno</h3>
+              <p>Gestion de empresas, convenios, estudiantes, asignaciones, tutores y solicitudes.</p>
+              <p class="muted">Ruta integrada: /app</p>
+            </td>
+            <td class="meta-card">
+              <h3>Portal externo</h3>
+              <p>Alta de empresa, verificacion por token y seguimiento de la solicitud.</p>
+              <p class="muted">Ruta integrada: /externo</p>
+            </td>
+            <td class="meta-card">
+              <h3>Monitor privado</h3>
+              <p>Supervision de servicios, pruebas y estado del acceso externo temporal.</p>
+              <p class="muted">Ruta integrada: /monitor</p>
+            </td>
           </tr>
         </table>
+      </section>
+      <section class="section">
+        <p class="section__eyebrow">Orden de demostracion</p>
+        <ol class="note-list">
+          <li>Abrir el dashboard del portal interno y mostrar los KPI principales.</li>
+          <li>Entrar en solicitudes y ensenar el flujo de revision del portal externo.</li>
+          <li>Ejecutar la exportacion CSV desde dashboard o desde un listado operativo.</li>
+          <li>Pasar al portal externo para ensenar alta y seguimiento.</li>
+          <li>Cerrar con monitor y documentacion como apoyo tecnico.</li>
+        </ol>
       </section>
     </div>
   </div>

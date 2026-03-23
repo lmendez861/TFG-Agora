@@ -43,7 +43,7 @@ final class FrontendController extends AbstractController
     #[Route('/control/{path}', name: 'frontend_control_path_redirect', requirements: ['path' => '.*'], methods: ['GET'])]
     public function control(): RedirectResponse
     {
-        return $this->redirect('/documentacion');
+        return $this->redirect('/monitor');
     }
 
     #[Route('/externo', name: 'frontend_portal_index', methods: ['GET'])]

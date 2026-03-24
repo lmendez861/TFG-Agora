@@ -11,6 +11,7 @@ use App\Repository\ConvenioAlertaRepository;
 use App\Repository\ConvenioChecklistItemRepository;
 use App\Repository\ConvenioRepository;
 use App\Repository\EmpresaColaboradoraRepository;
+use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -98,7 +99,8 @@ final class ConvenioController extends AbstractController
         Request $request,
         EmpresaColaboradoraRepository $empresaRepository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
@@ -168,6 +170,7 @@ final class ConvenioController extends AbstractController
 
         $entityManager->persist($convenio);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($convenio), Response::HTTP_CREATED);
     }
@@ -188,7 +191,8 @@ final class ConvenioController extends AbstractController
         Request $request,
         EmpresaColaboradoraRepository $empresaRepository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
@@ -344,7 +348,11 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/workflow/advance', name: 'advance_workflow', methods: ['POST'])]
-    public function advanceWorkflow(?Convenio $convenio, EntityManagerInterface $entityManager): JsonResponse
+    public function advanceWorkflow(
+        ?Convenio $convenio,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider
+    ): JsonResponse
     {
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
@@ -366,6 +374,7 @@ final class ConvenioController extends AbstractController
 
         $entityManager->persist($evento);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json([
             'estado' => $convenio->getEstado(),
@@ -405,6 +414,7 @@ final class ConvenioController extends AbstractController
         }
 
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeChecklistItem($item), Response::HTTP_OK);
     }

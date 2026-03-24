@@ -6,6 +6,7 @@ use App\Entity\ContactoEmpresa;
 use App\Entity\EmpresaColaboradora;
 use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
+use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -117,7 +118,10 @@ final class EmpresaSolicitudController extends AbstractController
 
     #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]
     #[IsGranted('ROLE_API')]
-    public function approve(?EmpresaSolicitud $solicitud): JsonResponse
+    public function approve(
+        ?EmpresaSolicitud $solicitud,
+        BootstrapSnapshotProvider $snapshotProvider
+    ): JsonResponse
     {
         if (!$solicitud) {
             return $this->json(['message' => 'Solicitud no encontrada.'], Response::HTTP_NOT_FOUND);
@@ -155,6 +159,7 @@ final class EmpresaSolicitudController extends AbstractController
         $this->entityManager->persist($empresa);
         $solicitud->markApproved();
         $this->entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json([
             'message' => 'Solicitud aprobada y empresa dada de alta correctamente.',

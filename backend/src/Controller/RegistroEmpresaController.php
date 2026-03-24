@@ -80,6 +80,11 @@ final class RegistroEmpresaController extends AbstractController
             ['token' => $solicitud->getToken()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
+        $portalUrl = $this->urlGenerator->generate(
+            'portal_solicitudes_show',
+            ['token' => $solicitud->getPortalToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
 
         $email = (new Email())
             ->from(Address::create($this->fromAddress))
@@ -90,7 +95,7 @@ final class RegistroEmpresaController extends AbstractController
 <p>Hola %s,</p>
 <p>Hemos recibido tu solicitud para colaborar con nuestro centro educativo. Por favor confirma tu correo pulsando en el siguiente enlace:</p>
 <p><a href="%s">%s</a></p>
-<p>En cuanto verifiquemos los datos, el equipo de prácticas revisará la información para darte de alta.</p>
+<p>En cuanto verifiquemos los datos, el equipo de practicas revisara la informacion para darte de alta.</p>
 HTML,
                 htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 $verificationUrl,
@@ -100,7 +105,11 @@ HTML,
         $this->mailer->send($email);
 
         return $this->json([
-            'message' => 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la dirección.',
+            'message' => 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.',
+            'id' => $solicitud->getId(),
+            'portalToken' => $solicitud->getPortalToken(),
+            'verificationUrl' => $verificationUrl,
+            'portalUrl' => $portalUrl,
         ], Response::HTTP_CREATED);
     }
 

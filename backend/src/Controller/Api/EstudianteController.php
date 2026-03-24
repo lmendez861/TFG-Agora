@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\Estudiante;
 use App\Repository\EstudianteRepository;
+use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -66,7 +67,8 @@ final class EstudianteController extends AbstractController
         Request $request,
         EstudianteRepository $repository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
@@ -134,6 +136,7 @@ final class EstudianteController extends AbstractController
 
         $entityManager->persist($estudiante);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($estudiante), Response::HTTP_CREATED);
     }
@@ -154,7 +157,8 @@ final class EstudianteController extends AbstractController
         Request $request,
         EstudianteRepository $repository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$estudiante) {
             return $this->json(['message' => 'Estudiante no encontrado'], Response::HTTP_NOT_FOUND);
@@ -231,6 +235,7 @@ final class EstudianteController extends AbstractController
         }
 
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($estudiante), Response::HTTP_OK);
     }

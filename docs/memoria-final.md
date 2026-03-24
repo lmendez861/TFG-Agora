@@ -2,7 +2,7 @@
 title: Gestion de Empresas Colaboradoras para FP Dual
 author: Luis Angel
 tutor: Elena
-reviewDate: 23/03/2026
+reviewDate: 24/03/2026
 repository: https://github.com/lmendez861/TFG-Agora
 ---
 
@@ -14,13 +14,13 @@ Quiero agradecer a mi tutora Elena el seguimiento continuo del trabajo, la revis
 
 ## Resumen (ES)
 
-Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript y un portal externo orientado a empresas interesadas en colaborar con el centro. La aplicacion centraliza el ciclo operativo completo: alta de empresas, revision de solicitudes, gestion de convenios, asignacion de estudiantes, supervision documental y exportacion CSV de datos operativos. La entrega final prioriza una arquitectura mantenible, separacion clara de responsabilidades y un entorno de uso demostrable con build integrada bajo una unica URL local.
+Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro y dos espacios complementarios separados: documentacion y monitor privado. La aplicacion centraliza el ciclo operativo completo: alta de empresas, verificacion por correo, seguimiento de solicitudes, gestion de convenios, asignacion de estudiantes, supervision documental y exportacion CSV de datos operativos. La entrega final prioriza una arquitectura mantenible, separacion clara de responsabilidades y un entorno de uso demostrable con build integrada bajo una unica URL local.
 
 Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.
 
 ## Summary (EN)
 
-This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, and an external company portal. The platform centralizes the full operational workflow: company registration, request review, agreement management, student assignment, document supervision, and CSV export of operational records. The final delivery prioritizes maintainable architecture, clear separation of responsibilities, and a demonstrable integrated build under a single local URL.
+This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, an external company portal, and two separated support spaces for documentation and private monitoring. The platform centralizes the full operational workflow: company registration, email verification, request tracking, agreement management, student assignment, document supervision, and CSV export of operational records. The final delivery prioritizes maintainable architecture, clear separation of responsibilities, and a demonstrable integrated build under a single local URL.
 
 Keywords: dual training, partner companies, agreements, Symfony, React, academic management.
 
@@ -47,7 +47,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 
 ## Alcance
 
-Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion del panel, la gestion de solicitudes externas, la mensajeria asociada, el control documental y la exportacion CSV de listados operativos. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones con sistemas corporativos, un portal postaprobacion para empresas consolidadas, el almacenamiento documental en nube y una bateria E2E completa de navegador.
+Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion del panel, la gestion de solicitudes externas, la verificacion por correo, el seguimiento de estado, la mensajeria asociada, el control documental, la exportacion CSV y un monitor privado separado para operacion tecnica. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones con sistemas corporativos, un area postaprobacion completa para empresas consolidadas con cuentas persistentes, el almacenamiento documental en nube y una bateria E2E completa de navegador.
 
 # Analisis de requisitos
 
@@ -84,9 +84,9 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 
 ## Arquitectura general
 
-La solucion se estructura en tres piezas principales. La primera es una API REST construida con Symfony, responsable de la seguridad, la logica de negocio, la persistencia y la exposicion de endpoints. La segunda es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. La tercera es un portal externo, tambien basado en React y TypeScript, que permite registrar nuevas empresas, verificar el correo de contacto y mantener una mensajeria asociada a la solicitud.
+La solucion se estructura en cuatro bloques principales. La primera es una API REST construida con Symfony, responsable de la seguridad, la logica de negocio, la persistencia y la exposicion de endpoints. La segunda es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. La tercera es un portal externo, tambien basado en React y TypeScript, que permite registrar nuevas empresas, verificar el correo de contacto, consultar el estado de la solicitud y mantener una mensajeria asociada. La cuarta se divide en dos shells complementarias: una pagina documental para memoria y anexos, y un monitor privado para supervision tecnica.
 
-El backend publica rutas protegidas bajo `/api` y rutas publicas para el registro externo y el acceso por token. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor privado bajo `/monitor` y el portal externo bajo `/externo`.
+El backend publica rutas protegidas bajo `/api` y rutas publicas para el registro externo, la confirmacion por correo y el acceso por token al portal de solicitud. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor privado bajo `/monitor` y el portal externo bajo `/externo`.
 
 ![Figura 1. Esquema de bloques de funcionalidad del sistema.](capturas/01-bloques-funcionalidad.png)
 
@@ -106,7 +106,7 @@ La seguridad del entorno interno se apoya en autenticacion y roles. El panel int
 
 ## Diseno de interfaz
 
-El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, documentacion y monitor privado. La interfaz combina tablas, tarjetas de resumen, vistas de detalle, formularios modales y exportaciones CSV desde varios puntos del sistema. El portal externo simplifica la experiencia para centrarla en el alta de empresa, la verificacion y la mensajeria. La documentacion y el monitor se separan del flujo principal para no mezclar uso funcional con supervision tecnica.
+El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, documentacion y monitor privado. La interfaz combina tablas, tarjetas de resumen, vistas de detalle, formularios modales y exportaciones CSV desde varios puntos del sistema. El portal externo se organiza en varias rutas coordinadas: registro, correo, estado de solicitud, verificacion, mensajeria y recursos. La documentacion y el monitor se separan del flujo principal para no mezclar uso funcional con supervision tecnica, y el monitor privado se ordena en secciones de sistemas, acceso, logs, errores y calidad documental.
 
 ![Figura 3. Panel interno, vista dashboard con KPI y exportacion.](capturas/03-panel-interno-dashboard.png)
 
@@ -130,7 +130,7 @@ El portal interno funciona como shell de gestion academica y administrativa. Des
 
 ## Portal externo
 
-El portal externo ofrece una entrada clara para empresas interesadas en colaborar. Incluye formulario de alta, bandeja de verificacion, confirmacion por enlace y una mensajeria ligada a la solicitud. Su diseno es deliberadamente mas simple que el portal interno para reducir friccion en el primer contacto con la plataforma.
+El portal externo ofrece una entrada clara para empresas interesadas en colaborar. Incluye formulario de alta, pagina de correo, confirmacion por enlace, seguimiento del estado de la solicitud, mensajeria ligada al token del portal y una pagina de recursos de apoyo. El flujo queda conectado de extremo a extremo con la API: registro publico, emision del correo de verificacion, consulta del estado por token y conversacion asociada con el centro. Su diseno es deliberadamente mas simple que el portal interno para reducir friccion en el primer contacto con la plataforma sin perder trazabilidad.
 
 ## Exportacion CSV como ejemplo funcional
 
@@ -154,11 +154,15 @@ La entrega se prepara en modo integrado bajo una unica URL local: `/app` para el
 
 ## Validaciones ejecutadas
 
-La validacion del proyecto combina compilacion de frontends, pruebas automatizadas disponibles, comprobaciones HTTP sobre las rutas integradas y revisiones funcionales de navegacion, documentacion y exportacion CSV. El backend dispone de pruebas orientadas a autenticacion y controladores clave, mientras que el frontend incorpora pruebas de utilidades y servicios.
+La validacion del proyecto combina compilacion de frontends, pruebas automatizadas disponibles, comprobaciones HTTP sobre las rutas integradas y revisiones funcionales de navegacion, documentacion, monitorizacion y exportacion CSV. El backend dispone de pruebas orientadas a autenticacion y controladores clave, mientras que el frontend incorpora pruebas de utilidades y servicios.
 
 ## Resultados observados
 
-La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno y el portal externo quedan accesibles desde la URL local integrada, y la documentacion se mantiene separada del monitor privado. La exportacion CSV puede mostrarse como ejemplo funcional completo durante la defensa.
+La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles desde la URL local integrada. La exportacion CSV puede mostrarse como ejemplo funcional completo durante la defensa, y el arranque del panel interno mejora mediante un snapshot cacheado de bootstrap con invalidacion tras cambios de empresas, estudiantes, convenios y asignaciones.
+
+## Rendimiento operativo
+
+Durante la fase final se ha optimizado el endpoint `/api/bootstrap`, que era el principal cuello de botella percibido al cargar el portal interno. La solucion aplicada cachea un snapshot del panel y lo invalida cuando cambian las entidades que alimentan dashboard y listados principales. En mediciones locales, el tiempo de respuesta en frio se redujo desde varios segundos hasta un entorno cercano al segundo largo, mientras que la carga HTML de `/app` se mantiene claramente por debajo del segundo en caliente. Esta mejora no sustituye a una estrategia completa de cache y perfilado en produccion real, pero si deja la navegacion de defensa en un estado considerablemente mas fluido.
 
 ## Limitaciones de prueba
 
@@ -168,7 +172,7 @@ Aunque la base tecnica esta validada, no existe todavia una suite E2E completa d
 
 ## Resultados principales
 
-El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el espacio externo, la documentacion y la supervision tecnica. Ademas, deja preparado un flujo demostrable y comprensible para la tutora: solicitud externa, revision interna, gestion de entidades y exportacion de datos.
+El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el espacio externo, la documentacion y la supervision tecnica. Ademas, deja preparado un flujo demostrable y comprensible para la tutora: registro externo, verificacion por correo, seguimiento de solicitud, revision interna, gestion de entidades y exportacion de datos.
 
 ## Limitaciones actuales
 

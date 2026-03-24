@@ -9,6 +9,7 @@ use App\Repository\EmpresaColaboradoraRepository;
 use App\Repository\EstudianteRepository;
 use App\Repository\TutorAcademicoRepository;
 use App\Repository\TutorProfesionalRepository;
+use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -101,7 +102,8 @@ final class AsignacionController extends AbstractController
         TutorAcademicoRepository $tutorAcademicoRepository,
         TutorProfesionalRepository $tutorProfesionalRepository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
@@ -221,6 +223,7 @@ final class AsignacionController extends AbstractController
 
         $entityManager->persist($asignacion);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($asignacion), Response::HTTP_CREATED);
     }
@@ -245,7 +248,8 @@ final class AsignacionController extends AbstractController
         TutorAcademicoRepository $tutorAcademicoRepository,
         TutorProfesionalRepository $tutorProfesionalRepository,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$asignacion) {
             return $this->json(['message' => 'Asignación no encontrada'], Response::HTTP_NOT_FOUND);
@@ -386,6 +390,7 @@ final class AsignacionController extends AbstractController
         }
 
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($asignacion), Response::HTTP_OK);
     }

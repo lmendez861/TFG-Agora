@@ -9,6 +9,7 @@ use App\Entity\EmpresaNota;
 use App\Repository\EmpresaColaboradoraRepository;
 use App\Repository\EmpresaDocumentoRepository;
 use App\Repository\EmpresaEtiquetaRepository;
+use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
@@ -97,7 +98,8 @@ final class EmpresaColaboradoraController extends AbstractController
     public function create(
         Request $request,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
@@ -171,6 +173,7 @@ final class EmpresaColaboradoraController extends AbstractController
 
         $entityManager->persist($empresa);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($empresa), Response::HTTP_CREATED);
     }
@@ -190,7 +193,8 @@ final class EmpresaColaboradoraController extends AbstractController
         ?EmpresaColaboradora $empresa,
         Request $request,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
@@ -267,6 +271,7 @@ final class EmpresaColaboradoraController extends AbstractController
         }
 
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($empresa), Response::HTTP_OK);
     }

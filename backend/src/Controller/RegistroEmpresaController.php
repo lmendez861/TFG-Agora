@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Throwable;
 
 #[Route('/registro-empresa', name: 'registro_empresa_')]
 final class RegistroEmpresaController extends AbstractController
@@ -86,31 +87,101 @@ final class RegistroEmpresaController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        $email = (new Email())
-            ->from(Address::create($this->fromAddress))
-            ->to($solicitud->getContactoEmail())
-            ->subject('Confirma tu registro de empresa colaboradora')
-            ->html(sprintf(
-                <<<HTML
-<p>Hola %s,</p>
-<p>Hemos recibido tu solicitud para colaborar con nuestro centro educativo. Por favor confirma tu correo pulsando en el siguiente enlace:</p>
-<p><a href="%s">%s</a></p>
-<p>En cuanto verifiquemos los datos, el equipo de practicas revisara la informacion para darte de alta.</p>
-HTML,
-                htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
-                $verificationUrl,
-                $verificationUrl
-            ));
-
-        $this->mailer->send($email);
+        $emailSent = $this->trySendVerificationEmail($solicitud, $verificationUrl);
 
         return $this->json([
-            'message' => 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.',
+            'message' => $emailSent
+                ? 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.'
+                : 'Solicitud registrada correctamente, pero no hemos podido enviar el correo de verificacion. Reintenta el envio desde el portal o revisa la configuracion de correo.',
             'id' => $solicitud->getId(),
             'portalToken' => $solicitud->getPortalToken(),
             'verificationUrl' => $verificationUrl,
             'portalUrl' => $portalUrl,
+            'emailDelivery' => $emailSent ? 'sent' : 'failed',
         ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/reenviar', name: 'resend', methods: ['POST'])]
+    public function resend(Request $request): JsonResponse
+    {
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'portalToken' => new Assert\Optional([new Assert\Length(min: 12, max: 128)]),
+                'contactoEmail' => new Assert\Optional([new Assert\Email()]),
+            ],
+            allowMissingFields: true,
+            allowExtraFields: false
+        );
+
+        $violations = $this->validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->validationErrorResponse($violations);
+        }
+
+        if (!array_key_exists('portalToken', $payload) && !array_key_exists('contactoEmail', $payload)) {
+            return $this->json([
+                'message' => 'Debes indicar el token del portal o el correo de contacto para reenviar la verificacion.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $solicitud = null;
+        if (!empty($payload['portalToken'])) {
+            $solicitud = $this->solicitudRepository->findOneBy(['portalToken' => $payload['portalToken']]);
+        }
+
+        if (!$solicitud && !empty($payload['contactoEmail'])) {
+            $solicitud = $this->solicitudRepository->findOneBy(
+                ['contactoEmail' => $payload['contactoEmail']],
+                ['id' => 'DESC']
+            );
+        }
+
+        if (!$solicitud) {
+            return $this->json([
+                'message' => 'No encontramos ninguna solicitud asociada a los datos indicados.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($solicitud->isEmailVerified()) {
+            return $this->json([
+                'message' => 'La direccion de correo ya esta verificada.',
+                'portalToken' => $solicitud->getPortalToken(),
+            ], Response::HTTP_OK);
+        }
+
+        $verificationUrl = $this->urlGenerator->generate(
+            'registro_empresa_confirm',
+            ['token' => $solicitud->getToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+        $portalUrl = $this->urlGenerator->generate(
+            'portal_solicitudes_show',
+            ['token' => $solicitud->getPortalToken()],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        if (!$this->trySendVerificationEmail($solicitud, $verificationUrl)) {
+            return $this->json([
+                'message' => 'No hemos podido reenviar el correo de verificacion. Revisa la configuracion SMTP e intentalo de nuevo.',
+                'portalToken' => $solicitud->getPortalToken(),
+                'verificationUrl' => $verificationUrl,
+                'portalUrl' => $portalUrl,
+                'emailDelivery' => 'failed',
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        return $this->json([
+            'message' => 'Hemos reenviado el correo de verificacion a la direccion registrada.',
+            'portalToken' => $solicitud->getPortalToken(),
+            'verificationUrl' => $verificationUrl,
+            'portalUrl' => $portalUrl,
+            'emailDelivery' => 'sent',
+        ], Response::HTTP_OK);
     }
 
     #[Route('/confirmar', name: 'confirm', methods: ['GET'])]
@@ -168,5 +239,37 @@ HTML,
 HTML;
 
         return new Response($html, $status);
+    }
+
+    private function sendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): void
+    {
+        $email = (new Email())
+            ->from(Address::create($this->fromAddress))
+            ->to($solicitud->getContactoEmail())
+            ->subject('Confirma tu registro de empresa colaboradora')
+            ->html(sprintf(
+                <<<HTML
+<p>Hola %s,</p>
+<p>Hemos recibido tu solicitud para colaborar con nuestro centro educativo. Por favor confirma tu correo pulsando en el siguiente enlace:</p>
+<p><a href="%s">%s</a></p>
+<p>En cuanto verifiquemos los datos, el equipo de practicas revisara la informacion para darte de alta.</p>
+HTML,
+                htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                $verificationUrl,
+                $verificationUrl
+            ));
+
+        $this->mailer->send($email);
+    }
+
+    private function trySendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): bool
+    {
+        try {
+            $this->sendVerificationEmail($solicitud, $verificationUrl);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

@@ -71,4 +71,27 @@ trait JsonRequestTrait
 
         return $date;
     }
+
+    private function validateBusinessDateRange(
+        DateTimeImmutable $date,
+        string $fieldName,
+        ?DateTimeImmutable $minimum = null,
+        ?DateTimeImmutable $maximum = null,
+    ): ?JsonResponse {
+        $minimum ??= new DateTimeImmutable('2020-01-01');
+        $maximum ??= new DateTimeImmutable('today +6 years');
+
+        if ($date < $minimum || $date > $maximum) {
+            return $this->json([
+                'message' => sprintf(
+                    'El campo "%s" debe estar entre %s y %s.',
+                    $fieldName,
+                    $minimum->format('Y-m-d'),
+                    $maximum->format('Y-m-d')
+                ),
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return null;
+    }
 }

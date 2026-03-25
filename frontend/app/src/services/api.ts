@@ -334,14 +334,49 @@ export async function addConvenioDocument(
   convenioId: number,
   nombre: string,
   tipo?: string,
-  url?: string,
+  urlOrFile?: string | File,
+  maybeFile?: File,
 ): Promise<ConvenioDocumentRecord> {
+  const file = urlOrFile instanceof File ? urlOrFile : maybeFile;
+  const url = urlOrFile instanceof File ? undefined : urlOrFile;
+
+  if (file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('nombre', nombre);
+    if (tipo) formData.append('tipo', tipo);
+    if (url) formData.append('url', url);
+
+    const authorizationHeader = getAuthorizationHeader();
+    const response = await fetch(`${API_BASE_URL}/convenios/${convenioId}/documents`, {
+      method: 'POST',
+      body: formData,
+      headers: authorizationHeader ? { Authorization: authorizationHeader } : undefined,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      let message = `Error ${response.status}`;
+      try {
+        const payload = await response.json();
+        if (payload?.message) {
+          message = `${message}: ${payload.message}`;
+        }
+      } catch {
+        // ignore
+      }
+      throw new Error(message);
+    }
+
+    return (await response.json()) as ConvenioDocumentRecord;
+  }
+
   return apiRequest<ConvenioDocumentRecord>(`/convenios/${convenioId}/documents`, {
     method: 'POST',
     body: JSON.stringify({
       nombre,
       tipo,
-      url,
+      url: urlOrFile,
     }),
   });
 }

@@ -53,7 +53,13 @@ import {
   buildDashboardStats,
   getDashboardBaseRecordCount,
 } from './utils/dashboard';
-import { canPreviewDocument, resolveDocumentUrl } from './utils/documents';
+import {
+  canPreviewDocument,
+  inferUploadDocumentType,
+  resolveDocumentUrl,
+  UPLOAD_DOCUMENT_ACCEPT,
+  UPLOAD_DOCUMENT_TYPE_OPTIONS,
+} from './utils/documents';
 import type {
   ApiCollections,
   AsignacionDetail,
@@ -1089,14 +1095,22 @@ export default function App() {
     }
   }, [pushToast, syncConvenioState]);
 
-  const handleAddConvenioDocument = useCallback(async (convenioId: number, name: string, type: string) => {
+  const handleAddConvenioDocument = useCallback(async (
+    convenioId: number,
+    name: string,
+    type: string,
+    urlOrFile?: string | File,
+  ) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return false;
     }
+    const typeValue = type.trim() || undefined;
+    const urlValue = typeof urlOrFile === 'string' ? (urlOrFile.trim() || undefined) : undefined;
+    const fileValue = urlOrFile instanceof File ? urlOrFile : undefined;
     setSavingConvenioDocument(true);
     try {
-      const nuevo = await addConvenioDocument(convenioId, trimmedName, type.trim() || undefined);
+      const nuevo = await addConvenioDocument(convenioId, trimmedName, typeValue, urlValue, fileValue);
       setConvenioDocuments((prev) => {
         const docs = prev[convenioId] ?? [];
         return {
@@ -1153,7 +1167,7 @@ export default function App() {
         setLoadingSolicitudes(false);
       }
     },
-    [pushToast, me],
+    [pushToast],
   );
 
   const loadReferenceData = useCallback(
@@ -2943,10 +2957,11 @@ const selectedConvenio = useMemo(() => {
               className="empresa-document-form"
               onSubmit={async (event) => {
                 event.preventDefault();
+                const resolvedType = empresaDocType || inferUploadDocumentType(empresaDocFile);
                 const saved = await handleAddEmpresaDocument(
                   empresa.id,
                   empresaDocName,
-                  empresaDocType,
+                  resolvedType,
                   empresaDocFile ?? undefined,
                 );
                 if (saved) {
@@ -2967,23 +2982,39 @@ const selectedConvenio = useMemo(() => {
               </label>
               <label>
                 <span>Tipo</span>
-                <input
+                <select
                   value={empresaDocType}
                   onChange={(e) => setEmpresaDocType(e.target.value)}
-                  placeholder="PDF"
-                />
+                  required
+                >
+                  <option value="">Selecciona el tipo</option>
+                  {UPLOAD_DOCUMENT_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label>
                 <span>Archivo local</span>
                 <input
                   type="file"
-                  onChange={(e) => setEmpresaDocFile(e.target.files?.[0] ?? null)}
+                  accept={UPLOAD_DOCUMENT_ACCEPT}
+                  onChange={(e) => {
+                    const nextFile = e.target.files?.[0] ?? null;
+                    setEmpresaDocFile(nextFile);
+                    setEmpresaDocType(inferUploadDocumentType(nextFile));
+                    if (nextFile && !empresaDocName.trim()) {
+                      setEmpresaDocName(nextFile.name.replace(/\.[^.]+$/, ''));
+                    }
+                  }}
+                  required
                 />
               </label>
               <button
                 type="submit"
                 className="button button--primary button--sm"
-                disabled={savingConvenioDocument || !empresaDocFile}
+                disabled={savingConvenioDocument || !empresaDocFile || !empresaDocType}
               >
                 {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
               </button>
@@ -3781,6 +3812,7 @@ const selectedConvenio = useMemo(() => {
   const ConveniosOverviewPage = () => {
     const [documentName, setDocumentName] = useState('');
     const [documentType, setDocumentType] = useState('');
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
 
     if (!collections) {
       return <ModulePageFallback title="Convenios" />;
@@ -3827,10 +3859,17 @@ const selectedConvenio = useMemo(() => {
         return;
       }
 
-      const saved = await handleAddConvenioDocument(selectedConvenio.id, documentName, documentType);
+      const resolvedType = documentType || inferUploadDocumentType(documentFile);
+      const saved = await handleAddConvenioDocument(
+        selectedConvenio.id,
+        documentName,
+        resolvedType,
+        documentFile ?? undefined,
+      );
       if (saved) {
         setDocumentName('');
         setDocumentType('');
+        setDocumentFile(null);
       }
     };
 
@@ -4103,13 +4142,40 @@ const selectedConvenio = useMemo(() => {
                       </label>
                       <label>
                         <span>Tipo</span>
-                        <input
+                        <select
                           value={documentType}
                           onChange={(event) => setDocumentType(event.target.value)}
-                          placeholder="PDF"
+                          required
+                        >
+                          <option value="">Selecciona el tipo</option>
+                          {UPLOAD_DOCUMENT_TYPE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span>Archivo</span>
+                        <input
+                          type="file"
+                          accept={UPLOAD_DOCUMENT_ACCEPT}
+                          onChange={(event) => {
+                            const nextFile = event.target.files?.[0] ?? null;
+                            setDocumentFile(nextFile);
+                            setDocumentType(inferUploadDocumentType(nextFile));
+                            if (nextFile && !documentName.trim()) {
+                              setDocumentName(nextFile.name.replace(/\.[^.]+$/, ''));
+                            }
+                          }}
+                          required
                         />
                       </label>
-                      <button type="submit" className="button button--primary button--sm" disabled={savingConvenioDocument}>
+                      <button
+                        type="submit"
+                        className="button button--primary button--sm"
+                        disabled={savingConvenioDocument || !documentFile || !documentType}
+                      >
                         {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
                       </button>
                     </form>

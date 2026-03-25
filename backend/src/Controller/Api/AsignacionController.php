@@ -26,6 +26,9 @@ final class AsignacionController extends AbstractController
 {
     use JsonRequestTrait;
 
+    private const MIN_ALLOWED_DATE = '2020-01-01';
+    private const MAX_ALLOWED_HOURS = 2400;
+
     private const ESTADOS_PERMITIDOS = [
         'planificada',
         'en_curso',
@@ -120,7 +123,11 @@ final class AsignacionController extends AbstractController
                 'fechaInicio' => [new Assert\NotBlank(), new Assert\Length(min: 10, max: 10)],
                 'fechaFin' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'modalidad' => [new Assert\NotBlank(), new Assert\Choice(choices: self::MODALIDADES_PERMITIDAS)],
-                'horasTotales' => new Assert\Optional([new Assert\Type('integer'), new Assert\PositiveOrZero()]),
+                'horasTotales' => new Assert\Optional([
+                    new Assert\Type('integer'),
+                    new Assert\PositiveOrZero(),
+                    new Assert\LessThanOrEqual(self::MAX_ALLOWED_HOURS),
+                ]),
                 'estado' => [new Assert\NotBlank(), new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)],
             ],
             allowExtraFields: true
@@ -186,6 +193,30 @@ final class AsignacionController extends AbstractController
             return $fechaInicio;
         }
 
+        $fechaInicioValidation = $this->validateBusinessDateRange(
+            $fechaInicio,
+            'fechaInicio',
+            new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+        );
+        if ($fechaInicioValidation instanceof JsonResponse) {
+            return $fechaInicioValidation;
+        }
+
+        $convenioFechaInicio = $convenio->getFechaInicio();
+        $convenioFechaFin = $convenio->getFechaFin();
+
+        if ($fechaInicio < $convenioFechaInicio) {
+            return $this->json([
+                'message' => 'La fecha de inicio de la asignacion no puede ser anterior al inicio del convenio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($convenioFechaFin && $fechaInicio > $convenioFechaFin) {
+            return $this->json([
+                'message' => 'La fecha de inicio de la asignacion debe quedar dentro del periodo del convenio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         $asignacion = new AsignacionPractica();
         $asignacion
             ->setEstudiante($estudiante)
@@ -208,9 +239,22 @@ final class AsignacionController extends AbstractController
                 if ($fechaFin instanceof JsonResponse) {
                     return $fechaFin;
                 }
+                $fechaFinValidation = $this->validateBusinessDateRange(
+                    $fechaFin,
+                    'fechaFin',
+                    new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+                );
+                if ($fechaFinValidation instanceof JsonResponse) {
+                    return $fechaFinValidation;
+                }
                 if ($fechaFin < $fechaInicio) {
                     return $this->json([
                         'message' => 'La fecha de fin no puede ser anterior a la fecha de inicio de la asignación.',
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+                if ($convenioFechaFin && $fechaFin > $convenioFechaFin) {
+                    return $this->json([
+                        'message' => 'La fecha de fin de la asignacion no puede superar la fecha de fin del convenio.',
                     ], Response::HTTP_BAD_REQUEST);
                 }
                 $asignacion->setFechaFin($fechaFin);
@@ -270,7 +314,11 @@ final class AsignacionController extends AbstractController
                 'fechaInicio' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'fechaFin' => new Assert\Optional([new Assert\Length(min: 10, max: 10)]),
                 'modalidad' => new Assert\Optional([new Assert\Choice(choices: self::MODALIDADES_PERMITIDAS)]),
-                'horasTotales' => new Assert\Optional([new Assert\Type('integer'), new Assert\PositiveOrZero()]),
+                'horasTotales' => new Assert\Optional([
+                    new Assert\Type('integer'),
+                    new Assert\PositiveOrZero(),
+                    new Assert\LessThanOrEqual(self::MAX_ALLOWED_HOURS),
+                ]),
                 'estado' => new Assert\Optional([new Assert\Choice(choices: self::ESTADOS_PERMITIDOS)]),
             ],
             allowMissingFields: true,
@@ -356,6 +404,14 @@ final class AsignacionController extends AbstractController
             if ($fechaInicio instanceof JsonResponse) {
                 return $fechaInicio;
             }
+            $fechaInicioValidation = $this->validateBusinessDateRange(
+                $fechaInicio,
+                'fechaInicio',
+                new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+            );
+            if ($fechaInicioValidation instanceof JsonResponse) {
+                return $fechaInicioValidation;
+            }
             $asignacion->setFechaInicio($fechaInicio);
             $fechaInicioActual = $fechaInicio;
         }
@@ -367,6 +423,14 @@ final class AsignacionController extends AbstractController
                 $fechaFin = $this->parseDate($payload['fechaFin'], 'fechaFin');
                 if ($fechaFin instanceof JsonResponse) {
                     return $fechaFin;
+                }
+                $fechaFinValidation = $this->validateBusinessDateRange(
+                    $fechaFin,
+                    'fechaFin',
+                    new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+                );
+                if ($fechaFinValidation instanceof JsonResponse) {
+                    return $fechaFinValidation;
                 }
                 if ($fechaFin < $fechaInicioActual) {
                     return $this->json([
@@ -387,6 +451,30 @@ final class AsignacionController extends AbstractController
 
         if (array_key_exists('estado', $payload)) {
             $asignacion->setEstado($payload['estado']);
+        }
+
+        $convenioActivo = $asignacion->getConvenio();
+        $convenioFechaInicio = $convenioActivo->getFechaInicio();
+        $convenioFechaFin = $convenioActivo->getFechaFin();
+
+        if ($asignacion->getFechaInicio() < $convenioFechaInicio) {
+            return $this->json([
+                'message' => 'La fecha de inicio de la asignacion no puede ser anterior al inicio del convenio.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($convenioFechaFin) {
+            if ($asignacion->getFechaInicio() > $convenioFechaFin) {
+                return $this->json([
+                    'message' => 'La fecha de inicio de la asignacion debe quedar dentro del periodo del convenio.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            if ($asignacion->getFechaFin() && $asignacion->getFechaFin() > $convenioFechaFin) {
+                return $this->json([
+                    'message' => 'La fecha de fin de la asignacion no puede superar la fecha de fin del convenio.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         $entityManager->flush();

@@ -3,9 +3,35 @@ export interface PreviewableDocument {
   type?: string | null | undefined;
 }
 
+export const UPLOAD_DOCUMENT_TYPE_OPTIONS = [
+  { value: 'PDF', label: 'PDF' },
+  { value: 'WORD', label: 'Word' },
+  { value: 'EXCEL', label: 'Excel' },
+] as const;
+
+export const UPLOAD_DOCUMENT_ACCEPT = '.pdf,.doc,.docx,.xls,.xlsx';
+
 function normalizeUrl(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+export function inferUploadDocumentType(file: File | null | undefined): string {
+  const fileName = file?.name?.trim().toLowerCase() ?? '';
+  const extension = fileName.includes('.') ? fileName.split('.').pop() ?? '' : '';
+
+  switch (extension) {
+    case 'pdf':
+      return 'PDF';
+    case 'doc':
+    case 'docx':
+      return 'WORD';
+    case 'xls':
+    case 'xlsx':
+      return 'EXCEL';
+    default:
+      return '';
+  }
 }
 
 export function resolveDocumentUrl(

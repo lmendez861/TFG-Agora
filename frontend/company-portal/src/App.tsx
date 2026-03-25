@@ -530,6 +530,57 @@ function MailPage() {
   const verificationLink = session?.verificationUrl
     ? session.verificationUrl
     : '/verificar';
+  const [resending, setResending] = useState(false);
+  const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+
+  const handleResend = async () => {
+    if (!session?.portalToken && !session?.contactEmail) {
+      setFeedback({
+        kind: 'error',
+        message: 'No hay una solicitud guardada en este navegador para reenviar el correo.',
+      });
+      return;
+    }
+
+    setResending(true);
+    setFeedback(null);
+
+    try {
+      const response = await fetch(`${REGISTRO_ENDPOINT}/reenviar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          portalToken: session?.portalToken || undefined,
+          contactoEmail: session?.contactEmail || undefined,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as RegistroResponse | null;
+      if (!response.ok) {
+        throw new Error(data?.message || `Error ${response.status}`);
+      }
+
+      if (session && data?.verificationUrl) {
+        writePortalSession({
+          ...session,
+          verificationUrl: data.verificationUrl,
+          portalUrl: data.portalUrl ?? session.portalUrl,
+        });
+      }
+
+      setFeedback({
+        kind: 'success',
+        message: data?.message || 'Correo reenviado correctamente.',
+      });
+    } catch (err) {
+      setFeedback({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'No se pudo reenviar el correo de verificacion.',
+      });
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -543,6 +594,7 @@ function MailPage() {
         </div>
 
         {enviada && <div className="alert alert--success">Solicitud enviada. Revisa el correo corporativo para continuar.</div>}
+        {feedback && <div className={`alert ${feedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{feedback.message}</div>}
 
         <article className="mail-card">
           <header>
@@ -563,6 +615,9 @@ function MailPage() {
             <Link className="btn btn--ghost" to={session?.portalToken ? `/estado?token=${encodeURIComponent(session.portalToken)}` : '/estado'}>
               Ver estado
             </Link>
+            <button type="button" className="btn btn--primary" onClick={handleResend} disabled={resending}>
+              {resending ? 'Reenviando...' : 'Reenviar correo'}
+            </button>
           </div>
         </article>
       </section>

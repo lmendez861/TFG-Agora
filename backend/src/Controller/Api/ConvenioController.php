@@ -14,9 +14,12 @@ use App\Repository\EmpresaColaboradoraRepository;
 use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -27,6 +30,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class ConvenioController extends AbstractController
 {
     use JsonRequestTrait;
+
+    private const MIN_ALLOWED_DATE = '2020-01-01';
+
+    private const DOCUMENT_TYPE_EXTENSIONS = [
+        'PDF' => ['pdf'],
+        'WORD' => ['doc', 'docx'],
+        'EXCEL' => ['xls', 'xlsx'],
+    ];
 
     private const ESTADOS_PERMITIDOS = [
         'borrador',
@@ -136,6 +147,14 @@ final class ConvenioController extends AbstractController
         if ($fechaInicio instanceof JsonResponse) {
             return $fechaInicio;
         }
+        $fechaInicioValidation = $this->validateBusinessDateRange(
+            $fechaInicio,
+            'fechaInicio',
+            new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+        );
+        if ($fechaInicioValidation instanceof JsonResponse) {
+            return $fechaInicioValidation;
+        }
 
         $convenio = new Convenio();
         $convenio->setEmpresa($empresa)
@@ -159,6 +178,14 @@ final class ConvenioController extends AbstractController
             $fechaFin = $this->parseDate($payload['fechaFin'], 'fechaFin');
             if ($fechaFin instanceof JsonResponse) {
                 return $fechaFin;
+            }
+            $fechaFinValidation = $this->validateBusinessDateRange(
+                $fechaFin,
+                'fechaFin',
+                new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+            );
+            if ($fechaFinValidation instanceof JsonResponse) {
+                return $fechaFinValidation;
             }
             if ($fechaFin < $fechaInicio) {
                 return $this->json([
@@ -257,6 +284,14 @@ final class ConvenioController extends AbstractController
             if ($fechaInicio instanceof JsonResponse) {
                 return $fechaInicio;
             }
+            $fechaInicioValidation = $this->validateBusinessDateRange(
+                $fechaInicio,
+                'fechaInicio',
+                new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+            );
+            if ($fechaInicioValidation instanceof JsonResponse) {
+                return $fechaInicioValidation;
+            }
             $convenio->setFechaInicio($fechaInicio);
             $fechaInicioActual = $fechaInicio;
         }
@@ -268,6 +303,14 @@ final class ConvenioController extends AbstractController
                 if ($fechaFin instanceof JsonResponse) {
                     return $fechaFin;
                 }
+                $fechaFinValidation = $this->validateBusinessDateRange(
+                    $fechaFin,
+                    'fechaFin',
+                    new \DateTimeImmutable(self::MIN_ALLOWED_DATE)
+                );
+                if ($fechaFinValidation instanceof JsonResponse) {
+                    return $fechaFinValidation;
+                }
                 if ($fechaFin < $fechaInicioActual) {
                     return $this->json([
                         'message' => 'La fecha de fin no puede ser anterior a la fecha de inicio del convenio.',
@@ -278,6 +321,7 @@ final class ConvenioController extends AbstractController
         }
 
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeDetail($convenio), Response::HTTP_OK);
     }
@@ -388,7 +432,8 @@ final class ConvenioController extends AbstractController
         int $itemId,
         Request $request,
         ConvenioChecklistItemRepository $checklistRepository,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
@@ -424,41 +469,95 @@ final class ConvenioController extends AbstractController
         ?Convenio $convenio,
         Request $request,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        Filesystem $filesystem,
+        BootstrapSnapshotProvider $snapshotProvider
     ): JsonResponse {
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
         }
 
-        $payload = $this->decodePayload($request);
-        if ($payload instanceof JsonResponse) {
-            return $payload;
+        if ($request->files->count() > 0) {
+            $file = $request->files->get('file');
+            if (!$file instanceof UploadedFile) {
+                return $this->json(['message' => 'Archivo no proporcionado.'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $documentMetadata = $this->resolveUploadedDocumentMetadata($file, $request->request->get('tipo'));
+            if ($documentMetadata instanceof JsonResponse) {
+                return $documentMetadata;
+            }
+
+            $originalName = $file->getClientOriginalName();
+            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
+            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $documentMetadata['extension']);
+
+            $targetDir = sprintf('%s/var/uploads/convenios/%d', $this->getParameter('kernel.project_dir'), $convenio->getId());
+            if (!$filesystem->exists($targetDir)) {
+                $filesystem->mkdir($targetDir, 0775);
+            }
+
+            $file->move($targetDir, $finalName);
+            $storedUrl = sprintf('/api/convenios/%d/documents/%s', $convenio->getId(), $finalName);
+            $nombre = $request->request->get('nombre') ?: $originalName;
+
+            $documento = (new ConvenioDocumento())
+                ->setConvenio($convenio)
+                ->setNombre($nombre)
+                ->setTipo($documentMetadata['type'])
+                ->setUrl($storedUrl);
+        } else {
+            $payload = $this->decodePayload($request);
+            if ($payload instanceof JsonResponse) {
+                return $payload;
+            }
+
+            $constraints = new Assert\Collection(
+                fields: [
+                    'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                    'tipo' => new Assert\Optional([new Assert\Length(max: 60)]),
+                    'url' => new Assert\Optional([new Assert\Length(max: 255)]),
+                ],
+                allowExtraFields: true
+            );
+
+            $violations = $validator->validate($payload, $constraints);
+            if ($violations->count() > 0) {
+                return $this->validationErrorResponse($violations);
+            }
+
+            $tipoNormalizado = $this->normalizeDocumentType($payload['tipo'] ?? null);
+            if (array_key_exists('tipo', $payload) && $payload['tipo'] !== null && $tipoNormalizado === null) {
+                return $this->json([
+                    'message' => 'El tipo de documento debe ser PDF, WORD o EXCEL.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $documento = (new ConvenioDocumento())
+                ->setConvenio($convenio)
+                ->setNombre($payload['nombre'])
+                ->setTipo($tipoNormalizado)
+                ->setUrl($payload['url'] ?? null);
         }
-
-        $constraints = new Assert\Collection(
-            fields: [
-                'nombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
-                'tipo' => new Assert\Optional([new Assert\Length(max: 60)]),
-                'url' => new Assert\Optional([new Assert\Length(max: 255)]),
-            ],
-            allowExtraFields: true
-        );
-
-        $violations = $validator->validate($payload, $constraints);
-        if ($violations->count() > 0) {
-            return $this->validationErrorResponse($violations);
-        }
-
-        $documento = (new ConvenioDocumento())
-            ->setConvenio($convenio)
-            ->setNombre($payload['nombre'])
-            ->setTipo($payload['tipo'] ?? null)
-            ->setUrl($payload['url'] ?? null);
 
         $entityManager->persist($documento);
         $entityManager->flush();
+        $snapshotProvider->invalidate();
 
         return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\\d+>}/documents/{filename}', name: 'download_support_document', methods: ['GET'])]
+    public function downloadDocument(int $id, string $filename): Response
+    {
+        $filePath = sprintf('%s/var/uploads/convenios/%d/%s', $this->getParameter('kernel.project_dir'), $id, $filename);
+        if (!is_file($filePath)) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+
+        return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
     #[Route('/{id<\d+>}/alerts/{alertId<\d+>}', name: 'dismiss_alert', methods: ['PATCH'])]
@@ -541,6 +640,67 @@ final class ConvenioController extends AbstractController
             'active' => $alerta->isActiva(),
             'createdAt' => $alerta->getCreadaEn()->format(\DateTimeInterface::ATOM),
         ];
+    }
+
+    /**
+     * @return array{type:string,extension:string}|JsonResponse
+     */
+    private function resolveUploadedDocumentMetadata(UploadedFile $file, mixed $requestedType): array|JsonResponse
+    {
+        $normalizedType = $this->normalizeDocumentType(is_string($requestedType) ? $requestedType : null);
+        if ($requestedType !== null && $normalizedType === null) {
+            return $this->json([
+                'message' => 'El tipo de documento debe ser PDF, WORD o EXCEL.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+        $detectedType = $this->detectDocumentTypeByExtension($extension);
+        if ($detectedType === null) {
+            return $this->json([
+                'message' => 'Solo se permiten ficheros PDF, Word o Excel.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($normalizedType !== null && $normalizedType !== $detectedType) {
+            return $this->json([
+                'message' => 'El tipo seleccionado no coincide con la extension del archivo subido.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return [
+            'type' => $normalizedType ?? $detectedType,
+            'extension' => $extension,
+        ];
+    }
+
+    private function normalizeDocumentType(?string $value): ?string
+    {
+        $normalized = strtoupper(trim((string) $value));
+        if ($normalized === '') {
+            return null;
+        }
+
+        return array_key_exists($normalized, self::DOCUMENT_TYPE_EXTENSIONS) ? $normalized : null;
+    }
+
+    private function detectDocumentTypeByExtension(string $extension): ?string
+    {
+        foreach (self::DOCUMENT_TYPE_EXTENSIONS as $type => $extensions) {
+            if (in_array($extension, $extensions, true)) {
+                return $type;
+            }
+        }
+
+        return null;
+    }
+
+    private function sanitizeDocumentBaseName(string $baseName): string
+    {
+        $normalized = preg_replace('/[^A-Za-z0-9_-]+/', '-', trim($baseName)) ?? 'documento';
+        $normalized = trim($normalized, '-_');
+
+        return $normalized !== '' ? $normalized : 'documento';
     }
 
     /**

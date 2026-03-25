@@ -105,7 +105,7 @@ final class AsignacionControllerTest extends WebTestCase
             ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
         $convenio = $this->entityManager
             ->getRepository(Convenio::class)
-            ->findOneBy(['titulo' => 'Convenio Integraciones Clínicas 2024']);
+            ->findOneBy(['empresa' => $empresa]);
         $tutorAcademico = $this->entityManager
             ->getRepository(TutorAcademico::class)
             ->findOneBy(['nombre' => 'Miguel']);
@@ -219,6 +219,83 @@ final class AsignacionControllerTest extends WebTestCase
                 'tutorAcademicoId' => $tutorAcademico->getId(),
                 'fechaInicio' => '2025-03-01',
                 'modalidad' => 'remota',
+                'estado' => 'planificada',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testCrearAsignacionRechazaHorasExcesivas(): void
+    {
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Luis']);
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['empresa' => $empresa]);
+        $tutorAcademico = $this->entityManager
+            ->getRepository(TutorAcademico::class)
+            ->findOneBy(['nombre' => 'Miguel']);
+
+        self::assertNotNull($estudiante);
+        self::assertNotNull($empresa);
+        self::assertNotNull($convenio);
+        self::assertNotNull($tutorAcademico);
+
+        $this->client->request(
+            'POST',
+            '/api/asignaciones',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'estudianteId' => $estudiante->getId(),
+                'empresaId' => $empresa->getId(),
+                'convenioId' => $convenio->getId(),
+                'tutorAcademicoId' => $tutorAcademico->getId(),
+                'fechaInicio' => '2025-03-01',
+                'modalidad' => 'remota',
+                'horasTotales' => 3000,
+                'estado' => 'planificada',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testCrearAsignacionRechazaFechasFueraDelConvenio(): void
+    {
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Luis']);
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['empresa' => $empresa]);
+        $tutorAcademico = $this->entityManager
+            ->getRepository(TutorAcademico::class)
+            ->findOneBy(['nombre' => 'Miguel']);
+
+        self::assertNotNull($estudiante);
+        self::assertNotNull($empresa);
+        self::assertNotNull($convenio);
+        self::assertNotNull($tutorAcademico);
+
+        $this->client->request(
+            'POST',
+            '/api/asignaciones',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'estudianteId' => $estudiante->getId(),
+                'empresaId' => $empresa->getId(),
+                'convenioId' => $convenio->getId(),
+                'tutorAcademicoId' => $tutorAcademico->getId(),
+                'fechaInicio' => '2024-01-01',
+                'modalidad' => 'presencial',
                 'estado' => 'planificada',
             ], JSON_THROW_ON_ERROR)
         );

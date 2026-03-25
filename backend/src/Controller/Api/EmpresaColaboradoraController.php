@@ -13,6 +13,7 @@ use App\Service\BootstrapSnapshotProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,6 +41,12 @@ final class EmpresaColaboradoraController extends AbstractController
         'pausada',
         'baja',
         'suspendida',
+    ];
+
+    private const DOCUMENT_TYPE_EXTENSIONS = [
+        'PDF' => ['pdf'],
+        'WORD' => ['doc', 'docx'],
+        'EXCEL' => ['xls', 'xlsx'],
     ];
 
     #[Route('', name: 'index', methods: ['GET'])]
@@ -390,13 +397,16 @@ final class EmpresaColaboradoraController extends AbstractController
         // Si viene un fichero (multipart), lo subimos; si no, usamos JSON con URL.
         if ($request->files->count() > 0) {
             $file = $request->files->get('file');
-            if (!$file) {
+            if (!$file instanceof UploadedFile) {
                 return $this->json(['message' => 'Archivo no proporcionado.'], Response::HTTP_BAD_REQUEST);
             }
+            $documentMetadata = $this->resolveUploadedDocumentMetadata($file, $request->request->get('tipo'));
+            if ($documentMetadata instanceof JsonResponse) {
+                return $documentMetadata;
+            }
             $originalName = $file->getClientOriginalName();
-            $safeName = pathinfo($originalName, PATHINFO_FILENAME);
-            $extension = $file->getClientOriginalExtension();
-            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $extension ?: 'bin');
+            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
+            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $documentMetadata['extension']);
 
             $targetDir = sprintf('%s/var/uploads/empresas/%d', $this->getParameter('kernel.project_dir'), $empresa->getId());
             if (!$filesystem->exists($targetDir)) {
@@ -406,12 +416,12 @@ final class EmpresaColaboradoraController extends AbstractController
             $storedUrl = sprintf('/api/empresas/%d/documentos/%s', $empresa->getId(), $finalName);
 
             $nombre = $request->request->get('nombre') ?: $originalName;
-            $tipo = $request->request->get('tipo') ?: $extension;
+            $tipo = $documentMetadata['type'];
 
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($nombre)
-                ->setTipo($tipo ?: null)
+                ->setTipo($tipo)
                 ->setUrl($storedUrl);
         } else {
             $payload = $this->decodePayload($request);
@@ -433,10 +443,17 @@ final class EmpresaColaboradoraController extends AbstractController
                 return $this->validationErrorResponse($violations);
             }
 
+            $tipoNormalizado = $this->normalizeDocumentType($payload['tipo'] ?? null);
+            if (array_key_exists('tipo', $payload) && $payload['tipo'] !== null && $tipoNormalizado === null) {
+                return $this->json([
+                    'message' => 'El tipo de documento debe ser PDF, WORD o EXCEL.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($payload['nombre'])
-                ->setTipo($payload['tipo'] ?? null)
+                ->setTipo($tipoNormalizado)
                 ->setUrl($payload['url'] ?? null);
         }
 
@@ -589,6 +606,67 @@ final class EmpresaColaboradoraController extends AbstractController
             'url' => $publicUrl,
             'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
         ];
+    }
+
+    /**
+     * @return array{type:string,extension:string}|JsonResponse
+     */
+    private function resolveUploadedDocumentMetadata(UploadedFile $file, mixed $requestedType): array|JsonResponse
+    {
+        $normalizedType = $this->normalizeDocumentType(is_string($requestedType) ? $requestedType : null);
+        if ($requestedType !== null && $normalizedType === null) {
+            return $this->json([
+                'message' => 'El tipo de documento debe ser PDF, WORD o EXCEL.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension() ?: pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+        $detectedType = $this->detectDocumentTypeByExtension($extension);
+        if ($detectedType === null) {
+            return $this->json([
+                'message' => 'Solo se permiten ficheros PDF, Word o Excel.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($normalizedType !== null && $normalizedType !== $detectedType) {
+            return $this->json([
+                'message' => 'El tipo seleccionado no coincide con la extension del archivo subido.',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        return [
+            'type' => $normalizedType ?? $detectedType,
+            'extension' => $extension,
+        ];
+    }
+
+    private function normalizeDocumentType(?string $value): ?string
+    {
+        $normalized = strtoupper(trim((string) $value));
+        if ($normalized === '') {
+            return null;
+        }
+
+        return array_key_exists($normalized, self::DOCUMENT_TYPE_EXTENSIONS) ? $normalized : null;
+    }
+
+    private function detectDocumentTypeByExtension(string $extension): ?string
+    {
+        foreach (self::DOCUMENT_TYPE_EXTENSIONS as $type => $extensions) {
+            if (in_array($extension, $extensions, true)) {
+                return $type;
+            }
+        }
+
+        return null;
+    }
+
+    private function sanitizeDocumentBaseName(string $baseName): string
+    {
+        $normalized = preg_replace('/[^A-Za-z0-9_-]+/', '-', trim($baseName)) ?? 'documento';
+        $normalized = trim($normalized, '-_');
+
+        return $normalized !== '' ? $normalized : 'documento';
     }
 
     private function buildAbsoluteUrl(string $path): string

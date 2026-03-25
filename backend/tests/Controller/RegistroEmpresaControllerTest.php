@@ -99,4 +99,34 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         $payload = json_decode($client->getResponse()->getContent() ?: '{}', true);
         self::assertArrayHasKey('message', $payload);
     }
+
+    public function testResendVerificationUsesExistingSolicitud(): void
+    {
+        $client = static::createClient();
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get('doctrine')->getManager();
+
+        $solicitud = (new EmpresaSolicitud())
+            ->setNombreEmpresa('Reenvio Test')
+            ->setContactoNombre('Contacto Reenvio')
+            ->setContactoEmail('reenvio@example.com');
+        $em->persist($solicitud);
+        $em->flush();
+
+        $client->request(
+            'POST',
+            '/registro-empresa/reenviar',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'portalToken' => $solicitud->getPortalToken(),
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($client->getResponse()->getContent() ?: '{}', true);
+        self::assertIsArray($payload);
+        self::assertArrayHasKey('portalToken', $payload);
+        self::assertArrayHasKey('verificationUrl', $payload);
+        self::assertSame($solicitud->getPortalToken(), $payload['portalToken']);
+    }
 }

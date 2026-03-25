@@ -7,6 +7,15 @@ import type {
   TutorProfesionalSummary,
 } from '../types';
 
+const MODALIDAD_OPTIONS = ['presencial', 'remota', 'hibrida'];
+const ESTADO_OPTIONS = ['planificada', 'en_curso', 'finalizada', 'cancelada', 'en_revision'];
+const MIN_ALLOWED_DATE = '2020-01-01';
+const MAX_ALLOWED_HOURS = 2400;
+
+function buildMaxAllowedDate(): string {
+  return `${new Date().getFullYear() + 6}-12-31`;
+}
+
 export interface AsignacionFormValues {
   estudianteId: string;
   empresaId: string;
@@ -50,9 +59,11 @@ export function AsignacionForm({
   loadingValues = false,
 }: AsignacionFormProps) {
   const [values, setValues] = useState<AsignacionFormValues>(initialValues);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     setValues(initialValues);
+    setLocalError(null);
   }, [initialValues]);
 
   const conveniosDisponibles = useMemo(
@@ -63,6 +74,11 @@ export function AsignacionForm({
   const tutoresProfesionalesDisponibles = useMemo(
     () => tutoresProfesionales.filter((tutor) => String(tutor.empresa.id) === values.empresaId),
     [tutoresProfesionales, values.empresaId],
+  );
+
+  const convenioSeleccionado = useMemo(
+    () => convenios.find((convenio) => String(convenio.id) === values.convenioId) ?? null,
+    [convenios, values.convenioId],
   );
 
   useEffect(() => {
@@ -86,14 +102,64 @@ export function AsignacionForm({
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
+    setLocalError(null);
     setValues((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  const validateValues = (): string | null => {
+    const maxAllowedDate = buildMaxAllowedDate();
+
+    if (values.fechaInicio < MIN_ALLOWED_DATE || values.fechaInicio > maxAllowedDate) {
+      return `La fecha de inicio debe estar entre ${MIN_ALLOWED_DATE} y ${maxAllowedDate}.`;
+    }
+
+    if (values.fechaFin) {
+      if (values.fechaFin < MIN_ALLOWED_DATE || values.fechaFin > maxAllowedDate) {
+        return `La fecha de fin debe estar entre ${MIN_ALLOWED_DATE} y ${maxAllowedDate}.`;
+      }
+
+      if (values.fechaFin < values.fechaInicio) {
+        return 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+      }
+    }
+
+    if (values.horasTotales) {
+      const parsedHours = Number(values.horasTotales);
+      if (!Number.isInteger(parsedHours) || parsedHours < 0 || parsedHours > MAX_ALLOWED_HOURS) {
+        return `Las horas totales deben ser un entero entre 0 y ${MAX_ALLOWED_HOURS}.`;
+      }
+    }
+
+    if (convenioSeleccionado) {
+      if (values.fechaInicio < convenioSeleccionado.fechaInicio) {
+        return 'La fecha de inicio de la asignacion no puede ser anterior al inicio del convenio.';
+      }
+
+      if (convenioSeleccionado.fechaFin) {
+        if (values.fechaInicio > convenioSeleccionado.fechaFin) {
+          return 'La fecha de inicio de la asignacion no puede quedar fuera del periodo del convenio.';
+        }
+
+        if (values.fechaFin && values.fechaFin > convenioSeleccionado.fechaFin) {
+          return 'La fecha de fin de la asignacion no puede superar la fecha de fin del convenio.';
+        }
+      }
+    }
+
+    return null;
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const validationError = validateValues();
+    if (validationError) {
+      setLocalError(validationError);
+      return;
+    }
+
     onSubmit(values);
   };
 
@@ -166,31 +232,68 @@ export function AsignacionForm({
 
         <label className="form__field">
           <span>Modalidad*</span>
-          <input name="modalidad" value={values.modalidad} onChange={handleChange} required />
+          <select name="modalidad" value={values.modalidad} onChange={handleChange} required>
+            <option value="">Selecciona una modalidad</option>
+            {MODALIDAD_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="form__field">
           <span>Estado*</span>
-          <input name="estado" value={values.estado} onChange={handleChange} required />
+          <select name="estado" value={values.estado} onChange={handleChange} required>
+            <option value="">Selecciona un estado</option>
+            {ESTADO_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="form__field">
           <span>Horas totales</span>
-          <input name="horasTotales" type="number" min="0" value={values.horasTotales} onChange={handleChange} />
+          <input
+            name="horasTotales"
+            type="number"
+            min="0"
+            max={MAX_ALLOWED_HOURS}
+            step="1"
+            value={values.horasTotales}
+            onChange={handleChange}
+          />
         </label>
 
         <label className="form__field">
           <span>Fecha inicio*</span>
-          <input name="fechaInicio" type="date" value={values.fechaInicio} onChange={handleChange} required />
+          <input
+            name="fechaInicio"
+            type="date"
+            value={values.fechaInicio}
+            min={convenioSeleccionado?.fechaInicio ?? MIN_ALLOWED_DATE}
+            max={convenioSeleccionado?.fechaFin ?? buildMaxAllowedDate()}
+            onChange={handleChange}
+            required
+          />
         </label>
 
         <label className="form__field">
           <span>Fecha fin</span>
-          <input name="fechaFin" type="date" value={values.fechaFin} onChange={handleChange} />
+          <input
+            name="fechaFin"
+            type="date"
+            value={values.fechaFin}
+            min={values.fechaInicio || convenioSeleccionado?.fechaInicio || MIN_ALLOWED_DATE}
+            max={convenioSeleccionado?.fechaFin ?? buildMaxAllowedDate()}
+            onChange={handleChange}
+          />
         </label>
       </div>
 
-      {errorMessage && <p className="form__error">{errorMessage}</p>}
+      {(localError || errorMessage) && <p className="form__error">{localError ?? errorMessage}</p>}
 
       <div className="form__actions">
         <button type="button" className="button button--ghost" onClick={onCancel} disabled={submitting}>

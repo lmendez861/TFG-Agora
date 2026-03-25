@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   canPreviewDocument,
+  inferUploadDocumentType,
   isPdfDocument,
   resolveDocumentUrl,
 } from '../src/utils/documents.ts';
@@ -36,4 +37,11 @@ test('canPreviewDocument solo habilita vista previa cuando existe URL resoluble 
     canPreviewDocument({ url: '/api/empresas/7/documentos/manual.docx', type: 'DOCX' }, 'http://localhost:8000/api'),
     false,
   );
+});
+
+test('inferUploadDocumentType reconoce PDF, Word y Excel por extension', () => {
+  assert.equal(inferUploadDocumentType({ name: 'convenio.pdf' } as File), 'PDF');
+  assert.equal(inferUploadDocumentType({ name: 'acta.docx' } as File), 'WORD');
+  assert.equal(inferUploadDocumentType({ name: 'seguimiento.xlsx' } as File), 'EXCEL');
+  assert.equal(inferUploadDocumentType({ name: 'imagen.png' } as File), '');
 });

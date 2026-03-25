@@ -10,6 +10,7 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
 final class ConvenioControllerTest extends WebTestCase
@@ -153,6 +154,30 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testCrearConvenioRechazaFechasFueraDeRangoOperativo(): void
+    {
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['email' => 'contacto@innovar.es']);
+
+        self::assertNotNull($empresa);
+
+        $this->client->request(
+            'POST',
+            '/api/convenios',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'empresaId' => $empresa->getId(),
+                'titulo' => 'Convenio historico invalido',
+                'tipo' => 'Prácticas curriculares',
+                'estado' => 'vigente',
+                'fechaInicio' => '2004-09-26',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testExtrasIncluyeChecklistDocumentosYAlertas(): void
     {
         $convenio = $this->entityManager
@@ -173,6 +198,91 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertNotEmpty($payload['checklist']);
         self::assertNotEmpty($payload['documents']);
         self::assertNotEmpty($payload['alerts']);
+    }
+
+    public function testDocumentoPdfSubidoAConvenioSeSirveEnLinea(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-convenio-pdf');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'acuerdo.pdf',
+            'application/pdf',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            parameters: [
+                'nombre' => 'Acuerdo firmado',
+                'tipo' => 'PDF',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('url', $payload);
+
+        $this->client->request('GET', parse_url($payload['url'], PHP_URL_PATH) ?: $payload['url']);
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            'application/pdf',
+            $this->client->getResponse()->headers->get('content-type', '')
+        );
+        self::assertStringContainsString(
+            'inline',
+            $this->client->getResponse()->headers->get('content-disposition', '')
+        );
+    }
+
+    public function testDocumentoConvenioRechazaTipoQueNoCoincideConLaExtension(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-convenio-docx');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, 'Dummy Word content');
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'acta.docx',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            parameters: [
+                'nombre' => 'Acta',
+                'tipo' => 'PDF',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
     public function testAdvanceWorkflowActualizaEstado(): void

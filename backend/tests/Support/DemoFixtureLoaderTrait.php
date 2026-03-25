@@ -10,6 +10,15 @@ trait DemoFixtureLoaderTrait
 {
     protected function reloadDemoFixtures(EntityManagerInterface $entityManager): void
     {
+        $connection = $entityManager->getConnection();
+        $params = $connection->getParams();
+        $connection->close();
+
+        $sqlitePath = $params['path'] ?? null;
+        if (is_string($sqlitePath) && $sqlitePath !== '' && is_file($sqlitePath)) {
+            @unlink($sqlitePath);
+        }
+
         $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
 
         if ($metadata === []) {

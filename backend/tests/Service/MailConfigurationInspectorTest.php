@@ -34,4 +34,32 @@ final class MailConfigurationInspectorTest extends TestCase
         self::assertTrue($snapshot['canSend']);
         self::assertSame('healthy', $snapshot['status']);
     }
+
+    public function testDetectaBrevoApiPlaceholderComoPendiente(): void
+    {
+        $inspector = new MailConfigurationInspector(
+            'brevo+api://BREVO_API_KEY@default',
+            'Agora <sender-verificado@tu-dominio.com>'
+        );
+
+        $snapshot = $inspector->snapshot();
+
+        self::assertFalse($snapshot['canSend']);
+        self::assertSame('warning', $snapshot['status']);
+        self::assertSame('brevo', $snapshot['provider']);
+    }
+
+    public function testAceptaBrevoApiConClaveReal(): void
+    {
+        $inspector = new MailConfigurationInspector(
+            'brevo+api://xkeysib-123456789-real@default',
+            'Agora <sender@midominio.com>'
+        );
+
+        $snapshot = $inspector->snapshot();
+
+        self::assertTrue($snapshot['canSend']);
+        self::assertSame('healthy', $snapshot['status']);
+        self::assertSame('brevo', $snapshot['provider']);
+    }
 }

@@ -21,6 +21,7 @@ final class MailConfigurationInspector
             return [
                 'status' => 'warning',
                 'canSend' => false,
+                'provider' => 'sin-configurar',
                 'detail' => 'No hay un MAILER_DSN util para correo saliente.',
             ];
         }
@@ -29,6 +30,7 @@ final class MailConfigurationInspector
             return [
                 'status' => 'healthy',
                 'canSend' => true,
+                'provider' => 'null',
                 'detail' => 'Correo saliente en modo de pruebas con transporte nulo.',
             ];
         }
@@ -38,11 +40,13 @@ final class MailConfigurationInspector
         $host = strtolower((string) ($parts['host'] ?? ''));
         $user = strtolower(urldecode((string) ($parts['user'] ?? '')));
         $pass = strtolower(urldecode((string) ($parts['pass'] ?? '')));
+        $provider = $this->detectProvider($scheme, $host);
 
         if ($scheme === '' || $host === '') {
             return [
                 'status' => 'warning',
                 'canSend' => false,
+                'provider' => $provider,
                 'detail' => 'La configuracion SMTP no tiene esquema u host validos.',
             ];
         }
@@ -51,7 +55,10 @@ final class MailConfigurationInspector
             return [
                 'status' => 'warning',
                 'canSend' => false,
-                'detail' => sprintf('El correo saliente sigue con credenciales de ejemplo para %s.', $host),
+                'provider' => $provider,
+                'detail' => $provider === 'brevo'
+                    ? 'El correo saliente esta preparado para Brevo, pero falta una API key o credencial SMTP real.'
+                    : sprintf('El correo saliente sigue con credenciales de ejemplo para %s.', $host),
             ];
         }
 
@@ -59,6 +66,7 @@ final class MailConfigurationInspector
             return [
                 'status' => 'warning',
                 'canSend' => false,
+                'provider' => $provider,
                 'detail' => 'La direccion remitente APP_MAIL_FROM no es valida.',
             ];
         }
@@ -66,16 +74,36 @@ final class MailConfigurationInspector
         return [
             'status' => 'healthy',
             'canSend' => true,
-            'detail' => sprintf('Correo saliente configurado sobre %s.', $host),
+            'provider' => $provider,
+            'detail' => $provider === 'brevo'
+                ? 'Correo saliente preparado con Brevo.'
+                : sprintf('Correo saliente configurado sobre %s.', $host),
         ];
     }
 
     private function looksLikePlaceholder(string $user, string $pass): bool
     {
-        $placeholderUsers = ['usuario', 'user', 'username', 'correo', 'email', 'demo'];
-        $placeholderPasswords = ['clave', 'password', 'pass', 'changeme', 'demo', '123456'];
+        $placeholderUsers = ['usuario', 'user', 'username', 'correo', 'email', 'demo', 'key', 'api_key', 'brevo_api_key'];
+        $placeholderPasswords = ['clave', 'password', 'pass', 'changeme', 'demo', '123456', 'key', 'api_key', 'secret'];
 
         return in_array($user, $placeholderUsers, true) || in_array($pass, $placeholderPasswords, true);
+    }
+
+    private function detectProvider(string $scheme, string $host): string
+    {
+        if (str_starts_with($scheme, 'brevo+')) {
+            return 'brevo';
+        }
+
+        if (str_contains($host, 'brevo')) {
+            return 'brevo';
+        }
+
+        if (str_starts_with($scheme, 'smtp')) {
+            return 'smtp';
+        }
+
+        return $scheme !== '' ? $scheme : 'desconocido';
     }
 
     private function hasValidFromAddress(): bool

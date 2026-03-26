@@ -40,10 +40,14 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('portalUrl', $payload);
         self::assertStringContainsString('/registro-empresa/confirmar?token=', $payload['verificationUrl']);
         self::assertStringContainsString('/portal/solicitudes/', $payload['portalUrl']);
+        self::assertSame('sent', $payload['emailDelivery']);
 
         /** @var EmpresaSolicitudRepository $repository */
         $repository = static::getContainer()->get(EmpresaSolicitudRepository::class);
-        $solicitud = $repository->findOneBy(['contactoEmail' => 'laura.correo@example.com']);
+        $solicitud = $repository->findOneBy(
+            ['contactoEmail' => 'laura.correo@example.com'],
+            ['id' => 'DESC']
+        );
 
         self::assertInstanceOf(EmpresaSolicitud::class, $solicitud);
         self::assertSame('Correo Real SL', $solicitud->getNombreEmpresa());
@@ -128,5 +132,6 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('portalToken', $payload);
         self::assertArrayHasKey('verificationUrl', $payload);
         self::assertSame($solicitud->getPortalToken(), $payload['portalToken']);
+        self::assertSame('sent', $payload['emailDelivery']);
     }
 }

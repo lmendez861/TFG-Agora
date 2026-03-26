@@ -60,6 +60,35 @@ Si no defines `VITE_API_BASE_URL`, las builds del panel y del portal consumen la
 
 `DEFAULT_URI` controla el esquema y host usados para enlaces absolutos, como la verificacion por email y algunas URLs generadas por el backend. Si quieres trabajar con HTTPS, actualiza ese valor en `.env.local`.
 
+## Correo real con Brevo
+
+La integracion queda preparada para Brevo usando la via oficial de Symfony:
+
+```bash
+composer require symfony/brevo-mailer
+```
+
+Configuracion recomendada en `.env.local`:
+
+```env
+MAILER_DSN="brevo+api://TU_BREVO_API_KEY@default"
+APP_MAIL_FROM="Agora <sender-verificado@tu-dominio.com>"
+```
+
+Pasos necesarios en Brevo:
+- Crear una cuenta gratuita.
+- Verificar el remitente o dominio desde el que enviara la aplicacion.
+- Generar una API key transaccional.
+- Pegar la clave en `MAILER_DSN`.
+
+Prueba rapida tras configurar la clave:
+
+```bash
+php bin/console mailer:test tu-correo@gmail.com
+```
+
+El monitor privado mostrara si el correo saliente sigue con placeholders o ya esta listo para envio real.
+
 ## Autenticacion y seguridad
 
 - Todos los endpoints bajo `/api` requieren `ROLE_API`.

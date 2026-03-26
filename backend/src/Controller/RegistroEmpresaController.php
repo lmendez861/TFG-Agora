@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Controller\Api\JsonRequestTrait;
 use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
+use App\Service\MailConfigurationInspector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -30,6 +32,8 @@ final class RegistroEmpresaController extends AbstractController
         private readonly ValidatorInterface $validator,
         private readonly EmpresaSolicitudRepository $solicitudRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly KernelInterface $kernel,
+        private readonly MailConfigurationInspector $mailConfigurationInspector,
         private readonly string $fromAddress,
     ) {
     }
@@ -87,18 +91,32 @@ final class RegistroEmpresaController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        $emailSent = $this->trySendVerificationEmail($solicitud, $verificationUrl);
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+        $emailDelivery = 'sent';
+        if (!$mailSnapshot['canSend']) {
+            $emailDelivery = 'unavailable';
+        } elseif (!$this->trySendVerificationEmail($solicitud, $verificationUrl)) {
+            $emailDelivery = 'failed';
+        }
 
-        return $this->json([
-            'message' => $emailSent
-                ? 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.'
-                : 'Solicitud registrada correctamente, pero no hemos podido enviar el correo de verificacion. Reintenta el envio desde el portal o revisa la configuracion de correo.',
+        $response = [
+            'message' => match ($emailDelivery) {
+                'sent' => 'Solicitud registrada correctamente. Por favor revisa tu email para confirmar la direccion.',
+                'unavailable' => 'Solicitud registrada correctamente, pero el correo saliente no esta configurado todavia. Debes revisar la configuracion SMTP antes de enviar verificaciones reales.',
+                default => 'Solicitud registrada correctamente, pero no hemos podido enviar el correo de verificacion. Reintenta el envio desde el portal o revisa la configuracion de correo.',
+            },
             'id' => $solicitud->getId(),
             'portalToken' => $solicitud->getPortalToken(),
-            'verificationUrl' => $verificationUrl,
             'portalUrl' => $portalUrl,
-            'emailDelivery' => $emailSent ? 'sent' : 'failed',
-        ], Response::HTTP_CREATED);
+            'emailDelivery' => $emailDelivery,
+            'mailDetail' => $mailSnapshot['detail'],
+        ];
+
+        if ($this->shouldExposeVerificationLinks()) {
+            $response['verificationUrl'] = $verificationUrl;
+        }
+
+        return $this->json($response, Response::HTTP_CREATED);
     }
 
     #[Route('/reenviar', name: 'resend', methods: ['POST'])]
@@ -165,23 +183,40 @@ final class RegistroEmpresaController extends AbstractController
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+        if (!$mailSnapshot['canSend']) {
+            return $this->json([
+                'message' => 'No hemos podido reenviar el correo de verificacion porque el correo saliente no esta configurado correctamente.',
+                'portalToken' => $solicitud->getPortalToken(),
+                'portalUrl' => $portalUrl,
+                'emailDelivery' => 'unavailable',
+                'mailDetail' => $mailSnapshot['detail'],
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
         if (!$this->trySendVerificationEmail($solicitud, $verificationUrl)) {
             return $this->json([
                 'message' => 'No hemos podido reenviar el correo de verificacion. Revisa la configuracion SMTP e intentalo de nuevo.',
                 'portalToken' => $solicitud->getPortalToken(),
-                'verificationUrl' => $verificationUrl,
                 'portalUrl' => $portalUrl,
                 'emailDelivery' => 'failed',
+                'mailDetail' => 'La configuracion parece valida, pero el transporte rechazo el envio.',
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        return $this->json([
+        $response = [
             'message' => 'Hemos reenviado el correo de verificacion a la direccion registrada.',
             'portalToken' => $solicitud->getPortalToken(),
-            'verificationUrl' => $verificationUrl,
             'portalUrl' => $portalUrl,
             'emailDelivery' => 'sent',
-        ], Response::HTTP_OK);
+            'mailDetail' => $mailSnapshot['detail'],
+        ];
+
+        if ($this->shouldExposeVerificationLinks()) {
+            $response['verificationUrl'] = $verificationUrl;
+        }
+
+        return $this->json($response, Response::HTTP_OK);
     }
 
     #[Route('/confirmar', name: 'confirm', methods: ['GET'])]
@@ -271,5 +306,10 @@ HTML,
         } catch (Throwable) {
             return false;
         }
+    }
+
+    private function shouldExposeVerificationLinks(): bool
+    {
+        return $this->kernel->getEnvironment() === 'test' || $this->kernel->isDebug();
     }
 }

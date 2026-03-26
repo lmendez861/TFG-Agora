@@ -66,6 +66,7 @@ final class MonitorControllerTest extends WebTestCase
         self::assertNotEmpty($payload['activity']);
         self::assertNotEmpty($payload['tests']);
         self::assertContains('public-access', array_column($payload['services'], 'id'));
+        self::assertContains('mailer', array_column($payload['services'], 'id'));
 
         $logFiles = array_column($payload['logs'], 'file');
         self::assertContains('monitor-test.log', $logFiles);

@@ -21,6 +21,11 @@ services:
         arguments:
             $fromAddress: '%app.mail_from%'
 
+    App\Service\MailConfigurationInspector:
+        arguments:
+            $mailerDsn: '%env(string:MAILER_DSN)%'
+            $fromAddress: '%app.mail_from%'
+
     App\EventSubscriber\BootstrapSnapshotInvalidationSubscriber:
         tags:
             - { name: doctrine.event_subscriber }

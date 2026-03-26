@@ -12,6 +12,7 @@ use App\Entity\EmpresaDocumento;
 use App\Entity\EmpresaMensaje;
 use App\Entity\EmpresaSolicitud;
 use App\Entity\Estudiante;
+use App\Service\MailConfigurationInspector;
 use App\Service\PublicAccessManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,6 +29,7 @@ final class MonitorController extends AbstractController
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly PublicAccessManager $publicAccessManager,
+        private readonly MailConfigurationInspector $mailConfigurationInspector,
     )
     {
     }
@@ -62,6 +64,7 @@ final class MonitorController extends AbstractController
             static fn (string $path): bool => str_ends_with($path, '.test.ts')
         );
         $publicAccess = $this->publicAccessManager->getSnapshot();
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
 
         return [
             [
@@ -88,6 +91,13 @@ final class MonitorController extends AbstractController
                     ? 'Build del portal disponible bajo /externo.'
                     : 'No se ha generado aun la build del portal para backend/public/externo.',
                 'target' => '/externo',
+            ],
+            [
+                'id' => 'mailer',
+                'name' => 'Correo saliente',
+                'status' => $mailSnapshot['status'],
+                'detail' => $mailSnapshot['detail'],
+                'target' => null,
             ],
             [
                 'id' => 'public-access',

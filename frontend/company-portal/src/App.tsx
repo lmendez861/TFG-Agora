@@ -19,6 +19,8 @@ type RegistroResponse = {
   portalToken?: string;
   verificationUrl?: string;
   portalUrl?: string;
+  emailDelivery?: 'sent' | 'failed' | 'unavailable';
+  mailDetail?: string;
 };
 
 type PortalSession = {
@@ -328,7 +330,8 @@ function LandingPage() {
         contactoEmail: '',
         contactoTelefono: '',
       });
-      navigate(data?.portalToken ? `/estado?token=${encodeURIComponent(data.portalToken)}` : '/correo?enviada=1');
+      const delivery = data?.emailDelivery ?? 'sent';
+      navigate(`/correo?enviada=1&delivery=${encodeURIComponent(delivery)}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo enviar la solicitud.';
       setStatus({ kind: 'error', message });
@@ -527,6 +530,7 @@ function MailPage() {
   const query = useQuery();
   const session = readPortalSession();
   const enviada = query.get('enviada') === '1';
+  const delivery = query.get('delivery') ?? 'sent';
   const verificationLink = session?.verificationUrl
     ? session.verificationUrl
     : '/verificar';
@@ -593,7 +597,13 @@ function MailPage() {
           </div>
         </div>
 
-        {enviada && <div className="alert alert--success">Solicitud enviada. Revisa el correo corporativo para continuar.</div>}
+        {enviada && (
+          <div className={`alert ${delivery === 'sent' ? 'alert--success' : 'alert--error'}`}>
+            {delivery === 'sent'
+              ? 'Solicitud enviada. Revisa el correo corporativo para continuar.'
+              : 'La solicitud se ha registrado, pero el correo saliente no esta operativo todavia. Debe revisarse la configuracion SMTP.'}
+          </div>
+        )}
         {feedback && <div className={`alert ${feedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{feedback.message}</div>}
 
         <article className="mail-card">

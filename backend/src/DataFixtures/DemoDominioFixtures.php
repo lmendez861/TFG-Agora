@@ -459,7 +459,7 @@ class DemoDominioFixtures extends Fixture
         $coordinador = (new User())
             ->setUsername('coordinador')
             ->setFullName('Coordinador Centro')
-            ->setRoles(['ROLE_API'])
+            ->setRoles(['ROLE_COORDINATOR'])
             ->setPassword($this->hashPassword('coordinador123'));
 
         $lector = (new User())
@@ -468,9 +468,23 @@ class DemoDominioFixtures extends Fixture
             ->setRoles(['ROLE_USER'])
             ->setPassword($this->hashPassword('lectura123'));
 
+        $monitor = (new User())
+            ->setUsername('monitor')
+            ->setFullName('Monitor tecnico')
+            ->setRoles(['ROLE_MONITOR'])
+            ->setPassword($this->hashPassword('monitor123'));
+
+        $documentos = (new User())
+            ->setUsername('documentos')
+            ->setFullName('Responsable documental')
+            ->setRoles(['ROLE_DOCUMENT_MANAGER'])
+            ->setPassword($this->hashPassword('documentos123'));
+
         $manager->persist($admin);
         $manager->persist($coordinador);
         $manager->persist($lector);
+        $manager->persist($monitor);
+        $manager->persist($documentos);
         $manager->flush();
     }
 

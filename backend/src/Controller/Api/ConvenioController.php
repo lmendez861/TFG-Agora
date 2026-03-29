@@ -9,12 +9,14 @@ use App\Entity\ConvenioDocumento;
 use App\Entity\ConvenioWorkflowEvento;
 use App\Repository\ConvenioAlertaRepository;
 use App\Repository\ConvenioChecklistItemRepository;
+use App\Repository\ConvenioDocumentoRepository;
 use App\Repository\ConvenioRepository;
 use App\Repository\EmpresaColaboradoraRepository;
+use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
+use App\Service\DocumentStorageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,6 +108,7 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function create(
         Request $request,
         EmpresaColaboradoraRepository $empresaRepository,
@@ -213,6 +216,7 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function update(
         ?Convenio $convenio,
         Request $request,
@@ -392,6 +396,7 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/workflow/advance', name: 'advance_workflow', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function advanceWorkflow(
         ?Convenio $convenio,
         EntityManagerInterface $entityManager,
@@ -427,6 +432,7 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/checklist/{itemId<\d+>}', name: 'toggle_checklist', methods: ['PATCH'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function toggleChecklist(
         ?Convenio $convenio,
         int $itemId,
@@ -465,13 +471,15 @@ final class ConvenioController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/documents', name: 'add_support_document', methods: ['POST'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocument(
         ?Convenio $convenio,
         Request $request,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-        Filesystem $filesystem,
-        BootstrapSnapshotProvider $snapshotProvider
+        DocumentStorageManager $documentStorage,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
     ): JsonResponse {
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
@@ -490,22 +498,27 @@ final class ConvenioController extends AbstractController
 
             $originalName = $file->getClientOriginalName();
             $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
-            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $documentMetadata['extension']);
-
-            $targetDir = sprintf('%s/var/uploads/convenios/%d', $this->getParameter('kernel.project_dir'), $convenio->getId());
-            if (!$filesystem->exists($targetDir)) {
-                $filesystem->mkdir($targetDir, 0775);
-            }
-
-            $file->move($targetDir, $finalName);
-            $storedUrl = sprintf('/api/convenios/%d/documents/%s', $convenio->getId(), $finalName);
             $nombre = $request->request->get('nombre') ?: $originalName;
+            $version = $this->resolveNextConvenioDocumentVersion($convenio, $nombre);
+            $relativePath = sprintf(
+                'convenios/%d/%s_v%d_%s.%s',
+                $convenio->getId(),
+                $safeName,
+                $version,
+                uniqid('', true),
+                $documentMetadata['extension']
+            );
 
             $documento = (new ConvenioDocumento())
                 ->setConvenio($convenio)
                 ->setNombre($nombre)
                 ->setTipo($documentMetadata['type'])
-                ->setUrl($storedUrl);
+                ->setVersion($version)
+                ->setStoragePath($relativePath)
+                ->setOriginalFilename($originalName)
+                ->setStorageProvider('external_fs');
+
+            $documentStorage->storeUploadedFile($file, $relativePath);
         } else {
             $payload = $this->decodePayload($request);
             if ($payload instanceof JsonResponse) {
@@ -533,18 +546,69 @@ final class ConvenioController extends AbstractController
                 ], Response::HTTP_BAD_REQUEST);
             }
 
+            $version = $this->resolveNextConvenioDocumentVersion($convenio, $payload['nombre']);
+
             $documento = (new ConvenioDocumento())
                 ->setConvenio($convenio)
                 ->setNombre($payload['nombre'])
                 ->setTipo($tipoNormalizado)
-                ->setUrl($payload['url'] ?? null);
+                ->setUrl($payload['url'] ?? null)
+                ->setVersion($version)
+                ->setStorageProvider('remote_url');
         }
 
+        $this->deactivateOtherConvenioDocumentVersions($convenio, $documento);
         $entityManager->persist($documento);
         $entityManager->flush();
         $snapshotProvider->invalidate();
 
+        $auditLogger->log('convenio.document.create', 'convenio_documento', $documento->getId(), [
+            'convenioId' => $convenio->getId(),
+            'nombre' => $documento->getNombre(),
+            'version' => $documento->getVersion(),
+        ]);
+
         return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id<\d+>}/documents/{documentId<\d+>}/download', name: 'download_support_document_by_id', methods: ['GET'])]
+    public function downloadDocumentById(
+        ?Convenio $convenio,
+        int $documentId,
+        ConvenioDocumentoRepository $documentRepository,
+        DocumentStorageManager $documentStorage,
+    ): Response
+    {
+        if (!$convenio) {
+            return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof ConvenioDocumento || $documento->getConvenio()?->getId() !== $convenio->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($documento->getDeletedAt() !== null) {
+            return $this->json(['message' => 'El documento ha sido retirado y no esta disponible.'], Response::HTTP_GONE);
+        }
+
+        if ($documento->getStoragePath()) {
+            $filePath = $documentStorage->resolveAbsolutePath($documento->getStoragePath());
+            if (!is_file($filePath)) {
+                return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+            }
+
+            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+            $filename = $documento->getOriginalFilename() ?: basename($filePath);
+
+            return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+        }
+
+        if ($documento->getUrl()) {
+            return $this->redirect($documento->getUrl());
+        }
+
+        return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/{id<\\d+>}/documents/{filename}', name: 'download_support_document', methods: ['GET'])]
@@ -560,7 +624,71 @@ final class ConvenioController extends AbstractController
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
+    #[Route('/{id<\d+>}/documents/{documentId<\d+>}', name: 'delete_support_document', methods: ['DELETE'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
+    public function deleteDocument(
+        ?Convenio $convenio,
+        int $documentId,
+        ConvenioDocumentoRepository $documentRepository,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$convenio) {
+            return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof ConvenioDocumento || $documento->getConvenio()?->getId() !== $convenio->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento->markDeleted($this->getUserIdentifier());
+        $entityManager->flush();
+        $snapshotProvider->invalidate();
+
+        $auditLogger->log('convenio.document.delete', 'convenio_documento', $documento->getId(), [
+            'convenioId' => $convenio->getId(),
+            'version' => $documento->getVersion(),
+        ]);
+
+        return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_OK);
+    }
+
+    #[Route('/{id<\d+>}/documents/{documentId<\d+>}/restore', name: 'restore_support_document', methods: ['POST'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
+    public function restoreDocument(
+        ?Convenio $convenio,
+        int $documentId,
+        ConvenioDocumentoRepository $documentRepository,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$convenio) {
+            return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof ConvenioDocumento || $documento->getConvenio()?->getId() !== $convenio->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento->restore();
+        $this->deactivateOtherConvenioDocumentVersions($convenio, $documento);
+        $entityManager->flush();
+        $snapshotProvider->invalidate();
+
+        $auditLogger->log('convenio.document.restore', 'convenio_documento', $documento->getId(), [
+            'convenioId' => $convenio->getId(),
+            'version' => $documento->getVersion(),
+        ]);
+
+        return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_OK);
+    }
+
     #[Route('/{id<\d+>}/alerts/{alertId<\d+>}', name: 'dismiss_alert', methods: ['PATCH'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function dismissAlert(
         ?Convenio $convenio,
         int $alertId,
@@ -626,8 +754,13 @@ final class ConvenioController extends AbstractController
             'id' => $documento->getId(),
             'name' => $documento->getNombre(),
             'type' => $documento->getTipo(),
-            'url' => $documento->getUrl(),
+            'url' => $documento->getDeletedAt() === null ? $this->resolveConvenioDocumentUrl($documento) : null,
             'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
+            'version' => $documento->getVersion(),
+            'active' => $documento->isActive(),
+            'deletedAt' => $documento->getDeletedAt()?->format(\DateTimeInterface::ATOM),
+            'originalFilename' => $documento->getOriginalFilename(),
+            'storageProvider' => $documento->getStorageProvider(),
         ];
     }
 
@@ -701,6 +834,56 @@ final class ConvenioController extends AbstractController
         $normalized = trim($normalized, '-_');
 
         return $normalized !== '' ? $normalized : 'documento';
+    }
+
+    private function resolveConvenioDocumentUrl(ConvenioDocumento $documento): ?string
+    {
+        if ($documento->getStoragePath() !== null && $documento->getConvenio()?->getId() !== null && $documento->getId() !== null) {
+            return sprintf('/api/convenios/%d/documents/%d/download', $documento->getConvenio()->getId(), $documento->getId());
+        }
+
+        return $documento->getUrl();
+    }
+
+    private function resolveNextConvenioDocumentVersion(Convenio $convenio, string $name): int
+    {
+        $normalizedName = mb_strtolower(trim($name));
+        $highestVersion = 0;
+
+        foreach ($convenio->getDocumentos() as $documento) {
+            if (mb_strtolower(trim($documento->getNombre())) === $normalizedName) {
+                $highestVersion = max($highestVersion, $documento->getVersion());
+            }
+        }
+
+        return $highestVersion + 1;
+    }
+
+    private function deactivateOtherConvenioDocumentVersions(Convenio $convenio, ConvenioDocumento $current): void
+    {
+        $normalizedName = mb_strtolower(trim($current->getNombre()));
+
+        foreach ($convenio->getDocumentos() as $documento) {
+            if ($documento === $current) {
+                continue;
+            }
+
+            if (mb_strtolower(trim($documento->getNombre())) === $normalizedName && $documento->getDeletedAt() === null) {
+                $documento->setActive(false);
+            }
+        }
+
+        $current->setActive(true);
+    }
+
+    private function getUserIdentifier(): string
+    {
+        $user = $this->getUser();
+        if (method_exists($user, 'getUserIdentifier')) {
+            return (string) $user->getUserIdentifier();
+        }
+
+        return 'system';
     }
 
     /**

@@ -8,22 +8,29 @@ import { ConvenioForm, type ConvenioFormValues } from './components/ConvenioForm
 import { AsignacionForm, type AsignacionFormValues } from './components/AsignacionForm';
 import { DashboardHomePage } from './components/DashboardHomePage';
 import { DocumentPreviewModal } from './components/DocumentPreviewModal';
+import { MessageInboxPage } from './components/MessageInboxPage';
 import { Modal } from './components/Modal';
 import { MonitorPage } from './components/MonitorPage';
 import { ToastStack, type ToastMessage } from './components/ToastStack';
 import {
   advanceConvenioWorkflow,
   approveEmpresaSolicitud,
+  closeEvaluacionFinal,
+  closeSeguimiento,
   createAsignacion,
   createConvenio,
   createEmpresa,
   createEstudiante,
+  createSeguimiento,
   addConvenioDocument,
   addEmpresaDocument,
+  deleteConvenioDocument,
+  deleteEmpresaDocument,
   dismissConvenioAlert,
   downloadCsvExport,
   fetchCollections,
   fetchEmpresaSolicitudes,
+  fetchEmpresaInboxThreads,
   fetchTutorAcademicos,
   fetchTutorProfesionales,
   getApiBaseUrl,
@@ -45,7 +52,12 @@ import {
   fetchMe,
   fetchEmpresaMensajes,
   postEmpresaMensaje,
+  reopenSeguimiento,
+  restoreConvenioDocument,
+  restoreEmpresaDocument,
   type CsvExportScope,
+  upsertEvaluacionFinal,
+  updateSeguimiento,
 } from './services/api';
 import { downloadCsv, type CsvRow } from './utils/csv';
 import {
@@ -73,9 +85,11 @@ import type {
   EmpresaDetail,
   EmpresaPayload,
   EmpresaSummary,
+  EmpresaInboxThread,
   EmpresaSolicitudSummary,
   EmpresaSolicitudMensaje,
   EmpresaDocument,
+  EvaluacionFinalRecord,
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
@@ -83,6 +97,7 @@ import type {
   TutorProfesionalSummary,
   MeResponse,
   PaginatedResponse,
+  SeguimientoRecord,
 } from './types';
 import './App.css';
 
@@ -703,10 +718,11 @@ const CONVENIO_STEP_FLOW = ['borrador', 'revisado', 'firmado', 'vigente', 'renov
 
 interface LoginPageProps {
   onLogin: (user: MeResponse) => Promise<void> | void;
+  authError?: string | null;
 }
 
-function LoginPage({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState(getConfiguredAuthUsername());
+function LoginPage({ onLogin, authError }: LoginPageProps) {
+  const [username, setUsername] = useState(getConfiguredAuthUsername());
   const [password, setPassword] = useState(getConfiguredAuthPassword());
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -715,7 +731,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     event.preventDefault();
     setStatus('Autenticando...');
     try {
-      await login(email, password);
+      await login(username, password);
       const meData = await fetchMe();
       await onLogin(meData);
       setStatus(`Bienvenido ${meData.username}`);
@@ -727,34 +743,65 @@ function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   return (
-    <section className="auth-section">
-      <div className="auth-card">
-        <p className="auth-card__eyebrow">Bienvenido de nuevo</p>
-        <h2>Iniciar sesion</h2>
+    <section className="access-shell">
+      <article className="access-shell__hero">
+        <p className="auth-card__eyebrow">Portal interno</p>
+        <h1>Acceso operativo para coordinacion, seguimiento y documentacion.</h1>
         <p className="auth-card__description">
-          Inicia sesion con tus credenciales. Las llamadas posteriores usan la sesion del navegador.
+          Entra al entorno interno de Agora para revisar solicitudes, gestionar convenios, asignaciones,
+          documentacion y mensajeria con empresas desde una unica consola.
         </p>
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <div className="access-shell__metrics">
+          <article className="access-metric">
+            <span>Entorno</span>
+            <strong>Panel interno</strong>
+            <small>Gestion de empresas, convenios, estudiantes y practicas.</small>
+          </article>
+          <article className="access-metric">
+            <span>Seguridad</span>
+            <strong>Sesion autenticada</strong>
+            <small>El backend mantiene la sesion y los permisos de acceso al API.</small>
+          </article>
+          <article className="access-metric">
+            <span>Soporte</span>
+            <strong>Documentacion publica</strong>
+            <small>La guia del proyecto permanece accesible sin entrar al portal.</small>
+          </article>
+        </div>
+        <div className="access-shell__links">
+          <a href="/documentacion" className="button button--ghost">Ver documentacion</a>
+          <a href="/externo" className="button button--ghost">Abrir portal externo</a>
+        </div>
+      </article>
+
+      <div className="auth-card auth-card--access">
+        <p className="auth-card__eyebrow">Inicio de sesion</p>
+        <h2>Entrar al panel</h2>
+        <p className="auth-card__description">
+          Usa tus credenciales operativas para acceder al panel interno y activar la sesion del navegador.
+        </p>
+        {authError && <div className="app__alert app__alert--error">{authError}</div>}
+        <form className="auth-form auth-form--stacked" onSubmit={handleSubmit}>
           <label className="form__field">
             <span>Usuario</span>
             <input
               type="text"
               placeholder="admin"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
             />
           </label>
           <label className="form__field">
             <span>Contrasena</span>
-            <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </label>
           <button type="submit" className="button button--primary button--lg">
-            Entrar
+            Entrar al portal interno
           </button>
           {status && <p className="form__error">{status}</p>}
           <p className="auth-card__hint">
-            Credenciales gestionadas desde `.env.local`. Si cambian en backend, actualiza tambien `VITE_API_USERNAME` y `VITE_API_PASSWORD`.
+            Si cambian las credenciales de backend, ajusta tambien las variables del frontend para mantener el acceso integrado.
           </p>
         </form>
       </div>
@@ -807,6 +854,10 @@ export default function App() {
     || rawPathname.startsWith('/tutores/')
     || rawPathname === '/app/tutores'
     || rawPathname.startsWith('/app/tutores/');
+  const isBandejaRoute = rawPathname === '/bandeja'
+    || rawPathname.startsWith('/bandeja/')
+    || rawPathname === '/app/bandeja'
+    || rawPathname.startsWith('/app/bandeja/');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<number | null>(null);
   const [empresaSectorFilter, setEmpresaSectorFilter] = useState<string>('todos');
@@ -831,6 +882,9 @@ export default function App() {
   const [empresaSolicitudes, setEmpresaSolicitudes] = useState<EmpresaSolicitudSummary[]>([]);
   const [loadingSolicitudes, setLoadingSolicitudes] = useState(false);
   const [processingSolicitudId, setProcessingSolicitudId] = useState<number | null>(null);
+  const [empresaInboxThreads, setEmpresaInboxThreads] = useState<EmpresaInboxThread[]>([]);
+  const [loadingInbox, setLoadingInbox] = useState(false);
+  const [selectedInboxId, setSelectedInboxId] = useState<number | null>(null);
   const [solicitudMensajes, setSolicitudMensajes] = useState<Record<number, EmpresaSolicitudMensaje[]>>({});
   const [mensajeDraft, setMensajeDraft] = useState<Record<number, string>>({});
   const [loadingMensajesId, setLoadingMensajesId] = useState<number | null>(null);
@@ -963,6 +1017,39 @@ export default function App() {
     navigate('/solicitudes');
   }, [navigate]);
 
+  const refreshInbox = useCallback(
+    async (options?: { silent?: boolean }) => {
+      setLoadingInbox(true);
+      try {
+        const threads = await fetchEmpresaInboxThreads();
+        setEmpresaInboxThreads(threads);
+        setSelectedInboxId((current) => {
+          if (current && threads.some((thread) => thread.solicitud.id === current)) {
+            return current;
+          }
+
+          return threads[0]?.solicitud.id ?? null;
+        });
+      } catch (err) {
+        if (!options?.silent) {
+          const message = err instanceof Error ? err.message : 'No se pudo cargar la bandeja de mensajes.';
+          pushToast('error', message);
+        }
+      } finally {
+        setLoadingInbox(false);
+      }
+    },
+    [pushToast],
+  );
+
+  const handleOpenInbox = useCallback((solicitudId?: number) => {
+    closeNotifications();
+    if (typeof solicitudId === 'number') {
+      setSelectedInboxId(solicitudId);
+    }
+    navigate('/bandeja');
+  }, [closeNotifications, navigate]);
+
   const handleAddEmpresaNote = useCallback((empresaId: number, content: string) => {
     const trimmed = content.trim();
     if (!trimmed) {
@@ -1034,6 +1121,33 @@ export default function App() {
     }
   }, [pushToast]);
 
+  const handleToggleEmpresaDocument = useCallback(async (
+    empresaId: number,
+    documentId: number,
+    restore = false,
+  ) => {
+    setSavingConvenioDocument(true);
+    try {
+      const updated = restore
+        ? await restoreEmpresaDocument(empresaId, documentId)
+        : await deleteEmpresaDocument(empresaId, documentId);
+
+      setEmpresaDocs((prev) => {
+        const docs = prev[empresaId] ?? [];
+        return {
+          ...prev,
+          [empresaId]: docs.map((doc) => (doc.id === updated.id ? updated : doc)),
+        };
+      });
+      pushToast('success', restore ? 'Documento restaurado.' : 'Documento retirado.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo actualizar el documento.';
+      pushToast('error', message);
+    } finally {
+      setSavingConvenioDocument(false);
+    }
+  }, [pushToast]);
+
   const loadConvenioExtras = useCallback(
     async (convenioId: number, options?: { silent?: boolean; background?: boolean }) => {
       if (!options?.background) {
@@ -1078,6 +1192,33 @@ export default function App() {
       pushToast('error', message);
     } finally {
       setProcessingConvenioActionId((current) => (current === convenioId ? null : current));
+    }
+  }, [pushToast]);
+
+  const handleToggleConvenioDocument = useCallback(async (
+    convenioId: number,
+    documentId: number,
+    restore = false,
+  ) => {
+    setSavingConvenioDocument(true);
+    try {
+      const updated = restore
+        ? await restoreConvenioDocument(convenioId, documentId)
+        : await deleteConvenioDocument(convenioId, documentId);
+
+      setConvenioDocuments((prev) => {
+        const docs = prev[convenioId] ?? [];
+        return {
+          ...prev,
+          [convenioId]: docs.map((doc) => (doc.id === updated.id ? updated : doc)),
+        };
+      });
+      pushToast('success', restore ? 'Version restaurada.' : 'Documento retirado.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo actualizar el documento del convenio.';
+      pushToast('error', message);
+    } finally {
+      setSavingConvenioDocument(false);
     }
   }, [pushToast]);
 
@@ -1239,6 +1380,7 @@ export default function App() {
   );
 
   const loadMensajes = useCallback(async (solicitudId: number) => {
+    setSelectedInboxId(solicitudId);
     setLoadingMensajesId(solicitudId);
     try {
       const msgs = await fetchEmpresaMensajes(solicitudId);
@@ -1265,6 +1407,7 @@ export default function App() {
           [solicitudId]: [...(prev[solicitudId] ?? []), nuevo],
         }));
         setMensajeDraft((prev) => ({ ...prev, [solicitudId]: '' }));
+        void refreshInbox({ silent: true });
       } catch (err) {
         const message = err instanceof Error ? err.message : 'No se pudo enviar el mensaje.';
         pushToast('error', message);
@@ -1272,7 +1415,7 @@ export default function App() {
         setLoadingMensajesId(null);
       }
     },
-    [mensajeDraft, pushToast],
+    [mensajeDraft, pushToast, refreshInbox],
   );
 
   const loadData = useCallback(async () => {
@@ -1412,6 +1555,27 @@ export default function App() {
       cancelled = true;
     };
   }, [authResolved, isDocumentationRoute, loadData]);
+
+  useEffect(() => {
+    if (!me || !isBandejaRoute) {
+      return;
+    }
+
+    refreshInbox({ silent: true }).catch(() => {
+      // errores gestionados dentro
+    });
+  }, [isBandejaRoute, me, refreshInbox]);
+
+  useEffect(() => {
+    if (!isBandejaRoute || !selectedInboxId || solicitudMensajes[selectedInboxId]) {
+      return;
+    }
+
+    loadMensajes(selectedInboxId).catch(() => {
+      // errores gestionados dentro
+    });
+  }, [isBandejaRoute, loadMensajes, selectedInboxId, solicitudMensajes]);
+
   useEffect(() => {
     if (isTutoresRoute && !referenceData && !loadingReferenceData) {
       loadReferenceData({ silent: true }).catch(() => {
@@ -1536,7 +1700,12 @@ export default function App() {
     refreshSolicitudes().catch(() => {
       // errores gestionados dentro
     });
-  }, [refreshSolicitudes]);
+    if (isBandejaRoute) {
+      refreshInbox({ silent: true }).catch(() => {
+        // errores gestionados dentro
+      });
+    }
+  }, [isBandejaRoute, refreshInbox, refreshSolicitudes]);
 
   const handleApproveSolicitud = useCallback(
     async (solicitudId: number) => {
@@ -1545,6 +1714,7 @@ export default function App() {
         await approveEmpresaSolicitud(solicitudId);
         pushToast('success', 'Solicitud aprobada y empresa creada.');
         await refreshSolicitudes({ silent: true });
+        await refreshInbox({ silent: true });
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'No se pudo aprobar la solicitud seleccionada.';
@@ -1553,7 +1723,7 @@ export default function App() {
         setProcessingSolicitudId(null);
       }
     },
-    [pushToast, refreshSolicitudes],
+    [pushToast, refreshInbox, refreshSolicitudes],
   );
 
   const handleRejectSolicitud = useCallback(
@@ -1567,6 +1737,7 @@ export default function App() {
         await rejectEmpresaSolicitud(solicitudId, motivo.trim());
         pushToast('success', 'Solicitud rechazada.');
         await refreshSolicitudes({ silent: true });
+        await refreshInbox({ silent: true });
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'No se pudo rechazar la solicitud seleccionada.';
@@ -1575,7 +1746,7 @@ export default function App() {
         setProcessingSolicitudId(null);
       }
     },
-    [pushToast, refreshSolicitudes],
+    [pushToast, refreshInbox, refreshSolicitudes],
   );
 
 
@@ -2922,9 +3093,12 @@ const selectedConvenio = useMemo(() => {
                   <div key={doc.id} className="empresa-document">
                     <div>
                       <strong>{doc.name}</strong>
-                      <small>{doc.type ?? 'Documento'} - {formatDate(doc.uploadedAt)}</small>
+                      <small>
+                        {doc.type ?? 'Documento'} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
+                        {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
+                      </small>
                     </div>
-                    {doc.url ? (
+                    {!doc.deletedAt && doc.url ? (
                       <div className="document-actions">
                         {canPreviewDocument(doc, API_BASE_URL) && (
                           <button
@@ -2943,9 +3117,27 @@ const selectedConvenio = useMemo(() => {
                         >
                           Abrir
                         </a>
+                        <button
+                          type="button"
+                          className="button button--ghost button--sm"
+                          onClick={() => void handleToggleEmpresaDocument(empresa.id, doc.id)}
+                        >
+                          Retirar
+                        </button>
                       </div>
                     ) : (
-                      <span className="chip chip--ghost">Archivo local</span>
+                      <div className="document-actions">
+                        <span className="chip chip--ghost">{doc.deletedAt ? 'Retirado' : 'Archivo local'}</span>
+                        {doc.deletedAt && (
+                          <button
+                            type="button"
+                            className="button button--ghost button--sm"
+                            onClick={() => void handleToggleEmpresaDocument(empresa.id, doc.id, true)}
+                          >
+                            Restaurar
+                          </button>
+                        )}
+                      </div>
                     )}
                           </div>
                         ))
@@ -3267,6 +3459,49 @@ const selectedConvenio = useMemo(() => {
     const [detail, setDetail] = useState<AsignacionDetail | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
+    const [savingSeguimiento, setSavingSeguimiento] = useState(false);
+    const [savingEvaluacion, setSavingEvaluacion] = useState(false);
+    const [editingSeguimientoId, setEditingSeguimientoId] = useState<number | null>(null);
+    const [seguimientoError, setSeguimientoError] = useState<string | null>(null);
+    const [evaluacionError, setEvaluacionError] = useState<string | null>(null);
+    const [seguimientoDraft, setSeguimientoDraft] = useState<{
+      fecha: string;
+      tipo: string;
+      descripcion: string;
+      accionRequerida: string;
+      evidenciaTipo: string;
+      evidenciaFile: File | null;
+    }>({
+      fecha: new Date().toISOString().slice(0, 10),
+      tipo: 'seguimiento',
+      descripcion: '',
+      accionRequerida: '',
+      evidenciaTipo: '',
+      evidenciaFile: null,
+    });
+    const [evaluacionDraft, setEvaluacionDraft] = useState<Partial<EvaluacionFinalRecord>>({
+      fecha: new Date().toISOString().slice(0, 10),
+      estado: 'borrador',
+    });
+
+    const refreshDetail = useCallback(async () => {
+      if (!asignacionId || Number.isNaN(numericId)) {
+        setDetail(null);
+        return;
+      }
+
+      setDetailLoading(true);
+      try {
+        const data = await getAsignacionDetail(numericId);
+        setDetail(data);
+        setDetailError(null);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignacion.';
+        setDetailError(message);
+      } finally {
+        setDetailLoading(false);
+      }
+    }, [asignacionId, numericId]);
 
     const asignacionSummary = useMemo(() => {
       if (!collections || Number.isNaN(numericId)) {
@@ -3276,23 +3511,30 @@ const selectedConvenio = useMemo(() => {
     }, [collections, numericId]);
 
     useEffect(() => {
-      if (!asignacionId || Number.isNaN(numericId)) {
-        setDetail(null);
+      void refreshDetail();
+    }, [refreshDetail]);
+
+    useEffect(() => {
+      if (!detail?.evaluacionFinal) {
+        setEvaluacionDraft({
+          fecha: new Date().toISOString().slice(0, 10),
+          estado: 'borrador',
+        });
         return;
       }
 
-      setDetailLoading(true);
-      getAsignacionDetail(numericId)
-        .then((data) => {
-          setDetail(data);
-          setDetailError(null);
-        })
-        .catch((err) => {
-          const message = err instanceof Error ? err.message : 'No se pudo obtener el detalle de la asignacion.';
-          setDetailError(message);
-        })
-        .finally(() => setDetailLoading(false));
-    }, [asignacionId, numericId]);
+      setEvaluacionDraft({
+        fecha: detail.evaluacionFinal.fecha,
+        valoracionEmpresa: detail.evaluacionFinal.valoracionEmpresa ?? '',
+        valoracionEstudiante: detail.evaluacionFinal.valoracionEstudiante ?? '',
+        valoracionTutorAcademico: detail.evaluacionFinal.valoracionTutorAcademico ?? '',
+        conclusiones: detail.evaluacionFinal.conclusiones ?? '',
+        notaEmpresa: detail.evaluacionFinal.notaEmpresa ?? undefined,
+        notaEstudiante: detail.evaluacionFinal.notaEstudiante ?? undefined,
+        notaTutorAcademico: detail.evaluacionFinal.notaTutorAcademico ?? undefined,
+        estado: detail.evaluacionFinal.estado,
+      });
+    }, [detail?.evaluacionFinal]);
 
     if (!asignacionId) {
       return (
@@ -3340,6 +3582,7 @@ const selectedConvenio = useMemo(() => {
       { label: 'Horas totales', value: asignacionSummary.horasTotales ?? 'Por confirmar' },
       { label: 'Empresa', value: asignacionSummary.empresa.nombre },
       { label: 'Estudiante', value: studentName },
+      { label: 'Seguimientos', value: detail?.seguimientos.length ?? 0 },
     ];
 
     const timelineEvents = useMemo(() => {
@@ -3369,6 +3612,20 @@ const selectedConvenio = useMemo(() => {
             note: detail.tutorProfesional.nombre,
           });
         }
+        detail.seguimientos.forEach((seguimiento) => {
+          events.push({
+            title: `Seguimiento: ${seguimiento.tipo}`,
+            date: formatDate(seguimiento.fecha),
+            note: seguimiento.descripcion ?? seguimiento.accionRequerida ?? 'Registro operativo',
+          });
+        });
+        if (detail.evaluacionFinal) {
+          events.push({
+            title: 'Evaluacion final',
+            date: formatDate(detail.evaluacionFinal.fecha),
+            note: detail.evaluacionFinal.estado === 'cerrada' ? 'Cierre completado' : 'En borrador',
+          });
+        }
       }
       return events;
     }, [asignacionSummary, detail]);
@@ -3387,6 +3644,130 @@ const selectedConvenio = useMemo(() => {
         href: `mailto:${detail.tutorProfesional.email}`,
       },
     ].filter(Boolean) as Array<{ label: string; href: string }>;
+
+    const resetSeguimientoDraft = () => {
+      setEditingSeguimientoId(null);
+      setSeguimientoDraft({
+        fecha: new Date().toISOString().slice(0, 10),
+        tipo: 'seguimiento',
+        descripcion: '',
+        accionRequerida: '',
+        evidenciaTipo: '',
+        evidenciaFile: null,
+      });
+    };
+
+    const handleEditSeguimiento = (seguimiento: SeguimientoRecord) => {
+      setEditingSeguimientoId(seguimiento.id);
+      setSeguimientoDraft({
+        fecha: seguimiento.fecha,
+        tipo: seguimiento.tipo,
+        descripcion: seguimiento.descripcion ?? '',
+        accionRequerida: seguimiento.accionRequerida ?? '',
+        evidenciaTipo: seguimiento.evidenciaTipo ?? '',
+        evidenciaFile: null,
+      });
+      setSeguimientoError(null);
+    };
+
+    const handleSeguimientoSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!detail) {
+        return;
+      }
+
+      setSavingSeguimiento(true);
+      setSeguimientoError(null);
+
+      try {
+        const payload = {
+          fecha: seguimientoDraft.fecha,
+          tipo: seguimientoDraft.tipo,
+          descripcion: seguimientoDraft.descripcion.trim() || undefined,
+          accionRequerida: seguimientoDraft.accionRequerida.trim() || undefined,
+          evidenciaTipo: seguimientoDraft.evidenciaTipo || inferUploadDocumentType(seguimientoDraft.evidenciaFile) || undefined,
+          evidenciaFile: seguimientoDraft.evidenciaFile,
+        };
+
+        if (editingSeguimientoId) {
+          await updateSeguimiento(detail.id, editingSeguimientoId, payload);
+          pushToast('success', 'Seguimiento actualizado.');
+        } else {
+          await createSeguimiento(detail.id, payload);
+          pushToast('success', 'Seguimiento registrado.');
+        }
+
+        resetSeguimientoDraft();
+        await refreshDetail();
+      } catch (err) {
+        setSeguimientoError(err instanceof Error ? err.message : 'No se pudo guardar el seguimiento.');
+      } finally {
+        setSavingSeguimiento(false);
+      }
+    };
+
+    const handleCloseSeguimiento = async (seguimientoId: number, reopen = false) => {
+      if (!detail) {
+        return;
+      }
+
+      setSavingSeguimiento(true);
+      setSeguimientoError(null);
+
+      try {
+        if (reopen) {
+          await reopenSeguimiento(detail.id, seguimientoId);
+          pushToast('success', 'Seguimiento reabierto.');
+        } else {
+          const comentario = window.prompt('Comentario de cierre del seguimiento:', '') ?? '';
+          await closeSeguimiento(detail.id, seguimientoId, comentario || undefined);
+          pushToast('success', 'Seguimiento cerrado.');
+        }
+        await refreshDetail();
+      } catch (err) {
+        setSeguimientoError(err instanceof Error ? err.message : 'No se pudo actualizar el seguimiento.');
+      } finally {
+        setSavingSeguimiento(false);
+      }
+    };
+
+    const handleEvaluacionSave = async (closeAfterSave = false) => {
+      if (!detail) {
+        return;
+      }
+
+      setSavingEvaluacion(true);
+      setEvaluacionError(null);
+
+      try {
+        const sanitizedPayload: Partial<EvaluacionFinalRecord> = {
+          fecha: String(evaluacionDraft.fecha || new Date().toISOString().slice(0, 10)),
+          valoracionEmpresa: typeof evaluacionDraft.valoracionEmpresa === 'string' ? evaluacionDraft.valoracionEmpresa.trim() || null : null,
+          valoracionEstudiante: typeof evaluacionDraft.valoracionEstudiante === 'string' ? evaluacionDraft.valoracionEstudiante.trim() || null : null,
+          valoracionTutorAcademico: typeof evaluacionDraft.valoracionTutorAcademico === 'string' ? evaluacionDraft.valoracionTutorAcademico.trim() || null : null,
+          conclusiones: typeof evaluacionDraft.conclusiones === 'string' ? evaluacionDraft.conclusiones.trim() || null : null,
+          notaEmpresa: typeof evaluacionDraft.notaEmpresa === 'number' ? evaluacionDraft.notaEmpresa : null,
+          notaEstudiante: typeof evaluacionDraft.notaEstudiante === 'number' ? evaluacionDraft.notaEstudiante : null,
+          notaTutorAcademico: typeof evaluacionDraft.notaTutorAcademico === 'number' ? evaluacionDraft.notaTutorAcademico : null,
+          estado: closeAfterSave ? 'cerrada' : 'borrador',
+        };
+
+        await upsertEvaluacionFinal(detail.id, sanitizedPayload);
+        if (closeAfterSave) {
+          await closeEvaluacionFinal(detail.id);
+          pushToast('success', 'Evaluacion final cerrada.');
+        } else {
+          pushToast('success', 'Evaluacion final guardada.');
+        }
+        await refreshDetail();
+      } catch (err) {
+        setEvaluacionError(err instanceof Error ? err.message : 'No se pudo guardar la evaluacion.');
+      } finally {
+        setSavingEvaluacion(false);
+      }
+    };
+
+    const seguimientoTimeline = detail?.seguimientos ?? [];
 
     return (
       <div className="asignacion-page">
@@ -3502,7 +3883,7 @@ const selectedConvenio = useMemo(() => {
           <header>
             <div>
               <p className="module-page__eyebrow">Seguimiento</p>
-              <h3>Timeline de hitos</h3>
+              <h3>Hitos y evaluaciones</h3>
             </div>
           </header>
           <div className="asignacion-timeline__list">
@@ -3522,18 +3903,220 @@ const selectedConvenio = useMemo(() => {
         </section>
 
         <section className="asignacion-docs">
-          <article>
-            <h4>Informes y anexos</h4>
-            <p>Enlaza actas semanales, evaluaciones y rubricas firmadas.</p>
-            <Link to="/documentacion" className="link">Abrir documentacion</Link>
+          <article className="empresa-panel">
+            <header>
+              <h4>Seguimientos operativos</h4>
+              <span className="chip chip--ghost">{seguimientoTimeline.length} registros</span>
+            </header>
+            {seguimientoError && <div className="app__alert app__alert--error">{seguimientoError}</div>}
+            {seguimientoTimeline.length === 0 ? (
+              <p className="detail-placeholder">Todavia no hay seguimientos registrados.</p>
+            ) : (
+              <div className="empresa-documents">
+                {seguimientoTimeline.map((seguimiento) => (
+                  <div key={seguimiento.id} className="empresa-document">
+                    <div>
+                      <strong>{seguimiento.tipo} · {formatDate(seguimiento.fecha)}</strong>
+                      <small>{seguimiento.estado} · {seguimiento.descripcion ?? 'Sin descripcion ampliada'}</small>
+                      {seguimiento.accionRequerida && <small>Accion: {seguimiento.accionRequerida}</small>}
+                      {seguimiento.cierreComentario && <small>Cierre: {seguimiento.cierreComentario}</small>}
+                    </div>
+                    <div className="document-actions">
+                      {seguimiento.evidenciaUrl && canPreviewDocument({ url: seguimiento.evidenciaUrl, type: seguimiento.evidenciaTipo }, API_BASE_URL) && (
+                        <button
+                          type="button"
+                          className="button button--ghost button--sm"
+                          onClick={() => openDocumentPreview(seguimiento.evidenciaNombre ?? 'Evidencia', seguimiento.evidenciaUrl)}
+                        >
+                          Vista previa
+                        </button>
+                      )}
+                      {seguimiento.evidenciaUrl && (
+                        <a
+                          className="button button--link"
+                          href={resolveDocumentUrl(seguimiento.evidenciaUrl, API_BASE_URL) ?? undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Descargar
+                        </a>
+                      )}
+                      <button type="button" className="button button--ghost button--sm" onClick={() => handleEditSeguimiento(seguimiento)}>
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="button button--ghost button--sm"
+                        onClick={() => void handleCloseSeguimiento(seguimiento.id, seguimiento.estado === 'cerrado')}
+                        disabled={savingSeguimiento}
+                      >
+                        {seguimiento.estado === 'cerrado' ? 'Reabrir' : 'Cerrar'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <form className="empresa-document-form" onSubmit={handleSeguimientoSubmit}>
+              <label>
+                <span>Fecha</span>
+                <input
+                  type="date"
+                  value={seguimientoDraft.fecha}
+                  onChange={(event) => setSeguimientoDraft((current) => ({ ...current, fecha: event.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                <span>Tipo</span>
+                <select
+                  value={seguimientoDraft.tipo}
+                  onChange={(event) => setSeguimientoDraft((current) => ({ ...current, tipo: event.target.value }))}
+                >
+                  <option value="seguimiento">Seguimiento</option>
+                  <option value="reunion">Reunion</option>
+                  <option value="visita">Visita</option>
+                  <option value="incidencia">Incidencia</option>
+                  <option value="evaluacion">Evaluacion</option>
+                </select>
+              </label>
+              <label>
+                <span>Accion requerida</span>
+                <input
+                  value={seguimientoDraft.accionRequerida}
+                  onChange={(event) => setSeguimientoDraft((current) => ({ ...current, accionRequerida: event.target.value }))}
+                  placeholder="Pendiente concreta"
+                />
+              </label>
+              <label className="full-row">
+                <span>Descripcion</span>
+                <textarea
+                  rows={3}
+                  value={seguimientoDraft.descripcion}
+                  onChange={(event) => setSeguimientoDraft((current) => ({ ...current, descripcion: event.target.value }))}
+                  placeholder="Resumen de la reunion o visita."
+                />
+              </label>
+              <label>
+                <span>Archivo de evidencia</span>
+                <input
+                  type="file"
+                  accept={UPLOAD_DOCUMENT_ACCEPT}
+                  onChange={(event) => {
+                    const nextFile = event.target.files?.[0] ?? null;
+                    setSeguimientoDraft((current) => ({
+                      ...current,
+                      evidenciaFile: nextFile,
+                      evidenciaTipo: inferUploadDocumentType(nextFile) ?? current.evidenciaTipo,
+                    }));
+                  }}
+                />
+              </label>
+              <div className="document-actions">
+                <button type="submit" className="button button--primary button--sm" disabled={savingSeguimiento}>
+                  {savingSeguimiento ? 'Guardando...' : editingSeguimientoId ? 'Actualizar seguimiento' : 'Anadir seguimiento'}
+                </button>
+                {editingSeguimientoId && (
+                  <button type="button" className="button button--ghost button--sm" onClick={resetSeguimientoDraft}>
+                    Cancelar edicion
+                  </button>
+                )}
+              </div>
+            </form>
           </article>
-          <article>
-            <h4>Checklist interno</h4>
-            <ul>
-              <li>Confirmar asistencia semanal del estudiante.</li>
-              <li>Registrar feedback de ambos tutores.</li>
-              <li>Adjuntar informe final antes de cerrar la asignacion.</li>
-            </ul>
+
+          <article className="empresa-panel">
+            <header>
+              <h4>Evaluacion final</h4>
+              <span className="chip chip--ghost">{detail?.evaluacionFinal?.estado ?? 'sin evaluar'}</span>
+            </header>
+            {evaluacionError && <div className="app__alert app__alert--error">{evaluacionError}</div>}
+            <form className="form-grid" onSubmit={(event) => { event.preventDefault(); void handleEvaluacionSave(false); }}>
+              <label>
+                <span>Fecha</span>
+                <input
+                  type="date"
+                  value={String(evaluacionDraft.fecha ?? '')}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, fecha: event.target.value }))}
+                  required
+                />
+              </label>
+              <label>
+                <span>Nota empresa</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={evaluacionDraft.notaEmpresa ?? ''}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, notaEmpresa: event.target.value ? Number(event.target.value) : undefined }))}
+                />
+              </label>
+              <label>
+                <span>Nota estudiante</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={evaluacionDraft.notaEstudiante ?? ''}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, notaEstudiante: event.target.value ? Number(event.target.value) : undefined }))}
+                />
+              </label>
+              <label>
+                <span>Nota tutor academico</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={evaluacionDraft.notaTutorAcademico ?? ''}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, notaTutorAcademico: event.target.value ? Number(event.target.value) : undefined }))}
+                />
+              </label>
+              <label className="full-row">
+                <span>Valoracion empresa</span>
+                <textarea
+                  rows={3}
+                  value={String(evaluacionDraft.valoracionEmpresa ?? '')}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, valoracionEmpresa: event.target.value }))}
+                />
+              </label>
+              <label className="full-row">
+                <span>Valoracion estudiante</span>
+                <textarea
+                  rows={3}
+                  value={String(evaluacionDraft.valoracionEstudiante ?? '')}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, valoracionEstudiante: event.target.value }))}
+                />
+              </label>
+              <label className="full-row">
+                <span>Valoracion tutor academico</span>
+                <textarea
+                  rows={3}
+                  value={String(evaluacionDraft.valoracionTutorAcademico ?? '')}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, valoracionTutorAcademico: event.target.value }))}
+                />
+              </label>
+              <label className="full-row">
+                <span>Conclusiones</span>
+                <textarea
+                  rows={3}
+                  value={String(evaluacionDraft.conclusiones ?? '')}
+                  onChange={(event) => setEvaluacionDraft((current) => ({ ...current, conclusiones: event.target.value }))}
+                />
+              </label>
+              <div className="document-actions">
+                <button type="submit" className="button button--primary button--sm" disabled={savingEvaluacion}>
+                  {savingEvaluacion ? 'Guardando...' : 'Guardar evaluacion'}
+                </button>
+                <button
+                  type="button"
+                  className="button button--ghost button--sm"
+                  onClick={() => void handleEvaluacionSave(true)}
+                  disabled={savingEvaluacion}
+                >
+                  Cerrar evaluacion
+                </button>
+              </div>
+            </form>
           </article>
         </section>
       </div>
@@ -4099,9 +4682,12 @@ const selectedConvenio = useMemo(() => {
                           <div key={doc.id} className="convenio-document">
                             <div>
                               <strong>{doc.name}</strong>
-                              <small>{doc.type} - {formatDate(doc.uploadedAt)}</small>
+                              <small>
+                                {doc.type} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
+                                {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
+                              </small>
                             </div>
-                            {doc.url ? (
+                            {!doc.deletedAt && doc.url ? (
                               <div className="document-actions">
                                 {canPreviewDocument(doc, API_BASE_URL) && (
                                   <button
@@ -4120,9 +4706,27 @@ const selectedConvenio = useMemo(() => {
                                 >
                                   Descargar
                                 </a>
+                                <button
+                                  type="button"
+                                  className="button button--ghost button--sm"
+                                  onClick={() => void handleToggleConvenioDocument(selectedConvenio.id, doc.id)}
+                                >
+                                  Retirar
+                                </button>
                               </div>
                             ) : (
-                              <span className="chip chip--ghost">Sin enlace</span>
+                              <div className="document-actions">
+                                <span className="chip chip--ghost">{doc.deletedAt ? 'Retirado' : 'Sin enlace'}</span>
+                                {doc.deletedAt && (
+                                  <button
+                                    type="button"
+                                    className="button button--ghost button--sm"
+                                    onClick={() => void handleToggleConvenioDocument(selectedConvenio.id, doc.id, true)}
+                                  >
+                                    Restaurar
+                                  </button>
+                                )}
+                              </div>
                             )}
                           </div>
                         ))
@@ -4841,6 +5445,13 @@ const selectedConvenio = useMemo(() => {
           <button
             type="button"
             className="button button--ghost button--sm"
+            onClick={() => handleOpenInbox()}
+          >
+            Abrir bandeja
+          </button>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
             onClick={handleExportSolicitudes}
             disabled={empresaSolicitudes.length === 0}
           >
@@ -4915,42 +5526,11 @@ const selectedConvenio = useMemo(() => {
                 <button
                   type="button"
                   className="button button--ghost button--sm"
-                  onClick={() => loadMensajes(solicitud.id)}
-                  disabled={loadingMensajesId === solicitud.id}
+                  onClick={() => handleOpenInbox(solicitud.id)}
                 >
-                  {loadingMensajesId === solicitud.id ? 'Cargando...' : 'Ver mensajes'}
+                  Abrir bandeja
                 </button>
               </div>
-              {solicitudMensajes[solicitud.id] && (
-                <div className="solicitud-card__messages">
-                  {solicitudMensajes[solicitud.id].length === 0 ? (
-                    <p className="detail-placeholder">Sin mensajes todavia.</p>
-                  ) : (
-                    solicitudMensajes[solicitud.id].map((msg) => (
-                      <div key={msg.id} className={`mensaje mensaje--${msg.autor}`}>
-                        <p>{msg.texto}</p>
-                        <small>{msg.autor} - {formatDate(msg.createdAt)}</small>
-                      </div>
-                    ))
-                  )}
-                  <div className="mensaje-form">
-                    <input
-                      type="text"
-                      placeholder="Escribe un mensaje al contacto..."
-                      value={mensajeDraft[solicitud.id] ?? ''}
-                      onChange={(e) => setMensajeDraft((prev) => ({ ...prev, [solicitud.id]: e.target.value }))}
-                    />
-                    <button
-                      type="button"
-                      className="button button--primary button--sm"
-                      onClick={() => handleSendMensaje(solicitud.id)}
-                      disabled={loadingMensajesId === solicitud.id}
-                    >
-                      Enviar
-                    </button>
-                  </div>
-                </div>
-              )}
             </article>
           );
         })}
@@ -4981,6 +5561,10 @@ const selectedConvenio = useMemo(() => {
       setReferenceData(null);
       setAuthResolved(true);
       setEmpresaSolicitudes([]);
+      setEmpresaInboxThreads([]);
+      setSelectedInboxId(null);
+      setSolicitudMensajes({});
+      setMensajeDraft({});
       setLastUpdated(null);
       setNotificationsOpen(false);
       navigate('/login');
@@ -5046,6 +5630,7 @@ const selectedConvenio = useMemo(() => {
         <article className="profile-card">
           <h3>Accesos rapidos</h3>
           <ul className="profile-list">
+            <li><Link to="/bandeja">Abrir bandeja de mensajes</Link></li>
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
@@ -5055,6 +5640,33 @@ const selectedConvenio = useMemo(() => {
         </article>
       </div>
     </section>
+  );
+
+  const bandejaElement = (
+    <MessageInboxPage
+      threads={empresaInboxThreads}
+      selectedSolicitudId={selectedInboxId}
+      messagesBySolicitud={solicitudMensajes}
+      draftBySolicitud={mensajeDraft}
+      loadingThreads={loadingInbox}
+      loadingMessagesId={loadingMensajesId}
+      onRefresh={() => {
+        void refreshInbox();
+      }}
+      onSelectThread={(solicitudId) => {
+        setSelectedInboxId(solicitudId);
+        if (!solicitudMensajes[solicitudId]) {
+          void loadMensajes(solicitudId);
+        }
+      }}
+      onDraftChange={(solicitudId, value) => setMensajeDraft((prev) => ({ ...prev, [solicitudId]: value }))}
+      onSend={(solicitudId) => {
+        void handleSendMensaje(solicitudId);
+      }}
+      onOpenSolicitud={(solicitudId) => {
+        navigate('/solicitudes');
+      }}
+    />
   );
 
   if (isDocumentationRoute) {
@@ -5068,9 +5680,8 @@ const selectedConvenio = useMemo(() => {
 
   if (!me && !authResolved) {
     return (
-      <div className="app app--dark app--auth">
+      <div className="app app--dark app--auth auth-viewport">
         <ToastStack toasts={toasts} onDismiss={dismissToast} />
-        {authError && <div className="app__alert app__alert--error">{authError}</div>}
         {loading && <div className="app__alert app__alert--info">Validando acceso...</div>}
       </div>
     );
@@ -5078,10 +5689,12 @@ const selectedConvenio = useMemo(() => {
 
   if (!me) {
     return (
-      <div className="app app--dark app--auth">
+      <div className="app app--dark app--auth auth-viewport">
         <ToastStack toasts={toasts} onDismiss={dismissToast} />
-        {authError && <div className="app__alert app__alert--error">{authError}</div>}
-        <LoginPage onLogin={handleLoginSuccess} />
+        <Routes>
+          <Route path="/login" element={<LoginPage onLogin={handleLoginSuccess} authError={authError} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
       </div>
     );
   }
@@ -5158,14 +5771,35 @@ const selectedConvenio = useMemo(() => {
                 </div>
                 <div className="notification-dropdown__footer">
                   <button type="button" className="button button--ghost button--sm" onClick={openSolicitudesPage}>
-                    Ver todas
+                    Ver solicitudes
+                  </button>
+                  <button
+                    type="button"
+                    className="button button--ghost button--sm"
+                    onClick={() => handleOpenInbox()}
+                  >
+                    Abrir bandeja
                   </button>
                 </div>
               </div>
             )}
           </div>
+          <Link
+            to="/bandeja"
+            className="notification-bell notification-bell--link"
+            onClick={closeNotifications}
+            aria-label="Abrir bandeja de mensajes"
+          >
+            <span className="notification-bell__icon">&#9993;</span>
+            {empresaInboxThreads.length > 0 && (
+              <span className="notification-bell__badge">{empresaInboxThreads.length}</span>
+            )}
+          </Link>
           <div className="topbar__auth">
             <span className="app__meta">Sesion: {me?.username ?? 'admin'}</span>
+            <Link to="/bandeja" className="button button--ghost button--sm" onClick={closeNotifications}>
+              Bandeja
+            </Link>
             <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
               <span className="topbar__profile-icon">&#128100;</span>
               <span className="topbar__profile-label">Perfil</span>
@@ -5251,6 +5885,14 @@ const selectedConvenio = useMemo(() => {
                   accent: 'cyan',
                 },
                 {
+                  id: 'bandeja',
+                  label: 'Bandeja',
+                  total: empresaSolicitudes.length,
+                  description: 'Mensajes con empresas',
+                  detail: 'Centraliza conversaciones y respuestas desde una unica vista.',
+                  accent: 'amber',
+                },
+                {
                   id: 'documentacion',
                   label: 'Documentacion',
                   total: 3,
@@ -5299,6 +5941,13 @@ const selectedConvenio = useMemo(() => {
                   description: 'Equipos academicos y de empresa con filtros.',
                   path: '/tutores',
                 },
+                {
+                  id: 'bandeja',
+                  label: 'Bandeja',
+                  total: empresaSolicitudes.length,
+                  description: 'Inbox central para mensajes y seguimiento con empresas.',
+                  path: '/bandeja',
+                },
               ]}
               studentPreview={studentPreview}
               selectedStudent={selectedStudent}
@@ -5320,6 +5969,7 @@ const selectedConvenio = useMemo(() => {
         <Route path="/asignaciones" element={<AsignacionesOverviewPage />} />
         <Route path="/asignaciones/:asignacionId" element={<AsignacionManagementPage />} />
         <Route path="/documentacion" element={<DocumentationGuidePage />} />
+        <Route path="/bandeja" element={bandejaElement} />
         <Route path="/tutores" element={tutoresElement} />
         <Route
           path="/login"

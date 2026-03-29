@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+﻿import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
@@ -42,6 +42,11 @@ type PortalStatusSnapshot = {
   creadaEn: string;
   emailVerificadoEn: string | null;
   aprobadoEn: string | null;
+  portalAccount?: {
+    email: string;
+    activatedAt: string | null;
+    activationPending: boolean;
+  } | null;
 };
 
 type ChatMessage = {
@@ -69,6 +74,86 @@ type ProcessStep = {
   detail: string;
 };
 
+type CompanyAuthMe = {
+  email: string;
+  displayName: string | null;
+  roles: string[];
+  activatedAt: string | null;
+  lastLoginAt: string | null;
+  empresa: {
+    id: number | null;
+    nombre: string | null;
+  };
+};
+
+type CompanyPortalOverview = {
+  account: {
+    email: string;
+    displayName: string | null;
+    activatedAt: string | null;
+    lastLoginAt: string | null;
+  };
+  company: {
+    id: number;
+    nombre: string;
+    sector: string | null;
+    ciudad: string | null;
+    email: string | null;
+    telefono: string | null;
+    web: string | null;
+    estadoColaboracion: string | null;
+  };
+  convenios: Array<{
+    id: number;
+    titulo: string;
+    estado: string;
+    fechaInicio: string;
+    fechaFin: string | null;
+  }>;
+  asignaciones: Array<{
+    id: number;
+    estado: string;
+    modalidad: string;
+    fechaInicio: string;
+    fechaFin: string | null;
+    estudiante: {
+      id: number;
+      nombre: string;
+      apellido: string;
+    };
+  }>;
+  documents: {
+    empresa: Array<{
+      id: number;
+      name: string;
+      type: string | null;
+      version: number;
+      uploadedAt: string;
+      url: string;
+    }>;
+    convenio: Array<{
+      id: number;
+      name: string;
+      type: string | null;
+      version: number;
+      uploadedAt: string;
+      url: string;
+      sourceLabel: string;
+    }>;
+  };
+  messages: Array<{
+    id: number;
+    autor: 'empresa' | 'centro';
+    texto: string;
+    createdAt: string;
+  }>;
+  solicitud: {
+    id: number;
+    estado: string;
+    portalToken: string;
+  } | null;
+};
+
 const PORTAL_STORAGE_KEY = 'agora.portal.session';
 
 function resolveDefaultApiBase(): string {
@@ -88,12 +173,11 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || re
 const REGISTRO_ENDPOINT = `${API_BASE.replace(/\/$/, '')}/registro-empresa`;
 const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`;
 
-const HERO_LINKS = [
-  { href: '#registro', label: 'Formulario' },
+const PUBLIC_NAV_LINKS = [
+  { href: '/', label: 'Inicio' },
   { href: '/estado', label: 'Estado' },
   { href: '/correo', label: 'Correo' },
-  { href: '/verificar', label: 'Verificacion' },
-  { href: '/chat', label: 'Mensajeria' },
+  { href: '/acceso', label: 'Acceso empresa' },
   { href: '/recursos', label: 'Recursos' },
 ];
 
@@ -147,6 +231,28 @@ const PROCESS_STEPS: ProcessStep[] = [
     title: '4. Canal operativo',
     detail: 'Tras la validacion, la empresa dispone de un canal de comunicacion vinculado.',
   },
+];
+
+const JOURNEY_SUMMARY = [
+  {
+    title: 'Registro guiado',
+    detail: 'La empresa completa un alta clara con datos de contacto, sector y objetivo de colaboracion.',
+  },
+  {
+    title: 'Validacion del correo',
+    detail: 'El sistema remite un enlace para confirmar la identidad corporativa antes de pasar a revision.',
+  },
+  {
+    title: 'Revision y acceso',
+    detail: 'El centro aprueba la solicitud y, cuando corresponde, habilita la cuenta persistente de empresa.',
+  },
+];
+
+const MAIL_CHECKLIST = [
+  'Revisar entrada, promociones y spam del correo corporativo.',
+  'Abrir el enlace de verificacion completo recibido por email.',
+  'Volver a la pagina de estado para confirmar el avance del registro.',
+  'Entrar en Acceso empresa solo cuando el centro haya activado la cuenta.',
 ];
 
 const FAQ_ITEMS = [
@@ -232,7 +338,41 @@ function useQuery() {
   return useMemo(() => new URLSearchParams(search), [search]);
 }
 
+async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE.replace(/\/$/, '')}${path}`, {
+    ...init,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(init.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    let message = `Error ${response.status}`;
+    try {
+      const payload = await response.json();
+      if (payload?.message) {
+        message = `${message}: ${payload.message}`;
+      }
+    } catch {
+      // ignored
+    }
+    throw new Error(message);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
 function Layout({ children, session }: { children: ReactNode; session: PortalSession | null }) {
+  const navigationLinks = session
+    ? [...PUBLIC_NAV_LINKS, { href: '/panel', label: 'Panel empresa' }]
+    : PUBLIC_NAV_LINKS;
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -241,12 +381,8 @@ function Layout({ children, session }: { children: ReactNode; session: PortalSes
           <span className="brand__badge">Portal externo</span>
         </div>
         <nav className="nav">
-          {HERO_LINKS.map((item) => (
-            item.href.startsWith('#') ? (
-              <a key={item.label} href={item.href} className="nav__link">{item.label}</a>
-            ) : (
-              <Link key={item.label} to={item.href} className="nav__link">{item.label}</Link>
-            )
+          {navigationLinks.map((item) => (
+            <Link key={item.label} to={item.href} className="nav__link">{item.label}</Link>
           ))}
         </nav>
       </header>
@@ -256,8 +392,8 @@ function Layout({ children, session }: { children: ReactNode; session: PortalSes
       <footer className="site-footer">
         <p>Agora | Portal de relacion empresa-centro</p>
         <small>
-          Endpoint operativo: {REGISTRO_ENDPOINT}
-          {session ? ` | Sesion activa: ${session.companyName}` : ''}
+          Registro, verificacion y acceso empresarial coordinados desde un unico portal.
+          {session ? ` | Sesion local: ${session.companyName}` : ''}
         </small>
       </footer>
     </div>
@@ -345,14 +481,15 @@ function LandingPage() {
       <section className="hero hero--landing">
         <div className="hero__copy">
           <p className="eyebrow">Portal externo para empresas</p>
-          <h1>Registra tu organizacion, valida el correo corporativo y sigue el estado de la solicitud.</h1>
+          <h1>Presenta la colaboracion, valida el correo y activa el acceso empresarial sin salir del mismo flujo.</h1>
           <p className="lede">
-            Agora unifica el alta de colaboraciones, la verificacion de identidad y el seguimiento operativo
-            en una experiencia clara para empresas interesadas en practicas, convenios y nuevas incorporaciones.
+            Agora concentra el registro inicial, la validacion por correo, el seguimiento de la solicitud y el
+            acceso posterior de la empresa en un recorrido unico, mas claro y mas facil de operar.
           </p>
           <div className="hero__actions">
             <a className="btn btn--primary" href="#registro">Solicitar colaboracion</a>
             <Link className="btn btn--ghost" to="/estado">Ver estado de una solicitud</Link>
+            <Link className="btn btn--ghost" to="/acceso">Acceso empresa aprobada</Link>
           </div>
 
           <div className="metric-grid">
@@ -369,20 +506,30 @@ function LandingPage() {
         <aside className="hero__rail">
           <div className="hero__rail-card">
             <p className="eyebrow">Ruta operativa</p>
-            <h2>Todo el ciclo en un solo recorrido.</h2>
+            <h2>Un recorrido coherente de principio a fin.</h2>
             <ul className="rail-list">
               <li>Alta de empresa con datos estructurados.</li>
               <li>Correo de verificacion emitido por backend.</li>
-              <li>Estado visible para la empresa.</li>
-              <li>Mensajeria vinculada a la solicitud.</li>
+              <li>Estado visible durante toda la revision.</li>
+              <li>Acceso persistente cuando la empresa queda aprobada.</li>
             </ul>
           </div>
           <div className="hero__rail-card hero__rail-card--soft">
-            <span className="eyebrow">Integracion</span>
-            <strong>Sin duplicar informacion entre portales.</strong>
-            <p>La solicitud entra una vez y se transforma en flujo operativo para el equipo interno.</p>
+            <span className="eyebrow">Acceso empresarial</span>
+            <strong>La cuenta privada se activa solo cuando el centro lo confirma.</strong>
+            <p>Evita accesos prematuros y mantiene una transicion limpia entre solicitud, aprobacion y operativa.</p>
           </div>
         </aside>
+      </section>
+
+      <section className="section-grid">
+        {JOURNEY_SUMMARY.map((item) => (
+          <article key={item.title} className="surface-card">
+            <p className="eyebrow">Flujo</p>
+            <h3>{item.title}</h3>
+            <p>{item.detail}</p>
+          </article>
+        ))}
       </section>
 
       <section className="section-grid">
@@ -419,14 +566,15 @@ function LandingPage() {
           <header className="panel__header">
             <div>
               <p className="eyebrow">Garantias operativas</p>
-              <h2>Lo que ve la empresa</h2>
+              <h2>Que puede hacer la empresa en cada etapa</h2>
             </div>
           </header>
           <ul className="feature-list">
             <li>Formulario claro para contacto y descripcion de la colaboracion.</li>
-            <li>Bandeja explicativa para el enlace de verificacion.</li>
-            <li>Pagina de validacion del token de correo.</li>
-            <li>Canal de mensajeria cuando existe acceso autorizado.</li>
+            <li>Pagina de correo para reenviar y seguir el enlace de validacion.</li>
+            <li>Pagina de estado con hitos y proximos pasos visibles.</li>
+            <li>Acceso privado solo tras la aprobacion y activacion de la cuenta.</li>
+            <li>Mensajeria y documentos cuando ya existe contexto operativo.</li>
           </ul>
         </article>
       </section>
@@ -588,47 +736,63 @@ function MailPage() {
 
   return (
     <div className="page">
-      <section className="panel">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">Correo</p>
-            <h2>Verificacion por correo</h2>
-            <p>Revisa el mensaje enviado al correo corporativo para completar la validacion del registro.</p>
-          </div>
-        </div>
-
-        {enviada && (
-          <div className={`alert ${delivery === 'sent' ? 'alert--success' : 'alert--error'}`}>
-            {delivery === 'sent'
-              ? 'Solicitud enviada. Revisa el correo corporativo para continuar.'
-              : 'La solicitud se ha registrado, pero el correo saliente no esta operativo todavia. Debe revisarse la configuracion SMTP.'}
-          </div>
-        )}
-        {feedback && <div className={`alert ${feedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{feedback.message}</div>}
-
-        <article className="mail-card">
-          <header>
+      <section className="content-grid">
+        <article className="panel">
+          <div className="panel__header">
             <div>
-              <p className="eyebrow">Centro educativo</p>
-              <h3>Confirma tu registro</h3>
+              <p className="eyebrow">Correo</p>
+              <h2>Verificacion por correo</h2>
+              <p>Revisa el mensaje enviado al correo corporativo para completar la validacion del registro.</p>
             </div>
-            <span className="chip">Verificacion</span>
-          </header>
-          <p>Hemos recibido tu solicitud. Utiliza el enlace de verificacion enviado al correo corporativo para confirmar el acceso.</p>
-          {session?.verificationUrl ? (
-            <a className="link" href={verificationLink} target="_blank" rel="noreferrer">{verificationLink}</a>
-          ) : (
-            <p className="mail-card__hint">El enlace personalizado se envia unicamente al correo registrado.</p>
-          )}
-          <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisara la solicitud desde el portal interno.</p>
-          <div className="hero__actions">
-            <Link className="btn btn--ghost" to={session?.portalToken ? `/estado?token=${encodeURIComponent(session.portalToken)}` : '/estado'}>
-              Ver estado
-            </Link>
-            <button type="button" className="btn btn--primary" onClick={handleResend} disabled={resending}>
-              {resending ? 'Reenviando...' : 'Reenviar correo'}
-            </button>
           </div>
+
+          {enviada && (
+            <div className={`alert ${delivery === 'sent' ? 'alert--success' : 'alert--error'}`}>
+              {delivery === 'sent'
+                ? 'Solicitud enviada. Revisa el correo corporativo para continuar.'
+                : 'La solicitud se ha registrado, pero el correo saliente no esta operativo todavia. Debe revisarse la configuracion SMTP.'}
+            </div>
+          )}
+          {feedback && <div className={`alert ${feedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{feedback.message}</div>}
+
+          <article className="mail-card">
+            <header>
+              <div>
+                <p className="eyebrow">Centro educativo</p>
+                <h3>Confirma tu registro</h3>
+              </div>
+              <span className="chip">Verificacion</span>
+            </header>
+            <p>Hemos recibido tu solicitud. Utiliza el enlace de verificacion enviado al correo corporativo para confirmar el acceso.</p>
+            {session?.verificationUrl ? (
+              <a className="link" href={verificationLink} target="_blank" rel="noreferrer">{verificationLink}</a>
+            ) : (
+              <p className="mail-card__hint">El enlace personalizado se envia unicamente al correo registrado.</p>
+            )}
+            <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisara la solicitud desde el portal interno.</p>
+            <div className="hero__actions">
+              <Link className="btn btn--ghost" to={session?.portalToken ? `/estado?token=${encodeURIComponent(session.portalToken)}` : '/estado'}>
+                Ver estado
+              </Link>
+              <button type="button" className="btn btn--primary" onClick={handleResend} disabled={resending}>
+                {resending ? 'Reenviando...' : 'Reenviar correo'}
+              </button>
+            </div>
+          </article>
+        </article>
+
+        <article className="panel panel--soft">
+          <div className="panel__header">
+            <div>
+              <p className="eyebrow">Siguientes pasos</p>
+              <h2>Que revisar antes de continuar</h2>
+            </div>
+          </div>
+          <ul className="feature-list">
+            {MAIL_CHECKLIST.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
         </article>
       </section>
     </div>
@@ -680,6 +844,43 @@ function StatusPage() {
     ];
   }, [status]);
 
+  const nextActions = useMemo(() => {
+    if (!status) {
+      return [
+        'Introduce el token del portal o utiliza la sesion guardada para recuperar la solicitud.',
+        'Si acabas de registrarte, revisa primero la pagina de correo para verificar la direccion.',
+      ];
+    }
+
+    if (status.estado === 'pendiente') {
+      return [
+        'Confirma el enlace recibido en el correo corporativo.',
+        'Cuando el correo este validado, vuelve a esta pagina para seguir la revision.',
+      ];
+    }
+
+    if (status.estado === 'email_verificado') {
+      return [
+        'La solicitud ya ha pasado la validacion por correo.',
+        'El siguiente paso depende de la revision del centro desde el portal interno.',
+      ];
+    }
+
+    if (status.estado === 'aprobada') {
+      return [
+        status.portalAccount?.activationPending
+          ? 'Revisa el correo de activacion de cuenta para crear tu contrasena inicial.'
+          : 'Accede al area privada de empresa para revisar convenios, mensajes y documentos.',
+        'Conserva este token para consultar el historial de la solicitud cuando lo necesites.',
+      ];
+    }
+
+    return [
+      'La solicitud ha sido rechazada. Revisa el motivo indicado por el centro y prepara una nueva propuesta si procede.',
+      'Si necesitas aclaraciones, utiliza el canal habilitado o contacta con el centro.',
+    ];
+  }, [status]);
+
   return (
     <div className="page">
       <section className="panel">
@@ -702,6 +903,11 @@ function StatusPage() {
             <p className="eyebrow">Acceso</p>
             <h3>Sesion del portal</h3>
             <p>{session ? 'Existe una sesion local guardada en este navegador.' : 'No hay sesion local guardada.'}</p>
+            {status?.portalAccount && (
+              <small>
+                Cuenta empresa: {status.portalAccount.activationPending ? 'pendiente de activacion' : 'activa'}
+              </small>
+            )}
             <label className="status-grid__field">
               <span>Token portal</span>
               <input value={tokenInput} onChange={(event) => setTokenInput(event.target.value)} placeholder="Introduce el token del portal" />
@@ -726,21 +932,37 @@ function StatusPage() {
         </div>
       </section>
 
-      <section className="panel panel--soft">
-        <div className="panel__header">
-          <div>
-            <p className="eyebrow">Linea temporal</p>
-            <h2>Hitos de la solicitud</h2>
+      <section className="content-grid">
+        <article className="panel panel--soft">
+          <div className="panel__header">
+            <div>
+              <p className="eyebrow">Linea temporal</p>
+              <h2>Hitos de la solicitud</h2>
+            </div>
           </div>
-        </div>
-        <div className="timeline">
-          {steps.map((step) => (
-            <article key={step.label} className={`timeline__item${step.done ? ' timeline__item--done' : ''}`}>
-              <strong>{step.label}</strong>
-              <p>{step.detail}</p>
-            </article>
-          ))}
-        </div>
+          <div className="timeline">
+            {steps.map((step) => (
+              <article key={step.label} className={`timeline__item${step.done ? ' timeline__item--done' : ''}`}>
+                <strong>{step.label}</strong>
+                <p>{step.detail}</p>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel panel--dark">
+          <div className="panel__header">
+            <div>
+              <p className="eyebrow">Proximo movimiento</p>
+              <h2>Que debes hacer ahora</h2>
+            </div>
+          </div>
+          <ul className="feature-list">
+            {nextActions.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </article>
       </section>
     </div>
   );
@@ -937,6 +1159,422 @@ function ResourcesPage() {
   );
 }
 
+function CompanyLoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      await portalFetch<void>('/portal-auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      navigate('/panel');
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo iniciar sesion.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page">
+      <section className="panel">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">Cuenta empresa</p>
+            <h2>Acceso persistente</h2>
+            <p>Disponible para empresas aprobadas con cuenta activada desde el correo corporativo.</p>
+          </div>
+        </div>
+        {status && <div className="alert alert--error">{status}</div>}
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            <span>Email corporativo</span>
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          </label>
+          <label>
+            <span>Contrasena</span>
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </label>
+          <div className="form__actions">
+            <button type="submit" className="btn btn--primary" disabled={loading}>
+              {loading ? 'Accediendo...' : 'Entrar al portal'}
+            </button>
+            <Link className="btn btn--ghost" to="/recuperar-clave">Recuperar contrasena</Link>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function ActivateAccountPage() {
+  const query = useQuery();
+  const navigate = useNavigate();
+  const token = query.get('token') ?? '';
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!token) {
+      setStatus({ kind: 'error', message: 'El enlace de activacion no incluye un token valido.' });
+      return;
+    }
+    if (password !== confirmPassword) {
+      setStatus({ kind: 'error', message: 'Las contrasenas no coinciden.' });
+      return;
+    }
+
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const response = await portalFetch<{ message: string }>('/portal-auth/activate', {
+        method: 'POST',
+        body: JSON.stringify({ token, password }),
+      });
+      setStatus({ kind: 'success', message: response.message });
+      window.setTimeout(() => navigate('/acceso'), 1200);
+    } catch (err) {
+      setStatus({ kind: 'error', message: err instanceof Error ? err.message : 'No se pudo activar la cuenta.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page">
+      <section className="panel">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">Activacion</p>
+            <h2>Crear acceso de empresa</h2>
+            <p>Define la contrasena inicial para el portal privado posterior a la aprobacion.</p>
+          </div>
+        </div>
+        {status && <div className={`alert ${status.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{status.message}</div>}
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            <span>Nueva contrasena</span>
+            <input type="password" minLength={10} value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </label>
+          <label>
+            <span>Confirmar contrasena</span>
+            <input type="password" minLength={10} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+          </label>
+          <div className="form__actions">
+            <button type="submit" className="btn btn--primary" disabled={loading}>
+              {loading ? 'Activando...' : 'Activar cuenta'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function RequestResetPage() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const response = await portalFetch<{ message: string }>('/portal-auth/request-reset', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      setStatus(response.message);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo solicitar la recuperacion.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page">
+      <section className="panel">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">Recuperacion</p>
+            <h2>Solicitar restablecimiento</h2>
+            <p>Enviaremos un enlace de recuperacion a la cuenta ya activada.</p>
+          </div>
+        </div>
+        {status && <div className="alert alert--success">{status}</div>}
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            <span>Email corporativo</span>
+            <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+          </label>
+          <div className="form__actions">
+            <button type="submit" className="btn btn--primary" disabled={loading}>
+              {loading ? 'Enviando...' : 'Solicitar enlace'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function ResetPasswordPage() {
+  const query = useQuery();
+  const navigate = useNavigate();
+  const token = query.get('token') ?? '';
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (password !== confirmPassword) {
+      setStatus('Las contrasenas no coinciden.');
+      return;
+    }
+
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      const response = await portalFetch<{ message: string }>('/portal-auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, password }),
+      });
+      setStatus(response.message);
+      window.setTimeout(() => navigate('/acceso'), 1200);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo actualizar la contrasena.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page">
+      <section className="panel">
+        <div className="panel__header">
+          <div>
+            <p className="eyebrow">Nueva contrasena</p>
+            <h2>Restablecer acceso</h2>
+          </div>
+        </div>
+        {status && <div className="alert alert--success">{status}</div>}
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label>
+            <span>Nueva contrasena</span>
+            <input type="password" minLength={10} value={password} onChange={(event) => setPassword(event.target.value)} required />
+          </label>
+          <label>
+            <span>Confirmar contrasena</span>
+            <input type="password" minLength={10} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+          </label>
+          <div className="form__actions">
+            <button type="submit" className="btn btn--primary" disabled={loading}>
+              {loading ? 'Guardando...' : 'Actualizar contrasena'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function CompanyAreaPage() {
+  const navigate = useNavigate();
+  const [me, setMe] = useState<CompanyAuthMe | null>(null);
+  const [overview, setOverview] = useState<CompanyPortalOverview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<string | null>(null);
+  const [draft, setDraft] = useState('');
+
+  const loadOverview = async () => {
+    setLoading(true);
+    try {
+      const [meResponse, overviewResponse] = await Promise.all([
+        portalFetch<CompanyAuthMe>('/portal-auth/me'),
+        portalFetch<CompanyPortalOverview>('/api/portal-company/overview'),
+      ]);
+      setMe(meResponse);
+      setOverview(overviewResponse);
+      setStatus(null);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo cargar el panel privado.');
+      setOverview(null);
+      setMe(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadOverview();
+  }, []);
+
+  const handleSendMessage = async () => {
+    if (!draft.trim()) {
+      return;
+    }
+
+    try {
+      await portalFetch('/api/portal-company/messages', {
+        method: 'POST',
+        body: JSON.stringify({ texto: draft.trim() }),
+      });
+      setDraft('');
+      await loadOverview();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'No se pudo enviar el mensaje.');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await portalFetch<void>('/portal-auth/logout', { method: 'POST' });
+    } catch {
+      // ignored
+    } finally {
+      navigate('/acceso');
+    }
+  };
+
+  if (loading) {
+    return <div className="page"><section className="panel"><p>Cargando panel de empresa...</p></section></div>;
+  }
+
+  if (!overview || !me) {
+    return (
+      <div className="page">
+        <section className="panel">
+          {status && <div className="alert alert--error">{status}</div>}
+          <p>La sesion de empresa no esta activa o la cuenta aun no se ha aprobado.</p>
+          <div className="hero__actions">
+            <Link className="btn btn--primary" to="/acceso">Ir a acceso</Link>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page">
+      <section className="hero hero--landing">
+        <div className="hero__copy">
+          <p className="eyebrow">Area privada empresa</p>
+          <h1>{overview.company.nombre}</h1>
+          <p className="lede">
+            Cuenta activa para revisar convenios, asignaciones, documentacion y el canal operativo con el centro.
+          </p>
+          <div className="hero__actions">
+            <button type="button" className="btn btn--primary" onClick={() => void loadOverview()}>Actualizar</button>
+            <button type="button" className="btn btn--ghost" onClick={() => void handleLogout()}>Cerrar sesion</button>
+          </div>
+          <div className="metric-grid">
+            <article className="metric-card"><span>Convenios</span><strong>{overview.convenios.length}</strong><small>Acuerdos visibles</small></article>
+            <article className="metric-card"><span>Asignaciones</span><strong>{overview.asignaciones.length}</strong><small>Practicas vinculadas</small></article>
+            <article className="metric-card"><span>Mensajes</span><strong>{overview.messages.length}</strong><small>Canal con el centro</small></article>
+          </div>
+        </div>
+        <aside className="hero__rail">
+          <div className="hero__rail-card">
+            <p className="eyebrow">Cuenta</p>
+            <h2>{me.displayName ?? me.email}</h2>
+            <p>{me.email}</p>
+            <small>Activada: {me.activatedAt ? new Date(me.activatedAt).toLocaleString('es-ES') : 'pendiente'}</small>
+          </div>
+        </aside>
+      </section>
+
+      {status && <div className="alert alert--error">{status}</div>}
+
+      <section className="section-grid">
+        <article className="surface-card">
+          <p className="eyebrow">Empresa</p>
+          <h3>Ficha de colaboracion</h3>
+          <p>{overview.company.sector ?? 'Sector pendiente'}  |  {overview.company.ciudad ?? 'Ciudad pendiente'}</p>
+          <small>{overview.company.email ?? 'Sin email'}  |  {overview.company.telefono ?? 'Sin telefono'}</small>
+        </article>
+        <article className="surface-card">
+          <p className="eyebrow">Estado</p>
+          <h3>{overview.company.estadoColaboracion ?? 'Sin estado'}</h3>
+          <p>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</p>
+        </article>
+      </section>
+
+      <section className="content-grid">
+        <article className="panel panel--soft">
+          <header className="panel__header">
+            <div>
+              <p className="eyebrow">Convenios</p>
+              <h2>Acuerdos disponibles</h2>
+            </div>
+          </header>
+          <div className="timeline">
+            {overview.convenios.map((convenio) => (
+              <article key={convenio.id} className="timeline__item">
+                <strong>{convenio.titulo}</strong>
+                <p>{convenio.estado}</p>
+                <small>{convenio.fechaInicio}  |  {convenio.fechaFin ?? 'sin fin'}</small>
+              </article>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel panel--dark">
+          <header className="panel__header">
+            <div>
+              <p className="eyebrow">Mensajeria</p>
+              <h2>Canal con el centro</h2>
+            </div>
+          </header>
+          <div className="chat">
+            <div className="chat__messages">
+              {overview.messages.map((message) => (
+                <div key={message.id} className={`chat__bubble chat__bubble--${message.autor}`}>
+                  <p>{message.texto}</p>
+                  <small>{message.autor}  |  {new Date(message.createdAt).toLocaleString('es-ES')}</small>
+                </div>
+              ))}
+            </div>
+            <div className="chat__input">
+              <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Mensaje para el centro..." />
+              <button type="button" className="btn btn--primary" onClick={() => void handleSendMessage()}>Enviar</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="section-grid">
+        {[...overview.documents.empresa, ...overview.documents.convenio].map((document) => (
+          <article key={`${document.id}-${document.url}`} className="surface-card">
+            <p className="eyebrow">Documento</p>
+            <h3>{document.name}</h3>
+            <p>Version {document.version}  |  {document.type ?? 'Documento'}</p>
+            <a className="link" href={document.url} target="_blank" rel="noreferrer">Descargar</a>
+          </article>
+        ))}
+      </section>
+    </div>
+  );
+}
+
 function App() {
   const session = readPortalSession();
 
@@ -949,6 +1587,11 @@ function App() {
         <Route path="/estado" element={<StatusPage />} />
         <Route path="/verificar" element={<VerifyPage />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/acceso" element={<CompanyLoginPage />} />
+        <Route path="/activar-cuenta" element={<ActivateAccountPage />} />
+        <Route path="/recuperar-clave" element={<RequestResetPage />} />
+        <Route path="/restablecer-clave" element={<ResetPasswordPage />} />
+        <Route path="/panel" element={<CompanyAreaPage />} />
         <Route path="/recursos" element={<ResourcesPage />} />
       </Routes>
     </Layout>
@@ -956,3 +1599,4 @@ function App() {
 }
 
 export default App;
+

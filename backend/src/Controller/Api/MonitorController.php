@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\AsignacionPractica;
+use App\Entity\AuditLog;
 use App\Entity\Convenio;
 use App\Entity\ConvenioDocumento;
 use App\Entity\EmpresaColaboradora;
 use App\Entity\EmpresaDocumento;
 use App\Entity\EmpresaMensaje;
+use App\Entity\EmpresaPortalCuenta;
 use App\Entity\EmpresaSolicitud;
 use App\Entity\Estudiante;
+use App\Entity\EvaluacionFinal;
+use App\Entity\Seguimiento;
+use App\Service\DocumentStorageManager;
+use App\Service\InternalMfaManager;
 use App\Service\MailConfigurationInspector;
 use App\Service\PublicAccessManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,13 +29,15 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/monitor', name: 'api_monitor_')]
-#[IsGranted('ROLE_API')]
+#[IsGranted('ROLE_MONITOR')]
 final class MonitorController extends AbstractController
 {
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly PublicAccessManager $publicAccessManager,
         private readonly MailConfigurationInspector $mailConfigurationInspector,
+        private readonly DocumentStorageManager $documentStorageManager,
+        private readonly InternalMfaManager $internalMfaManager,
     )
     {
     }
@@ -63,8 +71,13 @@ final class MonitorController extends AbstractController
             $this->frontendAppDir() . '/tests',
             static fn (string $path): bool => str_ends_with($path, '.test.ts')
         );
+        $e2eTests = $this->countFiles(
+            $this->frontendAppDir() . '/e2e',
+            static fn (string $path): bool => str_ends_with($path, '.spec.ts')
+        );
         $publicAccess = $this->publicAccessManager->getSnapshot();
         $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+        $mfaStatus = $this->internalMfaManager->getStatus();
 
         return [
             [
@@ -100,6 +113,15 @@ final class MonitorController extends AbstractController
                 'target' => null,
             ],
             [
+                'id' => 'mfa',
+                'name' => 'MFA interno',
+                'status' => ($mfaStatus['mailReady'] ?? false) ? 'healthy' : 'warning',
+                'detail' => ($mfaStatus['mailReady'] ?? false)
+                    ? 'Segundo factor listo para operaciones sensibles del monitor.'
+                    : 'El MFA no puede emitir codigos por correo con la configuracion actual.',
+                'target' => '/api/mfa/status',
+            ],
+            [
                 'id' => 'public-access',
                 'name' => 'Acceso externo',
                 'status' => $publicAccess['status'] === 'active' ? 'healthy' : 'warning',
@@ -111,10 +133,17 @@ final class MonitorController extends AbstractController
             [
                 'id' => 'tests',
                 'name' => 'Supervision automatizada',
-                'status' => $frontendTests > 0 ? 'healthy' : 'warning',
-                'detail' => $frontendTests > 0
-                    ? 'Hay suites registradas para backend y frontend.'
-                    : 'Solo se han detectado pruebas backend; falta cobertura frontend.',
+                'status' => $frontendTests > 0 && $e2eTests > 0 ? 'healthy' : 'warning',
+                'detail' => $frontendTests > 0 && $e2eTests > 0
+                    ? 'Hay suites registradas para backend, frontend y navegador.'
+                    : 'Falta cobertura frontal completa o pruebas E2E de navegador.',
+                'target' => null,
+            ],
+            [
+                'id' => 'document-storage',
+                'name' => 'Almacenamiento documental',
+                'status' => is_dir(dirname($this->documentStorageManager->resolveAbsolutePath('healthcheck.txt'))) ? 'healthy' : 'warning',
+                'detail' => sprintf('Repositorio externo de ficheros en %s.', dirname($this->documentStorageManager->resolveAbsolutePath('healthcheck.txt'))),
                 'target' => null,
             ],
         ];
@@ -129,6 +158,10 @@ final class MonitorController extends AbstractController
         $solicitudRepository = $entityManager->getRepository(EmpresaSolicitud::class);
         $empresaDocumentoRepository = $entityManager->getRepository(EmpresaDocumento::class);
         $convenioDocumentoRepository = $entityManager->getRepository(ConvenioDocumento::class);
+        $seguimientoRepository = $entityManager->getRepository(Seguimiento::class);
+        $evaluacionRepository = $entityManager->getRepository(EvaluacionFinal::class);
+        $portalAccountRepository = $entityManager->getRepository(EmpresaPortalCuenta::class);
+        $auditRepository = $entityManager->getRepository(AuditLog::class);
 
         $pendingSolicitudes = $solicitudRepository->count(['estado' => EmpresaSolicitud::ESTADO_PENDIENTE])
             + $solicitudRepository->count(['estado' => EmpresaSolicitud::ESTADO_EMAIL_VERIFICADO]);
@@ -170,12 +203,46 @@ final class MonitorController extends AbstractController
                 'value' => $empresaDocumentoRepository->count([]) + $convenioDocumentoRepository->count([]),
                 'hint' => 'Adjuntos empresariales y de convenio almacenados.',
             ],
+            [
+                'id' => 'seguimientos',
+                'label' => 'Seguimientos',
+                'value' => $seguimientoRepository->count([]),
+                'hint' => 'Entradas de seguimiento operativo registradas por asignacion.',
+            ],
+            [
+                'id' => 'evaluaciones',
+                'label' => 'Evaluaciones finales',
+                'value' => $evaluacionRepository->count([]),
+                'hint' => 'Evaluaciones con notas, conclusiones y cierre.',
+            ],
+            [
+                'id' => 'cuentas-empresa',
+                'label' => 'Cuentas empresa',
+                'value' => $portalAccountRepository->count([]),
+                'hint' => 'Empresas con acceso persistente al portal externo.',
+            ],
+            [
+                'id' => 'auditoria',
+                'label' => 'Eventos de auditoria',
+                'value' => $auditRepository->count([]),
+                'hint' => 'Trazas de acciones sensibles registradas en el sistema.',
+            ],
         ];
     }
 
     private function buildActivitySnapshot(EntityManagerInterface $entityManager): array
     {
         $activity = [];
+
+        foreach ($entityManager->getRepository(AuditLog::class)->findBy([], ['createdAt' => 'DESC'], 6) as $audit) {
+            $activity[] = [
+                'id' => 'audit-' . $audit->getId(),
+                'category' => $audit->getAction(),
+                'title' => sprintf('Auditoria %s', $audit->getAction()),
+                'description' => $this->truncate(sprintf('%s sobre %s#%s', $audit->getActorIdentifier(), $audit->getTargetType(), $audit->getTargetId() ?? '-'), 140),
+                'timestamp' => $audit->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            ];
+        }
 
         foreach ($entityManager->getRepository(EmpresaSolicitud::class)->findBy([], ['updatedAt' => 'DESC'], 4) as $solicitud) {
             $activity[] = [
@@ -263,6 +330,10 @@ final class MonitorController extends AbstractController
     {
         $projectDir = $this->kernel->getProjectDir();
         $frontendDir = $this->frontendAppDir();
+        $e2eFiles = $this->listFiles(
+            $frontendDir . '/e2e',
+            static fn (string $path): bool => str_ends_with($path, '.spec.ts')
+        );
         $backendFiles = $this->listFiles(
             $projectDir . '/tests',
             static fn (string $path): bool => str_ends_with($path, '.php')
@@ -301,6 +372,20 @@ final class MonitorController extends AbstractController
                     'Vista previa de documentos',
                 ],
             ],
+            [
+                'id' => 'e2e',
+                'name' => 'Playwright E2E',
+                'scope' => 'frontend',
+                'status' => $e2eFiles !== [] ? 'healthy' : 'warning',
+                'command' => 'npm run test:e2e',
+                'totalFiles' => count($e2eFiles),
+                'files' => array_slice($e2eFiles, 0, 6),
+                'focus' => [
+                    'Login interno',
+                    'Portal externo',
+                    'Monitor privado',
+                ],
+            ],
         ];
     }
 
@@ -309,7 +394,11 @@ final class MonitorController extends AbstractController
         $documents = [];
 
         foreach ($entityManager->getRepository(EmpresaDocumento::class)->findBy([], ['uploadedAt' => 'DESC'], 5) as $documento) {
-            if (!$this->isPdfLike($documento->getTipo(), $documento->getUrl())) {
+            $documentUrl = $documento->getStoragePath() && $documento->getEmpresa()?->getId() && $documento->getId()
+                ? sprintf('/api/empresas/%d/documentos/%d/download', $documento->getEmpresa()->getId(), $documento->getId())
+                : $documento->getUrl();
+
+            if (!$this->isPdfLike($documento->getTipo(), $documentUrl)) {
                 continue;
             }
 
@@ -317,15 +406,19 @@ final class MonitorController extends AbstractController
                 'id' => 'empresa-' . $documento->getId(),
                 'name' => $documento->getNombre(),
                 'type' => $documento->getTipo(),
-                'url' => $documento->getUrl(),
+                'url' => $documentUrl,
                 'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
                 'source' => 'empresa',
-                'sourceLabel' => $documento->getEmpresa()?->getNombre() ?? 'Empresa',
+                'sourceLabel' => sprintf('%s | v%d', $documento->getEmpresa()?->getNombre() ?? 'Empresa', $documento->getVersion()),
             ];
         }
 
         foreach ($entityManager->getRepository(ConvenioDocumento::class)->findBy([], ['uploadedAt' => 'DESC'], 5) as $documento) {
-            if (!$this->isPdfLike($documento->getTipo(), $documento->getUrl())) {
+            $documentUrl = $documento->getStoragePath() && $documento->getConvenio()?->getId() && $documento->getId()
+                ? sprintf('/api/convenios/%d/documents/%d/download', $documento->getConvenio()->getId(), $documento->getId())
+                : $documento->getUrl();
+
+            if (!$this->isPdfLike($documento->getTipo(), $documentUrl)) {
                 continue;
             }
 
@@ -333,10 +426,10 @@ final class MonitorController extends AbstractController
                 'id' => 'convenio-' . $documento->getId(),
                 'name' => $documento->getNombre(),
                 'type' => $documento->getTipo(),
-                'url' => $documento->getUrl(),
+                'url' => $documentUrl,
                 'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
                 'source' => 'convenio',
-                'sourceLabel' => $documento->getConvenio()?->getTitulo() ?? 'Convenio',
+                'sourceLabel' => sprintf('%s | v%d', $documento->getConvenio()?->getTitulo() ?? 'Convenio', $documento->getVersion()),
             ];
         }
 

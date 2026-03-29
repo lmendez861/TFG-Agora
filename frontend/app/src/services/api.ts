@@ -17,15 +17,19 @@ import type {
   EstudianteDetail,
   EstudiantePayload,
   EstudianteSummary,
+  EmpresaInboxThread,
   EmpresaSolicitudSummary,
   TutorAcademicoSummary,
   TutorProfesionalSummary,
   EmpresaSolicitudMensaje,
   MeResponse,
   MonitorOverview,
+  MfaStatus,
   PaginatedResponse,
   PublicAccessSnapshot,
   EmpresaDocument,
+  SeguimientoRecord,
+  EvaluacionFinalRecord,
 } from '../types';
 import { downloadBlobFile } from '../utils/download.ts';
 
@@ -35,6 +39,11 @@ type EmpresaDocumentApi = {
   tipo: string | null;
   url: string | null;
   uploadedAt: string;
+  version?: number;
+  active?: boolean;
+  deletedAt?: string | null;
+  originalFilename?: string | null;
+  storageProvider?: string;
 };
 
 type EmpresaDetailApi = Omit<EmpresaDetail, 'documentos'> & {
@@ -110,6 +119,11 @@ function mapEmpresaDocument(document: EmpresaDocument | EmpresaDocumentApi): Emp
     type: document.tipo,
     url: document.url,
     uploadedAt: document.uploadedAt,
+    version: document.version,
+    active: document.active,
+    deletedAt: document.deletedAt,
+    originalFilename: document.originalFilename,
+    storageProvider: document.storageProvider,
   };
 }
 
@@ -198,6 +212,19 @@ async function apiPut<T>(path: string, body: unknown): Promise<T> {
   return apiRequest<T>(path, {
     method: 'PUT',
     body: JSON.stringify(body),
+  });
+}
+
+async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  return apiRequest<T>(path, {
+    method: 'PATCH',
+    body: typeof body === 'undefined' ? undefined : JSON.stringify(body),
+  });
+}
+
+async function apiDelete<T>(path: string): Promise<T> {
+  return apiRequest<T>(path, {
+    method: 'DELETE',
   });
 }
 
@@ -381,6 +408,16 @@ export async function addConvenioDocument(
   });
 }
 
+export async function deleteConvenioDocument(convenioId: number, documentId: number): Promise<ConvenioDocumentRecord> {
+  return apiDelete<ConvenioDocumentRecord>(`/convenios/${convenioId}/documents/${documentId}`);
+}
+
+export async function restoreConvenioDocument(convenioId: number, documentId: number): Promise<ConvenioDocumentRecord> {
+  return apiRequest<ConvenioDocumentRecord>(`/convenios/${convenioId}/documents/${documentId}/restore`, {
+    method: 'POST',
+  });
+}
+
 export async function addEmpresaDocument(
   empresaId: number,
   nombre: string,
@@ -429,6 +466,16 @@ export async function addEmpresaDocument(
   }));
 }
 
+export async function deleteEmpresaDocument(empresaId: number, documentId: number): Promise<EmpresaDocument> {
+  return mapEmpresaDocument(await apiDelete<EmpresaDocumentApi>(`/empresas/${empresaId}/documentos/${documentId}`));
+}
+
+export async function restoreEmpresaDocument(empresaId: number, documentId: number): Promise<EmpresaDocument> {
+  return mapEmpresaDocument(await apiRequest<EmpresaDocumentApi>(`/empresas/${empresaId}/documentos/${documentId}/restore`, {
+    method: 'POST',
+  }));
+}
+
 export async function dismissConvenioAlert(convenioId: number, alertId: number): Promise<ConvenioAlert> {
   return apiRequest<ConvenioAlert>(`/convenios/${convenioId}/alerts/${alertId}`, {
     method: 'PATCH',
@@ -445,6 +492,123 @@ export async function createAsignacion(payload: AsignacionPayload): Promise<Asig
 
 export async function updateAsignacion(id: number, payload: Partial<AsignacionPayload>): Promise<AsignacionDetail> {
   return apiPut<AsignacionDetail>(`/asignaciones/${id}`, payload);
+}
+
+export async function createSeguimiento(
+  asignacionId: number,
+  payload: {
+    fecha: string;
+    tipo: string;
+    descripcion?: string;
+    accionRequerida?: string;
+    estado?: string;
+    evidenciaFile?: File | null;
+    evidenciaTipo?: string;
+  },
+): Promise<SeguimientoRecord> {
+  const formData = new FormData();
+  formData.append('fecha', payload.fecha);
+  formData.append('tipo', payload.tipo);
+  if (payload.descripcion) formData.append('descripcion', payload.descripcion);
+  if (payload.accionRequerida) formData.append('accionRequerida', payload.accionRequerida);
+  if (payload.estado) formData.append('estado', payload.estado);
+  if (payload.evidenciaTipo) formData.append('evidenciaTipo', payload.evidenciaTipo);
+  if (payload.evidenciaFile) formData.append('evidencia', payload.evidenciaFile);
+
+  const authorizationHeader = getAuthorizationHeader();
+  const response = await fetch(`${API_BASE_URL}/asignaciones/${asignacionId}/seguimientos`, {
+    method: 'POST',
+    body: formData,
+    headers: authorizationHeader ? { Authorization: authorizationHeader } : undefined,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    let message = `Error ${response.status}`;
+    try {
+      const apiPayload = await response.json();
+      if (apiPayload?.message) {
+        message = `${message}: ${apiPayload.message}`;
+      }
+    } catch {
+      // ignored
+    }
+    throw new Error(message);
+  }
+
+  return (await response.json()) as SeguimientoRecord;
+}
+
+export async function updateSeguimiento(
+  asignacionId: number,
+  seguimientoId: number,
+  payload: {
+    fecha?: string;
+    tipo?: string;
+    descripcion?: string;
+    accionRequerida?: string;
+    estado?: string;
+    evidenciaFile?: File | null;
+    evidenciaTipo?: string;
+  },
+): Promise<SeguimientoRecord> {
+  const formData = new FormData();
+  if (payload.fecha) formData.append('fecha', payload.fecha);
+  if (payload.tipo) formData.append('tipo', payload.tipo);
+  if (typeof payload.descripcion !== 'undefined') formData.append('descripcion', payload.descripcion);
+  if (typeof payload.accionRequerida !== 'undefined') formData.append('accionRequerida', payload.accionRequerida);
+  if (payload.estado) formData.append('estado', payload.estado);
+  if (payload.evidenciaTipo) formData.append('evidenciaTipo', payload.evidenciaTipo);
+  if (payload.evidenciaFile) formData.append('evidencia', payload.evidenciaFile);
+
+  const authorizationHeader = getAuthorizationHeader();
+  const response = await fetch(`${API_BASE_URL}/asignaciones/${asignacionId}/seguimientos/${seguimientoId}`, {
+    method: 'PUT',
+    body: formData,
+    headers: authorizationHeader ? { Authorization: authorizationHeader } : undefined,
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    let message = `Error ${response.status}`;
+    try {
+      const apiPayload = await response.json();
+      if (apiPayload?.message) {
+        message = `${message}: ${apiPayload.message}`;
+      }
+    } catch {
+      // ignored
+    }
+    throw new Error(message);
+  }
+
+  return (await response.json()) as SeguimientoRecord;
+}
+
+export async function closeSeguimiento(
+  asignacionId: number,
+  seguimientoId: number,
+  comentario?: string,
+): Promise<SeguimientoRecord> {
+  return apiPatch<SeguimientoRecord>(`/asignaciones/${asignacionId}/seguimientos/${seguimientoId}/close`, { comentario });
+}
+
+export async function reopenSeguimiento(asignacionId: number, seguimientoId: number): Promise<SeguimientoRecord> {
+  return apiPatch<SeguimientoRecord>(`/asignaciones/${asignacionId}/seguimientos/${seguimientoId}/reopen`);
+}
+
+export async function upsertEvaluacionFinal(
+  asignacionId: number,
+  payload: Partial<EvaluacionFinalRecord>,
+): Promise<EvaluacionFinalRecord> {
+  return apiRequest<EvaluacionFinalRecord>(`/asignaciones/${asignacionId}/evaluacion-final`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function closeEvaluacionFinal(asignacionId: number): Promise<EvaluacionFinalRecord> {
+  return apiPatch<EvaluacionFinalRecord>(`/asignaciones/${asignacionId}/evaluacion-final/cerrar`);
 }
 
 interface TutorAcademicoParams {
@@ -490,6 +654,10 @@ export async function fetchEmpresaSolicitudes(
   if (perPage) params.set('perPage', String(perPage));
   const qs = params.toString() ? `?${params.toString()}` : '';
   return apiGet<{ items: EmpresaSolicitudSummary[]; page: number; perPage: number }>(`/empresa-solicitudes${qs}`);
+}
+
+export async function fetchEmpresaInboxThreads(): Promise<EmpresaInboxThread[]> {
+  return apiGet<EmpresaInboxThread[]>('/empresa-solicitudes/bandeja');
 }
 
 export async function approveEmpresaSolicitud(id: number): Promise<void> {
@@ -558,6 +726,23 @@ export async function fetchMonitorOverview(): Promise<MonitorOverview> {
 
 export async function fetchPublicAccessSnapshot(): Promise<PublicAccessSnapshot> {
   return apiGet<PublicAccessSnapshot>('/public-access');
+}
+
+export async function fetchMfaStatus(): Promise<MfaStatus> {
+  return apiGet<MfaStatus>('/mfa/status');
+}
+
+export async function requestMfaChallenge(): Promise<{ status: string; message?: string; detail?: string; expiresAt?: string }> {
+  return apiRequest<{ status: string; message?: string; detail?: string; expiresAt?: string }>('/mfa/challenge', {
+    method: 'POST',
+  });
+}
+
+export async function verifyMfaCode(code: string): Promise<{ message: string; status: MfaStatus }> {
+  return apiRequest<{ message: string; status: MfaStatus }>('/mfa/verify', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  });
 }
 
 export async function startPublicAccess(): Promise<PublicAccessSnapshot> {

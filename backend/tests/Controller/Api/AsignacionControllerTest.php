@@ -12,6 +12,7 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
 final class AsignacionControllerTest extends WebTestCase
@@ -301,5 +302,87 @@ final class AsignacionControllerTest extends WebTestCase
         );
 
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    public function testPuedeCrearYCerrarSeguimientoConEvidencia(): void
+    {
+        $asignacion = $this->entityManager
+            ->getRepository(AsignacionPractica::class)
+            ->findOneBy(['estado' => 'en_curso']);
+        self::assertNotNull($asignacion);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-doc');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'seguimiento.pdf',
+            'application/pdf',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/asignaciones/%d/seguimientos', $asignacion->getId()),
+            parameters: [
+                'fecha' => '2025-01-15',
+                'tipo' => 'seguimiento',
+                'descripcion' => 'Revision de tareas semanales',
+                'accionRequerida' => 'Enviar acta de seguimiento',
+            ],
+            files: [
+                'evidencia' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('seguimiento', $payload['tipo']);
+        self::assertSame('abierto', $payload['estado']);
+        self::assertNotEmpty($payload['evidenciaUrl']);
+
+        $this->client->request(
+            'PATCH',
+            sprintf('/api/asignaciones/%d/seguimientos/%d/close', $asignacion->getId(), $payload['id']),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode(['comentario' => 'Seguimiento completado'], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+        $closePayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('cerrado', $closePayload['estado']);
+        self::assertSame('Seguimiento completado', $closePayload['cierreComentario']);
+    }
+
+    public function testPuedeRegistrarEvaluacionFinalConNotas(): void
+    {
+        $asignacion = $this->entityManager
+            ->getRepository(AsignacionPractica::class)
+            ->findOneBy(['estado' => 'planificada']);
+        self::assertNotNull($asignacion);
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/asignaciones/%d/evaluacion-final', $asignacion->getId()),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'fecha' => '2025-02-10',
+                'valoracionEmpresa' => 'Buena integracion en el equipo.',
+                'valoracionEstudiante' => 'Practicas alineadas con el grado.',
+                'valoracionTutorAcademico' => 'Objetivos formativos completados.',
+                'conclusiones' => 'Recomendable repetir colaboracion.',
+                'notaEmpresa' => 8,
+                'notaEstudiante' => 9,
+                'notaTutorAcademico' => 8,
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame(8, $payload['notaEmpresa']);
+        self::assertSame(9, $payload['notaEstudiante']);
+        self::assertSame('borrador', $payload['estado']);
     }
 }

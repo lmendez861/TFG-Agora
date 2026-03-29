@@ -77,6 +77,9 @@ class EmpresaSolicitud
     #[ORM\OneToMany(mappedBy: 'solicitud', targetEntity: EmpresaMensaje::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $mensajes;
 
+    #[ORM\OneToOne(mappedBy: 'solicitud', targetEntity: EmpresaPortalCuenta::class, cascade: ['persist'])]
+    private ?EmpresaPortalCuenta $portalCuenta = null;
+
     public function __construct()
     {
         $this->token = bin2hex(random_bytes(32));
@@ -297,5 +300,21 @@ class EmpresaSolicitud
     public function getPortalToken(): string
     {
         return $this->portalToken;
+    }
+
+    public function getPortalCuenta(): ?EmpresaPortalCuenta
+    {
+        return $this->portalCuenta;
+    }
+
+    public function setPortalCuenta(?EmpresaPortalCuenta $portalCuenta): self
+    {
+        $this->portalCuenta = $portalCuenta;
+
+        if ($portalCuenta !== null && $portalCuenta->getSolicitud() !== $this) {
+            $portalCuenta->setSolicitud($this);
+        }
+
+        return $this;
     }
 }

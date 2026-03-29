@@ -3,15 +3,19 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import type {
   ApiCollections,
   MeResponse,
+  MfaStatus,
   MonitorDocumentRecord,
   MonitorOverview,
   PublicAccessSnapshot,
 } from '../types';
 import {
   fetchMonitorOverview,
+  fetchMfaStatus,
   fetchPublicAccessSnapshot,
+  requestMfaChallenge,
   startPublicAccess,
   stopPublicAccess,
+  verifyMfaCode,
 } from '../services/api';
 import { canPreviewDocument } from '../utils/documents';
 import { DocumentPreviewModal } from './DocumentPreviewModal';
@@ -55,17 +59,27 @@ const permissionsMatrix = [
   {
     role: 'ROLE_ADMIN',
     label: 'Administrador',
-    capabilities: ['Gestion total del panel', 'Control de acceso externo', 'Supervision y revisiones'],
+    capabilities: ['Gestion total del panel', 'Control de acceso externo', 'Revision de auditoria', 'Acceso transversal a monitor, coordinacion y documentos'],
   },
   {
-    role: 'ROLE_API',
-    label: 'Operacion interna',
-    capabilities: ['Consulta y actualizacion de modulos', 'Revision de solicitudes', 'Exportacion operativa'],
+    role: 'ROLE_COORDINATOR',
+    label: 'Coordinacion',
+    capabilities: ['Alta y edicion de empresas, convenios y asignaciones', 'Aprobacion y rechazo de solicitudes', 'Gestion de seguimientos y evaluaciones'],
   },
   {
-    role: 'ROLE_USER',
-    label: 'Lectura',
-    capabilities: ['Consulta del estado general', 'Revision de indicadores', 'Sin operaciones de control'],
+    role: 'ROLE_DOCUMENT_MANAGER',
+    label: 'Documentacion',
+    capabilities: ['Versionado documental', 'Borrado controlado y restauracion', 'Gestion de evidencias y adjuntos'],
+  },
+  {
+    role: 'ROLE_MONITOR',
+    label: 'Monitorizacion',
+    capabilities: ['Acceso a monitor privado', 'Control del tunel publico', 'MFA para operaciones sensibles'],
+  },
+  {
+    role: 'ROLE_AUDITOR',
+    label: 'Auditoria',
+    capabilities: ['Lectura de trazas', 'Revision de actividad sensible', 'Consulta de incidencias y logs'],
   },
 ];
 
@@ -93,6 +107,19 @@ function formatDateTime(value: string | Date | null): string {
   }
 
   return dateFormatter.format(date);
+}
+
+function buildChallengeSentMessage(
+  response: { message?: string; expiresAt?: string },
+  destinationEmail?: string | null,
+): string {
+  const baseMessage = response.message
+    ?? (destinationEmail ? `Codigo MFA enviado a ${destinationEmail}.` : 'Codigo MFA enviado.');
+  const expiresMessage = response.expiresAt
+    ? ` Caduca a las ${formatDateTime(response.expiresAt)}.`
+    : '';
+
+  return `${baseMessage}${expiresMessage} El codigo anterior deja de ser valido cuando solicitas uno nuevo.`;
 }
 
 function getPublicStatusLabel(status: PublicAccessSnapshot['status'] | null): string {
@@ -279,12 +306,34 @@ function AccessSection({
   publicStatus,
   publicStatusLabel,
   routeLinks,
+  mfaStatus,
+  mfaCode,
+  onMfaCodeChange,
+  onRequestChallenge,
+  onVerifyCode,
+  mfaBusy,
+  accessAction,
+  onStartPublicAccess,
+  onStopPublicAccess,
+  onCopyPublicUrl,
 }: {
   publicAccess: PublicAccessSnapshot | null;
   publicStatus: PublicAccessSnapshot['status'];
   publicStatusLabel: string;
   routeLinks: MonitorRouteLink[];
+  mfaStatus: MfaStatus | null;
+  mfaCode: string;
+  onMfaCodeChange: (value: string) => void;
+  onRequestChallenge: () => void;
+  onVerifyCode: () => void;
+  mfaBusy: boolean;
+  accessAction: 'start' | 'stop' | null;
+  onStartPublicAccess: () => void;
+  onStopPublicAccess: () => void;
+  onCopyPublicUrl: () => void;
 }) {
+  const isBusy = mfaBusy || accessAction !== null;
+
   return (
     <section className="ops-monitor__grid ops-monitor__grid--middle">
       <article className="ops-panel ops-panel--accent">
@@ -316,7 +365,40 @@ function AccessSection({
             <dt>Detalle</dt>
             <dd>{publicAccess?.detail ?? 'Sin estado adicional'}</dd>
           </div>
+          <div>
+            <dt>MFA</dt>
+            <dd>{mfaStatus?.verified ? 'Verificado' : 'Pendiente'}</dd>
+          </div>
         </dl>
+        <div className="ops-access-actions">
+          <button
+            type="button"
+            className="button button--primary button--sm"
+            onClick={onStartPublicAccess}
+            disabled={publicStatus === 'active' || publicStatus === 'starting' || isBusy}
+          >
+            {accessAction === 'start' ? 'Activando...' : 'Levantar acceso externo'}
+          </button>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
+            onClick={onStopPublicAccess}
+            disabled={publicStatus !== 'active' || isBusy}
+          >
+            {accessAction === 'stop' ? 'Deteniendo...' : 'Bajar acceso externo'}
+          </button>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
+            onClick={onCopyPublicUrl}
+            disabled={!publicAccess?.publicUrl}
+          >
+            Copiar URL
+          </button>
+        </div>
+        <small className="ops-access-hint">
+          Para levantar o bajar el tunel debes verificar antes el codigo MFA enviado al correo de seguridad.
+        </small>
       </article>
 
       <article className="ops-panel">
@@ -334,6 +416,33 @@ function AccessSection({
               <small>{link.detail}</small>
             </a>
           ))}
+        </div>
+        <div className="ops-mfa-box">
+          <strong>Segundo factor para operaciones sensibles</strong>
+          <p>
+            {mfaStatus?.mailReady
+              ? `El codigo se envia a ${mfaStatus.destinationEmail}.`
+              : 'El correo MFA no esta listo y no podras levantar o bajar acceso externo hasta configurarlo.'}
+          </p>
+          <div className="ops-mfa-box__actions">
+            <button type="button" className="button button--ghost button--sm" onClick={onRequestChallenge} disabled={!mfaStatus?.mailReady || mfaBusy}>
+              {mfaBusy ? 'Procesando...' : 'Enviar codigo'}
+            </button>
+            <input
+              value={mfaCode}
+              onChange={(event) => onMfaCodeChange(event.target.value)}
+              placeholder="Codigo MFA"
+              maxLength={12}
+            />
+            <button type="button" className="button button--primary button--sm" onClick={onVerifyCode} disabled={!mfaCode || mfaBusy}>
+              Verificar
+            </button>
+          </div>
+          <small>
+            {mfaStatus?.verified
+              ? `Verificado hasta ${formatDateTime(mfaStatus.verifiedUntil)}`
+              : `Ultimo desafio: ${formatDateTime(mfaStatus?.challengeIssuedAt ?? null)} | Caduca: ${formatDateTime(mfaStatus?.challengeExpiresAt ?? null)}`}
+          </small>
         </div>
       </article>
     </section>
@@ -558,8 +667,11 @@ export function MonitorPage({
 }: MonitorPageProps) {
   const [snapshot, setSnapshot] = useState<MonitorOverview | null>(null);
   const [publicAccess, setPublicAccess] = useState<PublicAccessSnapshot | null>(null);
+  const [mfaStatus, setMfaStatus] = useState<MfaStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessAction, setAccessAction] = useState<'start' | 'stop' | null>(null);
+  const [mfaBusy, setMfaBusy] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<PreviewState | null>(null);
@@ -572,14 +684,16 @@ export function MonitorPage({
     setError(null);
 
     try {
-      const [overview, access] = await Promise.all([
+      const [overview, access, mfa] = await Promise.all([
         fetchMonitorOverview(),
         fetchPublicAccessSnapshot(),
+        fetchMfaStatus(),
       ]);
 
       startTransition(() => {
         setSnapshot(overview);
         setPublicAccess(access);
+        setMfaStatus(mfa);
       });
       setMonitorFetchMs(Math.round(performance.now() - startedAt));
     } catch (err) {
@@ -603,6 +717,22 @@ export function MonitorPage({
   }, [onSync]);
 
   const handleStartPublicAccess = useCallback(async () => {
+    if (!mfaStatus?.verified) {
+      setMfaBusy(true);
+      setError(null);
+
+      try {
+        const response = await requestMfaChallenge();
+        setCopyMessage(buildChallengeSentMessage(response, mfaStatus?.destinationEmail));
+        setMfaStatus(await fetchMfaStatus());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No se pudo emitir el codigo MFA.');
+      } finally {
+        setMfaBusy(false);
+      }
+      return;
+    }
+
     setAccessAction('start');
     setError(null);
 
@@ -613,9 +743,60 @@ export function MonitorPage({
     } finally {
       setAccessAction(null);
     }
-  }, []);
+  }, [mfaStatus?.destinationEmail, mfaStatus?.verified]);
+
+  const handleRequestMfaChallenge = useCallback(async () => {
+    setMfaBusy(true);
+    setError(null);
+
+    try {
+      const response = await requestMfaChallenge();
+      setCopyMessage(buildChallengeSentMessage(response, mfaStatus?.destinationEmail));
+      setMfaStatus(await fetchMfaStatus());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo emitir el codigo MFA.');
+    } finally {
+      setMfaBusy(false);
+    }
+  }, [mfaStatus?.destinationEmail]);
+
+  const handleVerifyMfa = useCallback(async () => {
+    if (!mfaCode.trim()) {
+      return;
+    }
+
+    setMfaBusy(true);
+    setError(null);
+
+    try {
+      const response = await verifyMfaCode(mfaCode.trim());
+      setMfaStatus(response.status);
+      setCopyMessage(response.message);
+      setMfaCode('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo validar el codigo MFA.');
+    } finally {
+      setMfaBusy(false);
+    }
+  }, [mfaCode]);
 
   const handleStopPublicAccess = useCallback(async () => {
+    if (!mfaStatus?.verified) {
+      setMfaBusy(true);
+      setError(null);
+
+      try {
+        const response = await requestMfaChallenge();
+        setCopyMessage(buildChallengeSentMessage(response, mfaStatus?.destinationEmail));
+        setMfaStatus(await fetchMfaStatus());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No se pudo emitir el codigo MFA.');
+      } finally {
+        setMfaBusy(false);
+      }
+      return;
+    }
+
     setAccessAction('stop');
     setError(null);
 
@@ -626,7 +807,7 @@ export function MonitorPage({
     } finally {
       setAccessAction(null);
     }
-  }, []);
+  }, [mfaStatus?.destinationEmail, mfaStatus?.verified]);
 
   const handleCopyPublicUrl = useCallback(async () => {
     if (!publicAccess?.publicUrl) {
@@ -919,6 +1100,16 @@ export function MonitorPage({
                   publicStatus={publicStatus}
                   publicStatusLabel={publicStatusLabel}
                   routeLinks={routeLinks}
+                  mfaStatus={mfaStatus}
+                  mfaCode={mfaCode}
+                  onMfaCodeChange={setMfaCode}
+                  onRequestChallenge={() => { void handleRequestMfaChallenge(); }}
+                  onVerifyCode={() => { void handleVerifyMfa(); }}
+                  mfaBusy={mfaBusy}
+                  accessAction={accessAction}
+                  onStartPublicAccess={() => { void handleStartPublicAccess(); }}
+                  onStopPublicAccess={() => { void handleStopPublicAccess(); }}
+                  onCopyPublicUrl={() => { void handleCopyPublicUrl(); }}
                 />
               )}
             />

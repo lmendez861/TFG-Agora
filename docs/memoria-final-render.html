@@ -212,7 +212,7 @@
     <div class="cover__meta">
       <p><strong>Autor:</strong> Luis Angel</p>
       <p><strong>Tutora:</strong> Elena</p>
-      <p><strong>Fecha:</strong> 24/03/2026</p>
+      <p><strong>Fecha:</strong> 29/03/2026</p>
       <p><strong>Repositorio:</strong> https://github.com/lmendez861/TFG-Agora</p>
     </div>
   </section>
@@ -235,7 +235,7 @@
 <li class="toc-level-2"><a href="#memoria-final-requisitos-no-funcionales">Requisitos no funcionales</a></li>
 <li class="toc-level-1"><a href="#memoria-final-diseno-de-la-solucion">Diseno de la solucion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-arquitectura-general">Arquitectura general</a></li>
-<li class="toc-level-2"><a href="#memoria-final-justificacion-tecnica-de-versiones-y-separacion">Justificacion tecnica de versiones y separacion</a></li>
+<li class="toc-level-2"><a href="#memoria-final-justificacion-tecnica-de-la-separacion">Justificacion tecnica de la separacion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-modelo-de-datos">Modelo de datos</a></li>
 <li class="toc-level-2"><a href="#memoria-final-seguridad-y-control-de-acceso">Seguridad y control de acceso</a></li>
 <li class="toc-level-2"><a href="#memoria-final-diseno-de-interfaz">Diseno de interfaz</a></li>
@@ -243,7 +243,8 @@
 <li class="toc-level-2"><a href="#memoria-final-backend-symfony">Backend Symfony</a></li>
 <li class="toc-level-2"><a href="#memoria-final-portal-interno">Portal interno</a></li>
 <li class="toc-level-2"><a href="#memoria-final-portal-externo">Portal externo</a></li>
-<li class="toc-level-2"><a href="#memoria-final-exportacion-csv-como-ejemplo-funcional">Exportacion CSV como ejemplo funcional</a></li>
+<li class="toc-level-2"><a href="#memoria-final-seguimientos-y-evaluacion-final">Seguimientos y evaluacion final</a></li>
+<li class="toc-level-2"><a href="#memoria-final-control-documental-y-exportacion-csv">Control documental y exportacion CSV</a></li>
 <li class="toc-level-1"><a href="#memoria-final-despliegue-y-operacion">Despliegue y operacion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-requisitos-del-entorno">Requisitos del entorno</a></li>
 <li class="toc-level-2"><a href="#memoria-final-configuracion">Configuracion</a></li>
@@ -252,11 +253,11 @@
 <li class="toc-level-2"><a href="#memoria-final-validaciones-ejecutadas">Validaciones ejecutadas</a></li>
 <li class="toc-level-2"><a href="#memoria-final-resultados-observados">Resultados observados</a></li>
 <li class="toc-level-2"><a href="#memoria-final-rendimiento-operativo">Rendimiento operativo</a></li>
-<li class="toc-level-2"><a href="#memoria-final-limitaciones-de-prueba">Limitaciones de prueba</a></li>
+<li class="toc-level-2"><a href="#memoria-final-estado-tecnico-de-validacion">Estado tecnico de validacion</a></li>
+<li class="toc-level-2"><a href="#memoria-final-limitaciones-actuales">Limitaciones actuales</a></li>
 <li class="toc-level-1"><a href="#memoria-final-resultados-limitaciones-y-lineas-futuras">Resultados, limitaciones y lineas futuras</a></li>
 <li class="toc-level-2"><a href="#memoria-final-resultados-principales">Resultados principales</a></li>
-<li class="toc-level-2"><a href="#memoria-final-limitaciones-actuales">Limitaciones actuales</a></li>
-<li class="toc-level-2"><a href="#memoria-final-mejoras-futuras">Mejoras futuras</a></li>
+<li class="toc-level-2"><a href="#memoria-final-lineas-futuras">Lineas futuras</a></li>
 <li class="toc-level-1"><a href="#memoria-final-conclusiones">Conclusiones</a></li>
 <li class="toc-level-1"><a href="#memoria-final-referencias">Referencias</a></li>
 <li class="toc-level-1"><a href="#memoria-final-anexos">Anexos</a></li>
@@ -273,25 +274,28 @@
 <li class="toc-level-2"><a href="#anexo-a-manual-usuario-6-gestion-de-empresas">6. Gestion de empresas</a></li>
 <li class="toc-level-2"><a href="#anexo-a-manual-usuario-7-gestion-de-convenios">7. Gestion de convenios</a></li>
 <li class="toc-level-2"><a href="#anexo-a-manual-usuario-8-gestion-de-estudiantes">8. Gestion de estudiantes</a></li>
-<li class="toc-level-2"><a href="#anexo-a-manual-usuario-9-gestion-de-asignaciones">9. Gestion de asignaciones</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-9-gestion-de-asignaciones-seguimientos-y-evaluacion-final">9. Gestion de asignaciones, seguimientos y evaluacion final</a></li>
 <li class="toc-level-2"><a href="#anexo-a-manual-usuario-10-gestion-de-tutores">10. Gestion de tutores</a></li>
-<li class="toc-level-2"><a href="#anexo-a-manual-usuario-11-solicitudes-de-empresa">11. Solicitudes de empresa</a></li>
-<li class="toc-level-2"><a href="#anexo-a-manual-usuario-12-portal-externo">12. Portal externo</a></li>
-<li class="toc-level-2"><a href="#anexo-a-manual-usuario-13-errores-y-validaciones-comunes">13. Errores y validaciones comunes</a></li>
-<li class="toc-level-2"><a href="#anexo-a-manual-usuario-14-recomendaciones-de-uso">14. Recomendaciones de uso</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-11-solicitudes-y-bandeja-de-mensajes">11. Solicitudes y bandeja de mensajes</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-12-monitor-privado">12. Monitor privado</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-13-portal-externo">13. Portal externo</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-14-errores-y-validaciones-comunes">14. Errores y validaciones comunes</a></li>
+<li class="toc-level-2"><a href="#anexo-a-manual-usuario-15-recomendaciones-de-uso">15. Recomendaciones de uso</a></li>
 <li class="toc-level-1"><a href="#anexo-b-manual-tecnico-anexo-b-manual-tecnico">Anexo B. Manual Tecnico</a></li>
 <li class="toc-level-2"><a href="#anexo-b-manual-tecnico-1-arquitectura-general">1. Arquitectura general</a></li>
 <li class="toc-level-2"><a href="#anexo-b-manual-tecnico-2-requisitos-locales">2. Requisitos locales</a></li>
 <li class="toc-level-2"><a href="#anexo-b-manual-tecnico-3-arranque-del-entorno">3. Arranque del entorno</a></li>
 <li class="toc-level-2"><a href="#anexo-b-manual-tecnico-4-variables-de-entorno-relevantes">4. Variables de entorno relevantes</a></li>
 <li class="toc-level-2"><a href="#anexo-b-manual-tecnico-5-seguridad">5. Seguridad</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-6-versiones-de-react">6. Versiones de React</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-7-persistencia">7. Persistencia</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-8-estructura-funcional-del-backend">8. Estructura funcional del backend</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-9-estructura-funcional-del-frontend-interno">9. Estructura funcional del frontend interno</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-10-exportacion-csv">10. Exportacion CSV</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-11-validacion-tecnica">11. Validacion tecnica</a></li>
-<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-12-riesgos-tecnicos-abiertos">12. Riesgos tecnicos abiertos</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-6-persistencia">6. Persistencia</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-7-correo-saliente">7. Correo saliente</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-8-control-documental">8. Control documental</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-9-estructura-funcional-del-backend">9. Estructura funcional del backend</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-10-estructura-funcional-del-frontend-interno">10. Estructura funcional del frontend interno</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-11-estructura-funcional-del-portal-externo">11. Estructura funcional del portal externo</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-12-exportacion-csv">12. Exportacion CSV</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-13-validacion-tecnica">13. Validacion tecnica</a></li>
+<li class="toc-level-2"><a href="#anexo-b-manual-tecnico-14-riesgos-tecnicos-abiertos">14. Riesgos tecnicos abiertos</a></li>
 <li class="toc-level-1"><a href="#anexo-c-capturas-y-evidencias-anexo-c-capturas-y-evidencias">Anexo C. Capturas y evidencias</a></li>
 <li class="toc-level-2"><a href="#anexo-c-capturas-y-evidencias-indice-de-capturas">Indice de capturas</a></li>
 <li class="toc-level-2"><a href="#anexo-c-capturas-y-evidencias-inventario-de-archivos-incluidos">Inventario de archivos incluidos</a></li>
@@ -307,123 +311,145 @@
     <h3>Indice de imagenes</h3><ul><li class="toc-level-2"><a href="#memoria-final-figure-figura-1-esquema-de-bloques-de-funcionalidad-del-sistema">Figura 1. Esquema de bloques de funcionalidad del sistema.</a></li>
 <li class="toc-level-2"><a href="#memoria-final-figure-figura-2-esquema-relacional-de-la-base-de-datos">Figura 2. Esquema relacional de la base de datos.</a></li>
 <li class="toc-level-2"><a href="#memoria-final-figure-figura-3-panel-interno-vista-dashboard-con-kpi-y-exportacion">Figura 3. Panel interno, vista dashboard con KPI y exportacion.</a></li>
-<li class="toc-level-2"><a href="#memoria-final-figure-figura-4-panel-interno-vista-de-solicitudes-de-empresa">Figura 4. Panel interno, vista de solicitudes de empresa.</a></li>
-<li class="toc-level-2"><a href="#memoria-final-figure-figura-5-portal-externo-para-registro-y-seguimiento-de-solicitudes">Figura 5. Portal externo para registro y seguimiento de solicitudes.</a></li>
+<li class="toc-level-2"><a href="#memoria-final-figure-figura-4-panel-interno-bandeja-unificada-de-mensajes-con-empresas">Figura 4. Panel interno, bandeja unificada de mensajes con empresas.</a></li>
+<li class="toc-level-2"><a href="#memoria-final-figure-figura-5-portal-externo-con-acceso-de-empresa-y-flujo-de-colaboracion">Figura 5. Portal externo con acceso de empresa y flujo de colaboracion.</a></li>
 <li class="toc-level-2"><a href="#memoria-final-figure-figura-6-guia-funcional-de-la-plataforma">Figura 6. Guia funcional de la plataforma.</a></li>
-<li class="toc-level-2"><a href="#memoria-final-figure-figura-7-monitor-operativo-privado">Figura 7. Monitor operativo privado.</a></li></ul>
+<li class="toc-level-2"><a href="#memoria-final-figure-figura-7-monitor-operativo-privado-con-mfa-y-control-de-acceso">Figura 7. Monitor operativo privado con MFA y control de acceso.</a></li></ul>
   </section>
   <section class="document-section" data-source="memoria-final.md"><h1 id="memoria-final-agradecimientos">Agradecimientos</h1>
-<p>Quiero agradecer a mi tutora Elena el seguimiento continuo del trabajo, la revision critica de la memoria y la orientacion tecnica y academica durante todo el desarrollo. Tambien agradezco al centro educativo y al profesorado el contexto real aportado para orientar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo prestado durante las fases de analisis, implementacion, pruebas y cierre documental.</p>
+<p>Quiero agradecer a mi tutora Elena el seguimiento continuo del trabajo, la revision critica de la memoria y la orientacion academica y tecnica durante todo el desarrollo. Tambien agradezco al centro educativo el contexto real aportado para orientar el proyecto hacia una necesidad concreta y utilizable. Por ultimo, agradezco a mi entorno personal el apoyo prestado durante las fases de analisis, implementacion, pruebas y cierre documental.</p>
 <h1 id="memoria-final-resumen">Resumen</h1>
 <h2 id="memoria-final-resumen-es">Resumen (ES)</h2>
-<p>Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro y dos espacios complementarios separados: documentacion y monitor privado. La aplicacion centraliza el ciclo operativo completo: alta de empresas, verificacion por correo, seguimiento de solicitudes, gestion de convenios, asignacion de estudiantes, supervision documental y exportacion CSV de datos operativos. La entrega final prioriza una arquitectura mantenible, separacion clara de responsabilidades y un entorno de uso demostrable con build integrada bajo una unica URL local.</p>
-<p>Palabras clave: FP Dual, empresas colaboradoras, convenios, Symfony, React, gestion academica.</p>
+<p>Este proyecto desarrolla una plataforma web para gestionar empresas colaboradoras, convenios, estudiantes, tutores, seguimientos y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro, una guia documental separada y un monitor privado de operacion tecnica. La aplicacion cubre el ciclo operativo completo: alta de empresas, verificacion por correo, revision interna, activacion de cuentas persistentes de empresa, gestion de convenios, asignacion de estudiantes, seguimiento con evidencias, evaluacion final, control documental versionado y exportacion CSV de informacion relevante. La entrega final prioriza mantenibilidad, separacion clara de responsabilidades, despliegue integrado bajo una unica URL local y una base funcional suficientemente solida para su defensa academica.</p>
+<p>Palabras clave: FP Dual, empresas colaboradoras, convenios, seguimiento, Symfony, React, gestion academica.</p>
 <h2 id="memoria-final-summary-en">Summary (EN)</h2>
-<p>This project delivers a web platform to manage partner companies, agreements, students, mentors, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, an external company portal, and two separated support spaces for documentation and private monitoring. The platform centralizes the full operational workflow: company registration, email verification, request tracking, agreement management, student assignment, document supervision, and CSV export of operational records. The final delivery prioritizes maintainable architecture, clear separation of responsibilities, and a demonstrable integrated build under a single local URL.</p>
-<p>Keywords: dual training, partner companies, agreements, Symfony, React, academic management.</p>
+<p>This project delivers a web platform to manage partner companies, agreements, students, mentors, follow-up records, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, an external company portal, a separated documentation guide, and a private monitoring console. The platform covers the full operational workflow: company registration, email verification, internal review, persistent company account activation, agreement management, student assignment, follow-up evidence, final evaluation, versioned document control, and CSV export of operational data. The final delivery prioritizes maintainability, clear separation of responsibilities, an integrated single-URL deployment, and a functional baseline suitable for academic defense.</p>
+<p>Keywords: dual training, partner companies, agreements, follow-up, Symfony, React, academic management.</p>
 <h1 id="memoria-final-introduccion-y-contexto">Introduccion y contexto</h1>
-<p>La gestion de empresas colaboradoras y practicas formativas se apoyaba inicialmente en hojas de calculo, correos electronicos y documentos repartidos entre distintas carpetas. Ese enfoque provocaba duplicidades, falta de trazabilidad, escasa visibilidad sobre el estado real de las solicitudes y una dependencia excesiva del seguimiento manual. El proyecto parte de esa necesidad y reorganiza el antiguo contexto tecnico de Agora para reorientarlo hacia un problema concreto del centro educativo: controlar el alta de empresas, formalizar convenios y gestionar asignaciones de estudiantes desde una unica plataforma.</p>
-<p>El resultado no pretende ser un prototipo aislado, sino una base operativa y ampliable. Por eso la aplicacion separa el acceso interno, el acceso externo y la API, y documenta tanto la arquitectura como la validacion tecnica necesaria para su defensa academica y evolucion futura.</p>
+<p>La gestion de empresas colaboradoras y practicas formativas suele apoyarse en hojas de calculo, correos electronicos y documentos repartidos entre distintas carpetas. Ese enfoque genera duplicidades, dificulta la trazabilidad y complica la supervision del estado real de cada solicitud, convenio o asignacion. El proyecto parte de esa necesidad y reorganiza el antiguo contexto tecnico de Agora para resolver un problema concreto del centro educativo: controlar el alta de empresas, formalizar convenios y gestionar practicas desde una unica plataforma coherente.</p>
+<p>El resultado ya no se plantea como un prototipo aislado. La aplicacion separa claramente el acceso interno, el acceso externo, la documentacion y la monitorizacion, y refuerza su base con autenticacion, control documental, seguimiento operativo y verificacion tecnica. Esta aproximacion permite explicar el sistema de forma comprensible durante la defensa y, al mismo tiempo, dejar una estructura realista para evolucion posterior.</p>
 <h1 id="memoria-final-objetivos-y-alcance">Objetivos y alcance</h1>
 <h2 id="memoria-final-objetivo-general">Objetivo general</h2>
-<p>Disenar e implantar una aplicacion web que centralice la gestion de empresas colaboradoras y practicas formativas, unificando informacion operativa, control documental y seguimiento de estados en una unica plataforma.</p>
+<p>Disenar e implantar una aplicacion web que centralice la gestion de empresas colaboradoras y practicas formativas, unificando informacion operativa, control documental, comunicacion y seguimiento de estados en una unica plataforma.</p>
 <h2 id="memoria-final-objetivos-especificos">Objetivos especificos</h2>
 <ol>
 <li>Digitalizar el ciclo de vida de empresa, convenio, estudiante, tutor y asignacion.</li>
-<li>Habilitar un flujo publico de solicitud de empresa con validacion y aprobacion interna.</li>
-<li>Ofrecer un panel interno con indicadores, tablas operativas, detalle de entidades y acciones CRUD.</li>
-<li>Incorporar soporte documental, checklist y alertas dentro del workflow de convenios.</li>
+<li>Habilitar un flujo publico de solicitud de empresa con verificacion por correo y revision interna.</li>
+<li>Proporcionar un panel interno con dashboard, CRUD operativo, bandeja unificada e indicadores de estado.</li>
+<li>Incorporar un portal de empresa postaprobacion con cuenta persistente, acceso y recuperacion de contrasena.</li>
+<li>Gestionar seguimientos, evidencias y evaluacion final dentro de la ficha de asignacion.</li>
+<li>Implantar control documental con versionado, retirada controlada y restauracion.</li>
 <li>Permitir la exportacion CSV de la informacion operativa relevante.</li>
-<li>Mantener una arquitectura separada y mantenible entre API, portal interno y portal externo.</li>
+<li>Mantener una arquitectura separada y mantenible entre API, portal interno, portal externo, documentacion y monitor privado.</li>
 </ol>
 <h2 id="memoria-final-alcance">Alcance</h2>
-<p>Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion del panel, la gestion de solicitudes externas, la verificacion por correo, el seguimiento de estado, la mensajeria asociada, el control documental, la exportacion CSV y un monitor privado separado para operacion tecnica. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones con sistemas corporativos, un area postaprobacion completa para empresas consolidadas con cuentas persistentes, el almacenamiento documental en nube y una bateria E2E completa de navegador.</p>
+<p>Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el registro externo, la verificacion por correo, la aprobacion interna, la activacion de cuentas de empresa, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV y un monitor privado con MFA para operaciones sensibles. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el despliegue permanente en infraestructura dedicada y el almacenamiento documental en nube gestionada.</p>
 <h1 id="memoria-final-analisis-de-requisitos">Analisis de requisitos</h1>
 <h2 id="memoria-final-problema-a-resolver">Problema a resolver</h2>
-<p>El centro necesita una herramienta que reduzca la fragmentacion de informacion, acelere la validacion de nuevas empresas y permita consultar en tiempo real el estado de convenios, estudiantes, asignaciones y solicitudes. El problema no es solo almacenar datos, sino garantizar continuidad operativa, trazabilidad y capacidad de supervision.</p>
+<p>El centro necesita una herramienta que reduzca la fragmentacion de informacion, acelere la validacion de nuevas empresas y permita consultar en tiempo real el estado de convenios, estudiantes, asignaciones, seguimientos, documentos y solicitudes externas. El problema no es solo almacenar datos, sino garantizar continuidad operativa, trazabilidad, control de cambios y capacidad de supervision.</p>
 <h2 id="memoria-final-actores-principales">Actores principales</h2>
 <ul>
-<li>Coordinacion o administracion interna.</li>
+<li>Administracion y coordinacion interna.</li>
 <li>Tutores academicos.</li>
 <li>Tutores profesionales.</li>
 <li>Estudiantes vinculados a practicas.</li>
 <li>Empresas interesadas en colaborar con el centro.</li>
+<li>Empresas ya aprobadas con cuenta persistente en el portal externo.</li>
 </ul>
 <h2 id="memoria-final-requisitos-funcionales">Requisitos funcionales</h2>
 <ul>
-<li>Consultar indicadores y tablas de gestion desde el panel interno.</li>
+<li>Consultar indicadores y modulos de gestion desde el panel interno.</li>
 <li>Crear, editar y revisar empresas, convenios, estudiantes y asignaciones.</li>
-<li>Registrar solicitudes externas de empresa y revisarlas desde el panel interno.</li>
-<li>Asociar mensajes y evidencia documental a solicitudes y entidades operativas.</li>
+<li>Registrar solicitudes externas de empresa y aprobarlas o rechazarlas desde el panel interno.</li>
+<li>Verificar el correo de contacto de la empresa y habilitar una cuenta persistente tras la aprobacion.</li>
+<li>Consultar y responder mensajes desde una bandeja unificada de conversaciones.</li>
+<li>Registrar seguimientos, adjuntar evidencias, cerrar hitos y emitir una evaluacion final.</li>
+<li>Gestionar documentos con versionado, retirada controlada y restauracion.</li>
 <li>Exportar informacion en CSV desde dashboard y modulos principales.</li>
-<li>Supervisar estado tecnico y operativo desde un monitor privado separado.</li>
+<li>Supervisar estado tecnico, logs, documentos y acceso publico desde un monitor privado.</li>
 </ul>
 <h2 id="memoria-final-requisitos-no-funcionales">Requisitos no funcionales</h2>
 <ul>
 <li>Interfaz responsive y diferenciada por contexto de uso.</li>
-<li>Seguridad basada en autenticacion y control de acceso.</li>
+<li>Seguridad basada en autenticacion, roles y segundo factor para operaciones sensibles.</li>
 <li>Arquitectura mantenible, con separacion clara entre backend y frontends.</li>
 <li>Persistencia portable en desarrollo y despliegue reproducible.</li>
 <li>Rendimiento suficiente para navegacion fluida y carga razonable en entorno local.</li>
 </ul>
 <h1 id="memoria-final-diseno-de-la-solucion">Diseno de la solucion</h1>
 <h2 id="memoria-final-arquitectura-general">Arquitectura general</h2>
-<p>La solucion se estructura en cuatro bloques principales. La primera es una API REST construida con Symfony, responsable de la seguridad, la logica de negocio, la persistencia y la exposicion de endpoints. La segunda es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. La tercera es un portal externo, tambien basado en React y TypeScript, que permite registrar nuevas empresas, verificar el correo de contacto, consultar el estado de la solicitud y mantener una mensajeria asociada. La cuarta se divide en dos shells complementarias: una pagina documental para memoria y anexos, y un monitor privado para supervision tecnica.</p>
-<p>El backend publica rutas protegidas bajo <code>/api</code> y rutas publicas para el registro externo, la confirmacion por correo y el acceso por token al portal de solicitud. En la entrega integrada, el panel interno se sirve bajo <code>/app</code>, la documentacion bajo <code>/documentacion</code>, el monitor privado bajo <code>/monitor</code> y el portal externo bajo <code>/externo</code>.</p>
+<p>La solucion se estructura en cinco bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el registro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es un monitor privado para supervision tecnica y control del acceso externo.</p>
+<p>El backend publica rutas protegidas bajo <code>/api</code>, rutas publicas para el registro y la verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo <code>/app</code>, la documentacion bajo <code>/documentacion</code>, el monitor privado bajo <code>/monitor</code> y el portal externo bajo <code>/externo</code>.</p>
 <figure id="memoria-final-figure-figura-1-esquema-de-bloques-de-funcionalidad-del-sistema"><img src="capturas/01-bloques-funcionalidad.png" alt="Figura 1. Esquema de bloques de funcionalidad del sistema."><figcaption>Figura 1. Esquema de bloques de funcionalidad del sistema.</figcaption></figure>
-<h2 id="memoria-final-justificacion-tecnica-de-versiones-y-separacion">Justificacion tecnica de versiones y separacion</h2>
-<p>El portal interno y el portal externo se desarrollan como SPA independientes. Esta separacion permite evolucionar cada interfaz segun su contexto sin mezclar dependencias ni ciclos de despliegue. El backend se mantiene como pieza central de negocio, y los dos frontends consumen la API con responsabilidades distintas. Esta decision mejora mantenibilidad, claridad de despliegue y aislamiento funcional.</p>
+<h2 id="memoria-final-justificacion-tecnica-de-la-separacion">Justificacion tecnica de la separacion</h2>
+<p>El portal interno y el portal externo se desarrollan como SPA independientes. Esta separacion permite evolucionar cada interfaz segun su contexto sin mezclar dependencias, ciclos de despliegue ni decisiones de UX. El backend se mantiene como pieza central de negocio y seguridad, mientras que documentacion y monitor se sirven como shells diferenciadas para no contaminar el flujo funcional del producto.</p>
+<p>No se trata de dos programas distintos que resuelvan el mismo problema, sino de dos accesos diferenciados a una misma plataforma. El portal interno responde a necesidades de coordinacion, validacion y administracion del centro, mientras que el portal externo responde a la experiencia de empresa antes y despues de su aprobacion. Mantener ambos recorridos en aplicaciones separadas reduce complejidad visual, evita exponer logica interna al usuario externo y permite aplicar reglas de seguridad, navegacion y despliegue diferentes sin duplicar la logica de negocio, que sigue concentrada en la API Symfony.</p>
+<p>Esta decision tambien mejora la defensa tecnica del proyecto. Permite explicar con claridad que existe un unico nucleo de datos y procesos, pero varias interfaces especializadas segun el actor que entra al sistema. De este modo, la plataforma resulta mas coherente que una unica SPA con permisos cruzados, menus condicionales y estados de acceso heterogeneos.</p>
 <h2 id="memoria-final-modelo-de-datos">Modelo de datos</h2>
-<p>El dominio se organiza en torno a entidades nucleares como <code>EmpresaColaboradora</code>, <code>Convenio</code>, <code>Estudiante</code>, <code>TutorAcademico</code>, <code>TutorProfesional</code> y <code>AsignacionPractica</code>. Sobre ese nucleo se apoyan entidades de soporte como <code>EmpresaSolicitud</code>, <code>EmpresaMensaje</code>, <code>EmpresaDocumento</code>, <code>ConvenioDocumento</code>, <code>ConvenioChecklistItem</code> y <code>ConvenioAlerta</code>. Esta estructura permite cubrir tanto la operacion principal como las necesidades de trazabilidad y documentacion.</p>
+<p>El dominio se organiza en torno a entidades nucleares como <code>EmpresaColaboradora</code>, <code>Convenio</code>, <code>Estudiante</code>, <code>TutorAcademico</code>, <code>TutorProfesional</code> y <code>AsignacionPractica</code>. Sobre ese nucleo se apoyan entidades de soporte como <code>EmpresaSolicitud</code>, <code>EmpresaMensaje</code>, <code>EmpresaPortalCuenta</code>, <code>EmpresaDocumento</code>, <code>ConvenioDocumento</code>, <code>Seguimiento</code>, <code>EvaluacionFinal</code>, <code>ConvenioChecklistItem</code> y <code>ConvenioAlerta</code>. Esta estructura permite cubrir tanto la operacion principal como la trazabilidad, la evidencia documental y la evolucion hacia un area persistente de empresa.</p>
 <figure id="memoria-final-figure-figura-2-esquema-relacional-de-la-base-de-datos"><img src="capturas/02-esquema-relacional.png" alt="Figura 2. Esquema relacional de la base de datos."><figcaption>Figura 2. Esquema relacional de la base de datos.</figcaption></figure>
 <h2 id="memoria-final-seguridad-y-control-de-acceso">Seguridad y control de acceso</h2>
-<p>La seguridad del entorno interno se apoya en autenticacion y roles. El panel interno reutiliza credenciales definidas en variables de entorno para las llamadas al backend, mientras que las rutas publicas quedan limitadas al registro externo y a la validacion de enlaces asociados a solicitudes. El sistema diferencia claramente los espacios publico y privado, y deja como mejora futura la incorporacion de mecanismos mas avanzados como MFA, SSO o auditoria ampliada.</p>
+<p>La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de roles y una combinacion de <code>json_login</code> y sesion de navegador. El sistema diferencia perfiles de administracion, coordinacion, documentacion, monitorizacion y auditoria. Las operaciones sensibles del monitor, como levantar o detener el acceso externo, requieren MFA por correo. Ademas, las acciones relevantes se registran mediante auditoria interna.</p>
+<p>El portal externo dispone de un flujo independiente: alta publica, verificacion por correo, aprobacion interna, activacion de cuenta, login persistente y recuperacion de contrasena. Esta separacion evita mezclar el acceso corporativo externo con las credenciales del panel interno.</p>
 <h2 id="memoria-final-diseno-de-interfaz">Diseno de interfaz</h2>
-<p>El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, documentacion y monitor privado. La interfaz combina tablas, tarjetas de resumen, vistas de detalle, formularios modales y exportaciones CSV desde varios puntos del sistema. El portal externo se organiza en varias rutas coordinadas: registro, correo, estado de solicitud, verificacion, mensajeria y recursos. La documentacion y el monitor se separan del flujo principal para no mezclar uso funcional con supervision tecnica, y el monitor privado se ordena en secciones de sistemas, acceso, logs, errores y calidad documental.</p>
+<p>El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, bandeja unificada, perfil y monitor privado. La interfaz combina tablas, tarjetas, paneles de detalle, formularios modales, workflows, documentos versionados y exportaciones CSV. El portal externo se organiza en un recorrido coherente entre inicio, registro, correo, estado, acceso empresa, recursos y panel privado. La documentacion y el monitor se mantienen separados del flujo principal para distinguir claramente uso funcional y operacion tecnica.</p>
+<p>Dentro del portal interno, los KPI del dashboard no se usan como un recurso estetico, sino como un mecanismo de supervision rapida. Su objetivo es ofrecer al personal del centro una lectura inmediata del estado operativo: volumen de empresas, convenios, estudiantes, asignaciones y actividad pendiente. Esta capa resumida reduce navegacion innecesaria, ayuda a detectar incidencias o cuellos de botella y sirve como punto de entrada a los modulos con mayor carga de gestion. En otras palabras, el dashboard no sustituye a los listados detallados, pero si actua como cuadro de mando para priorizar acciones.</p>
 <figure id="memoria-final-figure-figura-3-panel-interno-vista-dashboard-con-kpi-y-exportacion"><img src="capturas/03-panel-interno-dashboard.png" alt="Figura 3. Panel interno, vista dashboard con KPI y exportacion."><figcaption>Figura 3. Panel interno, vista dashboard con KPI y exportacion.</figcaption></figure>
-<figure id="memoria-final-figure-figura-4-panel-interno-vista-de-solicitudes-de-empresa"><img src="capturas/04-panel-interno-solicitudes.png" alt="Figura 4. Panel interno, vista de solicitudes de empresa."><figcaption>Figura 4. Panel interno, vista de solicitudes de empresa.</figcaption></figure>
-<figure id="memoria-final-figure-figura-5-portal-externo-para-registro-y-seguimiento-de-solicitudes"><img src="capturas/05-portal-externo.png" alt="Figura 5. Portal externo para registro y seguimiento de solicitudes."><figcaption>Figura 5. Portal externo para registro y seguimiento de solicitudes.</figcaption></figure>
+<figure id="memoria-final-figure-figura-4-panel-interno-bandeja-unificada-de-mensajes-con-empresas"><img src="capturas/04-panel-interno-bandeja.png" alt="Figura 4. Panel interno, bandeja unificada de mensajes con empresas."><figcaption>Figura 4. Panel interno, bandeja unificada de mensajes con empresas.</figcaption></figure>
+<figure id="memoria-final-figure-figura-5-portal-externo-con-acceso-de-empresa-y-flujo-de-colaboracion"><img src="capturas/05-portal-externo.png" alt="Figura 5. Portal externo con acceso de empresa y flujo de colaboracion."><figcaption>Figura 5. Portal externo con acceso de empresa y flujo de colaboracion.</figcaption></figure>
 <figure id="memoria-final-figure-figura-6-guia-funcional-de-la-plataforma"><img src="capturas/06-documentacion-guia.png" alt="Figura 6. Guia funcional de la plataforma."><figcaption>Figura 6. Guia funcional de la plataforma.</figcaption></figure>
-<figure id="memoria-final-figure-figura-7-monitor-operativo-privado"><img src="capturas/07-monitor-operativo.png" alt="Figura 7. Monitor operativo privado."><figcaption>Figura 7. Monitor operativo privado.</figcaption></figure>
+<figure id="memoria-final-figure-figura-7-monitor-operativo-privado-con-mfa-y-control-de-acceso"><img src="capturas/07-monitor-operativo.png" alt="Figura 7. Monitor operativo privado con MFA y control de acceso."><figcaption>Figura 7. Monitor operativo privado con MFA y control de acceso.</figcaption></figure>
 <h1 id="memoria-final-implementacion">Implementacion</h1>
 <h2 id="memoria-final-backend-symfony">Backend Symfony</h2>
-<p>El backend concentra controladores REST para empresas, convenios, estudiantes, asignaciones y tutores, asi como rutas especificas para solicitudes externas, mensajeria asociada, exportacion CSV y supervision operativa. La persistencia se resuelve con Doctrine ORM y SQLite en desarrollo, con una configuracion facilmente adaptable a otros motores compatibles con Symfony.</p>
+<p>El backend concentra controladores REST para empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, mensajes, portal de empresa, MFA, acceso publico y monitorizacion. La persistencia se resuelve con Doctrine ORM y SQLite en desarrollo, con configuracion adaptable a otros motores. La logica documental se ha centralizado para validar tipos de archivo, almacenar binarios, versionar documentos activos y permitir restauraciones controladas.</p>
 <h2 id="memoria-final-portal-interno">Portal interno</h2>
-<p>El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede al detalle de empresas y convenios y se lanzan exportaciones CSV. La aplicacion mantiene un cliente API ligero y una organizacion modular suficiente para separar dashboard, formularios y vistas de detalle.</p>
+<p>El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo.</p>
 <h2 id="memoria-final-portal-externo">Portal externo</h2>
-<p>El portal externo ofrece una entrada clara para empresas interesadas en colaborar. Incluye formulario de alta, pagina de correo, confirmacion por enlace, seguimiento del estado de la solicitud, mensajeria ligada al token del portal y una pagina de recursos de apoyo. El flujo queda conectado de extremo a extremo con la API: registro publico, emision del correo de verificacion, consulta del estado por token y conversacion asociada con el centro. Su diseno es deliberadamente mas simple que el portal interno para reducir friccion en el primer contacto con la plataforma sin perder trazabilidad.</p>
-<h2 id="memoria-final-exportacion-csv-como-ejemplo-funcional">Exportacion CSV como ejemplo funcional</h2>
-<p>La exportacion CSV se implementa como funcionalidad transversal. El dashboard puede generar un resumen CSV desde frontend, mientras que los modulos principales consumen endpoints CSV especificos del backend para descargar listados de empresas, convenios, estudiantes, asignaciones, tutores y solicitudes. Este mecanismo aporta una salida operativa inmediata para trazabilidad, revision documental y defensa funcional del proyecto.</p>
+<p>El portal externo ofrece dos momentos de uso claramente diferenciados. En el primero, una empresa interesada completa el alta, revisa el correo de verificacion y consulta el estado de la solicitud. En el segundo, tras la aprobacion del centro, la empresa activa su cuenta, puede iniciar sesion, solicitar recuperacion de contrasena, revisar convenios y asignaciones asociados, descargar documentos y mantener la conversacion con el centro desde un panel privado.</p>
+<h2 id="memoria-final-seguimientos-y-evaluacion-final">Seguimientos y evaluacion final</h2>
+<p>La ficha de asignacion incorpora ya un modulo real de seguimiento. Desde el panel interno se pueden crear hitos, editar registros, adjuntar evidencias, cerrar seguimientos y reabrirlos si es necesario. Sobre esa misma base se apoya la evaluacion final, que centraliza valoraciones, conclusiones y notas principales del cierre de practicas.</p>
+<h2 id="memoria-final-control-documental-y-exportacion-csv">Control documental y exportacion CSV</h2>
+<p>El sistema soporta subida de documentos PDF, Word y Excel en empresas, convenios y seguimientos. Cada documento puede registrarse con tipo controlado, descargarse posteriormente y, cuando se sube una nueva version activa, el resto de versiones previas se desactivan para preservar trazabilidad. En paralelo, la exportacion CSV se mantiene como funcionalidad transversal: el dashboard genera un resumen CSV y los modulos principales descargan listados operativos desde endpoints dedicados del backend.</p>
 <h1 id="memoria-final-despliegue-y-operacion">Despliegue y operacion</h1>
 <h2 id="memoria-final-requisitos-del-entorno">Requisitos del entorno</h2>
-<p>Para ejecutar el proyecto en local son necesarios PHP, Composer, Node.js, npm y los ficheros <code>.env.local</code> correspondientes al backend y a los dos frontends. El backend utiliza SQLite en desarrollo, por lo que no requiere un servidor de base de datos adicional para la demostracion basica.</p>
+<p>Para ejecutar el proyecto en local son necesarios PHP, Composer, Node.js, npm y los ficheros <code>.env.local</code> correspondientes. El backend utiliza SQLite en desarrollo, por lo que no requiere un servidor de base de datos separado para la demostracion basica. Los frontends pueden ejecutarse en modo desarrollo con Vite o integrarse en la build final servida por Symfony.</p>
 <h2 id="memoria-final-configuracion">Configuracion</h2>
-<p>La configuracion se apoya en variables de entorno para la URL base, las credenciales del panel interno, el entorno Symfony y las opciones de desarrollo. Esta aproximacion evita credenciales embebidas y permite reproducir el entorno con mayor control.</p>
+<p>La configuracion se apoya en variables de entorno para base de datos, correo saliente, credenciales del panel, destino MFA, URL base y opciones de desarrollo. Esta aproximacion evita credenciales embebidas y permite reproducir el entorno con mayor control. En la entrega final se ha dejado preparado Brevo como proveedor de correo transaccional para verificacion de empresas y MFA interno.</p>
+<p>En la practica, la autenticacion interna combina configuracion de frontend y backend. El frontend interno lee desde <code>import.meta.env</code> las variables <code>VITE_API_BASE_URL</code>, <code>VITE_API_USERNAME</code> y <code>VITE_API_PASSWORD</code>, que determinan contra que API se conecta y con que credenciales iniciales realiza el acceso. A partir de ahi, el backend Symfony resuelve la autenticacion real mediante <code>json_login</code>, genera la sesion del navegador y aplica los permisos correspondientes sobre las rutas protegidas. De forma paralela, el backend utiliza su propio <code>.env.local</code> para base de datos, correo saliente, remitente, MFA y resto de configuracion operativa. Esta separacion permite cambiar credenciales o infraestructura sin modificar el codigo fuente.</p>
 <h2 id="memoria-final-publicacion-integrada">Publicacion integrada</h2>
-<p>La entrega se prepara en modo integrado bajo una unica URL local: <code>/app</code> para el portal interno, <code>/externo</code> para el portal externo, <code>/documentacion</code> para la guia funcional y <code>/monitor</code> para la supervision tecnica. Esta organizacion simplifica la demostracion y evita depender de multiples servidores visibles durante la defensa.</p>
+<p>La entrega se prepara en modo integrado bajo una unica URL local: <code>/app</code> para el portal interno, <code>/externo</code> para el portal externo, <code>/documentacion</code> para la guia funcional y <code>/monitor</code> para la supervision tecnica. El acceso publico temporal se habilita mediante <code>cloudflared</code>, controlado desde el monitor privado. Esta organizacion simplifica la demostracion y evita depender de multiples servidores visibles durante la defensa.</p>
 <h1 id="memoria-final-pruebas-y-validacion">Pruebas y validacion</h1>
 <h2 id="memoria-final-validaciones-ejecutadas">Validaciones ejecutadas</h2>
-<p>La validacion del proyecto combina compilacion de frontends, pruebas automatizadas disponibles, comprobaciones HTTP sobre las rutas integradas y revisiones funcionales de navegacion, documentacion, monitorizacion y exportacion CSV. El backend dispone de pruebas orientadas a autenticacion y controladores clave, mientras que el frontend incorpora pruebas de utilidades y servicios.</p>
+<p>La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas y revisiones funcionales de correo, monitorizacion, documentacion, mensajeria y exportacion CSV.</p>
 <h2 id="memoria-final-resultados-observados">Resultados observados</h2>
-<p>La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles desde la URL local integrada. La exportacion CSV puede mostrarse como ejemplo funcional completo durante la defensa, y el arranque del panel interno mejora mediante un snapshot cacheado de bootstrap con invalidacion tras cambios de empresas, estudiantes, convenios y asignaciones.</p>
+<p>La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles desde la URL local integrada. El flujo de empresa cubre registro, verificacion, revision interna, activacion de cuenta y acceso posterior. El monitor privado valida el estado de servicios, el correo saliente, la documentacion previsualizable y el control del acceso publico con MFA.</p>
 <h2 id="memoria-final-rendimiento-operativo">Rendimiento operativo</h2>
-<p>Durante la fase final se ha optimizado el endpoint <code>/api/bootstrap</code>, que era el principal cuello de botella percibido al cargar el portal interno. La solucion aplicada cachea un snapshot del panel y lo invalida cuando cambian las entidades que alimentan dashboard y listados principales. En mediciones locales, el tiempo de respuesta en frio se redujo desde varios segundos hasta un entorno cercano al segundo largo, mientras que la carga HTML de <code>/app</code> se mantiene claramente por debajo del segundo en caliente. Esta mejora no sustituye a una estrategia completa de cache y perfilado en produccion real, pero si deja la navegacion de defensa en un estado considerablemente mas fluido.</p>
-<h2 id="memoria-final-limitaciones-de-prueba">Limitaciones de prueba</h2>
-<p>Aunque la base tecnica esta validada, no existe todavia una suite E2E completa de navegador. Tampoco se ha implantado una estrategia de carga automatizada o perfilado avanzado en entorno de produccion real. Estas limitaciones no impiden la defensa del proyecto, pero marcan lineas claras de mejora para una iteracion posterior.</p>
+<p>Durante la fase final se ha optimizado el endpoint <code>/api/bootstrap</code>, que era el principal cuello de botella percibido al cargar el portal interno. La solucion aplicada cachea un snapshot del panel y lo invalida cuando cambian las entidades que alimentan dashboard y listados principales. Esta mejora reduce el trabajo inicial del frontend y evita refrescos innecesarios al navegar por modulos operativos.</p>
+<h2 id="memoria-final-estado-tecnico-de-validacion">Estado tecnico de validacion</h2>
+<p>En la revision final se han ejecutado, como minimo, estas comprobaciones:</p>
+<ul>
+<li><code>php bin/phpunit</code> en backend;</li>
+<li><code>npm test -- --run</code> en <code>frontend/app</code>;</li>
+<li><code>npm run test:e2e</code> en <code>frontend/app</code> para flujos criticos;</li>
+<li><code>npm run build:backend</code> en <code>frontend/app</code>;</li>
+<li><code>npm run build:backend</code> en <code>frontend/company-portal</code>;</li>
+<li>comprobaciones HTTP de <code>/app</code>, <code>/externo</code>, <code>/documentacion</code>, <code>/monitor</code>, <code>/api/bootstrap</code>, <code>/api/monitor</code> y <code>/api/empresa-solicitudes/bandeja</code>.</li>
+</ul>
+<h2 id="memoria-final-limitaciones-actuales">Limitaciones actuales</h2>
+<p>Aunque la base tecnica es ya consistente, el proyecto sigue teniendo limitaciones propias de una entrega academica avanzada y no de un producto desplegado en produccion permanente:</p>
+<ul>
+<li>el acceso publico depende de una maquina local y de un tunel temporal;</li>
+<li>no existe todavia integracion con identidad corporativa o SSO institucional;</li>
+<li>el almacenamiento documental sigue siendo local, aunque ya esta versionado y controlado;</li>
+<li>el rendimiento ha mejorado de forma clara, pero no se ha realizado un perfilado profundo en infraestructura de produccion.</li>
+</ul>
 <h1 id="memoria-final-resultados-limitaciones-y-lineas-futuras">Resultados, limitaciones y lineas futuras</h1>
 <h2 id="memoria-final-resultados-principales">Resultados principales</h2>
-<p>El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el espacio externo, la documentacion y la supervision tecnica. Ademas, deja preparado un flujo demostrable y comprensible para la tutora: registro externo, verificacion por correo, seguimiento de solicitud, revision interna, gestion de entidades y exportacion de datos.</p>
-<h2 id="memoria-final-limitaciones-actuales">Limitaciones actuales</h2>
-<ul>
-<li>La autenticacion interna es suficiente para el entorno academico de la entrega, pero no cubre escenarios avanzados de identidad corporativa.</li>
-<li>El portal externo todavia no incorpora un area completa de postaprobacion para empresas ya validadas.</li>
-<li>El almacenamiento documental sigue siendo local y debe endurecerse para un uso con datos reales.</li>
-<li>No existe una bateria E2E completa para validar todos los flujos desde navegador.</li>
-</ul>
-<h2 id="memoria-final-mejoras-futuras">Mejoras futuras</h2>
-<p>Las siguientes iteraciones deberian priorizar, por este orden, el refuerzo de seguridad, la ampliacion del ciclo de vida de empresas y tutores, la gestion avanzada de seguimientos y evaluaciones, el endurecimiento documental, la instrumentacion de rendimiento y la automatizacion E2E del sistema completo.</p>
+<p>El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el externo, la documentacion y la supervision tecnica. Ademas, deja preparado un flujo demostrable y comprensible para la defensa: registro externo, verificacion por correo, seguimiento del estado, activacion de cuenta, revision interna, gestion de entidades, control documental y exportacion CSV.</p>
+<h2 id="memoria-final-lineas-futuras">Lineas futuras</h2>
+<p>Las siguientes iteraciones deberian priorizar, por este orden, el despliegue sobre infraestructura permanente, la integracion con identidad corporativa, el almacenamiento documental en nube con politicas de retencion, la ampliacion de cuadros de mando por perfil y una instrumentacion de rendimiento mas profunda.</p>
 <h1 id="memoria-final-conclusiones">Conclusiones</h1>
-<p>La aplicacion desarrollada aporta una respuesta coherente a un problema real de gestion academica y administrativa. La separacion entre backend, portal interno, portal externo, documentacion y monitor tecnico mejora claridad, mantenibilidad y capacidad de evolucion. Desde el punto de vista academico, el proyecto demuestra no solo implementacion funcional, sino tambien una preocupacion real por arquitectura, validacion, despliegue y presentacion final del producto.</p>
+<p>La aplicacion desarrollada aporta una respuesta coherente a un problema real de gestion academica y administrativa. La separacion entre backend, portal interno, portal externo, documentacion y monitor tecnico mejora claridad, mantenibilidad y capacidad de evolucion. Desde el punto de vista academico, el proyecto demuestra no solo implementacion funcional, sino tambien una preocupacion real por arquitectura, validacion, operacion, seguridad y presentacion final del producto.</p>
 <h1 id="memoria-final-referencias">Referencias</h1>
 <ol>
 <li>Proyecto TFG Agora. <code>docs/domain-model.md</code>.</li>
@@ -452,21 +478,35 @@
 <p>Este anexo describe el uso funcional de la plataforma &quot;Gestion de Empresas Colaboradoras&quot; desde el punto de vista del usuario interno del centro y del contacto externo de empresa.</p>
 <h2 id="anexo-a-manual-usuario-2-perfiles-de-uso">2. Perfiles de uso</h2>
 <ul>
-<li><code>ROLE_ADMIN</code>: administracion general del panel y acceso completo a recursos API.</li>
-<li><code>ROLE_API</code>: operativa de gestion sobre empresas, convenios, estudiantes, asignaciones y solicitudes.</li>
-<li>Empresa externa: uso del portal publico para registrar su interes, verificar el correo y comunicarse con el centro.</li>
+<li><code>ROLE_ADMIN</code>: administracion general, monitor privado, auditoria y control completo del panel.</li>
+<li><code>ROLE_COORDINATOR</code>: gestion de empresas, convenios, estudiantes, asignaciones, seguimientos y solicitudes.</li>
+<li><code>ROLE_DOCUMENT_MANAGER</code>: control documental, versionado y restauracion de evidencias.</li>
+<li><code>ROLE_MONITOR</code>: supervision tecnica, logs y acceso publico temporal.</li>
+<li><code>ROLE_AUDITOR</code>: consulta de trazas y actividad sensible.</li>
+<li>Empresa externa: uso del portal publico para registrar su interes, verificar el correo, activar cuenta y comunicarse con el centro.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-3-acceso-al-sistema">3. Acceso al sistema</h2>
-<h3 id="anexo-a-manual-usuario-3-1-panel-interno">3.1 Panel interno</h3>
+<h3 id="anexo-a-manual-usuario-3-1-panel-interno-integrado">3.1 Panel interno integrado</h3>
 <ul>
-<li>URL: <code>http://localhost:5173</code></li>
+<li>URL: <code>http://127.0.0.1:8000/app</code></li>
 <li>Credenciales demo:</li>
 <p>- <code>admin / admin123</code> - <code>coordinador / coordinador123</code></p>
 </ul>
-<h3 id="anexo-a-manual-usuario-3-2-portal-externo">3.2 Portal externo</h3>
+<h3 id="anexo-a-manual-usuario-3-2-documentacion-publica">3.2 Documentacion publica</h3>
 <ul>
-<li>URL: <code>http://localhost:5174</code></li>
-<li>No requiere autenticacion previa para registrar una solicitud.</li>
+<li>URL: <code>http://127.0.0.1:8000/documentacion</code></li>
+<li>No requiere autenticacion.</li>
+</ul>
+<h3 id="anexo-a-manual-usuario-3-3-monitor-privado">3.3 Monitor privado</h3>
+<ul>
+<li>URL: <code>http://127.0.0.1:8000/monitor</code></li>
+<li>Requiere credenciales internas y MFA para operaciones sensibles.</li>
+</ul>
+<h3 id="anexo-a-manual-usuario-3-4-portal-externo">3.4 Portal externo</h3>
+<ul>
+<li>URL: <code>http://127.0.0.1:8000/externo</code></li>
+<li>El registro inicial es publico.</li>
+<li>El acceso persistente de empresa se habilita tras aprobacion interna.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-4-navegacion-principal-del-panel-interno">4. Navegacion principal del panel interno</h2>
 <p>El panel se estructura en los siguientes modulos:</p>
@@ -478,7 +518,8 @@
 <li>Asignaciones</li>
 <li>Tutores</li>
 <li>Solicitudes</li>
-<li>Documentacion</li>
+<li>Bandeja</li>
+<li>Perfil</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-5-dashboard">5. Dashboard</h2>
 <p>Desde el dashboard se puede:</p>
@@ -498,6 +539,8 @@
 <li>revisar convenios asociados;</li>
 <li>revisar asignaciones vinculadas;</li>
 <li>consultar notas, etiquetas y documentos;</li>
+<li>subir documentos PDF, Word o Excel;</li>
+<li>retirar o restaurar versiones documentales;</li>
 <li>exportar el listado visible a CSV.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-7-gestion-de-convenios">7. Gestion de convenios</h2>
@@ -508,6 +551,7 @@
 <li>revisar workflow y checklist documental;</li>
 <li>adjuntar documentos de apoyo;</li>
 <li>revisar alertas activas;</li>
+<li>controlar tipos y estados con seleccion guiada;</li>
 <li>exportar el listado visible a CSV.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-8-gestion-de-estudiantes">8. Gestion de estudiantes</h2>
@@ -519,7 +563,7 @@
 <li>consultar seguimiento resumido;</li>
 <li>exportar el listado visible a CSV.</li>
 </ul>
-<h2 id="anexo-a-manual-usuario-9-gestion-de-asignaciones">9. Gestion de asignaciones</h2>
+<h2 id="anexo-a-manual-usuario-9-gestion-de-asignaciones-seguimientos-y-evaluacion-final">9. Gestion de asignaciones, seguimientos y evaluacion final</h2>
 <p>En el modulo de asignaciones el usuario puede:</p>
 <ul>
 <li>consultar el pipeline completo;</li>
@@ -527,6 +571,10 @@
 <li>crear nuevas asignaciones;</li>
 <li>editar asignaciones existentes;</li>
 <li>abrir la ficha de detalle;</li>
+<li>registrar seguimientos;</li>
+<li>adjuntar evidencias;</li>
+<li>cerrar o reabrir seguimientos;</li>
+<li>registrar y cerrar la evaluacion final;</li>
 <li>exportar el listado visible a CSV.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-10-gestion-de-tutores">10. Gestion de tutores</h2>
@@ -537,42 +585,67 @@
 <li>refrescar datos paginados;</li>
 <li>exportar cada tabla a CSV.</li>
 </ul>
-<h2 id="anexo-a-manual-usuario-11-solicitudes-de-empresa">11. Solicitudes de empresa</h2>
-<p>En el modulo de solicitudes el usuario puede:</p>
+<h2 id="anexo-a-manual-usuario-11-solicitudes-y-bandeja-de-mensajes">11. Solicitudes y bandeja de mensajes</h2>
+<p>En <code>Solicitudes</code> el usuario puede:</p>
 <ul>
-<li>revisar nuevas solicitudes enviadas desde el portal;</li>
+<li>revisar nuevas solicitudes enviadas desde el portal externo;</li>
 <li>aprobar solicitudes verificadas;</li>
 <li>rechazar solicitudes indicando motivo;</li>
-<li>consultar e intercambiar mensajes con la empresa;</li>
+<li>abrir la bandeja asociada a la empresa;</li>
 <li>exportar el listado visible a CSV.</li>
 </ul>
-<h2 id="anexo-a-manual-usuario-12-portal-externo">12. Portal externo</h2>
+<p>En <code>Bandeja</code> el usuario puede:</p>
+<ul>
+<li>consultar todas las conversaciones empresa-centro en una unica vista;</li>
+<li>ver el ultimo mensaje y la actividad reciente de cada hilo;</li>
+<li>responder desde el panel interno;</li>
+<li>abrir la solicitud relacionada cuando sea necesario.</li>
+</ul>
+<h2 id="anexo-a-manual-usuario-12-monitor-privado">12. Monitor privado</h2>
+<p>Desde el monitor privado el usuario puede:</p>
+<ul>
+<li>revisar servicios y metricas de entorno;</li>
+<li>consultar logs, incidencias y documentos previsualizables;</li>
+<li>revisar el estado del correo saliente;</li>
+<li>solicitar y validar un codigo MFA;</li>
+<li>levantar o detener el acceso publico temporal;</li>
+<li>copiar la URL externa cuando el tunel este activo.</li>
+</ul>
+<h2 id="anexo-a-manual-usuario-13-portal-externo">13. Portal externo</h2>
 <p>El flujo del portal externo es:</p>
 <ol>
 <li>La empresa completa el formulario de solicitud.</li>
 <li>Recibe un enlace de verificacion por correo.</li>
-<li>Confirma el token desde la vista de verificacion.</li>
-<li>Usa el canal de mensajes mientras su solicitud esta en revision.</li>
+<li>Consulta el estado de la solicitud.</li>
+<li>El centro aprueba la empresa desde el panel interno.</li>
+<li>La empresa recibe un correo de activacion de cuenta.</li>
+<li>Activa la cuenta, inicia sesion y puede recuperar su contrasena si lo necesita.</li>
+<li>Accede a su panel para revisar informacion, documentos y mensajes.</li>
 </ol>
-<h2 id="anexo-a-manual-usuario-13-errores-y-validaciones-comunes">13. Errores y validaciones comunes</h2>
+<h2 id="anexo-a-manual-usuario-14-errores-y-validaciones-comunes">14. Errores y validaciones comunes</h2>
 <ul>
 <li>Si el backend no responde, el panel mostrara mensajes de error y no cargara las colecciones.</li>
 <li>Si faltan credenciales o son incorrectas, la API devolvera error de autenticacion.</li>
 <li>Si un formulario contiene datos invalidos, el modal mostrara el mensaje correspondiente.</li>
+<li>Si se solicita un nuevo codigo MFA, el anterior deja de ser valido automaticamente.</li>
+<li>Si el correo saliente no esta bien configurado, el monitor lo reflejara como aviso.</li>
 </ul>
-<h2 id="anexo-a-manual-usuario-14-recomendaciones-de-uso">14. Recomendaciones de uso</h2>
+<h2 id="anexo-a-manual-usuario-15-recomendaciones-de-uso">15. Recomendaciones de uso</h2>
 <ul>
-<li>Refrescar solicitudes antes de aprobar o rechazar.</li>
-<li>Revisar el estado documental de convenios antes de avanzar workflow.</li>
+<li>Refrescar solicitudes y bandeja antes de aprobar o rechazar.</li>
+<li>Revisar el estado documental del convenio antes de avanzar workflow.</li>
+<li>Utilizar la bandeja unificada para no perder contexto de conversaciones.</li>
 <li>Exportar CSV como apoyo para revision, seguimiento y defensa del TFG.</li>
 </ul></section>
 <section class="document-section page-break" data-source="anexo-b-manual-tecnico.md"><h1 id="anexo-b-manual-tecnico-anexo-b-manual-tecnico">Anexo B. Manual Tecnico</h1>
 <h2 id="anexo-b-manual-tecnico-1-arquitectura-general">1. Arquitectura general</h2>
-<p>La solucion se compone de tres aplicaciones:</p>
+<p>La solucion se compone de cinco bloques:</p>
 <ul>
-<li><code>backend/</code>: API Symfony 7.3 con Doctrine ORM y SQLite por defecto.</li>
-<li><code>frontend/app/</code>: panel interno React 18 + TypeScript + Vite.</li>
+<li><code>backend/</code>: API Symfony con Doctrine ORM, seguridad, correo, auditoria y monitorizacion.</li>
+<li><code>frontend/app/</code>: portal interno React 18 + TypeScript + Vite.</li>
 <li><code>frontend/company-portal/</code>: portal externo React 19 + TypeScript + Vite.</li>
+<li><code>docs/</code>: memoria, anexos, capturas y artefactos de entrega.</li>
+<li><code>tools/</code>: utilidades auxiliares como <code>cloudflared</code> para acceso publico temporal.</li>
 </ul>
 <h2 id="anexo-b-manual-tecnico-2-requisitos-locales">2. Requisitos locales</h2>
 <ul>
@@ -580,7 +653,7 @@
 <li>Composer 2.x</li>
 <li>Node.js 18+</li>
 <li>npm</li>
-<li>SQLite</li>
+<li>SQLite con <code>pdo_sqlite</code> activo en PHP</li>
 <li>Symfony CLI opcional</li>
 </ul>
 <h2 id="anexo-b-manual-tecnico-3-arranque-del-entorno">3. Arranque del entorno</h2>
@@ -592,22 +665,39 @@ composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
 symfony server:start --no-tls -d --port=8000</code></pre>
-<h3 id="anexo-b-manual-tecnico-3-2-frontend-interno">3.2 Frontend interno</h3>
+<h3 id="anexo-b-manual-tecnico-3-2-frontend-interno-en-desarrollo">3.2 Frontend interno en desarrollo</h3>
 <pre><code>cd frontend/app
 copy .env.example .env.local
 npm install
 npm run dev -- --host --port 5173 --strictPort</code></pre>
-<h3 id="anexo-b-manual-tecnico-3-3-portal-externo">3.3 Portal externo</h3>
+<h3 id="anexo-b-manual-tecnico-3-3-portal-externo-en-desarrollo">3.3 Portal externo en desarrollo</h3>
 <pre><code>cd frontend/company-portal
 copy .env.example .env.local
 npm install
 npm run dev -- --host --port 5174 --strictPort</code></pre>
+<h3 id="anexo-b-manual-tecnico-3-4-build-integrada">3.4 Build integrada</h3>
+<pre><code>cd frontend/app
+npm run build:backend
+
+cd ../company-portal
+npm run build:backend</code></pre>
+<p>Con las builds generadas, Symfony sirve:</p>
+<ul>
+<li><code>http://127.0.0.1:8000/app</code></li>
+<li><code>http://127.0.0.1:8000/externo</code></li>
+<li><code>http://127.0.0.1:8000/documentacion</code></li>
+<li><code>http://127.0.0.1:8000/monitor</code></li>
+</ul>
 <h2 id="anexo-b-manual-tecnico-4-variables-de-entorno-relevantes">4. Variables de entorno relevantes</h2>
 <h3 id="anexo-b-manual-tecnico-4-1-backend">4.1 Backend</h3>
 <ul>
 <li><code>DATABASE_URL</code></li>
 <li><code>MAILER_DSN</code></li>
 <li><code>APP_MAIL_FROM</code></li>
+<li><code>APP_INTERNAL_MFA_EMAIL</code></li>
+<li><code>APP_MFA_TTL_SECONDS</code></li>
+<li><code>APP_DOCUMENT_STORAGE_DIR</code></li>
+<li><code>APP_PUBLIC_URL_TARGET</code></li>
 <li><code>DEFAULT_URI</code></li>
 <li><code>CORS_ALLOW_ORIGIN</code></li>
 </ul>
@@ -616,72 +706,113 @@ npm run dev -- --host --port 5174 --strictPort</code></pre>
 <li><code>VITE_API_BASE_URL</code></li>
 <li><code>VITE_API_USERNAME</code></li>
 <li><code>VITE_API_PASSWORD</code></li>
-<li><code>VITE_DEV_HTTPS</code></li>
-<li><code>VITE_DEV_HTTPS_KEY</code></li>
-<li><code>VITE_DEV_HTTPS_CERT</code></li>
 </ul>
 <h3 id="anexo-b-manual-tecnico-4-3-portal-externo">4.3 Portal externo</h3>
 <ul>
 <li><code>VITE_API_BASE_URL</code></li>
-<li><code>VITE_DEV_HTTPS</code></li>
-<li><code>VITE_DEV_HTTPS_KEY</code></li>
-<li><code>VITE_DEV_HTTPS_CERT</code></li>
 </ul>
 <h2 id="anexo-b-manual-tecnico-5-seguridad">5. Seguridad</h2>
 <ul>
 <li>El backend protege <code>/api</code> mediante seguridad Symfony.</li>
-<li>Se usa HTTP Basic y <code>json_login</code> queda preparado para evolucion posterior.</li>
-<li>Las credenciales del panel se importan desde <code>frontend/app/.env.local</code>.</li>
-<li>Las subidas de documentos reutilizan esas mismas credenciales de entorno.</li>
-<li>El soporte HTTPS queda preparado mediante <code>DEFAULT_URI</code>, <code>CORS_ALLOW_ORIGIN</code> y configuracion TLS opcional en ambos Vite.</li>
-<li>Jerarquia de roles:</li>
-<p>- <code>ROLE_ADMIN</code> - <code>ROLE_API</code> - <code>ROLE_USER</code></p>
+<li>El portal interno usa <code>json_login</code> y sesion.</li>
+<li>El backend mantiene <code>http_basic</code> como soporte operativo para pruebas y utilidades.</li>
+<li>El portal externo usa un firewall separado con proveedor <code>EmpresaPortalCuenta</code>.</li>
+<li>Existen rutas publicas para activacion de cuenta, login, solicitud de reseteo y restablecimiento de contrasena.</li>
+<li>El monitor privado exige rol de monitorizacion y MFA para activar o detener el acceso publico.</li>
+<li>La auditoria registra operaciones sensibles como aprobaciones, acceso publico, MFA, login de empresa y acciones de seguimiento.</li>
 </ul>
-<h2 id="anexo-b-manual-tecnico-6-versiones-de-react">6. Versiones de React</h2>
+<h3 id="anexo-b-manual-tecnico-5-1-jerarquia-de-roles-interna">5.1 Jerarquia de roles interna</h3>
 <ul>
-<li><code>frontend/app</code>: React 18.3.1.</li>
-<li><code>frontend/company-portal</code>: React 19.2.0.</li>
+<li><code>ROLE_ADMIN</code></li>
+<li><code>ROLE_COORDINATOR</code></li>
+<li><code>ROLE_DOCUMENT_MANAGER</code></li>
+<li><code>ROLE_MONITOR</code></li>
+<li><code>ROLE_AUDITOR</code></li>
+<li><code>ROLE_API</code></li>
+<li><code>ROLE_USER</code></li>
 </ul>
-<p>La coexistencia es valida porque ambas aplicaciones son independientes, se compilan por separado y no comparten runtime en navegador.</p>
-<h2 id="anexo-b-manual-tecnico-7-persistencia">7. Persistencia</h2>
-<p>La base de datos por defecto es SQLite. El esquema actual se crea a partir de la migracion base:</p>
+<h3 id="anexo-b-manual-tecnico-5-2-rol-externo">5.2 Rol externo</h3>
 <ul>
-<li><code>backend/migrations/Version20251113203450.php</code></li>
+<li><code>ROLE_COMPANY_PORTAL</code></li>
 </ul>
-<p>La carga de datos demo se realiza mediante:</p>
+<h2 id="anexo-b-manual-tecnico-6-persistencia">6. Persistencia</h2>
+<p>La base de datos por defecto es SQLite. En desarrollo local no se necesita un servidor MySQL ni PostgreSQL para la demo basica. El esquema se apoya en migraciones Doctrine y datos demo.</p>
+<p>Elementos relevantes:</p>
 <ul>
-<li><code>backend/src/DataFixtures/DemoDominioFixtures.php</code></li>
+<li>migraciones en <code>backend/migrations/</code></li>
+<li>fixtures en <code>backend/src/DataFixtures/DemoDominioFixtures.php</code></li>
+<li>base local por defecto en <code>backend/var/</code></li>
 </ul>
-<h2 id="anexo-b-manual-tecnico-8-estructura-funcional-del-backend">8. Estructura funcional del backend</h2>
+<h2 id="anexo-b-manual-tecnico-7-correo-saliente">7. Correo saliente</h2>
+<p>El proyecto queda preparado para correo transaccional mediante Brevo. Se usa para:</p>
+<ul>
+<li>verificacion de solicitudes externas;</li>
+<li>activacion de cuentas de empresa;</li>
+<li>reseteo de contrasena;</li>
+<li>MFA del monitor privado.</li>
+</ul>
+<p>El monitor refleja si el <code>MAILER_DSN</code> es real, de ejemplo o no funcional.</p>
+<h2 id="anexo-b-manual-tecnico-8-control-documental">8. Control documental</h2>
+<p>El almacenamiento documental se gestiona desde <code>DocumentStorageManager</code>. El sistema:</p>
+<ul>
+<li>valida tipos de fichero;</li>
+<li>guarda rutas relativas controladas;</li>
+<li>permite descarga posterior;</li>
+<li>versiona documentos de empresa y convenio;</li>
+<li>admite retirada logica y restauracion de versiones;</li>
+<li>soporta evidencias en seguimientos.</li>
+</ul>
+<h2 id="anexo-b-manual-tecnico-9-estructura-funcional-del-backend">9. Estructura funcional del backend</h2>
 <p>Controladores principales:</p>
 <ul>
 <li><code>backend/src/Controller/Api/EmpresaColaboradoraController.php</code></li>
 <li><code>backend/src/Controller/Api/ConvenioController.php</code></li>
 <li><code>backend/src/Controller/Api/EstudianteController.php</code></li>
 <li><code>backend/src/Controller/Api/AsignacionController.php</code></li>
-<li><code>backend/src/Controller/Api/TutorAcademicoController.php</code></li>
-<li><code>backend/src/Controller/Api/TutorProfesionalController.php</code></li>
 <li><code>backend/src/Controller/Api/EmpresaSolicitudController.php</code></li>
 <li><code>backend/src/Controller/Api/EmpresaMensajeController.php</code></li>
+<li><code>backend/src/Controller/Api/PortalCompanyController.php</code></li>
+<li><code>backend/src/Controller/Api/MfaController.php</code></li>
+<li><code>backend/src/Controller/Api/PublicAccessController.php</code></li>
+<li><code>backend/src/Controller/Api/MonitorController.php</code></li>
+<li><code>backend/src/Controller/PortalAuthController.php</code></li>
 <li><code>backend/src/Controller/RegistroEmpresaController.php</code></li>
 <li><code>backend/src/Controller/Portal/SolicitudPortalController.php</code></li>
 </ul>
-<h2 id="anexo-b-manual-tecnico-9-estructura-funcional-del-frontend-interno">9. Estructura funcional del frontend interno</h2>
+<p>Servicios relevantes:</p>
+<ul>
+<li><code>backend/src/Service/BootstrapSnapshotProvider.php</code></li>
+<li><code>backend/src/Service/PortalCompanyAccountManager.php</code></li>
+<li><code>backend/src/Service/InternalMfaManager.php</code></li>
+<li><code>backend/src/Service/DocumentStorageManager.php</code></li>
+<li><code>backend/src/Service/AuditLogger.php</code></li>
+<li><code>backend/src/Service/PublicAccessManager.php</code></li>
+</ul>
+<h2 id="anexo-b-manual-tecnico-10-estructura-funcional-del-frontend-interno">10. Estructura funcional del frontend interno</h2>
 <p>Archivos clave:</p>
 <ul>
 <li><code>frontend/app/src/App.tsx</code></li>
-<li><code>frontend/app/src/components/DataTable.tsx</code></li>
-<li><code>frontend/app/src/components/EmpresaForm.tsx</code></li>
-<li><code>frontend/app/src/components/ConvenioForm.tsx</code></li>
-<li><code>frontend/app/src/components/EstudianteForm.tsx</code></li>
+<li><code>frontend/app/src/components/MonitorPage.tsx</code></li>
+<li><code>frontend/app/src/components/DocumentationGuidePage.tsx</code></li>
+<li><code>frontend/app/src/components/MessageInboxPage.tsx</code></li>
 <li><code>frontend/app/src/components/AsignacionForm.tsx</code></li>
+<li><code>frontend/app/src/components/ConvenioForm.tsx</code></li>
 <li><code>frontend/app/src/services/api.ts</code></li>
 <li><code>frontend/app/src/utils/csv.ts</code></li>
 </ul>
-<h2 id="anexo-b-manual-tecnico-10-exportacion-csv">10. Exportacion CSV</h2>
-<p>La exportacion CSV se realiza en cliente mediante:</p>
+<h2 id="anexo-b-manual-tecnico-11-estructura-funcional-del-portal-externo">11. Estructura funcional del portal externo</h2>
+<p>Archivos clave:</p>
 <ul>
-<li><code>frontend/app/src/utils/csv.ts</code></li>
+<li><code>frontend/company-portal/src/App.tsx</code></li>
+<li><code>backend/src/Controller/PortalAuthController.php</code></li>
+<li><code>backend/src/Controller/Api/PortalCompanyController.php</code></li>
+<li><code>backend/src/Service/PortalCompanyAccountManager.php</code></li>
+</ul>
+<h2 id="anexo-b-manual-tecnico-12-exportacion-csv">12. Exportacion CSV</h2>
+<p>La exportacion CSV se realiza de forma mixta:</p>
+<ul>
+<li>resumen del dashboard generado desde frontend;</li>
+<li>listados principales descargados desde endpoints CSV del backend.</li>
 </ul>
 <p>Actualmente se exportan:</p>
 <ul>
@@ -693,20 +824,22 @@ npm run dev -- --host --port 5174 --strictPort</code></pre>
 <li>tutores;</li>
 <li>solicitudes.</li>
 </ul>
-<h2 id="anexo-b-manual-tecnico-11-validacion-tecnica">11. Validacion tecnica</h2>
+<h2 id="anexo-b-manual-tecnico-13-validacion-tecnica">13. Validacion tecnica</h2>
 <p>Comandos principales:</p>
 <pre><code>cd backend
 php bin/phpunit</code></pre>
 <pre><code>cd frontend/app
-npm run build</code></pre>
+npm test -- --run
+npm run test:e2e
+npm run build:backend</code></pre>
 <pre><code>cd frontend/company-portal
-npm run build</code></pre>
-<h2 id="anexo-b-manual-tecnico-12-riesgos-tecnicos-abiertos">12. Riesgos tecnicos abiertos</h2>
+npm run build:backend</code></pre>
+<h2 id="anexo-b-manual-tecnico-14-riesgos-tecnicos-abiertos">14. Riesgos tecnicos abiertos</h2>
 <ul>
-<li>no existe suite E2E de navegador;</li>
-<li>la autenticacion del panel sigue basada en credenciales de entorno;</li>
-<li>la salida PDF final de la memoria requiere maquetacion posterior;</li>
-<li>el almacenamiento documental sigue siendo local.</li>
+<li>el acceso publico depende de una maquina local y de un tunel temporal;</li>
+<li>la autenticacion corporativa no esta integrada con SSO institucional;</li>
+<li>el almacenamiento documental sigue siendo local;</li>
+<li>la optimizacion de rendimiento puede profundizarse con perfilado adicional en produccion real.</li>
 </ul></section>
 <section class="document-section page-break" data-source="anexo-c-capturas-y-evidencias.md"><h1 id="anexo-c-capturas-y-evidencias-anexo-c-capturas-y-evidencias">Anexo C. Capturas y evidencias</h1>
 <h2 id="anexo-c-capturas-y-evidencias-indice-de-capturas">Indice de capturas</h2>
@@ -714,17 +847,17 @@ npm run build</code></pre>
 <li>Figura 1. Esquema de bloques de funcionalidad del sistema.</li>
 <li>Figura 2. Esquema relacional de la base de datos.</li>
 <li>Figura 3. Dashboard del portal interno con KPI y exportacion CSV.</li>
-<li>Figura 4. Modulo de solicitudes de empresa en el portal interno.</li>
-<li>Figura 5. Portal externo para alta y seguimiento de empresas.</li>
+<li>Figura 4. Bandeja unificada de mensajes con empresas en el portal interno.</li>
+<li>Figura 5. Portal externo con acceso de empresa y flujo de colaboracion.</li>
 <li>Figura 6. Guia funcional de la plataforma.</li>
-<li>Figura 7. Monitor operativo privado para supervision tecnica.</li>
+<li>Figura 7. Monitor operativo privado con MFA y control de acceso.</li>
 </ol>
 <h2 id="anexo-c-capturas-y-evidencias-inventario-de-archivos-incluidos">Inventario de archivos incluidos</h2>
 <ul>
 <li><code>docs/capturas/01-bloques-funcionalidad.png</code></li>
 <li><code>docs/capturas/02-esquema-relacional.png</code></li>
 <li><code>docs/capturas/03-panel-interno-dashboard.png</code></li>
-<li><code>docs/capturas/04-panel-interno-solicitudes.png</code></li>
+<li><code>docs/capturas/04-panel-interno-bandeja.png</code></li>
 <li><code>docs/capturas/05-portal-externo.png</code></li>
 <li><code>docs/capturas/06-documentacion-guia.png</code></li>
 <li><code>docs/capturas/07-monitor-operativo.png</code></li>
@@ -732,10 +865,12 @@ npm run build</code></pre>
 <h2 id="anexo-c-capturas-y-evidencias-evidencias-tecnicas-asociadas">Evidencias tecnicas asociadas</h2>
 <p>Las evidencias tecnicas que acompanan a la memoria y a la defensa se apoyan en estas comprobaciones:</p>
 <ul>
-<li>compilacion del portal interno con <code>npm run build</code> y <code>npm run build:backend</code>;</li>
-<li>compilacion del portal externo con <code>npm run build</code> y <code>npm run build:backend</code>;</li>
+<li>compilacion del portal interno con <code>npm run build:backend</code>;</li>
+<li>compilacion del portal externo con <code>npm run build:backend</code>;</li>
 <li>validacion de rutas integradas bajo <code>/app</code>, <code>/externo</code>, <code>/documentacion</code> y <code>/monitor</code>;</li>
 <li>comprobacion funcional de exportacion CSV desde dashboard y modulos principales;</li>
+<li>verificacion del flujo de registro, verificacion, activacion y acceso de empresa;</li>
+<li>comprobacion del control MFA y del acceso publico temporal desde el monitor privado;</li>
 <li>revisiones visuales de las capturas utilizadas en PDF y DOCX.</li>
 </ul>
 <h2 id="anexo-c-capturas-y-evidencias-criterios-de-captura-final">Criterios de captura final</h2>

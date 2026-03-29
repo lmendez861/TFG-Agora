@@ -126,4 +126,50 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
             $this->client->getResponse()->headers->get('content-disposition', '')
         );
     }
+
+    public function testDocumentoVersionadoPuedeRetirarseYRestaurarse(): void
+    {
+        $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
+        self::assertNotNull($empresa);
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/empresas/%d/documentos', $empresa->getId()),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombre' => 'Manual de bienvenida',
+                'tipo' => 'PDF',
+                'url' => 'https://example.com/manual-v1.pdf',
+            ], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/empresas/%d/documentos', $empresa->getId()),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombre' => 'Manual de bienvenida',
+                'tipo' => 'PDF',
+                'url' => 'https://example.com/manual-v2.pdf',
+            ], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame(2, $payload['version']);
+        self::assertTrue($payload['active']);
+
+        $this->client->request('DELETE', sprintf('/api/empresas/%d/documentos/%d', $empresa->getId(), $payload['id']));
+        self::assertResponseIsSuccessful();
+        $deletedPayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertFalse($deletedPayload['active']);
+        self::assertNotNull($deletedPayload['deletedAt']);
+
+        $this->client->request('POST', sprintf('/api/empresas/%d/documentos/%d/restore', $empresa->getId(), $payload['id']));
+        self::assertResponseIsSuccessful();
+        $restoredPayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertTrue($restoredPayload['active']);
+        self::assertNull($restoredPayload['deletedAt']);
+    }
 }

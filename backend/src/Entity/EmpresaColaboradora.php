@@ -85,6 +85,9 @@ class EmpresaColaboradora
     #[ORM\OneToMany(mappedBy: 'empresa', targetEntity: EmpresaDocumento::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $documentos;
 
+    #[ORM\OneToOne(mappedBy: 'empresa', targetEntity: EmpresaPortalCuenta::class, cascade: ['persist'])]
+    private ?EmpresaPortalCuenta $portalCuenta = null;
+
     public function __construct()
     {
         $this->fechaAlta = new \DateTimeImmutable();
@@ -444,6 +447,22 @@ class EmpresaColaboradora
             if ($documento->getEmpresa() === $this) {
                 $documento->setEmpresa(null);
             }
+        }
+
+        return $this;
+    }
+
+    public function getPortalCuenta(): ?EmpresaPortalCuenta
+    {
+        return $this->portalCuenta;
+    }
+
+    public function setPortalCuenta(?EmpresaPortalCuenta $portalCuenta): self
+    {
+        $this->portalCuenta = $portalCuenta;
+
+        if ($portalCuenta !== null && $portalCuenta->getEmpresa() !== $this) {
+            $portalCuenta->setEmpresa($this);
         }
 
         return $this;

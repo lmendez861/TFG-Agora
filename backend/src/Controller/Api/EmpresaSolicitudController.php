@@ -2,11 +2,14 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\EmpresaMensaje;
 use App\Entity\ContactoEmpresa;
 use App\Entity\EmpresaColaboradora;
 use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
+use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
+use App\Service\PortalCompanyAccountManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,6 +31,8 @@ final class EmpresaSolicitudController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly PortalCompanyAccountManager $portalCompanyAccountManager,
+        private readonly AuditLogger $auditLogger,
     ) {
     }
 
@@ -116,8 +121,20 @@ final class EmpresaSolicitudController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]
+    #[Route('/bandeja', name: 'inbox', methods: ['GET'])]
     #[IsGranted('ROLE_API')]
+    public function inbox(): JsonResponse
+    {
+        $solicitudes = $this->repository->findBy([], ['createdAt' => 'DESC'], 150);
+        $threads = array_map(fn (EmpresaSolicitud $solicitud): array => $this->serializeInboxThread($solicitud), $solicitudes);
+
+        usort($threads, static fn (array $left, array $right): int => strcmp($right['activityAt'], $left['activityAt']));
+
+        return $this->json($threads, Response::HTTP_OK);
+    }
+
+    #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function approve(
         ?EmpresaSolicitud $solicitud,
         BootstrapSnapshotProvider $snapshotProvider
@@ -158,8 +175,15 @@ final class EmpresaSolicitudController extends AbstractController
 
         $this->entityManager->persist($empresa);
         $solicitud->markApproved();
+        $account = $this->portalCompanyAccountManager->provisionApprovedAccount($solicitud, $empresa);
         $this->entityManager->flush();
+        $activationEmailSent = $this->portalCompanyAccountManager->sendActivationEmail($account);
         $snapshotProvider->invalidate();
+        $this->auditLogger->log('empresa_solicitud.approve', 'empresa_solicitud', $solicitud->getId(), [
+            'empresaId' => $empresa->getId(),
+            'portalAccountId' => $account->getId(),
+            'activationEmailSent' => $activationEmailSent,
+        ]);
 
         return $this->json([
             'message' => 'Solicitud aprobada y empresa dada de alta correctamente.',
@@ -167,11 +191,17 @@ final class EmpresaSolicitudController extends AbstractController
                 'id' => $empresa->getId(),
                 'nombre' => $empresa->getNombre(),
             ],
+            'portalAccount' => [
+                'id' => $account->getId(),
+                'email' => $account->getEmail(),
+                'activationPending' => !$account->hasPassword(),
+                'activationEmailSent' => $activationEmailSent,
+            ],
         ], Response::HTTP_CREATED);
     }
 
     #[Route('/{id<\d+>}/rechazar', name: 'reject', methods: ['POST'])]
-    #[IsGranted('ROLE_API')]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function reject(?EmpresaSolicitud $solicitud, Request $request): JsonResponse
     {
         if (!$solicitud) {
@@ -197,6 +227,9 @@ final class EmpresaSolicitudController extends AbstractController
 
         $solicitud->reject($payload['motivo']);
         $this->entityManager->flush();
+        $this->auditLogger->log('empresa_solicitud.reject', 'empresa_solicitud', $solicitud->getId(), [
+            'reason' => $payload['motivo'],
+        ]);
 
         return $this->json([
             'message' => 'Solicitud rechazada.',
@@ -222,6 +255,43 @@ final class EmpresaSolicitudController extends AbstractController
             'emailVerificadoEn' => $solicitud->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
             'aprobadoEn' => $solicitud->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
             'motivoRechazo' => $solicitud->getRejectionReason(),
+        ];
+    }
+
+    private function serializeInboxThread(EmpresaSolicitud $solicitud): array
+    {
+        $mensajes = $solicitud->getMensajes()->toArray();
+        usort(
+            $mensajes,
+            static fn (EmpresaMensaje $left, EmpresaMensaje $right): int => $left->getCreatedAt() <=> $right->getCreatedAt()
+        );
+
+        $ultimoMensaje = $mensajes !== [] ? $mensajes[array_key_last($mensajes)] : null;
+        $portalCuenta = $solicitud->getPortalCuenta();
+
+        return [
+            'solicitud' => $this->serializeSolicitud($solicitud),
+            'messageCount' => count($mensajes),
+            'companyMessageCount' => count(array_filter(
+                $mensajes,
+                static fn (EmpresaMensaje $mensaje): bool => $mensaje->getAutor() === 'empresa'
+            )),
+            'centerMessageCount' => count(array_filter(
+                $mensajes,
+                static fn (EmpresaMensaje $mensaje): bool => $mensaje->getAutor() === 'centro'
+            )),
+            'activityAt' => ($ultimoMensaje?->getCreatedAt() ?? $solicitud->getCreatedAt())->format(\DateTimeInterface::ATOM),
+            'lastMessage' => $ultimoMensaje ? [
+                'id' => $ultimoMensaje->getId(),
+                'autor' => $ultimoMensaje->getAutor(),
+                'texto' => $ultimoMensaje->getTexto(),
+                'createdAt' => $ultimoMensaje->getCreatedAt()->format(\DateTimeInterface::ATOM),
+            ] : null,
+            'portalAccount' => $portalCuenta ? [
+                'email' => $portalCuenta->getEmail(),
+                'activatedAt' => $portalCuenta->getActivatedAt()?->format(\DateTimeInterface::ATOM),
+                'activationPending' => !$portalCuenta->hasPassword(),
+            ] : null,
         ];
     }
 }

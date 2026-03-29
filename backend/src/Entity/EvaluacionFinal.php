@@ -33,6 +33,21 @@ class EvaluacionFinal
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $conclusiones = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $notaEmpresa = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $notaEstudiante = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $notaTutorAcademico = null;
+
+    #[ORM\Column(length: 20)]
+    private string $estado = 'borrador';
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $cerradaEn = null;
+
     public function __construct()
     {
         $this->fecha = new \DateTimeImmutable();
@@ -111,6 +126,67 @@ class EvaluacionFinal
     public function setConclusiones(?string $conclusiones): self
     {
         $this->conclusiones = $conclusiones;
+
+        return $this;
+    }
+
+    public function getNotaEmpresa(): ?int
+    {
+        return $this->notaEmpresa;
+    }
+
+    public function setNotaEmpresa(?int $notaEmpresa): self
+    {
+        $this->notaEmpresa = $notaEmpresa;
+
+        return $this;
+    }
+
+    public function getNotaEstudiante(): ?int
+    {
+        return $this->notaEstudiante;
+    }
+
+    public function setNotaEstudiante(?int $notaEstudiante): self
+    {
+        $this->notaEstudiante = $notaEstudiante;
+
+        return $this;
+    }
+
+    public function getNotaTutorAcademico(): ?int
+    {
+        return $this->notaTutorAcademico;
+    }
+
+    public function setNotaTutorAcademico(?int $notaTutorAcademico): self
+    {
+        $this->notaTutorAcademico = $notaTutorAcademico;
+
+        return $this;
+    }
+
+    public function getEstado(): string
+    {
+        return $this->estado;
+    }
+
+    public function setEstado(string $estado): self
+    {
+        $this->estado = $estado;
+
+        return $this;
+    }
+
+    public function getCerradaEn(): ?\DateTimeImmutable
+    {
+        return $this->cerradaEn;
+    }
+
+    public function markClosed(): self
+    {
+        $this->estado = 'cerrada';
+        $this->cerradaEn = new \DateTimeImmutable();
 
         return $this;
     }

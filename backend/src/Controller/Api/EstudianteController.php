@@ -63,6 +63,7 @@ final class EstudianteController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function create(
         Request $request,
         EstudianteRepository $repository,
@@ -152,6 +153,7 @@ final class EstudianteController extends AbstractController
     }
 
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function update(
         ?Estudiante $estudiante,
         Request $request,

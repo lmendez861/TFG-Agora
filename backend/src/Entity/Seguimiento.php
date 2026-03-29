@@ -33,6 +33,24 @@ class Seguimiento
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $documentoUrl = null;
 
+    #[ORM\Column(length: 20)]
+    private string $estado = 'abierto';
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $evidenciaNombre = null;
+
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $evidenciaTipo = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $evidenciaUrl = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $cerradoEn = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $cierreComentario = null;
+
     public function __construct()
     {
         $this->fecha = new \DateTimeImmutable();
@@ -112,6 +130,82 @@ class Seguimiento
     public function setDocumentoUrl(?string $documentoUrl): self
     {
         $this->documentoUrl = $documentoUrl;
+
+        return $this;
+    }
+
+    public function getEstado(): string
+    {
+        return $this->estado;
+    }
+
+    public function setEstado(string $estado): self
+    {
+        $this->estado = $estado;
+
+        return $this;
+    }
+
+    public function getEvidenciaNombre(): ?string
+    {
+        return $this->evidenciaNombre;
+    }
+
+    public function setEvidenciaNombre(?string $evidenciaNombre): self
+    {
+        $this->evidenciaNombre = $evidenciaNombre;
+
+        return $this;
+    }
+
+    public function getEvidenciaTipo(): ?string
+    {
+        return $this->evidenciaTipo;
+    }
+
+    public function setEvidenciaTipo(?string $evidenciaTipo): self
+    {
+        $this->evidenciaTipo = $evidenciaTipo;
+
+        return $this;
+    }
+
+    public function getEvidenciaUrl(): ?string
+    {
+        return $this->evidenciaUrl;
+    }
+
+    public function setEvidenciaUrl(?string $evidenciaUrl): self
+    {
+        $this->evidenciaUrl = $evidenciaUrl;
+
+        return $this;
+    }
+
+    public function getCerradoEn(): ?\DateTimeImmutable
+    {
+        return $this->cerradoEn;
+    }
+
+    public function getCierreComentario(): ?string
+    {
+        return $this->cierreComentario;
+    }
+
+    public function close(?string $comment = null): self
+    {
+        $this->estado = 'cerrado';
+        $this->cerradoEn = new \DateTimeImmutable();
+        $this->cierreComentario = $comment;
+
+        return $this;
+    }
+
+    public function reopen(): self
+    {
+        $this->estado = 'abierto';
+        $this->cerradoEn = null;
+        $this->cierreComentario = null;
 
         return $this;
     }

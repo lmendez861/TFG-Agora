@@ -8,6 +8,7 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\BrowserKit\Cookie;
 
 final class PublicAccessControllerTest extends WebTestCase
 {
@@ -22,6 +23,7 @@ final class PublicAccessControllerTest extends WebTestCase
         $this->entityManager = static::getContainer()->get(EntityManagerInterface::class);
         $this->reloadDemoFixtures($this->entityManager);
         $this->loginAsAdmin();
+        $this->markMfaAsVerified();
     }
 
     protected function tearDown(): void
@@ -46,7 +48,7 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
     }
 
-    public function testStartDevuelveUnErrorControladoSiNoPuedeActivarElAccesoExterno(): void
+    public function testStartDevuelveUnEstadoControlado(): void
     {
         $this->client->request('POST', '/api/public-access/start');
 
@@ -60,11 +62,21 @@ final class PublicAccessControllerTest extends WebTestCase
         }
 
         self::assertResponseIsSuccessful();
-        self::assertSame('error', $payload['status']);
+        self::assertContains($payload['status'], ['starting', 'active', 'error']);
         self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
-        self::assertNull($payload['publicUrl']);
-        self::assertNull($payload['processId']);
         self::assertNotEmpty($payload['detail']);
+
+        if ($payload['status'] === 'error') {
+            self::assertNull($payload['publicUrl']);
+            self::assertNull($payload['processId']);
+
+            return;
+        }
+
+        self::assertIsString($payload['publicUrl'] ?? null);
+        self::assertNotSame('', trim((string) $payload['publicUrl']));
+        self::assertIsInt($payload['processId'] ?? null);
+        self::assertGreaterThan(0, $payload['processId']);
     }
 
     public function testStopDevuelveEstadoInactivo(): void
@@ -95,5 +107,22 @@ final class PublicAccessControllerTest extends WebTestCase
     private function decodeResponse(): array
     {
         return json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function markMfaAsVerified(): void
+    {
+        $sessionFactory = static::getContainer()->get('session.factory');
+        $session = $sessionFactory->createSession();
+        $existingCookie = $this->client->getCookieJar()->get($session->getName());
+        if ($existingCookie !== null && method_exists($session, 'setId')) {
+            $session->setId($existingCookie->getValue());
+        }
+
+        $session->start();
+
+        $session->set('_internal_mfa_verified_until', time() + 900);
+        $session->save();
+
+        $this->client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
     }
 }

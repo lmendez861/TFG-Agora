@@ -9,10 +9,11 @@ use App\Entity\EmpresaNota;
 use App\Repository\EmpresaColaboradoraRepository;
 use App\Repository\EmpresaDocumentoRepository;
 use App\Repository\EmpresaEtiquetaRepository;
+use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
+use App\Service\DocumentStorageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -102,6 +103,7 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function create(
         Request $request,
         EntityManagerInterface $entityManager,
@@ -196,6 +198,7 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function update(
         ?EmpresaColaboradora $empresa,
         Request $request,
@@ -284,6 +287,7 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/etiquetas', name: 'add_label', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function addEtiqueta(
         ?EmpresaColaboradora $empresa,
         Request $request,
@@ -321,6 +325,7 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/etiquetas/{etiquetaId<\d+>}', name: 'delete_label', methods: ['DELETE'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function deleteEtiqueta(
         ?EmpresaColaboradora $empresa,
         int $etiquetaId,
@@ -343,6 +348,7 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/notas', name: 'add_note', methods: ['POST'])]
+    #[IsGranted('ROLE_COORDINATOR')]
     public function addNota(
         ?EmpresaColaboradora $empresa,
         Request $request,
@@ -383,18 +389,21 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     #[Route('/{id<\d+>}/documentos', name: 'add_document', methods: ['POST'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocumento(
         ?EmpresaColaboradora $empresa,
         Request $request,
         ValidatorInterface $validator,
         EntityManagerInterface $entityManager,
-        Filesystem $filesystem
+        DocumentStorageManager $documentStorage,
+        AuditLogger $auditLogger,
     ): JsonResponse {
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
-        // Si viene un fichero (multipart), lo subimos; si no, usamos JSON con URL.
+        $version = 1;
+
         if ($request->files->count() > 0) {
             $file = $request->files->get('file');
             if (!$file instanceof UploadedFile) {
@@ -405,24 +414,29 @@ final class EmpresaColaboradoraController extends AbstractController
                 return $documentMetadata;
             }
             $originalName = $file->getClientOriginalName();
-            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
-            $finalName = sprintf('%s_%s.%s', $safeName, uniqid('', true), $documentMetadata['extension']);
-
-            $targetDir = sprintf('%s/var/uploads/empresas/%d', $this->getParameter('kernel.project_dir'), $empresa->getId());
-            if (!$filesystem->exists($targetDir)) {
-                $filesystem->mkdir($targetDir, 0775);
-            }
-            $file->move($targetDir, $finalName);
-            $storedUrl = sprintf('/api/empresas/%d/documentos/%s', $empresa->getId(), $finalName);
-
             $nombre = $request->request->get('nombre') ?: $originalName;
             $tipo = $documentMetadata['type'];
+            $version = $this->resolveNextEmpresaDocumentVersion($empresa, $nombre);
+            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
+            $relativePath = sprintf(
+                'empresas/%d/%s_v%d_%s.%s',
+                $empresa->getId(),
+                $safeName,
+                $version,
+                uniqid('', true),
+                $documentMetadata['extension']
+            );
 
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($nombre)
                 ->setTipo($tipo)
-                ->setUrl($storedUrl);
+                ->setVersion($version)
+                ->setStoragePath($relativePath)
+                ->setOriginalFilename($originalName)
+                ->setStorageProvider('external_fs');
+
+            $documentStorage->storeUploadedFile($file, $relativePath);
         } else {
             $payload = $this->decodePayload($request);
             if ($payload instanceof JsonResponse) {
@@ -450,21 +464,72 @@ final class EmpresaColaboradoraController extends AbstractController
                 ], Response::HTTP_BAD_REQUEST);
             }
 
+            $version = $this->resolveNextEmpresaDocumentVersion($empresa, $payload['nombre']);
+
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($payload['nombre'])
                 ->setTipo($tipoNormalizado)
-                ->setUrl($payload['url'] ?? null);
+                ->setUrl($payload['url'] ?? null)
+                ->setVersion($version)
+                ->setStorageProvider('remote_url');
         }
 
+        $this->deactivateOtherEmpresaDocumentVersions($empresa, $documento);
         $entityManager->persist($documento);
         $entityManager->flush();
+
+        $auditLogger->log('empresa.document.create', 'empresa_documento', $documento->getId(), [
+            'empresaId' => $empresa->getId(),
+            'nombre' => $documento->getNombre(),
+            'version' => $documento->getVersion(),
+        ]);
 
         return $this->json($this->serializeDocumento($documento), Response::HTTP_CREATED);
     }
 
+    #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/download', name: 'download_document_by_id', methods: ['GET'])]
+    public function downloadDocumentoById(
+        ?EmpresaColaboradora $empresa,
+        int $documentId,
+        EmpresaDocumentoRepository $documentRepository,
+        DocumentStorageManager $documentStorage,
+    ): Response
+    {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof EmpresaDocumento || $documento->getEmpresa()?->getId() !== $empresa->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($documento->getDeletedAt() !== null) {
+            return $this->json(['message' => 'El documento ha sido retirado y no esta disponible.'], Response::HTTP_GONE);
+        }
+
+        if ($documento->getStoragePath()) {
+            $filePath = $documentStorage->resolveAbsolutePath($documento->getStoragePath());
+            if (!is_file($filePath)) {
+                return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+            }
+
+            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+            $filename = $documento->getOriginalFilename() ?: basename($filePath);
+
+            return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+        }
+
+        if ($documento->getUrl()) {
+            return $this->redirect($documento->getUrl());
+        }
+
+        return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+    }
+
     #[Route('/{id<\\d+>}/documentos/{filename}', name: 'download_document', methods: ['GET'])]
-    public function downloadDocumento(int $id, string $filename): Response
+    public function downloadDocumentoLegacy(int $id, string $filename): Response
     {
         $filePath = sprintf('%s/var/uploads/empresas/%d/%s', $this->getParameter('kernel.project_dir'), $id, $filename);
         if (!is_file($filePath)) {
@@ -472,6 +537,65 @@ final class EmpresaColaboradoraController extends AbstractController
         }
         $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+    }
+
+    #[Route('/{id<\d+>}/documentos/{documentId<\d+>}', name: 'delete_document', methods: ['DELETE'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
+    public function deleteDocumento(
+        ?EmpresaColaboradora $empresa,
+        int $documentId,
+        EmpresaDocumentoRepository $documentRepository,
+        EntityManagerInterface $entityManager,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof EmpresaDocumento || $documento->getEmpresa()?->getId() !== $empresa->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento->markDeleted($this->getUserIdentifier());
+        $entityManager->flush();
+
+        $auditLogger->log('empresa.document.delete', 'empresa_documento', $documento->getId(), [
+            'empresaId' => $empresa->getId(),
+            'version' => $documento->getVersion(),
+        ]);
+
+        return $this->json($this->serializeDocumento($documento), Response::HTTP_OK);
+    }
+
+    #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/restore', name: 'restore_document', methods: ['POST'])]
+    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
+    public function restoreDocumento(
+        ?EmpresaColaboradora $empresa,
+        int $documentId,
+        EmpresaDocumentoRepository $documentRepository,
+        EntityManagerInterface $entityManager,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento = $documentRepository->find($documentId);
+        if (!$documento instanceof EmpresaDocumento || $documento->getEmpresa()?->getId() !== $empresa->getId()) {
+            return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $documento->restore();
+        $this->deactivateOtherEmpresaDocumentVersions($empresa, $documento);
+        $entityManager->flush();
+
+        $auditLogger->log('empresa.document.restore', 'empresa_documento', $documento->getId(), [
+            'empresaId' => $empresa->getId(),
+            'version' => $documento->getVersion(),
+        ]);
+
+        return $this->json($this->serializeDocumento($documento), Response::HTTP_OK);
     }
 
     private function serializeSummary(EmpresaColaboradora $empresa): array
@@ -559,7 +683,10 @@ final class EmpresaColaboradoraController extends AbstractController
             ],
             'etiquetas' => array_map(fn (EmpresaEtiqueta $etiqueta): array => $this->serializeEtiqueta($etiqueta), $empresa->getEtiquetas()->toArray()),
             'notas' => array_map(fn (EmpresaNota $nota): array => $this->serializeNota($nota), $empresa->getNotas()->toArray()),
-            'documentos' => array_map(fn (EmpresaDocumento $documento): array => $this->serializeDocumento($documento), $empresa->getDocumentos()->toArray()),
+            'documentos' => array_map(
+                fn (EmpresaDocumento $documento): array => $this->serializeDocumento($documento),
+                $this->sortEmpresaDocumentos($empresa->getDocumentos()->toArray())
+            ),
         ];
     }
 
@@ -590,14 +717,13 @@ final class EmpresaColaboradoraController extends AbstractController
     }
 
     /**
-     * @return array{id:int,nombre:string,tipo:?string,url:?string,uploadedAt:string}
+     * @return array{id:int,nombre:string,tipo:?string,url:?string,uploadedAt:string,version:int,active:bool,deletedAt:?string,originalFilename:?string,storageProvider:string}
      */
     private function serializeDocumento(EmpresaDocumento $documento): array
     {
-        $publicUrl = $documento->getUrl();
-        if ($publicUrl) {
-            $publicUrl = $this->buildAbsoluteUrl($publicUrl);
-        }
+        $publicUrl = $documento->getDeletedAt() === null
+            ? $this->resolveEmpresaDocumentUrl($documento)
+            : null;
 
         return [
             'id' => $documento->getId(),
@@ -605,6 +731,11 @@ final class EmpresaColaboradoraController extends AbstractController
             'tipo' => $documento->getTipo(),
             'url' => $publicUrl,
             'uploadedAt' => $documento->getUploadedAt()->format(\DateTimeInterface::ATOM),
+            'version' => $documento->getVersion(),
+            'active' => $documento->isActive(),
+            'deletedAt' => $documento->getDeletedAt()?->format(\DateTimeInterface::ATOM),
+            'originalFilename' => $documento->getOriginalFilename(),
+            'storageProvider' => $documento->getStorageProvider(),
         ];
     }
 
@@ -686,6 +817,86 @@ final class EmpresaColaboradoraController extends AbstractController
         $portPart = $port && !in_array($port, ['80', '443'], true) ? ':' . $port : '';
 
         return sprintf('%s://%s%s%s', $scheme, $host, $portPart, $path);
+    }
+
+    /**
+     * @param list<EmpresaDocumento> $documentos
+     * @return list<EmpresaDocumento>
+     */
+    private function sortEmpresaDocumentos(array $documentos): array
+    {
+        usort(
+            $documentos,
+            static function (EmpresaDocumento $left, EmpresaDocumento $right): int {
+                $byDate = $right->getUploadedAt() <=> $left->getUploadedAt();
+                if ($byDate !== 0) {
+                    return $byDate;
+                }
+
+                return $right->getVersion() <=> $left->getVersion();
+            }
+        );
+
+        return $documentos;
+    }
+
+    private function resolveEmpresaDocumentUrl(EmpresaDocumento $documento): ?string
+    {
+        if ($documento->getStoragePath() !== null && $documento->getEmpresa()?->getId() !== null && $documento->getId() !== null) {
+            return $this->buildAbsoluteUrl(sprintf(
+                '/api/empresas/%d/documentos/%d/download',
+                $documento->getEmpresa()->getId(),
+                $documento->getId()
+            ));
+        }
+
+        $publicUrl = $documento->getUrl();
+        if ($publicUrl) {
+            return $this->buildAbsoluteUrl($publicUrl);
+        }
+
+        return null;
+    }
+
+    private function resolveNextEmpresaDocumentVersion(EmpresaColaboradora $empresa, string $name): int
+    {
+        $normalizedName = mb_strtolower(trim($name));
+        $highestVersion = 0;
+
+        foreach ($empresa->getDocumentos() as $documento) {
+            if (mb_strtolower(trim($documento->getNombre())) === $normalizedName) {
+                $highestVersion = max($highestVersion, $documento->getVersion());
+            }
+        }
+
+        return $highestVersion + 1;
+    }
+
+    private function deactivateOtherEmpresaDocumentVersions(EmpresaColaboradora $empresa, EmpresaDocumento $current): void
+    {
+        $normalizedName = mb_strtolower(trim($current->getNombre()));
+
+        foreach ($empresa->getDocumentos() as $documento) {
+            if ($documento === $current) {
+                continue;
+            }
+
+            if (mb_strtolower(trim($documento->getNombre())) === $normalizedName && $documento->getDeletedAt() === null) {
+                $documento->setActive(false);
+            }
+        }
+
+        $current->setActive(true);
+    }
+
+    private function getUserIdentifier(): string
+    {
+        $user = $this->getUser();
+        if (method_exists($user, 'getUserIdentifier')) {
+            return (string) $user->getUserIdentifier();
+        }
+
+        return 'system';
     }
 
     /**

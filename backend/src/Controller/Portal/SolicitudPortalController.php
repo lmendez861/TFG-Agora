@@ -45,6 +45,11 @@ final class SolicitudPortalController extends AbstractController
             'creadaEn' => $solicitud->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'emailVerificadoEn' => $solicitud->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
             'aprobadoEn' => $solicitud->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
+            'portalAccount' => $solicitud->getPortalCuenta() ? [
+                'email' => $solicitud->getPortalCuenta()?->getEmail(),
+                'activatedAt' => $solicitud->getPortalCuenta()?->getActivatedAt()?->format(\DateTimeInterface::ATOM),
+                'activationPending' => !$solicitud->getPortalCuenta()?->hasPassword(),
+            ] : null,
         ]);
     }
 

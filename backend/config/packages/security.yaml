@@ -8,12 +8,33 @@ security:
             entity:
                 class: App\Entity\User
                 property: username
+        portal_company_provider:
+            entity:
+                class: App\Entity\EmpresaPortalCuenta
+                property: email
     role_hierarchy:
-        ROLE_ADMIN: [ROLE_API, ROLE_USER]
+        ROLE_DOCUMENT_MANAGER: [ROLE_API, ROLE_USER]
+        ROLE_COORDINATOR: [ROLE_API, ROLE_USER]
+        ROLE_MONITOR: [ROLE_API, ROLE_USER]
+        ROLE_AUDITOR: [ROLE_USER]
+        ROLE_ADMIN: [ROLE_MONITOR, ROLE_COORDINATOR, ROLE_DOCUMENT_MANAGER, ROLE_AUDITOR, ROLE_API, ROLE_USER]
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        portal_company:
+            pattern: ^/(portal-auth|api/portal-company)
+            lazy: true
+            provider: portal_company_provider
+            user_checker: App\Security\PortalCompanyUserChecker
+            stateless: false
+            json_login:
+                check_path: /portal-auth/login
+                username_path: email
+                password_path: password
+            logout:
+                path: /portal-auth/logout
+                invalidate_session: true
         main:
             lazy: true
             provider: app_user_provider
@@ -36,6 +57,13 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/portal-auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/portal-auth/activate, roles: PUBLIC_ACCESS }
+        - { path: ^/portal-auth/request-reset, roles: PUBLIC_ACCESS }
+        - { path: ^/portal-auth/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/portal-auth/logout, roles: ROLE_COMPANY_PORTAL }
+        - { path: ^/portal-auth/me, roles: ROLE_COMPANY_PORTAL }
+        - { path: ^/api/portal-company, roles: ROLE_COMPANY_PORTAL }
         - { path: ^/api/empresa-solicitudes$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }

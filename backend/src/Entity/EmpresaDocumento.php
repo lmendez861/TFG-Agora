@@ -26,6 +26,27 @@ class EmpresaDocumento
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $url = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $storagePath = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $originalFilename = null;
+
+    #[ORM\Column(length: 40)]
+    private string $storageProvider = 'external_fs';
+
+    #[ORM\Column]
+    private int $version = 1;
+
+    #[ORM\Column]
+    private bool $active = true;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
+
+    #[ORM\Column(length: 190, nullable: true)]
+    private ?string $deletedBy = null;
+
     #[ORM\Column]
     private \DateTimeImmutable $uploadedAt;
 
@@ -83,6 +104,94 @@ class EmpresaDocumento
     public function setUrl(?string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getStoragePath(): ?string
+    {
+        return $this->storagePath;
+    }
+
+    public function setStoragePath(?string $storagePath): self
+    {
+        $this->storagePath = $storagePath;
+
+        return $this;
+    }
+
+    public function getOriginalFilename(): ?string
+    {
+        return $this->originalFilename;
+    }
+
+    public function setOriginalFilename(?string $originalFilename): self
+    {
+        $this->originalFilename = $originalFilename;
+
+        return $this;
+    }
+
+    public function getStorageProvider(): string
+    {
+        return $this->storageProvider;
+    }
+
+    public function setStorageProvider(string $storageProvider): self
+    {
+        $this->storageProvider = $storageProvider;
+
+        return $this;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
+    }
+
+    public function setVersion(int $version): self
+    {
+        $this->version = max(1, $version);
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): self
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function getDeletedBy(): ?string
+    {
+        return $this->deletedBy;
+    }
+
+    public function markDeleted(?string $deletedBy = null): self
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+        $this->deletedBy = $deletedBy;
+        $this->active = false;
+
+        return $this;
+    }
+
+    public function restore(): self
+    {
+        $this->deletedAt = null;
+        $this->deletedBy = null;
+        $this->active = true;
 
         return $this;
     }

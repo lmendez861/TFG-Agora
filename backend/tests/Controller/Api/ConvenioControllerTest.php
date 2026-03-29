@@ -285,6 +285,55 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testDocumentoConvenioVersionadoPuedeRetirarseYRestaurarse(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombre' => 'Acta tutorias',
+                'tipo' => 'PDF',
+                'url' => 'https://example.com/acta-v1.pdf',
+            ], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombre' => 'Acta tutorias',
+                'tipo' => 'PDF',
+                'url' => 'https://example.com/acta-v2.pdf',
+            ], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame(2, $payload['version']);
+        self::assertTrue($payload['active']);
+
+        $this->client->request('DELETE', sprintf('/api/convenios/%d/documents/%d', $convenio->getId(), $payload['id']));
+        self::assertResponseIsSuccessful();
+        $deletedPayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertFalse($deletedPayload['active']);
+        self::assertNotNull($deletedPayload['deletedAt']);
+
+        $this->client->request('POST', sprintf('/api/convenios/%d/documents/%d/restore', $convenio->getId(), $payload['id']));
+        self::assertResponseIsSuccessful();
+        $restoredPayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertTrue($restoredPayload['active']);
+        self::assertNull($restoredPayload['deletedAt']);
+    }
+
     public function testAdvanceWorkflowActualizaEstado(): void
     {
         $convenio = $this->entityManager

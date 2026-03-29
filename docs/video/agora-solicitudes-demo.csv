@@ -1,0 +1,21 @@
+﻿id;nombre_empresa;cif;sector;ciudad;web;contacto_nombre;contacto_email;contacto_telefono;estado;creada_en;email_verificado_en;aprobado_en;motivo_rechazo
+20;Empresa E2E 1774816472977;;Tecnologia;Madrid;;Contacto E2E;e2e-1774816472977@example.com;;pendiente;2026-03-29 22:34:36;;;
+19;Empresa E2E 1774816179992;;Tecnologia;Madrid;;Contacto E2E;e2e-1774816179992@example.com;;pendiente;2026-03-29 22:29:42;;;
+18;Empresa E2E 1774815640882;;Tecnologia;Madrid;;Contacto E2E;e2e-1774815640882@example.com;;pendiente;2026-03-29 22:20:43;;;
+17;Verificacion sync 203544;;QA;Madrid;https://example.com;Laura Mendez;lmendezgsd@gmail.com;600111222;aprobada;2026-03-29 20:35:45;;2026-03-29 20:44:36;
+16;Prueba Portal Externo 203243;;QA;Madrid;https://example.com;Laura Mendez;lmendezgsd@gmail.com;600111222;aprobada;2026-03-29 20:32:45;;2026-03-29 20:47:16;
+15;Prueba entrega Brevo;;QA;Madrid;https://example.com;Laura Mendez;lmendezgsd@gmail.com;600111222;aprobada;2026-03-29 20:29:32;;2026-03-29 20:47:18;
+14;luisito;;luisito;madrid;http://admin123.com;luisito;lmendezgsd@gmail.com;617688112;aprobada;2026-03-29 20:21:46;;2026-03-29 20:47:20;
+13;Empresa E2E 1774807728221;;Tecnologia;Madrid;;Contacto E2E;e2e-1774807728221@example.com;;aprobada;2026-03-29 20:08:51;;2026-03-29 20:47:28;
+12;Empresa E2E 1774807578573;;Tecnologia;Madrid;;Contacto E2E;e2e-1774807578573@example.com;;aprobada;2026-03-29 20:06:21;;2026-03-29 20:47:32;
+11;Empresa E2E 1774807353732;;Tecnologia;Madrid;;Contacto E2E;e2e-1774807353732@example.com;;aprobada;2026-03-29 20:02:38;;2026-03-29 20:47:35;
+10;Empresa E2E 1774807155131;;Tecnologia;Madrid;;Contacto E2E;e2e-1774807155131@example.com;;aprobada;2026-03-29 19:59:19;;2026-03-29 20:47:38;
+9;Empresa Brevo Smoke;B12345678;Tecnologia;Madrid;https://example.com;Laura Mendez;lmendezgsd@gmail.com;600000000;aprobada;2026-03-26 23:56:25;2026-03-29 20:43:54;2026-03-29 20:47:41;
+8;luisito SL Security;;Tecnology;Madrid;http://luisito.es;luis m;lmendezgsd@gmail.com;123456789;aprobada;2026-03-26 22:52:51;;2026-03-29 20:48:34;
+7;Luisito S.L;;TECNOLOGIA;Madrid;https://luisSL.com;Luis;lmendezgsd@gmail.com;11122233;aprobada;2026-03-25 22:33:07;2026-03-25 22:34:05;2026-03-25 22:35:13;
+6;Empresa Demo Portal 20260309-094441;;Validacion demo;Madrid;https://demo-portal.test;Prueba Portal;portal.20260309-094441@example.com;600123123;aprobada;2026-03-09 09:44:42;;2026-03-18 20:53:47;
+5;Empresa Demo Portal 20260309-094138;;Validacion demo;Madrid;https://demo-portal.test;Prueba Portal;portal.20260309-094138@example.com;600123123;aprobada;2026-03-09 09:41:39;;2026-03-29 20:48:36;
+4;EmpresaEjemploSL;;Tecnologia Y Mecanica;Madrid;https://empresa22.com;Pepe Pepito;contacto@empresa.es;61768812;aprobada;2025-12-15 17:28:18;2025-12-15 17:28:31;2025-12-15 17:30:07;
+3;pepe;;tecno;madrid;https://emprsa.com;pepemanolo;contacto22@gmail.com;61766811;aprobada;2025-12-11 17:02:04;2025-12-11 17:02:17;2025-12-11 17:03:22;
+2;Hoola;;pepe;Madrid;https://empresa.com;pepe;contacto@gmail.com;61768913;aprobada;2025-12-11 16:55:16;2025-12-11 16:56:02;2025-12-11 16:57:20;
+1;Ejemplo S.L;;Tecnologia;Madrid;https://empresa.com;Luis;gsd@gmail.com;61768819;aprobada;2025-12-11 16:46:58;;2025-12-11 16:52:27;

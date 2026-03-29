@@ -19,6 +19,11 @@ export interface EmpresaDocument {
   type: string | null;
   url: string | null;
   uploadedAt: string;
+  version?: number;
+  active?: boolean;
+  deletedAt?: string | null;
+  originalFilename?: string | null;
+  storageProvider?: string;
 }
 
 export interface EmpresaDetail {
@@ -175,6 +180,11 @@ export interface ConvenioDocumentRecord {
   type: string | null;
   url: string | null;
   uploadedAt: string;
+  version?: number;
+  active?: boolean;
+  deletedAt?: string | null;
+  originalFilename?: string | null;
+  storageProvider?: string;
 }
 
 export interface ConvenioAlert {
@@ -242,6 +252,8 @@ export interface AsignacionDetail {
     nombre: string;
     email: string | null;
   } | null;
+  seguimientos: SeguimientoRecord[];
+  evaluacionFinal: EvaluacionFinalRecord | null;
 }
 
 export interface AsignacionPayload {
@@ -255,6 +267,35 @@ export interface AsignacionPayload {
   modalidad: string;
   horasTotales?: number | null;
   estado: string;
+}
+
+export interface SeguimientoRecord {
+  id: number;
+  fecha: string;
+  tipo: string;
+  descripcion: string | null;
+  accionRequerida: string | null;
+  documentoUrl: string | null;
+  estado: string;
+  evidenciaNombre: string | null;
+  evidenciaTipo: string | null;
+  evidenciaUrl: string | null;
+  cerradoEn: string | null;
+  cierreComentario: string | null;
+}
+
+export interface EvaluacionFinalRecord {
+  id: number;
+  fecha: string;
+  valoracionEmpresa: string | null;
+  valoracionEstudiante: string | null;
+  valoracionTutorAcademico: string | null;
+  conclusiones: string | null;
+  notaEmpresa: number | null;
+  notaEstudiante: number | null;
+  notaTutorAcademico: number | null;
+  estado: string;
+  cerradaEn: string | null;
 }
 
 export interface TutorAcademicoSummary {
@@ -321,6 +362,20 @@ export interface EmpresaSolicitudMensaje {
   autor: 'empresa' | 'centro';
   texto: string;
   createdAt: string;
+}
+
+export interface EmpresaInboxThread {
+  solicitud: EmpresaSolicitudSummary;
+  messageCount: number;
+  companyMessageCount: number;
+  centerMessageCount: number;
+  activityAt: string;
+  lastMessage: EmpresaSolicitudMensaje | null;
+  portalAccount: {
+    email: string;
+    activatedAt: string | null;
+    activationPending: boolean;
+  } | null;
 }
 
 export interface MeResponse {
@@ -394,6 +449,20 @@ export interface MonitorOverview {
   logs: MonitorLogSnapshot[];
   tests: MonitorTestSuite[];
   documents: MonitorDocumentRecord[];
+}
+
+export interface MfaStatus {
+  required: boolean;
+  verified: boolean;
+  verifiedUntil: string | null;
+  mailReady: boolean;
+  destinationEmail: string;
+  challengeIssuedAt: string | null;
+  challengeExpiresAt: string | null;
+  configured?: boolean;
+  canSend?: boolean;
+  destination?: string;
+  delivery?: string;
 }
 
 export type PublicAccessStatus = 'inactive' | 'starting' | 'active' | 'error';

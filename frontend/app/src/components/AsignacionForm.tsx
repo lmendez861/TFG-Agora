@@ -11,6 +11,8 @@ const MODALIDAD_OPTIONS = ['presencial', 'remota', 'hibrida'];
 const ESTADO_OPTIONS = ['planificada', 'en_curso', 'finalizada', 'cancelada', 'en_revision'];
 const MIN_ALLOWED_DATE = '2020-01-01';
 const MAX_ALLOWED_HOURS = 2400;
+const ELIGIBLE_COMPANY_STATES = ['activa'];
+const ELIGIBLE_CONVENIO_STATES = ['firmado', 'vigente', 'renovacion'];
 
 function buildMaxAllowedDate(): string {
   return `${new Date().getFullYear() + 6}-12-31`;
@@ -66,10 +68,29 @@ export function AsignacionForm({
     setLocalError(null);
   }, [initialValues]);
 
-  const conveniosDisponibles = useMemo(
-    () => convenios.filter((convenio) => String(convenio.empresa.id) === values.empresaId),
-    [convenios, values.empresaId],
-  );
+  const empresasDisponibles = useMemo(() => {
+    const activeEmpresas = empresas.filter((empresa) => ELIGIBLE_COMPANY_STATES.includes(empresa.estadoColaboracion));
+    const selectedEmpresa =
+      values.empresaId && !activeEmpresas.some((empresa) => String(empresa.id) === values.empresaId)
+        ? empresas.find((empresa) => String(empresa.id) === values.empresaId) ?? null
+        : null;
+
+    return [...activeEmpresas, ...(selectedEmpresa ? [selectedEmpresa] : [])].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [empresas, values.empresaId]);
+
+  const conveniosDisponibles = useMemo(() => {
+    const eligibleConvenios = convenios.filter(
+      (convenio) =>
+        String(convenio.empresa.id) === values.empresaId &&
+        ELIGIBLE_CONVENIO_STATES.includes(convenio.estado),
+    );
+    const selectedConvenio =
+      values.convenioId && !eligibleConvenios.some((convenio) => String(convenio.id) === values.convenioId)
+        ? convenios.find((convenio) => String(convenio.id) === values.convenioId) ?? null
+        : null;
+
+    return [...eligibleConvenios, ...(selectedConvenio ? [selectedConvenio] : [])];
+  }, [convenios, values.convenioId, values.empresaId]);
 
   const tutoresProfesionalesDisponibles = useMemo(
     () => tutoresProfesionales.filter((tutor) => String(tutor.empresa.id) === values.empresaId),
@@ -184,26 +205,40 @@ export function AsignacionForm({
 
         <label className="form__field">
           <span>Empresa*</span>
-          <select name="empresaId" value={values.empresaId} onChange={handleChange} required>
+          <select
+            name="empresaId"
+            value={values.empresaId}
+            onChange={handleChange}
+            required
+            disabled={empresasDisponibles.length === 0}
+          >
             <option value="">Selecciona una empresa</option>
-            {empresas.map((empresa) => (
+            {empresasDisponibles.map((empresa) => (
               <option key={empresa.id} value={empresa.id}>
-                {empresa.nombre}
+                {empresa.nombre} {empresa.estadoColaboracion !== 'activa' ? `(${empresa.estadoColaboracion})` : ''}
               </option>
             ))}
           </select>
+          <small className="form__hint">Solo se muestran empresas activas para no asignar practicas sobre datos pendientes de validar.</small>
         </label>
 
         <label className="form__field">
           <span>Convenio*</span>
-          <select name="convenioId" value={values.convenioId} onChange={handleChange} required>
+          <select
+            name="convenioId"
+            value={values.convenioId}
+            onChange={handleChange}
+            required
+            disabled={!values.empresaId || conveniosDisponibles.length === 0}
+          >
             <option value="">Selecciona un convenio</option>
             {conveniosDisponibles.map((convenio) => (
               <option key={convenio.id} value={convenio.id}>
-                {convenio.titulo}
+                {convenio.titulo} ({convenio.estado})
               </option>
             ))}
           </select>
+          <small className="form__hint">Solo se listan convenios firmados, vigentes o en renovacion para respetar el flujo de negocio.</small>
         </label>
 
         <label className="form__field">

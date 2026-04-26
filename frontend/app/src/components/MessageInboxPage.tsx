@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { EmpresaInboxThread, EmpresaSolicitudMensaje } from '../types';
 
 interface MessageInboxPageProps {
@@ -52,6 +53,15 @@ function buildSnippet(thread: EmpresaInboxThread): string {
   return 'Sin mensajes todavia. El centro puede iniciar el hilo desde esta bandeja.';
 }
 
+function buildInitials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+}
+
 export function MessageInboxPage({
   threads,
   selectedSolicitudId,
@@ -67,6 +77,10 @@ export function MessageInboxPage({
 }: MessageInboxPageProps) {
   const selectedThread = threads.find((thread) => thread.solicitud.id === selectedSolicitudId) ?? null;
   const selectedMessages = selectedThread ? (messagesBySolicitud[selectedThread.solicitud.id] ?? []) : [];
+  const activeAccounts = useMemo(
+    () => threads.filter((thread) => thread.portalAccount && !thread.portalAccount.activationPending).length,
+    [threads],
+  );
 
   return (
     <section className="module-page module-page--wide">
@@ -74,7 +88,10 @@ export function MessageInboxPage({
         <div>
           <p className="module-page__eyebrow">Mensajeria</p>
           <h2>Bandeja unificada de empresas</h2>
-          <p>Centraliza el hilo de cada solicitud, tanto antes como despues de la aprobacion de la cuenta empresa.</p>
+          <p>
+            Esta vista concentra las conversaciones de solicitud, aprobacion y seguimiento en un formato continuo para
+            trabajar como una inbox operativa real.
+          </p>
         </div>
         <div className="module-page__actions">
           <span className="chip chip--ghost">{threads.length} conversaciones</span>
@@ -84,61 +101,92 @@ export function MessageInboxPage({
         </div>
       </header>
 
-      <div className="inbox-layout">
+      <div className="inbox-layout inbox-layout--discord">
         <aside className="inbox-sidebar">
-          {loadingThreads && threads.length === 0 ? (
-            <p className="detail-placeholder">Cargando conversaciones...</p>
-          ) : threads.length === 0 ? (
-            <p className="detail-placeholder">Todavia no hay hilos disponibles.</p>
-          ) : (
-            threads.map((thread) => {
-              const isActive = selectedSolicitudId === thread.solicitud.id;
-              const snippet = buildSnippet(thread);
+          <div className="inbox-sidebar__intro">
+            <p className="module-page__eyebrow">Centro de mensajes</p>
+            <h3>Conversaciones de empresa</h3>
+            <p>
+              La campana del panel concentra solicitudes y desde aqui se responde el hilo completo cuando ya existe una
+              conversacion abierta con la empresa.
+            </p>
+          </div>
 
-              return (
-                <button
-                  key={thread.solicitud.id}
-                  type="button"
-                  className={`inbox-thread${isActive ? ' is-active' : ''}`}
-                  onClick={() => onSelectThread(thread.solicitud.id)}
-                >
-                  <div className="inbox-thread__top">
-                    <strong>{thread.solicitud.nombreEmpresa}</strong>
-                    <span>{thread.messageCount} msg</span>
-                  </div>
-                  <p className="inbox-thread__meta">
-                    {SOLICITUD_ESTADO_LABELS[thread.solicitud.estado] ?? thread.solicitud.estado}
-                    {' | '}
-                    {thread.solicitud.contacto.email}
-                  </p>
-                  <p className="inbox-thread__snippet">{snippet}</p>
-                  <small>{formatTimestamp(thread.activityAt)}</small>
-                </button>
-              );
-            })
-          )}
+          <div className="inbox-sidebar__stats">
+            <article className="inbox-sidebar__stat">
+              <span>Hilos</span>
+              <strong>{threads.length}</strong>
+            </article>
+            <article className="inbox-sidebar__stat">
+              <span>Cuentas activas</span>
+              <strong>{activeAccounts}</strong>
+            </article>
+          </div>
+
+          <div className="inbox-thread-list">
+            {loadingThreads && threads.length === 0 ? (
+              <p className="detail-placeholder">Cargando conversaciones...</p>
+            ) : threads.length === 0 ? (
+              <p className="detail-placeholder">Todavia no hay hilos disponibles.</p>
+            ) : (
+              threads.map((thread) => {
+                const isActive = selectedSolicitudId === thread.solicitud.id;
+                const snippet = buildSnippet(thread);
+
+                return (
+                  <button
+                    key={thread.solicitud.id}
+                    type="button"
+                    className={`inbox-thread${isActive ? ' is-active' : ''}`}
+                    onClick={() => onSelectThread(thread.solicitud.id)}
+                  >
+                    <div className="inbox-thread__avatar">{buildInitials(thread.solicitud.nombreEmpresa)}</div>
+                    <div className="inbox-thread__content">
+                      <div className="inbox-thread__top">
+                        <strong>{thread.solicitud.nombreEmpresa}</strong>
+                        <span>{thread.messageCount} msg</span>
+                      </div>
+                      <p className="inbox-thread__meta">
+                        {SOLICITUD_ESTADO_LABELS[thread.solicitud.estado] ?? thread.solicitud.estado}
+                        {' | '}
+                        {thread.solicitud.contacto.email}
+                      </p>
+                      <p className="inbox-thread__snippet">{snippet}</p>
+                      <small>{formatTimestamp(thread.activityAt)}</small>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </aside>
 
         <div className="inbox-panel">
           {!selectedThread ? (
             <div className="inbox-empty">
               <h3>Selecciona una conversacion</h3>
-              <p>Elige una empresa de la lista para consultar el historial y responder desde el centro.</p>
+              <p>Elige una empresa para consultar el historial y responder desde el centro.</p>
             </div>
           ) : (
             <>
               <header className="inbox-panel__header">
-                <div>
-                  <p className="module-page__eyebrow">Solicitud #{selectedThread.solicitud.id}</p>
-                  <h3>{selectedThread.solicitud.nombreEmpresa}</h3>
-                  <p>
-                    {selectedThread.solicitud.contacto.nombre}
-                    {' | '}
-                    {selectedThread.solicitud.contacto.email}
-                    {selectedThread.solicitud.contacto.telefono ? ` | ${selectedThread.solicitud.contacto.telefono}` : ''}
-                  </p>
+                <div className="inbox-panel__identity">
+                  <div className="inbox-panel__avatar">{buildInitials(selectedThread.solicitud.nombreEmpresa)}</div>
+                  <div>
+                    <p className="module-page__eyebrow">Solicitud #{selectedThread.solicitud.id}</p>
+                    <h3>{selectedThread.solicitud.nombreEmpresa}</h3>
+                    <p>
+                      {selectedThread.solicitud.contacto.nombre}
+                      {' | '}
+                      {selectedThread.solicitud.contacto.email}
+                      {selectedThread.solicitud.contacto.telefono ? ` | ${selectedThread.solicitud.contacto.telefono}` : ''}
+                    </p>
+                  </div>
                 </div>
                 <div className="inbox-panel__actions">
+                  <span className="chip chip--ghost">
+                    {SOLICITUD_ESTADO_LABELS[selectedThread.solicitud.estado] ?? selectedThread.solicitud.estado}
+                  </span>
                   {selectedThread.portalAccount && (
                     <span className="chip chip--ghost">
                       {selectedThread.portalAccount.activationPending ? 'Cuenta pendiente' : 'Cuenta activa'}
@@ -154,22 +202,9 @@ export function MessageInboxPage({
                 </div>
               </header>
 
-              <div className="inbox-panel__summary">
-                <article className="surface-card">
-                  <span>Total mensajes</span>
-                  <strong>{selectedThread.messageCount}</strong>
-                  <small>Actividad acumulada del hilo</small>
-                </article>
-                <article className="surface-card">
-                  <span>Empresa</span>
-                  <strong>{selectedThread.companyMessageCount}</strong>
-                  <small>Mensajes emitidos por la empresa</small>
-                </article>
-                <article className="surface-card">
-                  <span>Centro</span>
-                  <strong>{selectedThread.centerMessageCount}</strong>
-                  <small>Respuestas registradas por el equipo interno</small>
-                </article>
+              <div className="inbox-channel-bar">
+                <span># canal-operativo</span>
+                <small>Historial completo de coordinacion entre el centro y la empresa.</small>
               </div>
 
               <div className="inbox-messages">
@@ -179,22 +214,24 @@ export function MessageInboxPage({
                   <p className="detail-placeholder">Sin mensajes todavia. Puedes iniciar la conversacion desde aqui.</p>
                 ) : (
                   selectedMessages.map((message) => (
-                    <div key={message.id} className={`mensaje mensaje--${message.autor}`}>
-                      <p>{message.texto}</p>
-                      <small>
-                        {message.autor === 'empresa' ? 'Empresa' : 'Centro'}
-                        {' | '}
-                        {formatTimestamp(message.createdAt)}
-                      </small>
-                    </div>
+                    <article key={message.id} className={`chat-message chat-message--${message.autor}`}>
+                      <div className="chat-message__avatar">{message.autor === 'empresa' ? 'EM' : 'CE'}</div>
+                      <div className="chat-message__bubble">
+                        <div className="chat-message__meta">
+                          <strong>{message.autor === 'empresa' ? 'Empresa' : 'Centro educativo'}</strong>
+                          <span>{formatTimestamp(message.createdAt)}</span>
+                        </div>
+                        <p>{message.texto}</p>
+                      </div>
+                    </article>
                   ))
                 )}
               </div>
 
-              <div className="mensaje-form mensaje-form--inline">
+              <div className="mensaje-form mensaje-form--chat">
                 <input
                   type="text"
-                  placeholder="Escribe una respuesta para la empresa..."
+                  placeholder="Escribe una respuesta operativa para la empresa..."
                   value={draftBySolicitud[selectedThread.solicitud.id] ?? ''}
                   onChange={(event) => onDraftChange(selectedThread.solicitud.id, event.target.value)}
                   onKeyDown={(event) => {
@@ -210,7 +247,7 @@ export function MessageInboxPage({
                   onClick={() => onSend(selectedThread.solicitud.id)}
                   disabled={loadingMessagesId === selectedThread.solicitud.id}
                 >
-                  {loadingMessagesId === selectedThread.solicitud.id ? 'Enviando...' : 'Enviar respuesta'}
+                  {loadingMessagesId === selectedThread.solicitud.id ? 'Enviando...' : 'Enviar'}
                 </button>
               </div>
             </>

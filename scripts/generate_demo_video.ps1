@@ -182,13 +182,68 @@ function Export-DemoCsv {
     Invoke-WebRequest -Uri 'http://127.0.0.1:8000/api/export/empresa-solicitudes.csv' -Headers $headers -OutFile $csvPath | Out-Null
 }
 
-function Get-CsvExcerpt {
-    if (-not (Test-Path $csvPath)) {
-        return "No se pudo generar el CSV de ejemplo."
+function Convert-DemoCsvField {
+    param(
+        [AllowNull()]
+        [string] $Value
+    )
+
+    if ($null -eq $Value) {
+        return ''
     }
 
-    $lines = Get-Content $csvPath -Encoding UTF8 | Select-Object -First 6
-    return ($lines -join [Environment]::NewLine)
+    $requiresQuotes = $Value.Contains(';') -or $Value.Contains('"') -or $Value.Contains("`n") -or $Value.Contains("`r")
+    $escapedValue = $Value.Replace('"', '""')
+    if ($requiresQuotes) {
+        return '"' + $escapedValue + '"'
+    }
+
+    return $escapedValue
+}
+
+function Sanitize-DemoCsv {
+    param(
+        [string] $SourceCsvPath
+    )
+
+    if (-not (Test-Path $SourceCsvPath)) {
+        throw 'No se encontro el CSV exportado para anonimizar la demo.'
+    }
+
+    $rows = Import-Csv -Path $SourceCsvPath -Delimiter ';'
+    if (-not $rows -or $rows.Count -eq 0) {
+        throw 'El CSV exportado esta vacio y no se puede preparar para la demo.'
+    }
+
+    for ($index = 0; $index -lt $rows.Count; $index++) {
+        $itemNumber = $index + 1
+        $label = $itemNumber.ToString('00')
+        $row = $rows[$index]
+        $row.nombre_empresa = "Empresa demo $label"
+        $row.contacto_nombre = "Contacto demo $label"
+        $row.contacto_email = "empresa$label@demo.local"
+        if ($row.PSObject.Properties.Match('contacto_telefono').Count -gt 0) {
+            $row.contacto_telefono = ('600000000' + $itemNumber).Substring(('600000000' + $itemNumber).Length - 9)
+        }
+        if ($row.PSObject.Properties.Match('web').Count -gt 0) {
+            $row.web = "https://empresa-demo-$label.example"
+        }
+        if ($row.PSObject.Properties.Match('cif').Count -gt 0 -and [string]::IsNullOrWhiteSpace($row.cif)) {
+            $row.cif = "DEMO$label"
+        }
+    }
+
+    $headerNames = $rows[0].PSObject.Properties.Name
+    $lines = @()
+    $lines += ($headerNames -join ';')
+    foreach ($row in $rows) {
+        $fields = foreach ($headerName in $headerNames) {
+            Convert-DemoCsvField -Value ([string]$row.$headerName)
+        }
+        $lines += ($fields -join ';')
+    }
+
+    Set-Content -Path $SourceCsvPath -Value $lines -Encoding UTF8
 }
 
 function Export-CsvWorkbook {
@@ -320,6 +375,7 @@ function Get-CsvPreviewRows {
 }
 
 Export-DemoCsv
+Sanitize-DemoCsv -SourceCsvPath $csvPath
 Export-CsvWorkbook -SourceCsvPath $csvPath -WorkbookPath $xlsxPath
 $csvRows = Get-CsvPreviewRows -SourceCsvPath $csvPath
 
@@ -339,13 +395,13 @@ try {
 
     Add-SlideBase -Presentation $presentation -Index 3 -Eyebrow 'FUNCION REAL' -Title 'Exportacion CSV en la operativa diaria' -Body "Una de las funciones que queria ensenar es la exportacion CSV.`n`nLa he dejado disponible en dashboard y en los modulos principales porque permite sacar informacion real del sistema y revisarla fuera de la aplicacion, por ejemplo en Excel o para adjuntarla como evidencia." -DurationSeconds 16 | Out-Null
 
-    $slideCsv = Add-SlideBase -Presentation $presentation -Index 4 -Eyebrow 'EVIDENCIA CSV' -Title 'Archivo real generado por el backend' -Body "Aqui se ve un CSV real descargado desde la propia aplicacion.`n`nLo estoy mostrando ya ordenado como hoja de calculo para que se aprecie mejor que la exportacion no es una demo falsa, sino un listado operativo que luego se puede abrir y trabajar fuera del sistema." -DurationSeconds 24
+    $slideCsv = Add-SlideBase -Presentation $presentation -Index 4 -Eyebrow 'EVIDENCIA CSV' -Title 'Archivo real generado por el backend' -Body "Aqui se ve un CSV real descargado desde la propia aplicacion.`n`nHe anonimizado la muestra para la entrega, pero el archivo sigue saliendo del endpoint real y se puede abrir como hoja de calculo para trabajar fuera del sistema." -DurationSeconds 24
     $frame = $slideCsv.Shapes.AddShape(1, 610, 62, 628, 368)
     $frame.Fill.ForeColor.RGB = 0xEEF3F8
     $frame.Line.ForeColor.RGB = 0xD2DCE8
     $frame.Line.Weight = 1
     $null = Add-CsvTable -Slide $slideCsv -Rows $csvRows -Left 620 -Top 72 -Width 608 -Height 334
-    $null = Add-TextBox -Slide $slideCsv -Left 620 -Top 436 -Width 610 -Height 108 -Text "En este caso estoy ensenando la exportacion de solicitudes de empresa.`n`nEl archivo sale del endpoint real del backend y tambien lo he dejado guardado en formato Excel para presentarlo de forma mas clara." -FontSize 15 -Rgb 0xC8D0DC
+    $null = Add-TextBox -Slide $slideCsv -Left 620 -Top 436 -Width 610 -Height 108 -Text "En este caso estoy ensenando la exportacion de solicitudes de empresa.`n`nLa muestra esta anonimizada para la entrega, pero el archivo sale del endpoint real del backend y tambien lo he dejado guardado en formato Excel para verlo mejor." -FontSize 15 -Rgb 0xC8D0DC
 
     Add-CaptureSlide -Presentation $presentation -Index 5 -Eyebrow 'MENSAJERIA' -Title 'Bandeja unificada de empresas' -Body 'Otra mejora importante es la bandeja unificada. En vez de obligar a entrar solicitud por solicitud, aqui puedo ver todas las conversaciones con las empresas en una vista tipo inbox y responder desde el propio portal interno.' -CapturePath (Join-Path $captures '04-panel-interno-bandeja.png') -DurationSeconds 20 | Out-Null
 

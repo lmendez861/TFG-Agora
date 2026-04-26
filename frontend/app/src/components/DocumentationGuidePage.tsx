@@ -17,6 +17,11 @@ type ArchitectureLayer = {
   detail: string;
 };
 
+type WorkflowStep = {
+  title: string;
+  detail: string;
+};
+
 const documentationAssets: DocumentationAsset[] = [
   {
     title: 'Memoria final',
@@ -82,6 +87,55 @@ const architectureLayers: ArchitectureLayer[] = [
   },
 ];
 
+const externalWorkflow: WorkflowStep[] = [
+  {
+    title: 'Alta inicial desde /externo',
+    detail: 'La empresa completa sus datos y registra una solicitud publica con correo corporativo.',
+  },
+  {
+    title: 'Verificacion del correo',
+    detail: 'El sistema envia un enlace de validacion para confirmar que el email de contacto existe y pertenece al flujo.',
+  },
+  {
+    title: 'Revision interna',
+    detail: 'La solicitud aparece en el portal interno para aprobar o rechazar la empresa antes de habilitar acceso persistente.',
+  },
+  {
+    title: 'Activacion de cuenta',
+    detail: 'Cuando el centro aprueba, la empresa activa su cuenta, inicia sesion y accede a convenios, asignaciones, documentos y mensajes.',
+  },
+];
+
+const internalWorkflow: WorkflowStep[] = [
+  {
+    title: 'Validar o crear la empresa',
+    detail: 'Primero se revisa la solicitud externa o se da de alta manualmente una empresa ya validada y activa.',
+  },
+  {
+    title: 'Formalizar el convenio',
+    detail: 'El convenio solo debe registrarse sobre una empresa activa. El flujo recomendado es borrador, revision, firma y vigencia.',
+  },
+  {
+    title: 'Registrar estudiantes y tutores',
+    detail: 'Con la empresa y el convenio ya encaminados, se completa el catalogo de estudiantes y tutores implicados.',
+  },
+  {
+    title: 'Planificar la asignacion',
+    detail: 'La asignacion solo tiene sentido cuando la empresa es activa y el convenio esta firmado, vigente o en renovacion.',
+  },
+  {
+    title: 'Seguir, evaluar y cerrar',
+    detail: 'Durante la practica se registran seguimientos, evidencias, mensajeria operativa y la evaluacion final del cierre.',
+  },
+];
+
+const workflowRules = [
+  'No se deben crear convenios sobre empresas pendientes de revision o sin activar.',
+  'No se deben crear asignaciones sobre convenios en borrador o sin firma valida.',
+  'El registro externo, la aprobacion interna y la cuenta persistente de empresa forman parte del mismo flujo, no de procesos separados.',
+  'La campana del portal interno concentra la revision de solicitudes y el acceso a la bandeja unificada de mensajes.',
+];
+
 const deliverables = [
   'Memoria final en Markdown como fuente editable.',
   'Memoria final en DOCX con indice navegable.',
@@ -142,9 +196,9 @@ function OverviewSection() {
               <h3>Fuente oficial</h3>
             </div>
           </header>
-            <p className="guide-card__copy">
-              El repositorio concentra codigo, memoria, anexos, scripts de generacion y trazabilidad completa de la
-              entrega final.
+          <p className="guide-card__copy">
+            El repositorio concentra codigo, memoria, anexos, scripts de generacion y trazabilidad completa de la
+            entrega final.
           </p>
           <a href={repositoryUrl} target="_blank" rel="noreferrer" className="guide-inline-link">
             {repositoryUrl}
@@ -165,6 +219,68 @@ function ArchitectureSection() {
           <p>{layer.detail}</p>
         </article>
       ))}
+    </section>
+  );
+}
+
+function WorkflowSection() {
+  return (
+    <section className="guide-section-grid">
+      <article className="guide-card guide-card--wide">
+        <header className="guide-card__header">
+          <div>
+            <p className="guide-card__eyebrow">Secuencia funcional</p>
+            <h3>Flujo de trabajo recomendado</h3>
+          </div>
+          <span className="guide-badge">Validado por negocio</span>
+        </header>
+
+        <div className="guide-workflow-grid">
+          <div>
+            <p className="guide-card__eyebrow">Portal externo</p>
+            <div className="guide-timeline">
+              {externalWorkflow.map((step, index) => (
+                <article key={step.title} className="guide-timeline__item">
+                  <span className="guide-timeline__index">{index + 1}</span>
+                  <div>
+                    <strong>{step.title}</strong>
+                    <p>{step.detail}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="guide-card__eyebrow">Portal interno</p>
+            <div className="guide-timeline">
+              {internalWorkflow.map((step, index) => (
+                <article key={step.title} className="guide-timeline__item">
+                  <span className="guide-timeline__index">{index + 1}</span>
+                  <div>
+                    <strong>{step.title}</strong>
+                    <p>{step.detail}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article className="guide-card">
+        <header className="guide-card__header">
+          <div>
+            <p className="guide-card__eyebrow">Reglas de validacion</p>
+            <h3>Que impide el sistema</h3>
+          </div>
+        </header>
+        <ul className="guide-list">
+          {workflowRules.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </article>
     </section>
   );
 }
@@ -254,8 +370,8 @@ export function DocumentationGuidePage() {
           <p className="guide-hero__eyebrow">Documentacion</p>
           <h2>Centro documental del proyecto separado de la operacion y de la monitorizacion.</h2>
           <p className="guide-hero__description">
-            Esta zona solo reune memoria, anexos, repositorio, arquitectura y entregables. No mezcla control de
-            servicios, logs ni herramientas de monitor privado.
+            Esta zona solo reune memoria, anexos, repositorio, arquitectura, flujo de trabajo y entregables. No mezcla
+            control de servicios, logs ni herramientas de monitor privado.
           </p>
           <div className="guide-hero__actions">
             <a href={repositoryUrl} target="_blank" rel="noreferrer" className="button button--primary button--sm">
@@ -299,6 +415,9 @@ export function DocumentationGuidePage() {
             <NavLink to="arquitectura" className={navClassName}>
               Arquitectura
             </NavLink>
+            <NavLink to="flujo" className={navClassName}>
+              Flujo de trabajo
+            </NavLink>
             <NavLink to="memoria" className={navClassName}>
               Memoria y anexos
             </NavLink>
@@ -312,6 +431,7 @@ export function DocumentationGuidePage() {
           <Routes>
             <Route index element={<OverviewSection />} />
             <Route path="arquitectura" element={<ArchitectureSection />} />
+            <Route path="flujo" element={<WorkflowSection />} />
             <Route path="memoria" element={<MemorySection />} />
             <Route path="entrega" element={<DeliverySection />} />
             <Route path="*" element={<Navigate to="." replace />} />

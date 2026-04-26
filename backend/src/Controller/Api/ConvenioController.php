@@ -7,6 +7,7 @@ use App\Entity\ConvenioAlerta;
 use App\Entity\ConvenioChecklistItem;
 use App\Entity\ConvenioDocumento;
 use App\Entity\ConvenioWorkflowEvento;
+use App\Entity\EmpresaColaboradora;
 use App\Repository\ConvenioAlertaRepository;
 use App\Repository\ConvenioChecklistItemRepository;
 use App\Repository\ConvenioDocumentoRepository;
@@ -60,6 +61,8 @@ final class ConvenioController extends AbstractController
         'renovacion',
         'finalizado',
     ];
+
+    private const ELIGIBLE_COMPANY_STATES = ['activa'];
 
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, ConvenioRepository $repository): JsonResponse
@@ -144,6 +147,10 @@ final class ConvenioController extends AbstractController
         $empresa = $empresaRepository->find($payload['empresaId']);
         if (!$empresa) {
             return $this->json(['message' => 'La empresa indicada no existe.'], Response::HTTP_NOT_FOUND);
+        }
+        $eligibilityResponse = $this->validateCompanyForConvenio($empresa);
+        if ($eligibilityResponse instanceof JsonResponse) {
+            return $eligibilityResponse;
         }
 
         $fechaInicio = $this->parseDate($payload['fechaInicio'], 'fechaInicio');
@@ -262,7 +269,16 @@ final class ConvenioController extends AbstractController
             if (!$empresa) {
                 return $this->json(['message' => 'La empresa indicada no existe.'], Response::HTTP_NOT_FOUND);
             }
+            $eligibilityResponse = $this->validateCompanyForConvenio($empresa);
+            if ($eligibilityResponse instanceof JsonResponse) {
+                return $eligibilityResponse;
+            }
             $convenio->setEmpresa($empresa);
+        }
+
+        $eligibilityResponse = $this->validateCompanyForConvenio($convenio->getEmpresa());
+        if ($eligibilityResponse instanceof JsonResponse) {
+            return $eligibilityResponse;
         }
 
         if (array_key_exists('titulo', $payload)) {
@@ -874,6 +890,17 @@ final class ConvenioController extends AbstractController
         }
 
         $current->setActive(true);
+    }
+
+    private function validateCompanyForConvenio(EmpresaColaboradora $empresa): ?JsonResponse
+    {
+        if (\in_array($empresa->getEstadoColaboracion(), self::ELIGIBLE_COMPANY_STATES, true)) {
+            return null;
+        }
+
+        return $this->json([
+            'message' => 'Solo se pueden registrar o actualizar convenios sobre empresas activas y validadas.',
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     private function getUserIdentifier(): string

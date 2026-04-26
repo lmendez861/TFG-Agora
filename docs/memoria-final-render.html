@@ -238,6 +238,7 @@
 <li class="toc-level-2"><a href="#memoria-final-justificacion-tecnica-de-la-separacion">Justificacion tecnica de la separacion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-modelo-de-datos">Modelo de datos</a></li>
 <li class="toc-level-2"><a href="#memoria-final-seguridad-y-control-de-acceso">Seguridad y control de acceso</a></li>
+<li class="toc-level-2"><a href="#memoria-final-flujo-de-trabajo-operativo">Flujo de trabajo operativo</a></li>
 <li class="toc-level-2"><a href="#memoria-final-diseno-de-interfaz">Diseno de interfaz</a></li>
 <li class="toc-level-1"><a href="#memoria-final-implementacion">Implementacion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-backend-symfony">Backend Symfony</a></li>
@@ -249,6 +250,7 @@
 <li class="toc-level-2"><a href="#memoria-final-requisitos-del-entorno">Requisitos del entorno</a></li>
 <li class="toc-level-2"><a href="#memoria-final-configuracion">Configuracion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-publicacion-integrada">Publicacion integrada</a></li>
+<li class="toc-level-2"><a href="#memoria-final-acceso-para-evaluacion-externa">Acceso para evaluacion externa</a></li>
 <li class="toc-level-1"><a href="#memoria-final-pruebas-y-validacion">Pruebas y validacion</a></li>
 <li class="toc-level-2"><a href="#memoria-final-validaciones-ejecutadas">Validaciones ejecutadas</a></li>
 <li class="toc-level-2"><a href="#memoria-final-resultados-observados">Resultados observados</a></li>
@@ -391,6 +393,10 @@
 <h2 id="memoria-final-seguridad-y-control-de-acceso">Seguridad y control de acceso</h2>
 <p>La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de roles y una combinacion de <code>json_login</code> y sesion de navegador. El sistema diferencia perfiles de administracion, coordinacion, documentacion, monitorizacion y auditoria. Las operaciones sensibles del monitor, como levantar o detener el acceso externo, requieren MFA por correo. Ademas, las acciones relevantes se registran mediante auditoria interna.</p>
 <p>El portal externo dispone de un flujo independiente: alta publica, verificacion por correo, aprobacion interna, activacion de cuenta, login persistente y recuperacion de contrasena. Esta separacion evita mezclar el acceso corporativo externo con las credenciales del panel interno.</p>
+<h2 id="memoria-final-flujo-de-trabajo-operativo">Flujo de trabajo operativo</h2>
+<p>La plataforma no se ha planteado como una suma de CRUD aislados, sino como un flujo de negocio secuencial. El recorrido recomendado comienza en el portal externo: la empresa registra una solicitud, valida su correo y espera revision interna. Ese paso no crea automaticamente una operativa academica completa, sino una entrada controlada para que el centro revise la informacion antes de activar la relacion.</p>
+<p>Una vez dentro del portal interno, el primer paso correcto es revisar la solicitud o crear manualmente una empresa ya contrastada. Solo cuando la empresa queda en estado activo tiene sentido registrar un convenio. El convenio sigue su propio ciclo de maduracion, desde borrador hasta firmado o vigente. Sobre esa base ya validada se registran estudiantes y tutores, y solo entonces se planifica la asignacion.</p>
+<p>Este orden no es solo recomendable desde el punto de vista funcional, sino que tambien se ha reforzado a nivel de aplicacion. En la revision final se ha ajustado el flujo para que los convenios se creen sobre empresas activas y para que las asignaciones solo puedan registrarse sobre empresas activas y convenios firmados, vigentes o en renovacion. De este modo se evita introducir practicas sobre datos todavia pendientes de validar y se mantiene una coherencia real entre solicitud, empresa, convenio y asignacion.</p>
 <h2 id="memoria-final-diseno-de-interfaz">Diseno de interfaz</h2>
 <p>El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, bandeja unificada, perfil y monitor privado. La interfaz combina tablas, tarjetas, paneles de detalle, formularios modales, workflows, documentos versionados y exportaciones CSV. El portal externo se organiza en un recorrido coherente entre inicio, registro, correo, estado, acceso empresa, recursos y panel privado. La documentacion y el monitor se mantienen separados del flujo principal para distinguir claramente uso funcional y operacion tecnica.</p>
 <p>Dentro del portal interno, los KPI del dashboard no se usan como un recurso estetico, sino como un mecanismo de supervision rapida. Su objetivo es ofrecer al personal del centro una lectura inmediata del estado operativo: volumen de empresas, convenios, estudiantes, asignaciones y actividad pendiente. Esta capa resumida reduce navegacion innecesaria, ayuda a detectar incidencias o cuellos de botella y sirve como punto de entrada a los modulos con mayor carga de gestion. En otras palabras, el dashboard no sustituye a los listados detallados, pero si actua como cuadro de mando para priorizar acciones.</p>
@@ -403,7 +409,7 @@
 <h2 id="memoria-final-backend-symfony">Backend Symfony</h2>
 <p>El backend concentra controladores REST para empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, mensajes, portal de empresa, MFA, acceso publico y monitorizacion. La persistencia se resuelve con Doctrine ORM y SQLite en desarrollo, con configuracion adaptable a otros motores. La logica documental se ha centralizado para validar tipos de archivo, almacenar binarios, versionar documentos activos y permitir restauraciones controladas.</p>
 <h2 id="memoria-final-portal-interno">Portal interno</h2>
-<p>El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo.</p>
+<p>El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo. Para reforzar la coherencia del proceso, la campana superior concentra tanto las solicitudes pendientes como el acceso a la bandeja, mientras que los formularios filtran y validan las entidades operativas antes de permitir convenios o asignaciones.</p>
 <h2 id="memoria-final-portal-externo">Portal externo</h2>
 <p>El portal externo ofrece dos momentos de uso claramente diferenciados. En el primero, una empresa interesada completa el alta, revisa el correo de verificacion y consulta el estado de la solicitud. En el segundo, tras la aprobacion del centro, la empresa activa su cuenta, puede iniciar sesion, solicitar recuperacion de contrasena, revisar convenios y asignaciones asociados, descargar documentos y mantener la conversacion con el centro desde un panel privado.</p>
 <h2 id="memoria-final-seguimientos-y-evaluacion-final">Seguimientos y evaluacion final</h2>
@@ -418,11 +424,21 @@
 <p>En la practica, la autenticacion interna combina configuracion de frontend y backend. El frontend interno lee desde <code>import.meta.env</code> las variables <code>VITE_API_BASE_URL</code>, <code>VITE_API_USERNAME</code> y <code>VITE_API_PASSWORD</code>, que determinan contra que API se conecta y con que credenciales iniciales realiza el acceso. A partir de ahi, el backend Symfony resuelve la autenticacion real mediante <code>json_login</code>, genera la sesion del navegador y aplica los permisos correspondientes sobre las rutas protegidas. De forma paralela, el backend utiliza su propio <code>.env.local</code> para base de datos, correo saliente, remitente, MFA y resto de configuracion operativa. Esta separacion permite cambiar credenciales o infraestructura sin modificar el codigo fuente.</p>
 <h2 id="memoria-final-publicacion-integrada">Publicacion integrada</h2>
 <p>La entrega se prepara en modo integrado bajo una unica URL local: <code>/app</code> para el portal interno, <code>/externo</code> para el portal externo, <code>/documentacion</code> para la guia funcional y <code>/monitor</code> para la supervision tecnica. El acceso publico temporal se habilita mediante <code>cloudflared</code>, controlado desde el monitor privado. Esta organizacion simplifica la demostracion y evita depender de multiples servidores visibles durante la defensa.</p>
+<h2 id="memoria-final-acceso-para-evaluacion-externa">Acceso para evaluacion externa</h2>
+<p>Para que la profesora pueda probar la aplicacion no es necesario que instale PHP, Composer, Node.js ni npm si el entorno de demostracion esta ya levantado en el equipo del alumno. En ese caso se comparte una URL publica temporal generada con <code>cloudflared</code>, con el formato <code>https://...trycloudflare.com</code>, y desde esa misma direccion se accede a los cuatro espacios de la entrega:</p>
+<ul>
+<li><code>URL/app</code> para el panel interno;</li>
+<li><code>URL/externo</code> para el portal de empresa;</li>
+<li><code>URL/documentacion</code> para la guia funcional;</li>
+<li><code>URL/monitor</code> para la supervision tecnica, protegida con autenticacion y MFA.</li>
+</ul>
+<p>La profesora solo tendria que abrir la URL vigente en el navegador y usar las credenciales demo del panel interno cuando quiera revisar la parte privada. La instalacion local queda como alternativa de respaldo para reproducir el proyecto desde el repositorio, pero no es el camino previsto para una prueba rapida durante la evaluacion. La limitacion principal de este metodo es que la URL temporal solo funciona mientras el equipo local, el backend y el tunel publico permanecen activos.</p>
 <h1 id="memoria-final-pruebas-y-validacion">Pruebas y validacion</h1>
 <h2 id="memoria-final-validaciones-ejecutadas">Validaciones ejecutadas</h2>
 <p>La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas y revisiones funcionales de correo, monitorizacion, documentacion, mensajeria y exportacion CSV.</p>
 <h2 id="memoria-final-resultados-observados">Resultados observados</h2>
 <p>La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles desde la URL local integrada. El flujo de empresa cubre registro, verificacion, revision interna, activacion de cuenta y acceso posterior. El monitor privado valida el estado de servicios, el correo saliente, la documentacion previsualizable y el control del acceso publico con MFA.</p>
+<p>De cara a la entrega, los artefactos de apoyo a la defensa, como el video demostrativo y la muestra CSV/Excel utilizada para explicar la exportacion, se han regenerado con datos anonimizados. Esto permite apoyar la exposicion con evidencias reales del sistema sin exponer direcciones de correo u otros datos personales innecesarios.</p>
 <h2 id="memoria-final-rendimiento-operativo">Rendimiento operativo</h2>
 <p>Durante la fase final se ha optimizado el endpoint <code>/api/bootstrap</code>, que era el principal cuello de botella percibido al cargar el portal interno. La solucion aplicada cachea un snapshot del panel y lo invalida cuando cambian las entidades que alimentan dashboard y listados principales. Esta mejora reduce el trabajo inicial del frontend y evita refrescos innecesarios al navegar por modulos operativos.</p>
 <h2 id="memoria-final-estado-tecnico-de-validacion">Estado tecnico de validacion</h2>
@@ -486,6 +502,15 @@
 <li>Empresa externa: uso del portal publico para registrar su interes, verificar el correo, activar cuenta y comunicarse con el centro.</li>
 </ul>
 <h2 id="anexo-a-manual-usuario-3-acceso-al-sistema">3. Acceso al sistema</h2>
+<h3 id="anexo-a-manual-usuario-3-0-acceso-externo-para-evaluacion">3.0 Acceso externo para evaluacion</h3>
+<p>Durante la evaluacion, si el alumno mantiene activo el entorno de demostracion, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica temporal generada con <code>cloudflared</code>, por ejemplo <code>https://...trycloudflare.com</code>, y sobre esa misma URL abrir:</p>
+<ul>
+<li><code>/app</code> para el panel interno;</li>
+<li><code>/externo</code> para el portal de empresa;</li>
+<li><code>/documentacion</code> para la guia funcional;</li>
+<li><code>/monitor</code> para el monitor privado.</li>
+</ul>
+<p>Este acceso remoto depende de que el equipo local del alumno, el servidor Symfony y el tunel publico sigan levantados. Si el tunel se cierra, la URL deja de ser valida y hay que generar una nueva. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.</p>
 <h3 id="anexo-a-manual-usuario-3-1-panel-interno-integrado">3.1 Panel interno integrado</h3>
 <ul>
 <li>URL: <code>http://127.0.0.1:8000/app</code></li>
@@ -688,6 +713,9 @@ npm run build:backend</code></pre>
 <li><code>http://127.0.0.1:8000/documentacion</code></li>
 <li><code>http://127.0.0.1:8000/monitor</code></li>
 </ul>
+<h3 id="anexo-b-manual-tecnico-3-5-prueba-remota-sin-instalacion-local">3.5 Prueba remota sin instalacion local</h3>
+<p>Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si el alumno mantiene la demo activa. El alumno ejecuta <code>start-demo-public.bat</code>, espera a que <code>cloudflared</code> muestre una URL <code>https://...trycloudflare.com</code> y comparte esa direccion. La evaluadora accede desde el navegador a <code>URL/app</code>, <code>URL/externo</code>, <code>URL/documentacion</code> o <code>URL/monitor</code>.</p>
+<p>Este modo no sustituye al despliegue permanente: depende del equipo local, del backend en ejecucion y del tunel temporal. Si cualquiera de esos elementos se detiene, la URL deja de responder y debe levantarse de nuevo.</p>
 <h2 id="anexo-b-manual-tecnico-4-variables-de-entorno-relevantes">4. Variables de entorno relevantes</h2>
 <h3 id="anexo-b-manual-tecnico-4-1-backend">4.1 Backend</h3>
 <ul>
@@ -869,6 +897,7 @@ npm run build:backend</code></pre>
 <li>compilacion del portal externo con <code>npm run build:backend</code>;</li>
 <li>validacion de rutas integradas bajo <code>/app</code>, <code>/externo</code>, <code>/documentacion</code> y <code>/monitor</code>;</li>
 <li>comprobacion funcional de exportacion CSV desde dashboard y modulos principales;</li>
+<li>regeneracion del video de demo y de la muestra CSV/Excel con datos anonimizados para la entrega;</li>
 <li>verificacion del flujo de registro, verificacion, activacion y acceso de empresa;</li>
 <li>comprobacion del control MFA y del acceso publico temporal desde el monitor privado;</li>
 <li>revisiones visuales de las capturas utilizadas en PDF y DOCX.</li>

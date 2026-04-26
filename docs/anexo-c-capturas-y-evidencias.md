@@ -28,6 +28,7 @@ Las evidencias tecnicas que acompanan a la memoria y a la defensa se apoyan en e
 - compilacion del portal externo con `npm run build:backend`;
 - validacion de rutas integradas bajo `/app`, `/externo`, `/documentacion` y `/monitor`;
 - comprobacion funcional de exportacion CSV desde dashboard y modulos principales;
+- regeneracion del video de demo y de la muestra CSV/Excel con datos anonimizados para la entrega;
 - verificacion del flujo de registro, verificacion, activacion y acceso de empresa;
 - comprobacion del control MFA y del acceso publico temporal desde el monitor privado;
 - revisiones visuales de las capturas utilizadas en PDF y DOCX.

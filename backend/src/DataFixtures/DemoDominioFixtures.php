@@ -209,7 +209,7 @@ class DemoDominioFixtures extends Fixture
             ->setTelefono('960123456')
             ->setEmail('info@saludconectada.es')
             ->setWeb('https://saludconectada.es')
-            ->setEstadoColaboracion('pendiente_revision')
+            ->setEstadoColaboracion('activa')
             ->setFechaAlta(new \DateTimeImmutable('2024-03-20'))
             ->setObservaciones('Necesitan perfilar plan de acogida antes de la firma definitiva.');
 
@@ -236,7 +236,7 @@ class DemoDominioFixtures extends Fixture
             ->setDescripcion('Proyecto para diseñar dashboards de seguimiento clínico en tiempo real.')
             ->setFechaInicio(new \DateTimeImmutable('2024-11-01'))
             ->setTipo('Prácticas extracurriculares')
-            ->setEstado('borrador')
+            ->setEstado('firmado')
             ->setObservaciones('A falta de firma por parte del tutor académico.')
             ->setEmpresa($empresaSalud);
         $empresaSalud->addConvenio($convenioSalud);
@@ -257,13 +257,14 @@ class DemoDominioFixtures extends Fixture
 
         $alertaSalud = (new ConvenioAlerta())
             ->setConvenio($convenioSalud)
-            ->setMensaje('Pendiente de firma por parte de tutor académico.')
+            ->setMensaje('Convenio firmado. Pendiente de programar la primera asignacion.')
             ->setNivel('info');
         $manager->persist($alertaSalud);
 
         $workflowSalud = [
             (new ConvenioWorkflowEvento())->setConvenio($convenioSalud)->setEstado('borrador'),
             (new ConvenioWorkflowEvento())->setConvenio($convenioSalud)->setEstado('revisado'),
+            (new ConvenioWorkflowEvento())->setConvenio($convenioSalud)->setEstado('firmado'),
         ];
         foreach ($workflowSalud as $evento) {
             $manager->persist($evento);

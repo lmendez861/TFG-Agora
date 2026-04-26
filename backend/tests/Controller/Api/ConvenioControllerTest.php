@@ -178,6 +178,32 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testCrearConvenioRechazaEmpresaNoActiva(): void
+    {
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['email' => 'contacto@innovar.es']);
+
+        self::assertNotNull($empresa);
+        $empresa->setEstadoColaboracion('pendiente_revision');
+        $this->entityManager->flush();
+
+        $this->client->request(
+            'POST',
+            '/api/convenios',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'empresaId' => $empresa->getId(),
+                'titulo' => 'Convenio bloqueado',
+                'tipo' => 'Practicas curriculares',
+                'estado' => 'borrador',
+                'fechaInicio' => '2025-02-01',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
     public function testExtrasIncluyeChecklistDocumentosYAlertas(): void
     {
         $convenio = $this->entityManager

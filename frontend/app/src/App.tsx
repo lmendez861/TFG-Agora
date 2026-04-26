@@ -1557,6 +1557,16 @@ export default function App() {
   }, [authResolved, isDocumentationRoute, loadData]);
 
   useEffect(() => {
+    if (!me) {
+      return;
+    }
+
+    refreshInbox({ silent: true }).catch(() => {
+      // errores gestionados dentro
+    });
+  }, [me, refreshInbox]);
+
+  useEffect(() => {
     if (!me || !isBandejaRoute) {
       return;
     }
@@ -5445,13 +5455,6 @@ const selectedConvenio = useMemo(() => {
           <button
             type="button"
             className="button button--ghost button--sm"
-            onClick={() => handleOpenInbox()}
-          >
-            Abrir bandeja
-          </button>
-          <button
-            type="button"
-            className="button button--ghost button--sm"
             onClick={handleExportSolicitudes}
             disabled={empresaSolicitudes.length === 0}
           >
@@ -5522,13 +5525,6 @@ const selectedConvenio = useMemo(() => {
                   disabled={isProcessing}
                 >
                   Rechazar
-                </button>
-                <button
-                  type="button"
-                  className="button button--ghost button--sm"
-                  onClick={() => handleOpenInbox(solicitud.id)}
-                >
-                  Abrir bandeja
                 </button>
               </div>
             </article>
@@ -5630,7 +5626,6 @@ const selectedConvenio = useMemo(() => {
         <article className="profile-card">
           <h3>Accesos rapidos</h3>
           <ul className="profile-list">
-            <li><Link to="/bandeja">Abrir bandeja de mensajes</Link></li>
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
@@ -5668,6 +5663,8 @@ const selectedConvenio = useMemo(() => {
       }}
     />
   );
+
+  const notificationCount = empresaSolicitudes.length > 0 ? empresaSolicitudes.length : empresaInboxThreads.length;
 
   if (isDocumentationRoute) {
     return (
@@ -5728,17 +5725,17 @@ const selectedConvenio = useMemo(() => {
               className="notification-bell"
               onClick={toggleNotifications}
               aria-expanded={notificationsOpen}
-              aria-label="Solicitudes pendientes"
+              aria-label="Solicitudes y bandeja de empresas"
             >
               <span className="notification-bell__icon">&#128276;</span>
-              {empresaSolicitudes.length > 0 && (
-                <span className="notification-bell__badge">{empresaSolicitudes.length}</span>
+              {notificationCount > 0 && (
+                <span className="notification-bell__badge">{notificationCount}</span>
               )}
             </button>
             {notificationsOpen && (
               <div className="notification-dropdown">
                 <div className="notification-dropdown__header">
-                  <span>Solicitudes pendientes</span>
+                  <span>Solicitudes y mensajes</span>
                   <button
                     type="button"
                     className="link link--muted"
@@ -5748,6 +5745,9 @@ const selectedConvenio = useMemo(() => {
                     {loadingSolicitudes ? 'Actualizando...' : 'Actualizar'}
                   </button>
                 </div>
+                <p className="notification-dropdown__summary">
+                  {empresaSolicitudes.length} solicitudes pendientes y {empresaInboxThreads.length} conversaciones activas.
+                </p>
                 <div className="notification-dropdown__list">
                   {loadingSolicitudes ? (
                     <p className="detail-placeholder">Cargando solicitudes...</p>
@@ -5778,28 +5778,14 @@ const selectedConvenio = useMemo(() => {
                     className="button button--ghost button--sm"
                     onClick={() => handleOpenInbox()}
                   >
-                    Abrir bandeja
+                    Abrir mensajes
                   </button>
                 </div>
               </div>
             )}
           </div>
-          <Link
-            to="/bandeja"
-            className="notification-bell notification-bell--link"
-            onClick={closeNotifications}
-            aria-label="Abrir bandeja de mensajes"
-          >
-            <span className="notification-bell__icon">&#9993;</span>
-            {empresaInboxThreads.length > 0 && (
-              <span className="notification-bell__badge">{empresaInboxThreads.length}</span>
-            )}
-          </Link>
           <div className="topbar__auth">
             <span className="app__meta">Sesion: {me?.username ?? 'admin'}</span>
-            <Link to="/bandeja" className="button button--ghost button--sm" onClick={closeNotifications}>
-              Bandeja
-            </Link>
             <Link to="/perfil" className="topbar__profile" onClick={closeNotifications}>
               <span className="topbar__profile-icon">&#128100;</span>
               <span className="topbar__profile-label">Perfil</span>
@@ -5885,14 +5871,6 @@ const selectedConvenio = useMemo(() => {
                   accent: 'cyan',
                 },
                 {
-                  id: 'bandeja',
-                  label: 'Bandeja',
-                  total: empresaSolicitudes.length,
-                  description: 'Mensajes con empresas',
-                  detail: 'Centraliza conversaciones y respuestas desde una unica vista.',
-                  accent: 'amber',
-                },
-                {
                   id: 'documentacion',
                   label: 'Documentacion',
                   total: 3,
@@ -5940,13 +5918,6 @@ const selectedConvenio = useMemo(() => {
                   total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
                   description: 'Equipos academicos y de empresa con filtros.',
                   path: '/tutores',
-                },
-                {
-                  id: 'bandeja',
-                  label: 'Bandeja',
-                  total: empresaSolicitudes.length,
-                  description: 'Inbox central para mensajes y seguimiento con empresas.',
-                  path: '/bandeja',
                 },
               ]}
               studentPreview={studentPreview}

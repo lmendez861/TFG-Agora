@@ -44,7 +44,7 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
 
         $salud = $repo->findOneBy(['nombre' => 'Salud Conectada S.L.']);
         self::assertNotNull($salud);
-        self::assertSame('pendiente_revision', $salud->getEstadoColaboracion());
+        self::assertSame('activa', $salud->getEstadoColaboracion());
         self::assertCount(1, $salud->getContactos());
         self::assertCount(1, $salud->getTutoresProfesionales());
         self::assertCount(1, $salud->getConvenios());

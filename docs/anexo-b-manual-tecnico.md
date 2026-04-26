@@ -69,6 +69,12 @@ Con las builds generadas, Symfony sirve:
 - `http://127.0.0.1:8000/documentacion`
 - `http://127.0.0.1:8000/monitor`
 
+### 3.5 Prueba remota sin instalacion local
+
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si el alumno mantiene la demo activa. El alumno ejecuta `start-demo-public.bat`, espera a que `cloudflared` muestre una URL `https://...trycloudflare.com` y comparte esa direccion. La evaluadora accede desde el navegador a `URL/app`, `URL/externo`, `URL/documentacion` o `URL/monitor`.
+
+Este modo no sustituye al despliegue permanente: depende del equipo local, del backend en ejecucion y del tunel temporal. Si cualquiera de esos elementos se detiene, la URL deja de responder y debe levantarse de nuevo.
+
 ## 4. Variables de entorno relevantes
 
 ### 4.1 Backend

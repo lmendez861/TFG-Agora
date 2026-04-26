@@ -3,6 +3,8 @@
 namespace App\Controller\Api;
 
 use App\Entity\AsignacionPractica;
+use App\Entity\Convenio;
+use App\Entity\EmpresaColaboradora;
 use App\Entity\EvaluacionFinal;
 use App\Entity\Seguimiento;
 use App\Repository\AsignacionPracticaRepository;
@@ -40,6 +42,8 @@ final class AsignacionController extends AbstractController
     private const SEGUIMIENTO_TIPOS = ['reunion', 'visita', 'seguimiento', 'incidencia', 'evaluacion'];
     private const SEGUIMIENTO_ESTADOS = ['abierto', 'cerrado'];
     private const EVALUACION_ESTADOS = ['borrador', 'cerrada'];
+    private const ELIGIBLE_COMPANY_STATES = ['activa'];
+    private const ELIGIBLE_CONVENIO_STATES = ['firmado', 'vigente', 'renovacion'];
     private const DOCUMENT_TYPE_EXTENSIONS = [
         'PDF' => ['pdf'],
         'WORD' => ['doc', 'docx'],
@@ -725,7 +729,18 @@ final class AsignacionController extends AbstractController
             if (!$empresa) {
                 return $this->json(['message' => 'La empresa indicada no existe.'], Response::HTTP_NOT_FOUND);
             }
+            $eligibilityResponse = $this->validateCompanyForAssignment($empresa);
+            if ($eligibilityResponse instanceof JsonResponse) {
+                return $eligibilityResponse;
+            }
             $asignacion->setEmpresa($empresa);
+        }
+
+        if ($empresa) {
+            $eligibilityResponse = $this->validateCompanyForAssignment($empresa);
+            if ($eligibilityResponse instanceof JsonResponse) {
+                return $eligibilityResponse;
+            }
         }
 
         if (array_key_exists('estudianteId', $payload) || $asignacion->getEstudiante() === null) {
@@ -743,6 +758,10 @@ final class AsignacionController extends AbstractController
             }
             if ($empresa && $convenio->getEmpresa()->getId() !== $empresa->getId()) {
                 return $this->json(['message' => 'El convenio seleccionado no pertenece a la empresa indicada.'], Response::HTTP_BAD_REQUEST);
+            }
+            $eligibilityResponse = $this->validateConvenioForAssignment($convenio);
+            if ($eligibilityResponse instanceof JsonResponse) {
+                return $eligibilityResponse;
             }
             $asignacion->setConvenio($convenio);
         }
@@ -816,6 +835,10 @@ final class AsignacionController extends AbstractController
         }
 
         $convenio = $asignacion->getConvenio();
+        $eligibilityResponse = $this->validateConvenioForAssignment($convenio);
+        if ($eligibilityResponse instanceof JsonResponse) {
+            return $eligibilityResponse;
+        }
         $convenioFechaFin = $convenio->getFechaFin();
         if ($asignacion->getFechaInicio() < $convenio->getFechaInicio()) {
             return $this->json(['message' => 'La fecha de inicio de la asignacion no puede ser anterior al inicio del convenio.'], Response::HTTP_BAD_REQUEST);
@@ -834,6 +857,28 @@ final class AsignacionController extends AbstractController
             'estado' => $asignacion->getEstado(),
             'modalidad' => $asignacion->getModalidad(),
         ]];
+    }
+
+    private function validateCompanyForAssignment(EmpresaColaboradora $empresa): ?JsonResponse
+    {
+        if (\in_array($empresa->getEstadoColaboracion(), self::ELIGIBLE_COMPANY_STATES, true)) {
+            return null;
+        }
+
+        return $this->json([
+            'message' => 'Solo se pueden planificar asignaciones sobre empresas activas y validadas.',
+        ], Response::HTTP_BAD_REQUEST);
+    }
+
+    private function validateConvenioForAssignment(Convenio $convenio): ?JsonResponse
+    {
+        if (\in_array($convenio->getEstado(), self::ELIGIBLE_CONVENIO_STATES, true)) {
+            return null;
+        }
+
+        return $this->json([
+            'message' => 'Solo se pueden planificar asignaciones sobre convenios firmados, vigentes o en renovacion.',
+        ], Response::HTTP_BAD_REQUEST);
     }
 
     private function attachSeguimientoEvidence(

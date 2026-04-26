@@ -15,6 +15,17 @@ Este anexo describe el uso funcional de la plataforma "Gestion de Empresas Colab
 
 ## 3. Acceso al sistema
 
+### 3.0 Acceso externo para evaluacion
+
+Durante la evaluacion, si el alumno mantiene activo el entorno de demostracion, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica temporal generada con `cloudflared`, por ejemplo `https://...trycloudflare.com`, y sobre esa misma URL abrir:
+
+- `/app` para el panel interno;
+- `/externo` para el portal de empresa;
+- `/documentacion` para la guia funcional;
+- `/monitor` para el monitor privado.
+
+Este acceso remoto depende de que el equipo local del alumno, el servidor Symfony y el tunel publico sigan levantados. Si el tunel se cierra, la URL deja de ser valida y hay que generar una nueva. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.
+
 ### 3.1 Panel interno integrado
 
 - URL: `http://127.0.0.1:8000/app`

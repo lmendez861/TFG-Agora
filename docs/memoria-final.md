@@ -116,6 +116,14 @@ La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de
 
 El portal externo dispone de un flujo independiente: alta publica, verificacion por correo, aprobacion interna, activacion de cuenta, login persistente y recuperacion de contrasena. Esta separacion evita mezclar el acceso corporativo externo con las credenciales del panel interno.
 
+## Flujo de trabajo operativo
+
+La plataforma no se ha planteado como una suma de CRUD aislados, sino como un flujo de negocio secuencial. El recorrido recomendado comienza en el portal externo: la empresa registra una solicitud, valida su correo y espera revision interna. Ese paso no crea automaticamente una operativa academica completa, sino una entrada controlada para que el centro revise la informacion antes de activar la relacion.
+
+Una vez dentro del portal interno, el primer paso correcto es revisar la solicitud o crear manualmente una empresa ya contrastada. Solo cuando la empresa queda en estado activo tiene sentido registrar un convenio. El convenio sigue su propio ciclo de maduracion, desde borrador hasta firmado o vigente. Sobre esa base ya validada se registran estudiantes y tutores, y solo entonces se planifica la asignacion.
+
+Este orden no es solo recomendable desde el punto de vista funcional, sino que tambien se ha reforzado a nivel de aplicacion. En la revision final se ha ajustado el flujo para que los convenios se creen sobre empresas activas y para que las asignaciones solo puedan registrarse sobre empresas activas y convenios firmados, vigentes o en renovacion. De este modo se evita introducir practicas sobre datos todavia pendientes de validar y se mantiene una coherencia real entre solicitud, empresa, convenio y asignacion.
+
 ## Diseno de interfaz
 
 El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, bandeja unificada, perfil y monitor privado. La interfaz combina tablas, tarjetas, paneles de detalle, formularios modales, workflows, documentos versionados y exportaciones CSV. El portal externo se organiza en un recorrido coherente entre inicio, registro, correo, estado, acceso empresa, recursos y panel privado. La documentacion y el monitor se mantienen separados del flujo principal para distinguir claramente uso funcional y operacion tecnica.
@@ -140,7 +148,7 @@ El backend concentra controladores REST para empresas, convenios, estudiantes, a
 
 ## Portal interno
 
-El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo.
+El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo. Para reforzar la coherencia del proceso, la campana superior concentra tanto las solicitudes pendientes como el acceso a la bandeja, mientras que los formularios filtran y validan las entidades operativas antes de permitir convenios o asignaciones.
 
 ## Portal externo
 
@@ -170,6 +178,17 @@ En la practica, la autenticacion interna combina configuracion de frontend y bac
 
 La entrega se prepara en modo integrado bajo una unica URL local: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/monitor` para la supervision tecnica. El acceso publico temporal se habilita mediante `cloudflared`, controlado desde el monitor privado. Esta organizacion simplifica la demostracion y evita depender de multiples servidores visibles durante la defensa.
 
+## Acceso para evaluacion externa
+
+Para que la profesora pueda probar la aplicacion no es necesario que instale PHP, Composer, Node.js ni npm si el entorno de demostracion esta ya levantado en el equipo del alumno. En ese caso se comparte una URL publica temporal generada con `cloudflared`, con el formato `https://...trycloudflare.com`, y desde esa misma direccion se accede a los cuatro espacios de la entrega:
+
+- `URL/app` para el panel interno;
+- `URL/externo` para el portal de empresa;
+- `URL/documentacion` para la guia funcional;
+- `URL/monitor` para la supervision tecnica, protegida con autenticacion y MFA.
+
+La profesora solo tendria que abrir la URL vigente en el navegador y usar las credenciales demo del panel interno cuando quiera revisar la parte privada. La instalacion local queda como alternativa de respaldo para reproducir el proyecto desde el repositorio, pero no es el camino previsto para una prueba rapida durante la evaluacion. La limitacion principal de este metodo es que la URL temporal solo funciona mientras el equipo local, el backend y el tunel publico permanecen activos.
+
 # Pruebas y validacion
 
 ## Validaciones ejecutadas
@@ -179,6 +198,8 @@ La validacion del proyecto combina compilacion de ambos frontends, pruebas autom
 ## Resultados observados
 
 La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles desde la URL local integrada. El flujo de empresa cubre registro, verificacion, revision interna, activacion de cuenta y acceso posterior. El monitor privado valida el estado de servicios, el correo saliente, la documentacion previsualizable y el control del acceso publico con MFA.
+
+De cara a la entrega, los artefactos de apoyo a la defensa, como el video demostrativo y la muestra CSV/Excel utilizada para explicar la exportacion, se han regenerado con datos anonimizados. Esto permite apoyar la exposicion con evidencias reales del sistema sin exponer direcciones de correo u otros datos personales innecesarios.
 
 ## Rendimiento operativo
 

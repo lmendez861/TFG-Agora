@@ -10,23 +10,28 @@ trait DemoFixtureLoaderTrait
 {
     protected function reloadDemoFixtures(EntityManagerInterface $entityManager): void
     {
-        $connection = $entityManager->getConnection();
-        $params = $connection->getParams();
-        $connection->close();
-
-        $sqlitePath = $params['path'] ?? null;
-        if (is_string($sqlitePath) && $sqlitePath !== '' && is_file($sqlitePath)) {
-            @unlink($sqlitePath);
-        }
-
         $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
 
         if ($metadata === []) {
             return;
         }
 
+        $entityManager->clear();
+        $connection = $entityManager->getConnection();
+        if (!$connection->isConnected()) {
+            $connection->connect();
+        }
+
+        while ($connection->isTransactionActive()) {
+            $connection->rollBack();
+        }
+
         $schemaTool = new SchemaTool($entityManager);
-        $schemaTool->dropSchema($metadata);
+        try {
+            $schemaTool->dropSchema($metadata);
+        } catch (\Throwable) {
+            // Si el esquema todavia no existe, se continua con la recreacion limpia.
+        }
         $schemaTool->createSchema($metadata);
 
         $fixture = new DemoDominioFixtures();

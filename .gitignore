@@ -31,7 +31,11 @@ backend/public/app/
 backend/public/externo/
 backend/var/public-access/
 tools/cloudflared.exe
+tools/config.yml
 docs/~$*.docx
+document-storage-test/
+frontend/app/test-results/
+frontend/app/playwright-report/
 
 # Variables y secretos locales
 backend/.env.local

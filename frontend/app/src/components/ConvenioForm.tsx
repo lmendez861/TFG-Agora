@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from '
 import type { EmpresaSummary } from '../types';
 
 const CONVENIO_TYPE_OPTIONS = [
-  'Prácticas curriculares',
-  'Prácticas extracurriculares',
+  'Practicas curriculares',
+  'Practicas extracurriculares',
   'FP dual',
-  'Colaboración institucional',
+  'Colaboracion institucional',
   'Proyecto aplicado',
 ];
 
@@ -21,6 +21,7 @@ const CONVENIO_STATUS_OPTIONS = [
 ];
 
 const MIN_ALLOWED_DATE = '2020-01-01';
+const ELIGIBLE_COMPANY_STATES = ['activa'];
 
 function buildMaxAllowedDate(): string {
   return `${new Date().getFullYear() + 6}-12-31`;
@@ -67,10 +68,15 @@ export function ConvenioForm({
     setLocalError(null);
   }, [initialValues]);
 
-  const empresasOrdenadas = useMemo(
-    () => [...empresas].sort((a, b) => a.nombre.localeCompare(b.nombre)),
-    [empresas],
-  );
+  const empresasOrdenadas = useMemo(() => {
+    const activeEmpresas = empresas.filter((empresa) => ELIGIBLE_COMPANY_STATES.includes(empresa.estadoColaboracion));
+    const selectedEmpresa =
+      values.empresaId && !activeEmpresas.some((empresa) => String(empresa.id) === values.empresaId)
+        ? empresas.find((empresa) => String(empresa.id) === values.empresaId) ?? null
+        : null;
+
+    return [...activeEmpresas, ...(selectedEmpresa ? [selectedEmpresa] : [])].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [empresas, values.empresaId]);
 
   const tipoOptions = useMemo(() => {
     if (values.tipo && !CONVENIO_TYPE_OPTIONS.includes(values.tipo)) {
@@ -137,14 +143,23 @@ export function ConvenioForm({
       <div className="form__grid">
         <label className="form__field">
           <span>Empresa*</span>
-          <select name="empresaId" value={values.empresaId} onChange={handleChange} required>
+          <select
+            name="empresaId"
+            value={values.empresaId}
+            onChange={handleChange}
+            required
+            disabled={empresasOrdenadas.length === 0}
+          >
             <option value="">Selecciona una empresa</option>
             {empresasOrdenadas.map((empresa) => (
               <option key={empresa.id} value={empresa.id}>
-                {empresa.nombre}
+                {empresa.nombre} {empresa.estadoColaboracion !== 'activa' ? `(${empresa.estadoColaboracion})` : ''}
               </option>
             ))}
           </select>
+          <small className="form__hint">
+            Solo se listan empresas activas y validadas para mantener el flujo correcto antes de registrar un convenio.
+          </small>
         </label>
         <label className="form__field">
           <span>Titulo*</span>

@@ -1418,8 +1418,11 @@ export default function App() {
     [mensajeDraft, pushToast, refreshInbox],
   );
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -1442,7 +1445,9 @@ export default function App() {
       setTutorAcademicosList((prev) => prev ?? []);
       setTutorProfesionalesList((prev) => prev ?? []);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
 
     refreshSolicitudes({ silent: true }).catch(() => {
@@ -1565,6 +1570,37 @@ export default function App() {
       // errores gestionados dentro
     });
   }, [me, refreshInbox]);
+
+  useEffect(() => {
+    if (!me || isDocumentationRoute || isMonitorRoute) {
+      return undefined;
+    }
+
+    const refreshSilently = () => {
+      loadData({ silent: true }).catch(() => {
+        // El error queda reflejado en el estado del panel sin interrumpir la navegacion.
+      });
+    };
+
+    const intervalId = window.setInterval(refreshSilently, 60_000);
+    const handleWindowFocus = () => {
+      refreshSilently();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshSilently();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isDocumentationRoute, isMonitorRoute, loadData, me]);
 
   useEffect(() => {
     if (!me || !isBandejaRoute) {
@@ -5716,11 +5752,6 @@ const selectedConvenio = useMemo(() => {
           <span className="topbar__badge">Panel de practicas</span>
         </div>
         <div className="topbar__actions">
-          <span className="app__meta">API: <code>{API_BASE_URL}</code></span>
-          {lastUpdated && <span className="app__meta">Sync {lastUpdated.toLocaleTimeString('es-ES')}</span>}
-          <button type="button" onClick={loadData} disabled={loading}>
-            {loading ? 'Actualizando...' : 'Sincronizar'}
-          </button>
           <div className="topbar__notifications">
             <button
               type="button"

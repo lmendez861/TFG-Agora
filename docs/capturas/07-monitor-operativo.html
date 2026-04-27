@@ -217,9 +217,10 @@
           <tr>
             <td class="meta-card">
               <h3>Entorno</h3>
-              <p>APP_ENV: dev</p>
+              <p>APP_ENV: prod</p>
+              <p>API interna: http://127.0.0.1:8000/api</p>
               <p>PHP: 8.2.12</p>
-              <p>Zona horaria: Europe/Berlin</p>
+              <p>Zona horaria: Europe/Madrid</p>
             </td>
             <td class="meta-card">
               <h3>Acceso externo</h3>
@@ -228,7 +229,7 @@
             </td>
             <td class="meta-card">
               <h3>Generado</h3>
-              <p>2026-03-23T21:07:14+01:00</p>
+              <p>2026-04-27T21:31:07+02:00</p>
               <p class="muted">Snapshot tecnico para la memoria y la defensa.</p>
             </td>
           </tr>
@@ -256,6 +257,16 @@
         <td>Build del portal disponible bajo /externo.</td>
       </tr>
       <tr>
+        <td>Correo saliente</td>
+        <td>healthy</td>
+        <td>Correo saliente preparado con Brevo.</td>
+      </tr>
+      <tr>
+        <td>MFA interno</td>
+        <td>healthy</td>
+        <td>Segundo factor listo para operaciones sensibles del monitor.</td>
+      </tr>
+      <tr>
         <td>Acceso externo</td>
         <td>warning</td>
         <td>El acceso externo esta detenido.</td>
@@ -263,7 +274,12 @@
       <tr>
         <td>Supervision automatizada</td>
         <td>healthy</td>
-        <td>Hay suites registradas para backend y frontend.</td>
+        <td>Hay suites registradas para backend, frontend y navegador.</td>
+      </tr>
+      <tr>
+        <td>Almacenamiento documental</td>
+        <td>healthy</td>
+        <td>Repositorio externo de ficheros en C:/Users/lourd/Desktop/TFG - Agora/backend/../document-storage.</td>
       </tr></tbody>
         </table>
       </section>
@@ -275,12 +291,12 @@
           <tbody>
       <tr>
         <td>Empresas</td>
-        <td>8</td>
+        <td>20</td>
         <td>Empresas colaboradoras disponibles en la base de datos.</td>
       </tr>
       <tr>
         <td>Convenios</td>
-        <td>3</td>
+        <td>4</td>
         <td>Convenios con workflow y documentos asociados.</td>
       </tr>
       <tr>
@@ -295,12 +311,12 @@
       </tr>
       <tr>
         <td>Solicitudes activas</td>
-        <td>1</td>
+        <td>12</td>
         <td>Solicitudes de empresa pendientes o verificadas por email.</td>
       </tr>
       <tr>
         <td>Documentos</td>
-        <td>15</td>
+        <td>18</td>
         <td>Adjuntos empresariales y de convenio almacenados.</td>
       </tr></tbody>
         </table>
@@ -316,6 +332,11 @@
         <td>Node test frontend</td>
         <td>healthy</td>
         <td>npm test</td>
+      </tr>
+      <tr>
+        <td>Playwright E2E</td>
+        <td>healthy</td>
+        <td>npm run test:e2e</td>
       </tr></tbody>
         </table>
       </section>

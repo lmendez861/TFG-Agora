@@ -72,6 +72,8 @@ Desde el dashboard se puede:
 - abrir accesos rapidos a las areas operativas;
 - exportar un CSV de resumen con indicadores y analitica.
 
+La sincronizacion del panel interno se realiza de forma automatica en segundo plano. En la version final no se muestra la URL tecnica de la API ni un boton de sincronizacion en el dashboard o en la barra superior; el control manual queda reservado al monitor privado, donde se usa como herramienta de supervision durante la demo tecnica.
+
 ## 6. Gestion de empresas
 
 En el modulo de empresas el usuario puede:

@@ -1072,6 +1072,7 @@ export function MonitorPage({
               <li>Generado: {formatDateTime(snapshot?.generatedAt ?? null)}</li>
               <li>Debug: {snapshot?.environment.debug ? 'Activo' : 'Desactivado'}</li>
               <li>Timezone: {snapshot?.environment.timezone ?? 'Sin dato'}</li>
+              <li>API interna: {apiBaseUrl}</li>
               <li>Solicitudes visibles: {pendingSolicitudes}</li>
             </ul>
           </div>

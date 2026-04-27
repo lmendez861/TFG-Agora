@@ -256,7 +256,7 @@ async function buildDashboardSnapshot() {
         <p>Vista general del panel interno con KPI, accesos rapidos y exportacion CSV del resumen operativo.</p>
         <div class="cta-row">
           <div class="cta cta--primary">Exportar CSV</div>
-          <div class="cta cta--secondary">Sincronizar datos</div>
+          <div class="cta cta--secondary">Actualizacion automatica</div>
         </div>
       </section>
       <section class="section">
@@ -443,6 +443,7 @@ async function buildMonitorSnapshot() {
             <td class="meta-card">
               <h3>Entorno</h3>
               <p>APP_ENV: ${monitor.environment.appEnv}</p>
+              <p>API interna: ${API_BASE}</p>
               <p>PHP: ${monitor.environment.phpVersion}</p>
               <p>Zona horaria: ${monitor.environment.timezone}</p>
             </td>

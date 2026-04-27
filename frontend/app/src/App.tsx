@@ -3102,7 +3102,7 @@ const selectedConvenio = useMemo(() => {
                 (empresaDocs[empresa.id] ?? []).map((doc) => (
                   <div key={doc.id} className="empresa-document">
                     <div>
-                      <strong>{doc.name}</strong>
+                      <strong title={doc.name}>{doc.name}</strong>
                       <small>
                         {doc.type ?? 'Documento'} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
                         {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
@@ -3179,6 +3179,7 @@ const selectedConvenio = useMemo(() => {
                   value={empresaDocName}
                   onChange={(e) => setEmpresaDocName(e.target.value)}
                   placeholder="Ficha de riesgos"
+                  maxLength={120}
                   required
                 />
               </label>
@@ -4344,7 +4345,7 @@ const selectedConvenio = useMemo(() => {
                       <header>
                         <div>
                           <p className="module-page__eyebrow">Asignaciones</p>
-                          <h4>Talento vinculado</h4>el
+                          <h4>Talento vinculado</h4>
                         </div>
                         <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/asignaciones')}>
                           Abrir pipeline
@@ -4691,7 +4692,7 @@ const selectedConvenio = useMemo(() => {
                         documents.map((doc) => (
                           <div key={doc.id} className="convenio-document">
                             <div>
-                              <strong>{doc.name}</strong>
+                              <strong title={doc.name}>{doc.name}</strong>
                               <small>
                                 {doc.type} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
                                 {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
@@ -4751,6 +4752,7 @@ const selectedConvenio = useMemo(() => {
                           value={documentName}
                           onChange={(event) => setDocumentName(event.target.value)}
                           placeholder="Acta renovacin"
+                          maxLength={120}
                           required
                         />
                       </label>

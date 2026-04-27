@@ -31,6 +31,7 @@
   display: grid;
   grid-template-columns: 220px 1fr;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .sidebar {
@@ -89,6 +90,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .topbar {
@@ -127,12 +129,14 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  min-width: 0;
 }
 
 .topbar__auth {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  min-width: 0;
 }
 
 .topbar__profile {
@@ -1819,6 +1823,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
 }
 
 .button--lg {
@@ -1867,6 +1872,7 @@
 .button--sm {
   font-size: 0.85rem;
   padding: 0.35rem 0.9rem;
+  min-height: 2rem;
 }
 
 .align-left {
@@ -2585,10 +2591,42 @@
 }
 
 @media (max-width: 768px) {
+  .app {
+    padding: 1rem;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar {
+    border-radius: 1.1rem;
+    padding: 1rem;
+  }
+
+  .sidebar__nav {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
   .topbar {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+    border-radius: 1.1rem;
+    padding: 0.85rem;
+    overflow: hidden;
+  }
+
+  .topbar__actions,
+  .topbar__auth {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .app__meta {
+    overflow-wrap: anywhere;
   }
 
   .hero {
@@ -2610,6 +2648,15 @@
 
   .modules-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analytics-bars--vertical {
+    flex-wrap: wrap;
+    min-height: auto;
+  }
+
+  .analytics-column {
+    flex: 1 1 120px;
   }
 
   .tables-grid {
@@ -3580,24 +3627,94 @@
 }
 
 .empresa-document-form input,
-.convenio-document-form input {
+.empresa-document-form select,
+.convenio-document-form input,
+.convenio-document-form select {
   width: 100%;
   padding: 0.45rem 0.6rem;
+  min-width: 0;
 }
 
+.empresa-doc,
 .empresa-document,
 .convenio-document {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 0.75rem;
   padding: 0.6rem 0;
   border-bottom: 1px solid #1a2433;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
+.empresa-doc > div:first-child,
+.empresa-document > div:first-child,
+.convenio-document > div:first-child {
+  min-width: 0;
+}
+
+.empresa-doc strong,
+.empresa-document strong,
+.convenio-document strong {
+  display: block;
+  max-width: 100%;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.empresa-doc small,
 .empresa-document small,
 .convenio-document small {
+  display: block;
   color: #9fb5cc;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.45rem;
+  max-width: 190px;
+  min-width: 0;
+}
+
+.document-actions .button,
+.document-actions .chip {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.data-table th,
+.data-table td,
+.chip,
+.link,
+.empresa-panel li strong,
+.empresa-panel li p,
+.empresa-page__header h2,
+.convenio-page__header h2,
+.convenio-summary__card strong,
+.empresa-metric-card strong {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .empresa-doc,
+  .empresa-document,
+  .convenio-document {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .document-actions {
+    justify-content: flex-start;
+    max-width: none;
+  }
 }
 
 .docs-shell {
@@ -4865,10 +4982,29 @@
 }
 
 .ops-document-card {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.85rem;
-  align-items: center;
+  align-items: start;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ops-document-card > div:first-child {
+  min-width: 0;
+}
+
+.ops-document-card strong,
+.ops-document-card small {
+  display: block;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ops-document-card .button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 @media (max-width: 1180px) {
@@ -4900,7 +5036,7 @@
   .ops-activity-item__top,
   .ops-permission-card__top,
   .ops-document-card {
-    flex-direction: column;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -5142,6 +5278,38 @@
   .guide-sidebar,
   .ops-monitor__sidebar-card {
     padding: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .inbox-layout,
+  .inbox-panel__summary,
+  .profile-grid,
+  .profile-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-card--main {
+    grid-column: auto;
+  }
+
+  .inbox-panel__identity,
+  .inbox-panel__actions,
+  .mensaje-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .inbox-panel__identity > div,
+  .inbox-panel__identity h3,
+  .inbox-panel__identity p,
+  .profile-card,
+  .profile-fields,
+  .profile-fields div,
+  .profile-fields dd,
+  .profile-hint,
+  .profile-list a {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 }
 

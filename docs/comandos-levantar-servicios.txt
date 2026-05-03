@@ -1,0 +1,170 @@
+COMANDOS PARA LEVANTAR Y VERIFICAR EL PROYECTO
+================================================
+
+Proyecto: Gestion de Empresas Colaboradoras
+Fecha de revision: 03/05/2026
+
+REQUISITOS
+----------
+- PHP instalado y disponible en PATH.
+- Composer instalado.
+- Node.js y npm instalados.
+- PowerShell o terminal de Windows.
+
+
+1. INSTALACION INICIAL TRAS CLONAR EL REPOSITORIO
+-------------------------------------------------
+
+Backend:
+
+cd backend
+copy .env.local.example .env.local
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:fixtures:load --no-interaction
+
+Panel interno:
+
+cd ..\frontend\app
+copy .env.example .env.local
+npm install
+
+Portal externo:
+
+cd ..\company-portal
+copy .env.example .env.local
+npm install
+
+Volver a la raiz:
+
+cd ..\..
+
+
+2. MODO RECOMENDADO PARA DEMO FINAL: UNA SOLA URL
+-------------------------------------------------
+
+Desde la raiz del proyecto:
+
+.\build-single-url.bat
+cd backend
+.\start-server.bat
+
+URLs locales:
+
+Panel interno:
+http://127.0.0.1:8000/app
+
+Portal externo:
+http://127.0.0.1:8000/externo
+
+Documentacion:
+http://127.0.0.1:8000/documentacion
+
+Monitor tecnico:
+http://127.0.0.1:8000/monitor
+
+API:
+http://127.0.0.1:8000/api
+
+
+3. DEMO PUBLICA TEMPORAL POR INTERNET
+-------------------------------------
+
+Desde la raiz del proyecto:
+
+.\start-demo-public.bat
+
+El script genera la build, levanta el backend y abre un tunel temporal con Cloudflare.
+Cuando la consola muestre una URL similar a https://xxxxx.trycloudflare.com, usar:
+
+https://xxxxx.trycloudflare.com/app
+https://xxxxx.trycloudflare.com/externo
+https://xxxxx.trycloudflare.com/documentacion
+https://xxxxx.trycloudflare.com/monitor
+
+Nota: la URL publica es temporal y cambia cada vez que se reinicia el tunel.
+
+
+4. SOLO ABRIR TUNEL SI EL BACKEND YA ESTA LEVANTADO
+---------------------------------------------------
+
+Desde la raiz del proyecto:
+
+.\start-public-url.bat
+
+Por defecto expone:
+http://127.0.0.1:8000
+
+
+5. DESARROLLO CON SERVICIOS SEPARADOS
+-------------------------------------
+
+Terminal 1 - Backend:
+
+cd backend
+.\start-server.bat
+
+Terminal 2 - Panel interno:
+
+cd frontend\app
+npm run dev -- --host --port 5173 --strictPort
+
+Terminal 3 - Portal externo:
+
+cd frontend\company-portal
+npm run dev -- --host --port 5174 --strictPort
+
+URLs de desarrollo:
+
+Panel interno:
+http://127.0.0.1:5173
+
+Portal externo:
+http://127.0.0.1:5174
+
+API:
+http://127.0.0.1:8000/api
+
+
+6. COMANDOS DE VERIFICACION ANTES DE ENTREGAR
+---------------------------------------------
+
+Backend:
+
+cd backend
+php vendor/bin/phpunit
+
+Panel interno:
+
+cd frontend\app
+npm test -- --run
+npm run test:e2e
+npm run build:backend
+
+Portal externo:
+
+cd frontend\company-portal
+npm run lint
+npm run build:backend
+
+Build integrada completa:
+
+cd ..\..
+.\build-single-url.bat
+
+
+7. DETENER SERVICIOS
+--------------------
+
+Para detener un servicio abierto en consola:
+
+Ctrl+C
+
+Si el puerto 8000 queda ocupado por un proceso PHP anterior:
+
+Get-NetTCPConnection -LocalPort 8000 -State Listen | Select-Object OwningProcess
+Stop-Process -Id <PID> -Force
+
+Para cerrar directamente el servidor PHP del proyecto:
+
+Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'php.exe' -and $_.CommandLine -like '*-S 0.0.0.0:8000 -t public*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }

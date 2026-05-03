@@ -60,6 +60,8 @@ Con eso quedan disponibles:
 Este modo evita depender de `5173` y `5174` para la demo o para exponer el proyecto hacia fuera.
 Si no defines `VITE_API_BASE_URL`, ambas builds usan automaticamente la misma URL publica desde la que se abren. Solo en desarrollo con Vite se sigue resolviendo la API en `:8000`.
 
+Los comandos completos de instalacion, arranque, demo publica y verificacion estan resumidos en `docs/comandos-levantar-servicios.txt`.
+
 ## URL publica temporal
 Si quieres compartirlo por internet sin comprar dominio ni abrir mas puertos, puedes usar Cloudflare Quick Tunnel:
 

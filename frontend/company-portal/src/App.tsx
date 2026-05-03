@@ -807,15 +807,20 @@ function StatusPage() {
   const [tokenInput, setTokenInput] = useState(activeToken);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const visibleStatus = activeToken ? status : null;
 
   useEffect(() => {
     if (!activeToken) {
-      setStatus(null);
       return;
     }
 
-    setLoading(true);
-    setError(null);
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(null);
+      }
+    });
 
     fetch(`${PORTAL_BASE}/${encodeURIComponent(activeToken)}`)
       .then(async (response) => {
@@ -823,52 +828,64 @@ function StatusPage() {
         if (!response.ok) {
           throw new Error((data as { message?: string } | null)?.message || `Error ${response.status}`);
         }
-        setStatus(data as PortalStatusSnapshot);
+        if (!cancelled) {
+          setStatus(data as PortalStatusSnapshot);
+        }
       })
       .catch((err) => {
-        setStatus(null);
-        setError(err instanceof Error ? err.message : 'No se pudo cargar el estado de la solicitud.');
+        if (!cancelled) {
+          setStatus(null);
+          setError(err instanceof Error ? err.message : 'No se pudo cargar el estado de la solicitud.');
+        }
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [activeToken]);
 
   const steps = useMemo(() => {
-    const isVerified = Boolean(status?.emailVerificadoEn) || status?.estado === 'email_verificado' || status?.estado === 'aprobada';
-    const isApproved = status?.estado === 'aprobada';
+    const isVerified = Boolean(visibleStatus?.emailVerificadoEn) || visibleStatus?.estado === 'email_verificado' || visibleStatus?.estado === 'aprobada';
+    const isApproved = visibleStatus?.estado === 'aprobada';
 
     return [
-      { label: 'Solicitud enviada', done: Boolean(status?.creadaEn), detail: status?.creadaEn ? new Date(status.creadaEn).toLocaleString('es-ES') : 'Pendiente' },
-      { label: 'Correo verificado', done: isVerified, detail: status?.emailVerificadoEn ? new Date(status.emailVerificadoEn).toLocaleString('es-ES') : 'Pendiente' },
-      { label: 'Revision interna', done: Boolean(status), detail: status ? getStatusLabel(status.estado) : 'Sin datos' },
-      { label: 'Aprobacion final', done: isApproved, detail: status?.aprobadoEn ? new Date(status.aprobadoEn).toLocaleString('es-ES') : 'Pendiente' },
+      { label: 'Solicitud enviada', done: Boolean(visibleStatus?.creadaEn), detail: visibleStatus?.creadaEn ? new Date(visibleStatus.creadaEn).toLocaleString('es-ES') : 'Pendiente' },
+      { label: 'Correo verificado', done: isVerified, detail: visibleStatus?.emailVerificadoEn ? new Date(visibleStatus.emailVerificadoEn).toLocaleString('es-ES') : 'Pendiente' },
+      { label: 'Revision interna', done: Boolean(visibleStatus), detail: visibleStatus ? getStatusLabel(visibleStatus.estado) : 'Sin datos' },
+      { label: 'Aprobacion final', done: isApproved, detail: visibleStatus?.aprobadoEn ? new Date(visibleStatus.aprobadoEn).toLocaleString('es-ES') : 'Pendiente' },
     ];
-  }, [status]);
+  }, [visibleStatus]);
 
   const nextActions = useMemo(() => {
-    if (!status) {
+    if (!visibleStatus) {
       return [
         'Introduce el token del portal o utiliza la sesion guardada para recuperar la solicitud.',
         'Si acabas de registrarte, revisa primero la pagina de correo para verificar la direccion.',
       ];
     }
 
-    if (status.estado === 'pendiente') {
+    if (visibleStatus.estado === 'pendiente') {
       return [
         'Confirma el enlace recibido en el correo corporativo.',
         'Cuando el correo este validado, vuelve a esta pagina para seguir la revision.',
       ];
     }
 
-    if (status.estado === 'email_verificado') {
+    if (visibleStatus.estado === 'email_verificado') {
       return [
         'La solicitud ya ha pasado la validacion por correo.',
         'El siguiente paso depende de la revision del centro desde el portal interno.',
       ];
     }
 
-    if (status.estado === 'aprobada') {
+    if (visibleStatus.estado === 'aprobada') {
       return [
-        status.portalAccount?.activationPending
+        visibleStatus.portalAccount?.activationPending
           ? 'Revisa el correo de activacion de cuenta para crear tu contrasena inicial.'
           : 'Accede al area privada de empresa para revisar convenios, mensajes y documentos.',
         'Conserva este token para consultar el historial de la solicitud cuando lo necesites.',
@@ -879,7 +896,7 @@ function StatusPage() {
       'La solicitud ha sido rechazada. Revisa el motivo indicado por el centro y prepara una nueva propuesta si procede.',
       'Si necesitas aclaraciones, utiliza el canal habilitado o contacta con el centro.',
     ];
-  }, [status]);
+  }, [visibleStatus]);
 
   return (
     <div className="page">
@@ -903,9 +920,9 @@ function StatusPage() {
             <p className="eyebrow">Acceso</p>
             <h3>Sesion del portal</h3>
             <p>{session ? 'Existe una sesion local guardada en este navegador.' : 'No hay sesion local guardada.'}</p>
-            {status?.portalAccount && (
+            {visibleStatus?.portalAccount && (
               <small>
-                Cuenta empresa: {status.portalAccount.activationPending ? 'pendiente de activacion' : 'activa'}
+                Cuenta empresa: {visibleStatus.portalAccount.activationPending ? 'pendiente de activacion' : 'activa'}
               </small>
             )}
             <label className="status-grid__field">
@@ -924,8 +941,8 @@ function StatusPage() {
 
           <article className="surface-card">
             <p className="eyebrow">Estado actual</p>
-            <h3>{status ? status.nombreEmpresa : 'Sin solicitud cargada'}</h3>
-            <p>{status ? `Situacion: ${getStatusLabel(status.estado)}` : 'Carga un token o utiliza la sesion guardada para ver el detalle.'}</p>
+            <h3>{visibleStatus ? visibleStatus.nombreEmpresa : 'Sin solicitud cargada'}</h3>
+            <p>{visibleStatus ? `Situacion: ${getStatusLabel(visibleStatus.estado)}` : 'Carga un token o utiliza la sesion guardada para ver el detalle.'}</p>
             {error && <div className="alert alert--error">{error}</div>}
             {loading && <p className="detail-placeholder">Cargando estado...</p>}
           </article>
@@ -972,17 +989,24 @@ function VerifyPage() {
   const query = useQuery();
   const session = readPortalSession();
   const token = query.get('token') ?? '';
-  const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
-  const [message, setMessage] = useState<string>('Abre el enlace completo recibido por correo para validar tu cuenta.');
+  const [verification, setVerification] = useState<{ token: string; status: 'ok' | 'error'; message: string } | null>(null);
+  const effectiveStatus: 'idle' | 'loading' | 'ok' | 'error' = token
+    ? verification?.token === token
+      ? verification.status
+      : 'loading'
+    : 'idle';
+  const effectiveMessage = token
+    ? verification?.token === token
+      ? verification.message
+      : 'Validando el enlace recibido por correo...'
+    : 'Abre el enlace completo recibido por correo para verificar tu cuenta.';
 
   useEffect(() => {
     if (!token) {
-      setStatus('idle');
-      setMessage('Abre el enlace completo recibido por correo para verificar tu cuenta.');
       return;
     }
 
-    setStatus('loading');
+    let cancelled = false;
     fetch(`${REGISTRO_ENDPOINT}/confirmar?token=${encodeURIComponent(token)}`, {
       headers: { Accept: 'application/json' },
     })
@@ -991,13 +1015,27 @@ function VerifyPage() {
         if (!res.ok) {
           throw new Error(payload?.message || `Error ${res.status}`);
         }
-        setStatus('ok');
-        setMessage(payload?.message || 'Verificado correctamente. Avisaremos al centro.');
+        if (!cancelled) {
+          setVerification({
+            token,
+            status: 'ok',
+            message: payload?.message || 'Verificado correctamente. Avisaremos al centro.',
+          });
+        }
       })
       .catch((err) => {
-        setStatus('error');
-        setMessage(err instanceof Error ? err.message : 'No se pudo validar el enlace de verificacion.');
+        if (!cancelled) {
+          setVerification({
+            token,
+            status: 'error',
+            message: err instanceof Error ? err.message : 'No se pudo validar el enlace de verificacion.',
+          });
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [token]);
 
   return (
@@ -1012,10 +1050,10 @@ function VerifyPage() {
         </div>
 
         <div className="verify-card">
-          <span className={`chip ${status === 'ok' ? 'chip--success' : status === 'error' ? 'chip--error' : ''}`}>
-            {status === 'loading' ? 'Verificando...' : status === 'ok' ? 'Verificado' : status === 'error' ? 'Error' : 'Pendiente'}
+          <span className={`chip ${effectiveStatus === 'ok' ? 'chip--success' : effectiveStatus === 'error' ? 'chip--error' : ''}`}>
+            {effectiveStatus === 'loading' ? 'Verificando...' : effectiveStatus === 'ok' ? 'Verificado' : effectiveStatus === 'error' ? 'Error' : 'Pendiente'}
           </span>
-          <p className="verify-card__message">{message}</p>
+          <p className="verify-card__message">{effectiveMessage}</p>
           <div className="verify-card__actions">
             <Link to={session?.portalToken ? `/chat?token=${encodeURIComponent(session.portalToken)}` : '/chat'} className="btn btn--ghost">
               Ir a mensajeria
@@ -1032,32 +1070,54 @@ function VerifyPage() {
 
 function ChatPage() {
   const session = readPortalSession();
-  const [token, setToken] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const location = useLocation();
+  const token = useMemo(() => {
+    const query = new URLSearchParams(location.search);
+    return query.get('token') ?? session?.portalToken ?? '';
+  }, [location.search, session?.portalToken]);
 
   useEffect(() => {
-    const query = new URLSearchParams(location.search);
-    const nextToken = query.get('token') ?? session?.portalToken ?? '';
-    setToken(nextToken);
-
-    if (nextToken) {
-      setLoading(true);
-      fetch(`${PORTAL_BASE}/${nextToken}/mensajes`)
-        .then(async (res) => {
-          if (!res.ok) {
-            throw new Error('No se pudo cargar el chat');
-          }
-          const data = (await res.json()) as ChatMessage[];
-          setMessages(data.map(normalizeChatMessage));
-        })
-        .catch((err) => setStatus(err instanceof Error ? err.message : 'Error de red'))
-        .finally(() => setLoading(false));
+    if (!token) {
+      return;
     }
-  }, [location.search, session?.portalToken]);
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setStatus(null);
+      }
+    });
+
+    fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`)
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error('No se pudo cargar el chat');
+        }
+        const data = (await res.json()) as ChatMessage[];
+        if (!cancelled) {
+          setMessages(data.map(normalizeChatMessage));
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setStatus(err instanceof Error ? err.message : 'Error de red');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   const sendMessage = () => {
     if (!draft.trim() || !token) {

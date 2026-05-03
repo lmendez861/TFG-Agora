@@ -34,6 +34,7 @@ tools/cloudflared.exe
 tools/config.yml
 docs/~$*.docx
 document-storage-test/
+document-storage/
 frontend/app/test-results/
 frontend/app/playwright-report/
 

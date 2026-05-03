@@ -118,8 +118,8 @@ export function DashboardHomePage({
             </div>
             <span className="chip chip--ghost">
               {lastUpdated
-                ? `Sync ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
-                : 'Sync pendiente'}
+                ? `Actualizado ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+                : 'Actualizacion pendiente'}
             </span>
           </div>
 

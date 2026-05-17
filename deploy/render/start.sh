@@ -13,6 +13,7 @@ export DEFAULT_URI="${DEFAULT_URI:-${APP_EXTERNAL_BASE_URL:-http://127.0.0.1:${P
 
 mkdir -p "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
 chown -R www-data:www-data "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
+chmod -R ug+rwX "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
 
 sed -i -E "s/^Listen [0-9]+/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -i -E "s#<VirtualHost \\*:[0-9]+>#<VirtualHost *:${PORT}>#" /etc/apache2/sites-available/000-default.conf
@@ -56,5 +57,8 @@ if [ "${APP_ENABLE_DEMO_TEACHERS}" = "1" ]; then
     php bin/console app:user:create profesora "${DEMO_TEACHER_PASSWORD}" --role=ROLE_COORDINATOR --full-name="Profesora evaluadora" --update-if-exists --no-interaction
     php bin/console app:user:create profesor "${DEMO_TEACHER_PASSWORD}" --role=ROLE_COORDINATOR --full-name="Profesor evaluador" --update-if-exists --no-interaction
 fi
+
+chown -R www-data:www-data "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
+chmod -R ug+rwX "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
 
 exec apache2-foreground

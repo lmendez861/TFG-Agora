@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/Convenio, App/Entity/EmpresaColaboradora, App/Entity/Estudiante, App/Entity/TutorAcademico, App/Entity/TutorProfesional, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Controller\Api;
 
 use App\Entity\AsignacionPractica;
@@ -15,6 +21,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class AsignacionControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -32,6 +42,10 @@ final class AsignacionControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -40,6 +54,10 @@ final class AsignacionControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoDevuelveAsignaciones(): void
     {
         $this->client->request('GET', '/api/asignaciones');
@@ -53,6 +71,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertArrayHasKey('estudiante', $payload[0]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoPermiteFiltrarPorEstadoYModalidad(): void
     {
         $this->client->request('GET', '/api/asignaciones?estado=en_curso');
@@ -72,6 +94,10 @@ final class AsignacionControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetalleIncluyeSeguimientosYEvaluacion(): void
     {
         $estudianteAna = $this->entityManager
@@ -96,6 +122,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertSame('Ana', $payload['estudiante']['nombre']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionValida(): void
     {
         $estudiante = $this->entityManager
@@ -151,6 +181,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertSame('Salud Conectada S.L.', $nuevaAsignacion->getEmpresa()->getNombre());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionRechazaModalidadNoPermitida(): void
     {
         $estudiante = $this->entityManager
@@ -189,6 +223,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testNoPermiteConvenioDeOtraEmpresa(): void
     {
         $estudiante = $this->entityManager
@@ -227,6 +265,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionRechazaHorasExcesivas(): void
     {
         $estudiante = $this->entityManager
@@ -266,6 +308,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionRechazaFechasFueraDelConvenio(): void
     {
         $estudiante = $this->entityManager
@@ -304,6 +350,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionRechazaEmpresaNoActiva(): void
     {
         $estudiante = $this->entityManager
@@ -345,6 +395,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearAsignacionRechazaConvenioSinEstadoOperativo(): void
     {
         $estudiante = $this->entityManager
@@ -386,6 +440,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPuedeCrearYCerrarSeguimientoConEvidencia(): void
     {
         $asignacion = $this->entityManager
@@ -438,6 +496,10 @@ final class AsignacionControllerTest extends WebTestCase
         self::assertSame('Seguimiento completado', $closePayload['cierreComentario']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPuedeRegistrarEvaluacionFinalConNotas(): void
     {
         $asignacion = $this->entityManager

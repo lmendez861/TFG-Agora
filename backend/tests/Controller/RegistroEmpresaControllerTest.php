@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Relaciones: Conecta con App/Entity/EmpresaSolicitud, App/Repository/EmpresaSolicitudRepository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller;
@@ -9,8 +15,16 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\EmpresaSolicitudRepository;
 
+/**
+ * Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class RegistroEmpresaControllerTest extends WebTestCase
 {
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCreateRegistersSolicitudAndQueuesVerificationEmail(): void
     {
         $client = static::createClient();
@@ -55,6 +69,10 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertSame($solicitud->getPortalToken(), $payload['portalToken']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testConfirmReturnsJsonForValidToken(): void
     {
         $client = static::createClient();
@@ -80,6 +98,10 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('message', $payload);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testConfirmWithInvalidTokenReturnsNotFoundJson(): void
     {
         $client = static::createClient();
@@ -92,6 +114,10 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('message', $payload);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testConfirmWithoutTokenReturnsBadRequestJson(): void
     {
         $client = static::createClient();
@@ -104,6 +130,10 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('message', $payload);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testResendVerificationUsesExistingSolicitud(): void
     {
         $client = static::createClient();

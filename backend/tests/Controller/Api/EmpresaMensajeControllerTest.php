@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaSolicitud, App/Repository/EmpresaSolicitudRepository, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -10,10 +16,18 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaMensajeControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCreateAndListMessages(): void
     {
         $client = static::createClient();
@@ -54,6 +68,10 @@ final class EmpresaMensajeControllerTest extends WebTestCase
         self::assertSame('Hola empresa', $data[0]['texto']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testInboxReturnsThreadSummary(): void
     {
         $client = static::createClient();

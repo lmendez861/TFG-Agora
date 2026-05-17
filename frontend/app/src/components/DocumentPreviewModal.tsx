@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conecta con modulos locales: ../utils/documents.
+ */
 import { resolveDocumentUrl } from '../utils/documents';
 
 interface DocumentPreviewModalProps {
@@ -7,6 +12,10 @@ interface DocumentPreviewModalProps {
   onClose: () => void;
 }
 
+/**
+ * Resume la responsabilidad de DocumentPreviewModal dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function DocumentPreviewModal({
   title,
   documentUrl,

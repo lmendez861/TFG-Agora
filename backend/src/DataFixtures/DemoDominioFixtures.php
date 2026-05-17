@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Carga datos de demostracion: crea un escenario consistente para pruebas, demo y defensa.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/ContactoEmpresa, App/Entity/Convenio, App/Entity/ConvenioAlerta, App/Entity/ConvenioChecklistItem, App/Entity/ConvenioDocumento, App/Entity/ConvenioWorkflowEvento, App/Entity/EmpresaColaboradora.
+ */
+
 namespace App\DataFixtures;
 
 use App\Entity\AsignacionPractica;
@@ -22,8 +28,16 @@ use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
+/**
+ * Carga datos de demostracion: crea un escenario consistente para pruebas, demo y defensa.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 class DemoDominioFixtures extends Fixture
 {
+    /**
+     * Resume la responsabilidad de load dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function load(ObjectManager $manager): void
     {
         $this->createAdminUser($manager);
@@ -449,6 +463,10 @@ class DemoDominioFixtures extends Fixture
         $manager->flush();
     }
 
+    /**
+     * Crea un recurso nuevo a partir de datos ya validados por la capa superior.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function createAdminUser(ObjectManager $manager): void
     {
         $admin = (new User())
@@ -481,14 +499,32 @@ class DemoDominioFixtures extends Fixture
             ->setRoles(['ROLE_DOCUMENT_MANAGER'])
             ->setPassword($this->hashPassword('documentos123'));
 
+        $profesora = (new User())
+            ->setUsername('profesora')
+            ->setFullName('Profesora evaluadora')
+            ->setRoles(['ROLE_COORDINATOR'])
+            ->setPassword($this->hashPassword('Abrete01'));
+
+        $profesor = (new User())
+            ->setUsername('profesor')
+            ->setFullName('Profesor evaluador')
+            ->setRoles(['ROLE_COORDINATOR'])
+            ->setPassword($this->hashPassword('Abrete01'));
+
         $manager->persist($admin);
         $manager->persist($coordinador);
         $manager->persist($lector);
         $manager->persist($monitor);
         $manager->persist($documentos);
+        $manager->persist($profesora);
+        $manager->persist($profesor);
         $manager->flush();
     }
 
+    /**
+     * Resume la responsabilidad de hashPassword dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function hashPassword(string $plain): string
     {
         $hash = password_hash($plain, PASSWORD_BCRYPT, ['cost' => 12]);

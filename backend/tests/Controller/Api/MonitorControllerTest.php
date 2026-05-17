@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -9,6 +15,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class MonitorControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -24,6 +34,10 @@ final class MonitorControllerTest extends WebTestCase
         $this->loginAsAdmin();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -31,6 +45,10 @@ final class MonitorControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function loginAsAdmin(): void
     {
         $this->client->request(
@@ -43,6 +61,10 @@ final class MonitorControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testOverviewDevuelveServiciosActividadLogsYTests(): void
     {
         $logsDir = static::getContainer()->getParameter('kernel.logs_dir');

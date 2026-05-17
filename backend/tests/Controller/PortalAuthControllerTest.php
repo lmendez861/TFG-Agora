@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Relaciones: Conecta con App/Entity/AuditLog, App/Entity/EmpresaColaboradora, App/Entity/EmpresaMensaje, App/Entity/EmpresaPortalCuenta, App/Entity/EmpresaSolicitud, App/Repository/EmpresaPortalCuentaRepository, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller;
@@ -17,6 +23,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class PortalAuthControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -33,6 +43,10 @@ final class PortalAuthControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -40,6 +54,10 @@ final class PortalAuthControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPuedeActivarCuentaDeEmpresa(): void
     {
         $account = $this->createPortalAccount('activar', false);
@@ -65,6 +83,50 @@ final class PortalAuthControllerTest extends WebTestCase
         self::assertNull($refreshed->getSetupToken());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function testActivacionRechazaContrasenaDeMenosDeOchoCaracteres(): void
+    {
+        $account = $this->createPortalAccount('weak-password', false);
+        self::assertNotNull($account->getSetupToken());
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/activate',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'token' => $account->getSetupToken(),
+                'password' => 'abc123',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function testActivacionAceptaContrasenaDeOchoCaracteresConLetrasYNumeros(): void
+    {
+        $account = $this->createPortalAccount('short-valid-password', false);
+        self::assertNotNull($account->getSetupToken());
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/activate',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'token' => $account->getSetupToken(),
+                'password' => 'admin123',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPuedeSolicitarYRestablecerClave(): void
     {
         $account = $this->createPortalAccount('reset', true);
@@ -110,6 +172,43 @@ final class PortalAuthControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
     }
 
+    public function testResetAceptaContrasenaConGuionBajoYNumeros(): void
+    {
+        $account = $this->createPortalAccount('reset-underscore', true);
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/request-reset',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'email' => $account->getEmail(),
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+
+        $this->entityManager->clear();
+        $refreshed = static::getContainer()->get(EmpresaPortalCuentaRepository::class)->find($account->getId());
+        self::assertInstanceOf(EmpresaPortalCuenta::class, $refreshed);
+        self::assertNotNull($refreshed->getPasswordResetToken());
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/reset-password',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'token' => $refreshed->getPasswordResetToken(),
+                'password' => 'Angelminda_9',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseIsSuccessful();
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCuentaActivaPuedeIniciarSesionYConsultarPerfil(): void
     {
         $account = $this->createPortalAccount('login', true);
@@ -139,6 +238,10 @@ final class PortalAuthControllerTest extends WebTestCase
         );
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCuentaPendienteDeActivacionNoPuedeIniciarSesion(): void
     {
         $account = $this->createPortalAccount('pending-login', false);
@@ -156,6 +259,10 @@ final class PortalAuthControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
     }
 
+    /**
+     * Crea un recurso nuevo a partir de datos ya validados por la capa superior.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function createPortalAccount(string $suffix, bool $withPassword): EmpresaPortalCuenta
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy(['email' => 'contacto@innovar.es']);

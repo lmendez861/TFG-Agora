@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -7,10 +13,18 @@ namespace App\Service;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 class PublicAccessManager
 {
     private const DEFAULT_TARGET_URL = 'http://127.0.0.1:8000';
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(private readonly KernelInterface $kernel)
     {
     }
@@ -67,6 +81,10 @@ class PublicAccessManager
         ];
     }
 
+    /**
+     * Resume la responsabilidad de start dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function start(): array
     {
         $snapshot = $this->getSnapshot();
@@ -150,6 +168,10 @@ class PublicAccessManager
         return $this->getSnapshot();
     }
 
+    /**
+     * Resume la responsabilidad de stop dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function stop(): array
     {
         $state = $this->loadState();
@@ -173,6 +195,10 @@ class PublicAccessManager
         return $snapshot;
     }
 
+    /**
+     * Resume la responsabilidad de assertTargetReachable dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function assertTargetReachable(string $targetUrl): void
     {
         $parts = parse_url($targetUrl);
@@ -196,6 +222,10 @@ class PublicAccessManager
         fclose($socket);
     }
 
+    /**
+     * Resume la responsabilidad de extractPublicUrl dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function extractPublicUrl(): ?string
     {
         foreach ([$this->stderrLogPath(), $this->stdoutLogPath()] as $path) {
@@ -216,6 +246,10 @@ class PublicAccessManager
         return null;
     }
 
+    /**
+     * Resume la responsabilidad de readLastLogLine dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function readLastLogLine(): ?string
     {
         foreach ([$this->stderrLogPath(), $this->stdoutLogPath()] as $path) {
@@ -234,6 +268,10 @@ class PublicAccessManager
         return null;
     }
 
+    /**
+     * Resume la responsabilidad de stopProcess dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function stopProcess(int $processId): void
     {
         $command = sprintf('Stop-Process -Id %d -Force -ErrorAction SilentlyContinue', $processId);
@@ -242,6 +280,10 @@ class PublicAccessManager
         usleep(250000);
     }
 
+    /**
+     * Resume la responsabilidad de isProcessRunning dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function isProcessRunning(int $processId): bool
     {
         $command = sprintf(
@@ -254,6 +296,10 @@ class PublicAccessManager
         return trim($process->getOutput()) === '1';
     }
 
+    /**
+     * Resume la responsabilidad de loadState dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function loadState(): array
     {
         $path = $this->statePath();
@@ -275,6 +321,10 @@ class PublicAccessManager
         return is_array($decoded) ? $decoded : [];
     }
 
+    /**
+     * Resume la responsabilidad de saveState dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function saveState(array $state): void
     {
         $runtimeDir = $this->runtimeDir();
@@ -285,36 +335,64 @@ class PublicAccessManager
         file_put_contents($this->statePath(), json_encode($state, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
     }
 
+    /**
+     * Resume la responsabilidad de statePath dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function statePath(): string
     {
         return $this->runtimeDir() . '/state.json';
     }
 
+    /**
+     * Resume la responsabilidad de stdoutLogPath dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function stdoutLogPath(): string
     {
         return $this->runtimeDir() . '/cloudflared.out.log';
     }
 
+    /**
+     * Resume la responsabilidad de stderrLogPath dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function stderrLogPath(): string
     {
         return $this->runtimeDir() . '/cloudflared.err.log';
     }
 
+    /**
+     * Resume la responsabilidad de runtimeDir dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function runtimeDir(): string
     {
         return $this->kernel->getProjectDir() . '/var/public-access';
     }
 
+    /**
+     * Resume la responsabilidad de repoDir dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function repoDir(): string
     {
         return dirname($this->kernel->getProjectDir());
     }
 
+    /**
+     * Resume la responsabilidad de cloudflaredPath dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function cloudflaredPath(): string
     {
         return $this->repoDir() . '/tools/cloudflared.exe';
     }
 
+    /**
+     * Resume la responsabilidad de resolveTargetUrl dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function resolveTargetUrl(): string
     {
         $targetUrl = (string) ($_ENV['APP_PUBLIC_URL_TARGET'] ?? $_SERVER['APP_PUBLIC_URL_TARGET'] ?? self::DEFAULT_TARGET_URL);
@@ -322,6 +400,10 @@ class PublicAccessManager
         return rtrim($targetUrl, '/');
     }
 
+    /**
+     * Resume la responsabilidad de quotePowerShell dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function quotePowerShell(string $value): string
     {
         return "'" . str_replace("'", "''", $value) . "'";

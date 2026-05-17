@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -8,11 +14,19 @@ use Doctrine\DBAL\Connection;
 use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class BootstrapSnapshotProvider
 {
     private const CACHE_KEY = 'api_bootstrap_snapshot_v1';
     private const CACHE_TTL_SECONDS = 3600;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly Connection $connection,
         #[Autowire(service: 'cache.app')]
@@ -48,6 +62,10 @@ final class BootstrapSnapshotProvider
         return $snapshot;
     }
 
+    /**
+     * Resume la responsabilidad de invalidate dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function invalidate(): void
     {
         $this->cache->deleteItem(self::CACHE_KEY);

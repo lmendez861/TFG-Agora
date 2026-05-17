@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Entity/EmpresaSolicitud, App/Repository/EmpresaSolicitudRepository, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Controller;
 
 use App\Entity\EmpresaColaboradora;
@@ -10,6 +16,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
+/**
+ * Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaSolicitudControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -24,6 +34,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         static::ensureKernelShutdown();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -32,6 +46,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testNoSePuedeAprobarSinVerificarCorreo(): void
     {
         $solicitudId = $this->crearSolicitudBasica();
@@ -42,6 +60,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testFlujoCompletoDeAprobacion(): void
     {
         $solicitudId = $this->crearSolicitudBasica();
@@ -64,6 +86,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         self::assertSame(EmpresaSolicitud::ESTADO_APROBADA, $solicitudActualizada->getEstado());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testRechazarSolicitud(): void
     {
         $solicitudId = $this->crearSolicitudBasica();
@@ -81,6 +107,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         self::assertSame(EmpresaSolicitud::ESTADO_RECHAZADA, $solicitudActualizada->getEstado());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function crearSolicitudBasica(): int
     {
         $client = static::createClient();
@@ -113,11 +143,19 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         return (int) $solicitud->getId();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function obtenerTokenPorId(int $id): string
     {
         return $this->fetchSolicitud($id)->getToken();
     }
 
+    /**
+     * Recupera datos remotos o persistidos y los deja listos para la vista o servicio que lo invoca.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function fetchSolicitud(int $id): EmpresaSolicitud
     {
         static::ensureKernelShutdown();
@@ -131,6 +169,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         return $solicitud;
     }
 
+    /**
+     * Recupera datos remotos o persistidos y los deja listos para la vista o servicio que lo invoca.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function fetchEmpresaPorEmail(string $email): ?EmpresaColaboradora
     {
         static::ensureKernelShutdown();
@@ -142,6 +184,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         return $empresa;
     }
 
+    /**
+     * Crea un recurso nuevo a partir de datos ya validados por la capa superior.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function createAuthenticatedClient(): KernelBrowser
     {
         return static::createClient(server: [

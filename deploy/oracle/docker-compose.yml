@@ -1,0 +1,64 @@
+name: agora
+
+services:
+  db:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - agora
+
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    image: agora-app:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_HTTP_PORT:-80}:10000"
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: 0
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?serverVersion=16&charset=utf8
+      APP_DOCUMENT_STORAGE_DIR: /data/document-storage
+      APP_EXTERNAL_BASE_URL: ${APP_EXTERNAL_BASE_URL}
+      DEFAULT_URI: ${DEFAULT_URI}
+      MAILER_DSN: ${MAILER_DSN}
+      APP_MAIL_FROM: ${APP_MAIL_FROM}
+      APP_INTERNAL_MFA_EMAIL: ${APP_INTERNAL_MFA_EMAIL}
+      APP_MFA_TTL_SECONDS: ${APP_MFA_TTL_SECONDS:-600}
+      APP_ENABLE_DEMO_TEACHERS: ${APP_ENABLE_DEMO_TEACHERS:-1}
+      DEMO_TEACHER_PASSWORD: ${DEMO_TEACHER_PASSWORD:-Abrete01}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+    volumes:
+      - document_storage:/data/document-storage
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit(@file_get_contents('http://127.0.0.1:10000/app') === false ? 1 : 0);\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - agora
+
+networks:
+  agora:
+
+volumes:
+  postgres_data:
+  document_storage:

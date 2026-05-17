@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 
 export interface EstudianteFormValues {
@@ -24,6 +29,10 @@ interface EstudianteFormProps {
   loadingValues?: boolean;
 }
 
+/**
+ * Resume la responsabilidad de EstudianteForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function EstudianteForm({
   mode,
   initialValues,
@@ -39,6 +48,10 @@ export function EstudianteForm({
     setValues(initialValues);
   }, [initialValues]);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setValues((prev) => ({
@@ -47,6 +60,10 @@ export function EstudianteForm({
     }));
   };
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit(values);

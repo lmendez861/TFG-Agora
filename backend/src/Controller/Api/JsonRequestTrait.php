@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 namespace App\Controller\Api;
 
 use DateTimeImmutable;
@@ -38,6 +44,10 @@ trait JsonRequestTrait
         return $data;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function validationErrorResponse(ConstraintViolationListInterface $violations): JsonResponse
     {
         $errors = [];
@@ -52,6 +62,10 @@ trait JsonRequestTrait
         ], Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function parseDate(string $value, string $fieldName): DateTimeImmutable|JsonResponse
     {
         $date = DateTimeImmutable::createFromFormat('Y-m-d', $value);
@@ -72,6 +86,10 @@ trait JsonRequestTrait
         return $date;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function validateBusinessDateRange(
         DateTimeImmutable $date,
         string $fieldName,

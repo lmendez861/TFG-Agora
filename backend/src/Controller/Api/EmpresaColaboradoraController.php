@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Entity/EmpresaDocumento, App/Entity/EmpresaEtiqueta, App/Entity/EmpresaNota, App/Repository/EmpresaColaboradoraRepository, App/Repository/EmpresaDocumentoRepository, App/Repository/EmpresaEtiquetaRepository, App/Service/AuditLogger.
+ */
+
 namespace App\Controller\Api;
 
 use App\Entity\EmpresaColaboradora;
@@ -25,12 +31,20 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/empresas', name: 'api_empresas_')]
 #[IsGranted('ROLE_API')]
 final class EmpresaColaboradoraController extends AbstractController
 {
     use JsonRequestTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(private readonly RequestStack $requestStack)
     {
     }
@@ -50,6 +64,10 @@ final class EmpresaColaboradoraController extends AbstractController
         'EXCEL' => ['xls', 'xlsx'],
     ];
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, EmpresaColaboradoraRepository $repository): JsonResponse
     {
@@ -102,6 +120,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($data, Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function create(
@@ -187,6 +209,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDetail($empresa), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'show', methods: ['GET'])]
     public function show(?EmpresaColaboradora $empresa): JsonResponse
     {
@@ -197,6 +223,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDetail($empresa), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function update(
@@ -286,6 +316,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDetail($empresa), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/etiquetas', name: 'add_label', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function addEtiqueta(
@@ -324,6 +358,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeEtiqueta($etiqueta), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/etiquetas/{etiquetaId<\d+>}', name: 'delete_label', methods: ['DELETE'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function deleteEtiqueta(
@@ -347,6 +385,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/notas', name: 'add_note', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function addNota(
@@ -388,6 +430,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeNota($nota), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documentos', name: 'add_document', methods: ['POST'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocumento(
@@ -417,26 +463,21 @@ final class EmpresaColaboradoraController extends AbstractController
             $nombre = $request->request->get('nombre') ?: $originalName;
             $tipo = $documentMetadata['type'];
             $version = $this->resolveNextEmpresaDocumentVersion($empresa, $nombre);
-            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
-            $relativePath = sprintf(
-                'empresas/%d/%s_v%d_%s.%s',
-                $empresa->getId(),
-                $safeName,
-                $version,
-                uniqid('', true),
-                $documentMetadata['extension']
-            );
+            $binaryContent = file_get_contents($file->getPathname());
+            if ($binaryContent === false) {
+                return $this->json(['message' => 'No se pudo leer el archivo subido.'], Response::HTTP_BAD_REQUEST);
+            }
 
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($nombre)
                 ->setTipo($tipo)
                 ->setVersion($version)
-                ->setStoragePath($relativePath)
                 ->setOriginalFilename($originalName)
-                ->setStorageProvider('external_fs');
-
-            $documentStorage->storeUploadedFile($file, $relativePath);
+                ->setFileContentBase64(base64_encode($binaryContent))
+                ->setMimeType($file->getMimeType() ?: 'application/octet-stream')
+                ->setFileSizeBytes($file->getSize() ?: strlen($binaryContent))
+                ->setStorageProvider('database_blob');
         } else {
             $payload = $this->decodePayload($request);
             if ($payload instanceof JsonResponse) {
@@ -488,6 +529,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDocumento($documento), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/download', name: 'download_document_by_id', methods: ['GET'])]
     public function downloadDocumentoById(
         ?EmpresaColaboradora $empresa,
@@ -521,6 +566,24 @@ final class EmpresaColaboradoraController extends AbstractController
             return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
         }
 
+        if ($documento->hasEmbeddedContent()) {
+            $binaryContent = $documento->getDecodedFileContent();
+            if ($binaryContent === null) {
+                return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
+            }
+
+            $filename = $documento->getOriginalFilename() ?: sprintf('documento-%d', $documento->getId());
+            $response = new Response($binaryContent, Response::HTTP_OK, [
+                'Content-Type' => $documento->getMimeType() ?: 'application/octet-stream',
+            ]);
+            $response->headers->set(
+                'Content-Disposition',
+                (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, $filename)
+            );
+
+            return $response;
+        }
+
         if ($documento->getUrl()) {
             return $this->redirect($documento->getUrl());
         }
@@ -528,6 +591,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}/documentos/{filename}', name: 'download_document', methods: ['GET'])]
     public function downloadDocumentoLegacy(int $id, string $filename): Response
     {
@@ -539,6 +606,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}', name: 'delete_document', methods: ['DELETE'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function deleteDocumento(
@@ -568,6 +639,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDocumento($documento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/restore', name: 'restore_document', methods: ['POST'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function restoreDocumento(
@@ -598,6 +673,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $this->json($this->serializeDocumento($documento), Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSummary(EmpresaColaboradora $empresa): array
     {
         $asignaciones = $empresa->getAsignaciones();
@@ -618,6 +697,10 @@ final class EmpresaColaboradoraController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeDetail(EmpresaColaboradora $empresa): array
     {
         $asignaciones = $empresa->getAsignaciones();
@@ -771,6 +854,10 @@ final class EmpresaColaboradoraController extends AbstractController
         ];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function normalizeDocumentType(?string $value): ?string
     {
         $normalized = strtoupper(trim((string) $value));
@@ -781,6 +868,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return array_key_exists($normalized, self::DOCUMENT_TYPE_EXTENSIONS) ? $normalized : null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function detectDocumentTypeByExtension(string $extension): ?string
     {
         foreach (self::DOCUMENT_TYPE_EXTENSIONS as $type => $extensions) {
@@ -792,6 +883,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function sanitizeDocumentBaseName(string $baseName): string
     {
         $normalized = preg_replace('/[^A-Za-z0-9_-]+/', '-', trim($baseName)) ?? 'documento';
@@ -800,6 +895,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $normalized !== '' ? $normalized : 'documento';
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildAbsoluteUrl(string $path): string
     {
         if (str_starts_with($path, 'http')) {
@@ -840,9 +939,17 @@ final class EmpresaColaboradoraController extends AbstractController
         return $documentos;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function resolveEmpresaDocumentUrl(EmpresaDocumento $documento): ?string
     {
-        if ($documento->getStoragePath() !== null && $documento->getEmpresa()?->getId() !== null && $documento->getId() !== null) {
+        if (
+            ($documento->getStoragePath() !== null || $documento->hasEmbeddedContent())
+            && $documento->getEmpresa()?->getId() !== null
+            && $documento->getId() !== null
+        ) {
             return $this->buildAbsoluteUrl(sprintf(
                 '/api/empresas/%d/documentos/%d/download',
                 $documento->getEmpresa()->getId(),
@@ -858,6 +965,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function resolveNextEmpresaDocumentVersion(EmpresaColaboradora $empresa, string $name): int
     {
         $normalizedName = mb_strtolower(trim($name));
@@ -872,6 +983,10 @@ final class EmpresaColaboradoraController extends AbstractController
         return $highestVersion + 1;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function deactivateOtherEmpresaDocumentVersions(EmpresaColaboradora $empresa, EmpresaDocumento $current): void
     {
         $normalizedName = mb_strtolower(trim($current->getNombre()));

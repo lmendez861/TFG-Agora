@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador del portal externo: atiende acciones publicas o autenticadas que llegan desde la empresa.
+ * Relaciones: Conecta con App/Entity/EmpresaSolicitud, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Portal;
@@ -8,10 +14,18 @@ use App\Entity\EmpresaSolicitud;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 
+/**
+ * Controlador del portal externo: atiende acciones publicas o autenticadas que llegan desde la empresa.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class SolicitudPortalControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPortalTokenFlow(): void
     {
         $client = static::createClient();

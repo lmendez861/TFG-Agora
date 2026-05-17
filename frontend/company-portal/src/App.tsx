@@ -1,4 +1,9 @@
-﻿import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente raiz React: orquesta rutas, estado principal, formularios y llamadas al cliente de API.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
@@ -156,6 +161,10 @@ type CompanyPortalOverview = {
 
 const PORTAL_STORAGE_KEY = 'agora.portal.session';
 
+/**
+ * Resume la responsabilidad de resolveDefaultApiBase dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function resolveDefaultApiBase(): string {
   if (typeof window === 'undefined') {
     return 'http://127.0.0.1:8000';
@@ -172,6 +181,7 @@ function resolveDefaultApiBase(): string {
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || resolveDefaultApiBase();
 const REGISTRO_ENDPOINT = `${API_BASE.replace(/\/$/, '')}/registro-empresa`;
 const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`;
+const LIVE_REFRESH_MS = 15_000;
 
 const PUBLIC_NAV_LINKS = [
   { href: '/', label: 'Inicio' },
@@ -270,6 +280,10 @@ const FAQ_ITEMS = [
   },
 ];
 
+/**
+ * Resume la responsabilidad de readPortalSession dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function readPortalSession(): PortalSession | null {
   if (typeof window === 'undefined') {
     return null;
@@ -299,6 +313,10 @@ function readPortalSession(): PortalSession | null {
   }
 }
 
+/**
+ * Resume la responsabilidad de writePortalSession dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function writePortalSession(session: PortalSession): void {
   if (typeof window === 'undefined') {
     return;
@@ -307,6 +325,10 @@ function writePortalSession(session: PortalSession): void {
   window.localStorage.setItem(PORTAL_STORAGE_KEY, JSON.stringify(session));
 }
 
+/**
+ * Devuelve StatusLabel sin duplicar logica de acceso en los consumidores.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function getStatusLabel(status: string): string {
   switch (status) {
     case 'email_verificado':
@@ -321,6 +343,10 @@ function getStatusLabel(status: string): string {
   }
 }
 
+/**
+ * Resume la responsabilidad de normalizeChatMessage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function normalizeChatMessage(message: ChatMessage): Required<Pick<ChatMessage, 'id' | 'createdAt'>> & {
   author: 'empresa' | 'centro';
   text: string;
@@ -333,6 +359,10 @@ function normalizeChatMessage(message: ChatMessage): Required<Pick<ChatMessage, 
   };
 }
 
+/**
+ * Resume la responsabilidad de useQuery dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function useQuery() {
   const { search } = useLocation();
   return useMemo(() => new URLSearchParams(search), [search]);
@@ -368,7 +398,12 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
   return (await response.json()) as T;
 }
 
+/**
+ * Resume la responsabilidad de Layout dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function Layout({ children, session }: { children: ReactNode; session: PortalSession | null }) {
+  const location = useLocation();
   const navigationLinks = session
     ? [...PUBLIC_NAV_LINKS, { href: '/panel', label: 'Panel empresa' }]
     : PUBLIC_NAV_LINKS;
@@ -382,7 +417,14 @@ function Layout({ children, session }: { children: ReactNode; session: PortalSes
         </div>
         <nav className="nav">
           {navigationLinks.map((item) => (
-            <Link key={item.label} to={item.href} className="nav__link">{item.label}</Link>
+            <Link
+              key={item.label}
+              to={item.href}
+              className={`nav__link${location.pathname === item.href ? ' nav__link--active' : ''}`}
+              aria-current={location.pathname === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </Link>
           ))}
         </nav>
       </header>
@@ -400,6 +442,10 @@ function Layout({ children, session }: { children: ReactNode; session: PortalSes
   );
 }
 
+/**
+ * Resume la responsabilidad de LandingPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function LandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -415,6 +461,10 @@ function LandingPage() {
     contactoTelefono: '',
   });
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus(null);
@@ -674,6 +724,10 @@ function LandingPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de MailPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function MailPage() {
   const query = useQuery();
   const session = readPortalSession();
@@ -685,6 +739,10 @@ function MailPage() {
   const [resending, setResending] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleResend = async () => {
     if (!session?.portalToken && !session?.contactEmail) {
       setFeedback({
@@ -799,6 +857,10 @@ function MailPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de StatusPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function StatusPage() {
   const query = useQuery();
   const session = readPortalSession();
@@ -985,6 +1047,10 @@ function StatusPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de VerifyPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function VerifyPage() {
   const query = useQuery();
   const session = readPortalSession();
@@ -1068,6 +1134,10 @@ function VerifyPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de ChatPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ChatPage() {
   const session = readPortalSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -1080,52 +1150,74 @@ function ChatPage() {
     return query.get('token') ?? session?.portalToken ?? '';
   }, [location.search, session?.portalToken]);
 
-  useEffect(() => {
+  const loadMessages = useCallback(async (options?: { background?: boolean; silent?: boolean }) => {
     if (!token) {
       return;
     }
 
-    let cancelled = false;
-    queueMicrotask(() => {
-      if (!cancelled) {
-        setLoading(true);
-        setStatus(null);
+    if (!options?.background) {
+      setLoading(true);
+    }
+    if (!options?.silent) {
+      setStatus(null);
+    }
+
+    try {
+      const response = await fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`);
+      if (!response.ok) {
+        throw new Error('No se pudo cargar el chat');
       }
-    });
 
-    fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`)
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error('No se pudo cargar el chat');
-        }
-        const data = (await res.json()) as ChatMessage[];
-        if (!cancelled) {
-          setMessages(data.map(normalizeChatMessage));
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setStatus(err instanceof Error ? err.message : 'Error de red');
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      const data = (await response.json()) as ChatMessage[];
+      setMessages(data.map(normalizeChatMessage));
+    } catch (err) {
+      if (!options?.silent) {
+        setStatus(err instanceof Error ? err.message : 'Error de red');
+      }
+    } finally {
+      if (!options?.background) {
+        setLoading(false);
+      }
+    }
   }, [token]);
 
+  useEffect(() => {
+    void loadMessages();
+  }, [loadMessages]);
+
+  useEffect(() => {
+    if (!token) {
+      return undefined;
+    }
+
+    const refreshSilently = () => {
+      if (document.visibilityState === 'visible') {
+        void loadMessages({ background: true, silent: true });
+      }
+    };
+
+    const intervalId = window.setInterval(refreshSilently, LIVE_REFRESH_MS);
+    window.addEventListener('focus', refreshSilently);
+    document.addEventListener('visibilitychange', refreshSilently);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshSilently);
+      document.removeEventListener('visibilitychange', refreshSilently);
+    };
+  }, [loadMessages, token]);
+
+  /**
+   * Resume la responsabilidad de sendMessage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const sendMessage = () => {
     if (!draft.trim() || !token) {
       return;
     }
 
     setLoading(true);
-    fetch(`${PORTAL_BASE}/${token}/mensajes`, {
+    fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texto: draft.trim() }),
@@ -1138,6 +1230,7 @@ function ChatPage() {
         const message = normalizeChatMessage((await res.json()) as ChatMessage);
         setMessages((current) => [...current, message]);
         setDraft('');
+        void loadMessages({ background: true, silent: true });
       })
       .catch((err) => setStatus(err instanceof Error ? err.message : 'Error enviando mensaje'))
       .finally(() => setLoading(false));
@@ -1188,6 +1281,10 @@ function ChatPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de ResourcesPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ResourcesPage() {
   return (
     <div className="page">
@@ -1219,6 +1316,10 @@ function ResourcesPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de CompanyLoginPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function CompanyLoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -1226,6 +1327,10 @@ function CompanyLoginPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -1276,6 +1381,10 @@ function CompanyLoginPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de ActivateAccountPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ActivateAccountPage() {
   const query = useQuery();
   const navigate = useNavigate();
@@ -1285,6 +1394,10 @@ function ActivateAccountPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) {
@@ -1327,11 +1440,11 @@ function ActivateAccountPage() {
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
             <span>Nueva contrasena</span>
-            <input type="password" minLength={10} value={password} onChange={(event) => setPassword(event.target.value)} required />
+            <input type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           <label>
             <span>Confirmar contrasena</span>
-            <input type="password" minLength={10} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+            <input type="password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
           </label>
           <div className="form__actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
@@ -1344,11 +1457,19 @@ function ActivateAccountPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de RequestResetPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function RequestResetPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -1394,6 +1515,10 @@ function RequestResetPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de ResetPasswordPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ResetPasswordPage() {
   const query = useQuery();
   const navigate = useNavigate();
@@ -1403,6 +1528,10 @@ function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (password !== confirmPassword) {
@@ -1440,11 +1569,11 @@ function ResetPasswordPage() {
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
             <span>Nueva contrasena</span>
-            <input type="password" minLength={10} value={password} onChange={(event) => setPassword(event.target.value)} required />
+            <input type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           <label>
             <span>Confirmar contrasena</span>
-            <input type="password" minLength={10} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+            <input type="password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
           </label>
           <div className="form__actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
@@ -1457,6 +1586,10 @@ function ResetPasswordPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de CompanyAreaPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function CompanyAreaPage() {
   const navigate = useNavigate();
   const [me, setMe] = useState<CompanyAuthMe | null>(null);
@@ -1465,8 +1598,14 @@ function CompanyAreaPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
 
-  const loadOverview = async () => {
-    setLoading(true);
+  /**
+   * Resume la responsabilidad de loadOverview dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
+  const loadOverview = useCallback(async (options?: { background?: boolean; silent?: boolean }) => {
+    if (!options?.background) {
+      setLoading(true);
+    }
     try {
       const [meResponse, overviewResponse] = await Promise.all([
         portalFetch<CompanyAuthMe>('/portal-auth/me'),
@@ -1474,20 +1613,50 @@ function CompanyAreaPage() {
       ]);
       setMe(meResponse);
       setOverview(overviewResponse);
-      setStatus(null);
+      if (!options?.silent) {
+        setStatus(null);
+      }
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'No se pudo cargar el panel privado.');
-      setOverview(null);
-      setMe(null);
+      if (!options?.silent) {
+        setStatus(err instanceof Error ? err.message : 'No se pudo cargar el panel privado.');
+      }
+      if (!options?.background) {
+        setOverview(null);
+        setMe(null);
+      }
     } finally {
-      setLoading(false);
+      if (!options?.background) {
+        setLoading(false);
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
     void loadOverview();
-  }, []);
+  }, [loadOverview]);
 
+  useEffect(() => {
+    const refreshSilently = () => {
+      if (document.visibilityState === 'visible') {
+        void loadOverview({ background: true, silent: true });
+      }
+    };
+
+    const intervalId = window.setInterval(refreshSilently, LIVE_REFRESH_MS);
+    window.addEventListener('focus', refreshSilently);
+    document.addEventListener('visibilitychange', refreshSilently);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshSilently);
+      document.removeEventListener('visibilitychange', refreshSilently);
+    };
+  }, [loadOverview]);
+
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSendMessage = async () => {
     if (!draft.trim()) {
       return;
@@ -1499,12 +1668,16 @@ function CompanyAreaPage() {
         body: JSON.stringify({ texto: draft.trim() }),
       });
       setDraft('');
-      await loadOverview();
+      await loadOverview({ background: true });
     } catch (err) {
       setStatus(err instanceof Error ? err.message : 'No se pudo enviar el mensaje.');
     }
   };
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleLogout = async () => {
     try {
       await portalFetch<void>('/portal-auth/logout', { method: 'POST' });
@@ -1635,6 +1808,10 @@ function CompanyAreaPage() {
   );
 }
 
+/**
+ * Resume la responsabilidad de App dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function App() {
   const session = readPortalSession();
 
@@ -1653,10 +1830,10 @@ function App() {
         <Route path="/restablecer-clave" element={<ResetPasswordPage />} />
         <Route path="/panel" element={<CompanyAreaPage />} />
         <Route path="/recursos" element={<ResourcesPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
   );
 }
 
 export default App;
-

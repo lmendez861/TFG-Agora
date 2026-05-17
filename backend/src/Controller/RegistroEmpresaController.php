@@ -1,10 +1,17 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Relaciones: Conecta con App/Controller/Api/JsonRequestTrait, App/Entity/EmpresaSolicitud, App/Repository/EmpresaSolicitudRepository, App/Service/MailConfigurationInspector.
+ */
+
 namespace App\Controller;
 
 use App\Controller\Api\JsonRequestTrait;
 use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
+use App\Service\ExternalAccessUrlGenerator;
 use App\Service\MailConfigurationInspector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,28 +23,39 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/registro-empresa', name: 'registro_empresa_')]
 final class RegistroEmpresaController extends AbstractController
 {
     use JsonRequestTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly MailerInterface $mailer,
         private readonly ValidatorInterface $validator,
         private readonly EmpresaSolicitudRepository $solicitudRepository,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ExternalAccessUrlGenerator $externalAccessUrlGenerator,
         private readonly KernelInterface $kernel,
         private readonly MailConfigurationInspector $mailConfigurationInspector,
         private readonly string $fromAddress,
     ) {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
@@ -80,16 +98,12 @@ final class RegistroEmpresaController extends AbstractController
         $this->entityManager->persist($solicitud);
         $this->entityManager->flush();
 
-        $verificationUrl = $this->urlGenerator->generate(
-            'registro_empresa_confirm',
-            ['token' => $solicitud->getToken()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-        $portalUrl = $this->urlGenerator->generate(
-            'portal_solicitudes_show',
-            ['token' => $solicitud->getPortalToken()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $verificationUrl = $this->externalAccessUrlGenerator->buildRouteUrl('registro_empresa_confirm', [
+            'token' => $solicitud->getToken(),
+        ], $request);
+        $portalUrl = $this->externalAccessUrlGenerator->buildRouteUrl('portal_solicitudes_show', [
+            'token' => $solicitud->getPortalToken(),
+        ], $request);
 
         $mailSnapshot = $this->mailConfigurationInspector->snapshot();
         $emailDelivery = 'sent';
@@ -119,6 +133,10 @@ final class RegistroEmpresaController extends AbstractController
         return $this->json($response, Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/reenviar', name: 'resend', methods: ['POST'])]
     public function resend(Request $request): JsonResponse
     {
@@ -172,16 +190,12 @@ final class RegistroEmpresaController extends AbstractController
             ], Response::HTTP_OK);
         }
 
-        $verificationUrl = $this->urlGenerator->generate(
-            'registro_empresa_confirm',
-            ['token' => $solicitud->getToken()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
-        $portalUrl = $this->urlGenerator->generate(
-            'portal_solicitudes_show',
-            ['token' => $solicitud->getPortalToken()],
-            UrlGeneratorInterface::ABSOLUTE_URL
-        );
+        $verificationUrl = $this->externalAccessUrlGenerator->buildRouteUrl('registro_empresa_confirm', [
+            'token' => $solicitud->getToken(),
+        ], $request);
+        $portalUrl = $this->externalAccessUrlGenerator->buildRouteUrl('portal_solicitudes_show', [
+            'token' => $solicitud->getPortalToken(),
+        ], $request);
 
         $mailSnapshot = $this->mailConfigurationInspector->snapshot();
         if (!$mailSnapshot['canSend']) {
@@ -219,6 +233,10 @@ final class RegistroEmpresaController extends AbstractController
         return $this->json($response, Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/confirmar', name: 'confirm', methods: ['GET'])]
     public function confirm(Request $request): Response
     {
@@ -242,6 +260,10 @@ final class RegistroEmpresaController extends AbstractController
         return $this->confirmationResponse('Hemos confirmado tu correo. El equipo revisara la solicitud en breve.', Response::HTTP_OK, $request);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function confirmationResponse(string $message, int $status, Request $request): Response
     {
         $wantsJson = $request->getPreferredFormat() === 'json' || in_array('application/json', $request->getAcceptableContentTypes(), true);
@@ -276,6 +298,10 @@ HTML;
         return new Response($html, $status);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function sendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): void
     {
         $email = (new Email())
@@ -297,6 +323,10 @@ HTML,
         $this->mailer->send($email);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function trySendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): bool
     {
         try {
@@ -308,6 +338,10 @@ HTML,
         }
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function shouldExposeVerificationLinks(): bool
     {
         return $this->kernel->getEnvironment() === 'test' || $this->kernel->isDebug();

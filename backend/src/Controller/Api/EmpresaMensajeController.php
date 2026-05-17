@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaMensaje, App/Entity/EmpresaSolicitud, App/Repository/EmpresaMensajeRepository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Controller\Api;
@@ -17,10 +23,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/empresa-solicitudes/{id<\d+>}/mensajes', name: 'api_empresa_mensajes_')]
 #[IsGranted('ROLE_API')]
 final class EmpresaMensajeController extends AbstractController
 {
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly EmpresaMensajeRepository $repository,
         private readonly EntityManagerInterface $entityManager,
@@ -28,6 +42,10 @@ final class EmpresaMensajeController extends AbstractController
     ) {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(?EmpresaSolicitud $solicitud): JsonResponse
     {
@@ -49,6 +67,10 @@ final class EmpresaMensajeController extends AbstractController
         return $this->json($data);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(?EmpresaSolicitud $solicitud, Request $request): JsonResponse
     {

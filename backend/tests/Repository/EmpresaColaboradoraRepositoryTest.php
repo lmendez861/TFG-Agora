@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Repositorio Doctrine: encapsula consultas y recuperacion de entidades para los controladores y servicios.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Repository;
 
 use App\Entity\EmpresaColaboradora;
@@ -7,6 +13,10 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * Repositorio Doctrine: encapsula consultas y recuperacion de entidades para los controladores y servicios.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -20,6 +30,10 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -28,6 +42,10 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testSeCarganLasEmpresasConSusRelaciones(): void
     {
         $repo = $this->entityManager->getRepository(EmpresaColaboradora::class);
@@ -57,6 +75,10 @@ final class EmpresaColaboradoraRepositoryTest extends KernelTestCase
         self::assertCount(1, $logi->getConvenios());
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testConveniosIncluyenMetadatosClave(): void
     {
         $repo = $this->entityManager->getRepository(EmpresaColaboradora::class);

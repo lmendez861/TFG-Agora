@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Prueba automatizada: documenta el comportamiento esperado y protege integraciones entre piezas.
+ * Relaciones: Conecta con modulos locales: ../src/services/api.ts, ../src/types.ts.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
@@ -9,6 +14,10 @@ import type { PublicAccessSnapshot } from '../src/types.ts';
 
 const originalFetch = globalThis.fetch;
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildSnapshot(status: PublicAccessSnapshot['status']): PublicAccessSnapshot {
   return {
     status,

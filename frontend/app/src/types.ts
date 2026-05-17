@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Contratos TypeScript compartidos entre el cliente de API y los componentes React.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 export interface EmpresaSummary {
   id: number;
   nombre: string;
@@ -309,17 +314,38 @@ export interface TutorAcademicoSummary {
   activo: boolean;
 }
 
+export interface TutorAcademicoPayload {
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  departamento?: string;
+  especialidad?: string;
+  activo?: boolean;
+}
+
 export interface TutorProfesionalSummary {
   id: number;
   nombre: string;
   email: string | null;
   telefono: string | null;
   cargo: string | null;
+  certificaciones?: string | null;
   activo: boolean;
   empresa: {
     id: number;
     nombre: string;
   };
+}
+
+export interface TutorProfesionalPayload {
+  empresaId: number;
+  nombre: string;
+  email?: string;
+  telefono?: string;
+  cargo?: string;
+  certificaciones?: string;
+  activo?: boolean;
 }
 
 export interface PaginatedResponse<T> {

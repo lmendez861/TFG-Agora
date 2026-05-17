@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/Estudiante, App/Repository/EstudianteRepository, App/Service/BootstrapSnapshotProvider.
+ */
+
 namespace App\Controller\Api;
 
 use App\Entity\Estudiante;
@@ -15,6 +21,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/estudiantes', name: 'api_estudiantes_')]
 #[IsGranted('ROLE_API')]
 final class EstudianteController extends AbstractController
@@ -29,6 +39,10 @@ final class EstudianteController extends AbstractController
         'bloqueado',
     ];
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, EstudianteRepository $repository): JsonResponse
     {
@@ -62,6 +76,10 @@ final class EstudianteController extends AbstractController
         return $this->json($data, Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function create(
@@ -142,6 +160,10 @@ final class EstudianteController extends AbstractController
         return $this->json($this->serializeDetail($estudiante), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'show', methods: ['GET'])]
     public function show(?Estudiante $estudiante): JsonResponse
     {
@@ -152,6 +174,10 @@ final class EstudianteController extends AbstractController
         return $this->json($this->serializeDetail($estudiante), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function update(
@@ -242,6 +268,10 @@ final class EstudianteController extends AbstractController
         return $this->json($this->serializeDetail($estudiante), Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSummary(Estudiante $estudiante): array
     {
         $asignaciones = $estudiante->getAsignaciones();
@@ -262,6 +292,10 @@ final class EstudianteController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeDetail(Estudiante $estudiante): array
     {
         $asignaciones = array_map(static function ($asignacion): array {

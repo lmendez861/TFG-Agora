@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conecta con modulos locales: ../types, ../services/api, ../utils/documents, ./DocumentPreviewModal.
+ */
 import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import type {
@@ -24,6 +29,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'medium',
   timeStyle: 'short',
 });
+const MONITOR_AUTO_REFRESH_MS = 15_000;
 
 interface MonitorPageProps {
   collections: ApiCollections | null;
@@ -96,6 +102,10 @@ const workflowMaps = [
   },
 ];
 
+/**
+ * Resume la responsabilidad de formatDateTime dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function formatDateTime(value: string | Date | null): string {
   if (!value) {
     return 'Sin dato';
@@ -109,6 +119,10 @@ function formatDateTime(value: string | Date | null): string {
   return dateFormatter.format(date);
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildChallengeSentMessage(
   response: { message?: string; expiresAt?: string },
   destinationEmail?: string | null,
@@ -122,6 +136,10 @@ function buildChallengeSentMessage(
   return `${baseMessage}${expiresMessage} El codigo anterior deja de ser valido cuando solicitas uno nuevo.`;
 }
 
+/**
+ * Devuelve PublicStatusLabel sin duplicar logica de acceso en los consumidores.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function getPublicStatusLabel(status: PublicAccessSnapshot['status'] | null): string {
   switch (status) {
     case 'active':
@@ -136,10 +154,18 @@ function getPublicStatusLabel(status: PublicAccessSnapshot['status'] | null): st
   }
 }
 
+/**
+ * Resume la responsabilidad de navClassName dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function navClassName({ isActive }: { isActive: boolean }): string {
   return `ops-monitor__nav-link${isActive ? ' is-active' : ''}`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildIncidentRecords(
   activity: MonitorOverview['activity'],
   logs: MonitorOverview['logs'],
@@ -184,6 +210,10 @@ function buildIncidentRecords(
     .slice(0, 12);
 }
 
+/**
+ * Resume la responsabilidad de SystemsSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function SystemsSection({
   generatedAt,
   serviceSummary,
@@ -301,6 +331,10 @@ function SystemsSection({
   );
 }
 
+/**
+ * Resume la responsabilidad de AccessSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function AccessSection({
   publicAccess,
   publicStatus,
@@ -316,6 +350,7 @@ function AccessSection({
   onStartPublicAccess,
   onStopPublicAccess,
   onCopyPublicUrl,
+  onRefreshPublicAccess,
 }: {
   publicAccess: PublicAccessSnapshot | null;
   publicStatus: PublicAccessSnapshot['status'];
@@ -331,8 +366,32 @@ function AccessSection({
   onStartPublicAccess: () => void;
   onStopPublicAccess: () => void;
   onCopyPublicUrl: () => void;
+  onRefreshPublicAccess: () => void;
 }) {
   const isBusy = mfaBusy || accessAction !== null;
+  const accessChecks = [
+    {
+      label: 'MFA de seguridad',
+      detail: mfaStatus?.verified
+        ? `Verificado hasta ${formatDateTime(mfaStatus.verifiedUntil)}`
+        : 'Pendiente antes de levantar o bajar el tunel',
+      ready: Boolean(mfaStatus?.verified),
+    },
+    {
+      label: 'Tunel externo',
+      detail: publicStatus === 'active'
+        ? 'Publicado y listo para compartir'
+        : publicStatus === 'starting'
+          ? 'Arrancando proceso de publicacion'
+          : 'Sin exposicion publica activa',
+      ready: publicStatus === 'active',
+    },
+    {
+      label: 'URL compartible',
+      detail: publicAccess?.publicUrl ?? 'Todavia no hay URL publica generada',
+      ready: Boolean(publicAccess?.publicUrl),
+    },
+  ];
 
   return (
     <section className="ops-monitor__grid ops-monitor__grid--middle">
@@ -390,6 +449,14 @@ function AccessSection({
           <button
             type="button"
             className="button button--ghost button--sm"
+            onClick={onRefreshPublicAccess}
+            disabled={isBusy}
+          >
+            Revisar estado
+          </button>
+          <button
+            type="button"
+            className="button button--ghost button--sm"
             onClick={onCopyPublicUrl}
             disabled={!publicAccess?.publicUrl}
           >
@@ -399,6 +466,17 @@ function AccessSection({
         <small className="ops-access-hint">
           Para levantar o bajar el tunel debes verificar antes el codigo MFA enviado al correo de seguridad.
         </small>
+        <div className="ops-readiness-list" aria-label="Comprobaciones del acceso publico">
+          {accessChecks.map((check) => (
+            <div key={check.label} className={`ops-readiness-item${check.ready ? ' is-ready' : ''}`}>
+              <span aria-hidden="true">{check.ready ? 'OK' : '!'}</span>
+              <div>
+                <strong>{check.label}</strong>
+                <small>{check.detail}</small>
+              </div>
+            </div>
+          ))}
+        </div>
       </article>
 
       <article className="ops-panel">
@@ -433,6 +511,8 @@ function AccessSection({
               onChange={(event) => onMfaCodeChange(event.target.value)}
               placeholder="Codigo MFA"
               maxLength={12}
+              inputMode="numeric"
+              autoComplete="one-time-code"
             />
             <button type="button" className="button button--primary button--sm" onClick={onVerifyCode} disabled={!mfaCode || mfaBusy}>
               Verificar
@@ -449,6 +529,10 @@ function AccessSection({
   );
 }
 
+/**
+ * Resume la responsabilidad de LogsSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function LogsSection({
   activity,
   logs,
@@ -510,6 +594,10 @@ function LogsSection({
   );
 }
 
+/**
+ * Resume la responsabilidad de ErrorsSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ErrorsSection({
   incidents,
 }: {
@@ -589,6 +677,10 @@ function ErrorsSection({
   );
 }
 
+/**
+ * Resume la responsabilidad de QualitySection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function QualitySection({
   tests,
   previewableDocuments,
@@ -656,6 +748,10 @@ function QualitySection({
   );
 }
 
+/**
+ * Resume la responsabilidad de MonitorPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function MonitorPage({
   collections,
   pendingSolicitudes,
@@ -678,9 +774,11 @@ export function MonitorPage({
   const [monitorFetchMs, setMonitorFetchMs] = useState<number | null>(null);
   const [panelSyncMs, setPanelSyncMs] = useState<number | null>(null);
 
-  const loadSnapshot = useCallback(async () => {
+  const loadSnapshot = useCallback(async (options?: { background?: boolean }) => {
     const startedAt = performance.now();
-    setLoading(true);
+    if (!options?.background) {
+      setLoading(true);
+    }
     setError(null);
 
     try {
@@ -699,7 +797,9 @@ export function MonitorPage({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo cargar el monitor.');
     } finally {
-      setLoading(false);
+      if (!options?.background) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -707,6 +807,20 @@ export function MonitorPage({
     loadSnapshot().catch(() => {
       // Errores gestionados dentro de loadSnapshot.
     });
+  }, [loadSnapshot]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      loadSnapshot({ background: true }).catch(() => {
+        // Errores gestionados dentro de loadSnapshot.
+      });
+    }, MONITOR_AUTO_REFRESH_MS);
+
+    return () => window.clearInterval(intervalId);
   }, [loadSnapshot]);
 
   const handlePanelSync = useCallback(async () => {
@@ -821,6 +935,23 @@ export function MonitorPage({
       setCopyMessage('No se pudo copiar la URL publica.');
     }
   }, [publicAccess?.publicUrl]);
+
+  const handleRefreshPublicAccess = useCallback(async () => {
+    setError(null);
+    setCopyMessage(null);
+
+    try {
+      const [access, mfa] = await Promise.all([
+        fetchPublicAccessSnapshot(),
+        fetchMfaStatus(),
+      ]);
+      setPublicAccess(access);
+      setMfaStatus(mfa);
+      setCopyMessage('Estado de acceso publico actualizado.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo revisar el acceso publico.');
+    }
+  }, []);
 
   const deferredActivity = useDeferredValue(snapshot?.activity ?? []);
   const deferredLogs = useDeferredValue(snapshot?.logs ?? []);
@@ -996,7 +1127,7 @@ export function MonitorPage({
         </div>
 
         <div className="ops-monitor__hero-actions">
-          <button type="button" className="button button--primary button--sm" onClick={loadSnapshot} disabled={loading}>
+          <button type="button" className="button button--primary button--sm" onClick={() => { void loadSnapshot(); }} disabled={loading}>
             {loading ? 'Actualizando...' : 'Actualizar monitor'}
           </button>
           <button type="button" className="button button--ghost button--sm" onClick={handlePanelSync} disabled={syncInProgress}>
@@ -1027,7 +1158,7 @@ export function MonitorPage({
       </header>
 
       {(error || copyMessage) && (
-        <div className="ops-monitor__alerts">
+        <div className="ops-monitor__alerts" aria-live="polite">
           {error && <div className="app__alert app__alert--error">{error}</div>}
           {copyMessage && <div className="app__alert app__alert--info">{copyMessage}</div>}
         </div>
@@ -1111,6 +1242,7 @@ export function MonitorPage({
                   onStartPublicAccess={() => { void handleStartPublicAccess(); }}
                   onStopPublicAccess={() => { void handleStopPublicAccess(); }}
                   onCopyPublicUrl={() => { void handleCopyPublicUrl(); }}
+                  onRefreshPublicAccess={() => { void handleRefreshPublicAccess(); }}
                 />
               )}
             />

@@ -42,4 +42,4 @@ if not exist "public" (
     exit /b 1
 )
 
-"%PHP_BIN%" -S %APP_SERVER_BIND_HOST%:%APP_SERVER_PORT% -t public
+"%PHP_BIN%" -S %APP_SERVER_BIND_HOST%:%APP_SERVER_PORT% -t public router.php

@@ -1,10 +1,17 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
 
 use App\Entity\EmpresaColaboradora;
+use App\Entity\EmpresaDocumento;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -12,6 +19,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaDocumentosControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -27,6 +38,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         $this->loginAsAdmin();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -34,6 +49,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function loginAsAdmin(): void
     {
         $this->client->request(
@@ -45,6 +64,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testPuedeAdjuntarDocumentoAEmpresa(): void
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
@@ -68,6 +91,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         self::assertSame('https://example.com/ficha.pdf', $payload['url']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetalleIncluyeDocumentos(): void
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
@@ -80,6 +107,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         self::assertArrayHasKey('documentos', $payload);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoPdfSubidoSeSirveEnLinea(): void
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
@@ -113,6 +144,12 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
 
         $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayHasKey('url', $payload);
+        self::assertSame('database_blob', $payload['storageProvider']);
+
+        $documento = $this->entityManager->getRepository(EmpresaDocumento::class)->find($payload['id']);
+        self::assertInstanceOf(EmpresaDocumento::class, $documento);
+        self::assertTrue($documento->hasEmbeddedContent());
+        self::assertSame('application/pdf', $documento->getMimeType());
 
         $this->client->request('GET', parse_url($payload['url'], PHP_URL_PATH) ?: $payload['url']);
 
@@ -127,6 +164,10 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
         );
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoVersionadoPuedeRetirarseYRestaurarse(): void
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);

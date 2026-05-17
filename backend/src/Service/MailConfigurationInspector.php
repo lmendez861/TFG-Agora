@@ -1,19 +1,37 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
 
 use Symfony\Component\Mime\Address;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class MailConfigurationInspector
 {
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly string $mailerDsn,
         private readonly string $fromAddress,
     ) {
     }
 
+    /**
+     * Resume la responsabilidad de snapshot dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function snapshot(): array
     {
         $dsn = trim($this->mailerDsn);
@@ -81,6 +99,10 @@ final class MailConfigurationInspector
         ];
     }
 
+    /**
+     * Resume la responsabilidad de looksLikePlaceholder dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function looksLikePlaceholder(string $user, string $pass): bool
     {
         $placeholderUsers = ['usuario', 'user', 'username', 'correo', 'email', 'demo', 'key', 'api_key', 'brevo_api_key'];
@@ -89,6 +111,10 @@ final class MailConfigurationInspector
         return in_array($user, $placeholderUsers, true) || in_array($pass, $placeholderPasswords, true);
     }
 
+    /**
+     * Resume la responsabilidad de detectProvider dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function detectProvider(string $scheme, string $host): string
     {
         if (str_starts_with($scheme, 'brevo+')) {
@@ -106,6 +132,10 @@ final class MailConfigurationInspector
         return $scheme !== '' ? $scheme : 'desconocido';
     }
 
+    /**
+     * Resume la responsabilidad de hasValidFromAddress dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function hasValidFromAddress(): bool
     {
         try {

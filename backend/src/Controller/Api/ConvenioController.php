@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/Convenio, App/Entity/ConvenioAlerta, App/Entity/ConvenioChecklistItem, App/Entity/ConvenioDocumento, App/Entity/ConvenioWorkflowEvento, App/Entity/EmpresaColaboradora, App/Repository/ConvenioAlertaRepository, App/Repository/ConvenioChecklistItemRepository.
+ */
+
 namespace App\Controller\Api;
 
 use App\Entity\Convenio;
@@ -28,6 +34,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/convenios', name: 'api_convenios_')]
 #[IsGranted('ROLE_API')]
 final class ConvenioController extends AbstractController
@@ -64,6 +74,10 @@ final class ConvenioController extends AbstractController
 
     private const ELIGIBLE_COMPANY_STATES = ['activa'];
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, ConvenioRepository $repository): JsonResponse
     {
@@ -110,6 +124,10 @@ final class ConvenioController extends AbstractController
         return $this->json($data, Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function create(
@@ -212,6 +230,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeDetail($convenio), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'show', methods: ['GET'])]
     public function show(?Convenio $convenio): JsonResponse
     {
@@ -222,6 +244,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeDetail($convenio), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function update(
@@ -346,6 +372,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeDetail($convenio), Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSummary(Convenio $convenio): array
     {
         return [
@@ -363,6 +393,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeDetail(Convenio $convenio): array
     {
         $asignaciones = array_map(static function ($asignacion): array {
@@ -401,6 +435,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/extras', name: 'extras', methods: ['GET'])]
     public function extras(?Convenio $convenio): JsonResponse
     {
@@ -411,6 +449,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeExtras($convenio), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/workflow/advance', name: 'advance_workflow', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function advanceWorkflow(
@@ -447,6 +489,10 @@ final class ConvenioController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/checklist/{itemId<\d+>}', name: 'toggle_checklist', methods: ['PATCH'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function toggleChecklist(
@@ -486,6 +532,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeChecklistItem($item), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documents', name: 'add_support_document', methods: ['POST'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocument(
@@ -587,6 +637,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}/download', name: 'download_support_document_by_id', methods: ['GET'])]
     public function downloadDocumentById(
         ?Convenio $convenio,
@@ -627,6 +681,10 @@ final class ConvenioController extends AbstractController
         return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}/documents/{filename}', name: 'download_support_document', methods: ['GET'])]
     public function downloadDocument(int $id, string $filename): Response
     {
@@ -640,6 +698,10 @@ final class ConvenioController extends AbstractController
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}', name: 'delete_support_document', methods: ['DELETE'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function deleteDocument(
@@ -671,6 +733,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}/restore', name: 'restore_support_document', methods: ['POST'])]
     #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function restoreDocument(
@@ -703,6 +769,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeConvenioDocumento($documento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/alerts/{alertId<\d+>}', name: 'dismiss_alert', methods: ['PATCH'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function dismissAlert(
@@ -726,6 +796,10 @@ final class ConvenioController extends AbstractController
         return $this->json($this->serializeConvenioAlerta($alerta), Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeExtras(Convenio $convenio): array
     {
         return [
@@ -736,6 +810,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeWorkflow(Convenio $convenio): array
     {
         $history = array_map(static function (ConvenioWorkflowEvento $evento): array {
@@ -754,6 +832,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeChecklistItem(ConvenioChecklistItem $item): array
     {
         return [
@@ -764,6 +846,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeConvenioDocumento(ConvenioDocumento $documento): array
     {
         return [
@@ -780,6 +866,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeConvenioAlerta(ConvenioAlerta $alerta): array
     {
         return [
@@ -823,6 +913,10 @@ final class ConvenioController extends AbstractController
         ];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function normalizeDocumentType(?string $value): ?string
     {
         $normalized = strtoupper(trim((string) $value));
@@ -833,6 +927,10 @@ final class ConvenioController extends AbstractController
         return array_key_exists($normalized, self::DOCUMENT_TYPE_EXTENSIONS) ? $normalized : null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function detectDocumentTypeByExtension(string $extension): ?string
     {
         foreach (self::DOCUMENT_TYPE_EXTENSIONS as $type => $extensions) {
@@ -844,6 +942,10 @@ final class ConvenioController extends AbstractController
         return null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function sanitizeDocumentBaseName(string $baseName): string
     {
         $normalized = preg_replace('/[^A-Za-z0-9_-]+/', '-', trim($baseName)) ?? 'documento';
@@ -852,6 +954,10 @@ final class ConvenioController extends AbstractController
         return $normalized !== '' ? $normalized : 'documento';
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function resolveConvenioDocumentUrl(ConvenioDocumento $documento): ?string
     {
         if ($documento->getStoragePath() !== null && $documento->getConvenio()?->getId() !== null && $documento->getId() !== null) {
@@ -861,6 +967,10 @@ final class ConvenioController extends AbstractController
         return $documento->getUrl();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function resolveNextConvenioDocumentVersion(Convenio $convenio, string $name): int
     {
         $normalizedName = mb_strtolower(trim($name));
@@ -875,6 +985,10 @@ final class ConvenioController extends AbstractController
         return $highestVersion + 1;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function deactivateOtherConvenioDocumentVersions(Convenio $convenio, ConvenioDocumento $current): void
     {
         $normalizedName = mb_strtolower(trim($current->getNombre()));
@@ -892,6 +1006,10 @@ final class ConvenioController extends AbstractController
         $current->setActive(true);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function validateCompanyForConvenio(EmpresaColaboradora $empresa): ?JsonResponse
     {
         if (\in_array($empresa->getEstadoColaboracion(), self::ELIGIBLE_COMPANY_STATES, true)) {

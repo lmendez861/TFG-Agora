@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/EmpresaSolicitudRepository, App/Entity/EmpresaMensaje.
+ */
+
 namespace App\Entity;
 
 use App\Repository\EmpresaSolicitudRepository;
@@ -9,6 +15,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\EmpresaMensaje;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: EmpresaSolicitudRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class EmpresaSolicitud
@@ -80,6 +90,10 @@ class EmpresaSolicitud
     #[ORM\OneToOne(mappedBy: 'solicitud', targetEntity: EmpresaPortalCuenta::class, cascade: ['persist'])]
     private ?EmpresaPortalCuenta $portalCuenta = null;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $this->token = bin2hex(random_bytes(32));
@@ -90,6 +104,10 @@ class EmpresaSolicitud
         $this->mensajes = new ArrayCollection();
     }
 
+    /**
+     * Resume la responsabilidad de touch dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function touch(): void
@@ -242,6 +260,10 @@ class EmpresaSolicitud
         return $this->emailVerificadoEn;
     }
 
+    /**
+     * Resume la responsabilidad de markEmailVerified dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function markEmailVerified(): void
     {
         $this->emailVerificadoEn = new \DateTimeImmutable();
@@ -253,6 +275,10 @@ class EmpresaSolicitud
         return $this->aprobadoEn;
     }
 
+    /**
+     * Resume la responsabilidad de markApproved dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function markApproved(): void
     {
         $this->aprobadoEn = new \DateTimeImmutable();
@@ -260,6 +286,10 @@ class EmpresaSolicitud
         $this->rejectionReason = null;
     }
 
+    /**
+     * Resume la responsabilidad de reject dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function reject(string $reason): void
     {
         $this->estado = self::ESTADO_RECHAZADA;
@@ -271,11 +301,19 @@ class EmpresaSolicitud
         return $this->rejectionReason;
     }
 
+    /**
+     * Resume la responsabilidad de isEmailVerified dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isEmailVerified(): bool
     {
         return $this->estado === self::ESTADO_EMAIL_VERIFICADO || $this->estado === self::ESTADO_APROBADA;
     }
 
+    /**
+     * Resume la responsabilidad de isPending dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isPending(): bool
     {
         return $this->estado === self::ESTADO_PENDIENTE || $this->estado === self::ESTADO_EMAIL_VERIFICADO;
@@ -289,6 +327,10 @@ class EmpresaSolicitud
         return $this->mensajes;
     }
 
+    /**
+     * Resume la responsabilidad de addMensaje dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addMensaje(EmpresaMensaje $mensaje): void
     {
         if (!$this->mensajes->contains($mensaje)) {

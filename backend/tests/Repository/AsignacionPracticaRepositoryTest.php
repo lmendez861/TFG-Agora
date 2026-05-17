@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Repositorio Doctrine: encapsula consultas y recuperacion de entidades para los controladores y servicios.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/Estudiante, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Repository;
 
 use App\Entity\AsignacionPractica;
@@ -8,6 +14,10 @@ use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
+/**
+ * Repositorio Doctrine: encapsula consultas y recuperacion de entidades para los controladores y servicios.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class AsignacionPracticaRepositoryTest extends KernelTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -21,6 +31,10 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -29,6 +43,10 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testSeCarganLasAsignacionesEsperadas(): void
     {
         $repo = $this->entityManager->getRepository(AsignacionPractica::class);
@@ -51,6 +69,10 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
         self::assertNotNull($asignacionEnCurso->getEvaluacionFinal());
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testAsignacionPlanificadaNoTieneSeguimientosNiEvaluacion(): void
     {
         $repo = $this->entityManager->getRepository(AsignacionPractica::class);

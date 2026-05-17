@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Prueba automatizada: documenta el comportamiento esperado y protege integraciones entre piezas.
+ * Relaciones: Conecta con modulos locales: ../src/services/api.ts.
+ */
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { getCsvExportPath } from '../src/services/api.ts';

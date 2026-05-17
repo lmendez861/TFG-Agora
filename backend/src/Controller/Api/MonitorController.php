@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/AuditLog, App/Entity/Convenio, App/Entity/ConvenioDocumento, App/Entity/EmpresaColaboradora, App/Entity/EmpresaDocumento, App/Entity/EmpresaMensaje, App/Entity/EmpresaPortalCuenta.
+ */
+
 declare(strict_types=1);
 
 namespace App\Controller\Api;
@@ -28,10 +34,18 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/monitor', name: 'api_monitor_')]
 #[IsGranted('ROLE_MONITOR')]
 final class MonitorController extends AbstractController
 {
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly PublicAccessManager $publicAccessManager,
@@ -42,6 +56,10 @@ final class MonitorController extends AbstractController
     {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'overview', methods: ['GET'])]
     public function overview(EntityManagerInterface $entityManager): JsonResponse
     {
@@ -62,6 +80,10 @@ final class MonitorController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildServicesSnapshot(): array
     {
         $projectDir = $this->kernel->getProjectDir();
@@ -149,6 +171,10 @@ final class MonitorController extends AbstractController
         ];
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildMetricsSnapshot(EntityManagerInterface $entityManager): array
     {
         $empresaRepository = $entityManager->getRepository(EmpresaColaboradora::class);
@@ -230,6 +256,10 @@ final class MonitorController extends AbstractController
         ];
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildActivitySnapshot(EntityManagerInterface $entityManager): array
     {
         $activity = [];
@@ -296,6 +326,10 @@ final class MonitorController extends AbstractController
         return array_slice($activity, 0, 8);
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildLogSnapshot(): array
     {
         $logsDir = $this->kernel->getLogDir();
@@ -326,6 +360,10 @@ final class MonitorController extends AbstractController
         return $snapshot;
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildTestSnapshot(): array
     {
         $projectDir = $this->kernel->getProjectDir();
@@ -389,6 +427,10 @@ final class MonitorController extends AbstractController
         ];
     }
 
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function buildDocumentSnapshot(EntityManagerInterface $entityManager): array
     {
         $documents = [];
@@ -441,16 +483,28 @@ final class MonitorController extends AbstractController
         return array_slice($documents, 0, 6);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function frontendAppDir(): string
     {
         return dirname($this->kernel->getProjectDir()) . '/frontend/app';
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function countFiles(string $directory, callable $matcher): int
     {
         return count($this->listFiles($directory, $matcher));
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function listFiles(string $directory, callable $matcher): array
     {
         if (!is_dir($directory)) {
@@ -480,6 +534,10 @@ final class MonitorController extends AbstractController
         return $files;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function tailLines(string $path, int $limit): array
     {
         $handle = @fopen($path, 'rb');
@@ -524,6 +582,10 @@ final class MonitorController extends AbstractController
         return array_map(fn (string $line): string => $this->truncate($line, 220), $lines);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function truncate(string $value, int $limit): string
     {
         return mb_strlen($value) > $limit
@@ -531,6 +593,10 @@ final class MonitorController extends AbstractController
             : $value;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function isPdfLike(?string $type, ?string $url): bool
     {
         $normalizedType = strtolower(trim((string) $type));

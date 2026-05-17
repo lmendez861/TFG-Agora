@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/EstudianteRepository.
+ */
+
 namespace App\Entity;
 
 use App\Repository\EstudianteRepository;
@@ -7,6 +13,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: EstudianteRepository::class)]
 class Estudiante
 {
@@ -48,6 +58,10 @@ class Estudiante
     #[ORM\OneToMany(mappedBy: 'estudiante', targetEntity: AsignacionPractica::class)]
     private Collection $asignaciones;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $this->asignaciones = new ArrayCollection();
@@ -174,6 +188,10 @@ class Estudiante
         return $this->asignaciones;
     }
 
+    /**
+     * Resume la responsabilidad de addAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addAsignacion(AsignacionPractica $asignacion): self
     {
         if (!$this->asignaciones->contains($asignacion)) {
@@ -184,6 +202,10 @@ class Estudiante
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeAsignacion(AsignacionPractica $asignacion): self
     {
         if ($this->asignaciones->removeElement($asignacion)) {

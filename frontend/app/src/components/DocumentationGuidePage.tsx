@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 
 type DocumentationAsset = {
@@ -85,6 +90,14 @@ const architectureLayers: ArchitectureLayer[] = [
     title: 'Capa documental',
     detail: 'Memoria, anexos, guia funcional y material de apoyo preparados para entrega y revision.',
   },
+  {
+    title: 'Agora Desktop',
+    detail: 'Operacion local, pruebas, logs, backups, restauracion y empaquetado de escritorio.',
+  },
+  {
+    title: 'Despliegue cloud',
+    detail: 'Preparacion para servidor o cloud con Docker, URL publica estable y almacenamiento persistente.',
+  },
 ];
 
 const externalWorkflow: WorkflowStep[] = [
@@ -146,14 +159,26 @@ const deliverables = [
 
 const repositoryUrl = 'https://github.com/lmendez861/TFG-Agora';
 
+/**
+ * Resume la responsabilidad de currentOrigin dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function currentOrigin(): string {
   return typeof window === 'undefined' ? 'http://127.0.0.1:8000' : window.location.origin;
 }
 
+/**
+ * Resume la responsabilidad de navClassName dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function navClassName({ isActive }: { isActive: boolean }): string {
   return `guide-nav__link${isActive ? ' is-active' : ''}`;
 }
 
+/**
+ * Resume la responsabilidad de OverviewSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function OverviewSection() {
   const origin = currentOrigin();
 
@@ -209,6 +234,10 @@ function OverviewSection() {
   );
 }
 
+/**
+ * Resume la responsabilidad de ArchitectureSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ArchitectureSection() {
   return (
     <section className="guide-modules">
@@ -223,6 +252,10 @@ function ArchitectureSection() {
   );
 }
 
+/**
+ * Resume la responsabilidad de WorkflowSection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function WorkflowSection() {
   return (
     <section className="guide-section-grid">
@@ -285,6 +318,10 @@ function WorkflowSection() {
   );
 }
 
+/**
+ * Resume la responsabilidad de MemorySection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function MemorySection() {
   return (
     <section className="guide-section-grid">
@@ -325,6 +362,10 @@ function MemorySection() {
   );
 }
 
+/**
+ * Resume la responsabilidad de DeliverySection dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function DeliverySection() {
   return (
     <section className="guide-section-grid">
@@ -360,6 +401,10 @@ function DeliverySection() {
   );
 }
 
+/**
+ * Resume la responsabilidad de DocumentationGuidePage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function DocumentationGuidePage() {
   const origin = currentOrigin();
 

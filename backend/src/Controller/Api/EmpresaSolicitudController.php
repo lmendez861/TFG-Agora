@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaMensaje, App/Entity/ContactoEmpresa, App/Entity/EmpresaColaboradora, App/Entity/EmpresaSolicitud, App/Repository/EmpresaSolicitudRepository, App/Service/AuditLogger, App/Service/BootstrapSnapshotProvider, App/Service/PortalCompanyAccountManager.
+ */
+
 namespace App\Controller\Api;
 
 use App\Entity\EmpresaMensaje;
@@ -9,33 +15,45 @@ use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
 use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
+use App\Service\ExternalAccessUrlGenerator;
 use App\Service\PortalCompanyAccountManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/empresa-solicitudes', name: 'api_empresa_solicitudes_')]
 final class EmpresaSolicitudController extends AbstractController
 {
     use JsonRequestTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly EmpresaSolicitudRepository $repository,
         private readonly EntityManagerInterface $entityManager,
         private readonly ValidatorInterface $validator,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ExternalAccessUrlGenerator $externalAccessUrlGenerator,
         private readonly PortalCompanyAccountManager $portalCompanyAccountManager,
         private readonly AuditLogger $auditLogger,
     ) {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
@@ -82,10 +100,10 @@ final class EmpresaSolicitudController extends AbstractController
         $this->entityManager->persist($solicitud);
         $this->entityManager->flush();
 
-        $verificationUrl = $this->urlGenerator->generate(
+        $verificationUrl = $this->externalAccessUrlGenerator->buildRouteUrl(
             'registro_empresa_confirm',
             ['token' => $solicitud->getToken()],
-            UrlGeneratorInterface::ABSOLUTE_URL
+            $request
         );
 
         return $this->json([
@@ -97,6 +115,10 @@ final class EmpresaSolicitudController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     #[IsGranted('ROLE_API')]
     public function index(Request $request): JsonResponse
@@ -121,6 +143,10 @@ final class EmpresaSolicitudController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/bandeja', name: 'inbox', methods: ['GET'])]
     #[IsGranted('ROLE_API')]
     public function inbox(): JsonResponse
@@ -133,6 +159,10 @@ final class EmpresaSolicitudController extends AbstractController
         return $this->json($threads, Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/aprobar', name: 'approve', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function approve(
@@ -161,7 +191,7 @@ final class EmpresaSolicitudController extends AbstractController
             ->setTelefono($solicitud->getContactoTelefono())
             ->setWeb($solicitud->getWeb())
             ->setObservaciones($observaciones)
-            ->setEstadoColaboracion('pendiente');
+            ->setEstadoColaboracion('activa');
 
         $contacto = (new ContactoEmpresa())
             ->setEmpresa($empresa)
@@ -200,6 +230,10 @@ final class EmpresaSolicitudController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/rechazar', name: 'reject', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function reject(?EmpresaSolicitud $solicitud, Request $request): JsonResponse
@@ -227,15 +261,22 @@ final class EmpresaSolicitudController extends AbstractController
 
         $solicitud->reject($payload['motivo']);
         $this->entityManager->flush();
+        $rejectionEmailSent = $this->portalCompanyAccountManager->sendRequestRejectedEmail($solicitud);
         $this->auditLogger->log('empresa_solicitud.reject', 'empresa_solicitud', $solicitud->getId(), [
             'reason' => $payload['motivo'],
+            'rejectionEmailSent' => $rejectionEmailSent,
         ]);
 
         return $this->json([
             'message' => 'Solicitud rechazada.',
+            'notificationEmailSent' => $rejectionEmailSent,
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSolicitud(EmpresaSolicitud $solicitud): array
     {
         return [
@@ -258,6 +299,10 @@ final class EmpresaSolicitudController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeInboxThread(EmpresaSolicitud $solicitud): array
     {
         $mensajes = $solicitud->getMensajes()->toArray();

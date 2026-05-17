@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -10,6 +16,10 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class CsvExportControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -27,6 +37,10 @@ final class CsvExportControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -54,48 +68,56 @@ final class CsvExportControllerTest extends WebTestCase
         self::assertStringContainsString($expectedFragment, $content);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public static function exportRouteProvider(): iterable
     {
         yield 'empresas' => [
-            '/api/export/empresas.csv',
+            '/api/export/empresas',
             'id;nombre;sector;ciudad;estado_colaboracion;convenios_activos;tutores_profesionales;contactos;asignaciones_total;asignaciones_en_curso',
             'Innovar',
         ];
 
         yield 'convenios' => [
-            '/api/export/convenios.csv',
+            '/api/export/convenios',
             'id;titulo;empresa;tipo;estado;fecha_inicio;fecha_fin;asignaciones_asociadas',
             'Convenio IA Educativa 2024/2025',
         ];
 
         yield 'estudiantes' => [
-            '/api/export/estudiantes.csv',
+            '/api/export/estudiantes',
             'id;nombre;apellido;dni;email;grado;curso;estado;asignaciones_total;asignaciones_en_curso',
             'Ana',
         ];
 
         yield 'asignaciones' => [
-            '/api/export/asignaciones.csv',
+            '/api/export/asignaciones',
             'id;empresa;estudiante;estado;modalidad;horas_totales;fecha_inicio;fecha_fin',
             'Innovar',
         ];
 
         yield 'tutores academicos' => [
-            '/api/export/tutores-academicos.csv',
+            '/api/export/tutores-academicos',
             'id;nombre;apellido;email;telefono;departamento;especialidad;activo',
             'Laura',
         ];
 
         yield 'tutores profesionales' => [
-            '/api/export/tutores-profesionales.csv',
+            '/api/export/tutores-profesionales',
             'id;nombre;email;telefono;cargo;activo;empresa',
             'Carlos',
         ];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testEmpresasExportAppliesFilters(): void
     {
-        $this->client->request('GET', '/api/export/empresas.csv?estado=activa');
+        $this->client->request('GET', '/api/export/empresas?estado=activa');
 
         self::assertResponseIsSuccessful();
         $content = $this->client->getResponse()->getContent();
@@ -104,19 +126,34 @@ final class CsvExportControllerTest extends WebTestCase
         self::assertStringNotContainsString(';pendiente_revision;', $content);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testSolicitudesExportReturnsUtf8BomEvenWhenEmpty(): void
     {
-        $this->client->request('GET', '/api/export/empresa-solicitudes.csv');
+        $this->client->request('GET', '/api/export/empresa-solicitudes');
 
         self::assertResponseIsSuccessful();
         $content = $this->client->getResponse()->getContent();
         self::assertSame("\xEF\xBB\xBF", $content);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testTutoresProfesionalesExportRejectsUnknownEmpresa(): void
     {
-        $this->client->request('GET', '/api/export/tutores-profesionales.csv?empresaId=999999');
+        $this->client->request('GET', '/api/export/tutores-profesionales?empresaId=999999');
 
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
+    public function testLegacyCsvRouteStillWorks(): void
+    {
+        $this->client->request('GET', '/api/export/empresas.csv');
+
+        self::assertResponseIsSuccessful();
     }
 }

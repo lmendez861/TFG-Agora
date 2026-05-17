@@ -62,6 +62,20 @@ Si no defines `VITE_API_BASE_URL`, ambas builds usan automaticamente la misma UR
 
 Los comandos completos de instalacion, arranque, demo publica y verificacion estan resumidos en `docs/comandos-levantar-servicios.txt`.
 
+## GitHub Codespaces
+El repositorio queda preparado para levantar Agora fuera del equipo local usando GitHub Codespaces y compartirla por URL publica con cuota gratuita limitada del plan personal de GitHub.
+
+Guia:
+
+- `README_CODESPACES.md`
+- `docs/despliegue-codespaces.md`
+
+Comando de arranque dentro del Codespace:
+
+```bash
+bash .devcontainer/scripts/start-agora.sh
+```
+
 ## URL publica temporal
 Si quieres compartirlo por internet sin comprar dominio ni abrir mas puertos, puedes usar Cloudflare Quick Tunnel:
 

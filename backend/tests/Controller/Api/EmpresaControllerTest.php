@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Controller\Api;
 
 use App\Entity\EmpresaColaboradora;
@@ -9,6 +15,10 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -26,6 +36,10 @@ final class EmpresaControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -34,6 +48,10 @@ final class EmpresaControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoDevuelveEmpresasConResumen(): void
     {
         $this->client->request('GET', '/api/empresas');
@@ -48,6 +66,10 @@ final class EmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('conveniosActivos', $payload[0]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoRechazaEstadoDesconocido(): void
     {
         $this->client->request('GET', '/api/empresas?estado=fuera_catalogo');
@@ -55,6 +77,10 @@ final class EmpresaControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoPermiteFiltrarYPaginar(): void
     {
         $this->client->request('GET', '/api/empresas?estado=activa');
@@ -78,6 +104,10 @@ final class EmpresaControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetalleIncluyeContactosTutoresYConvenios(): void
     {
         $empresa = $this->entityManager
@@ -99,6 +129,10 @@ final class EmpresaControllerTest extends WebTestCase
         self::assertArrayHasKey('en_curso', $payload['resumenAsignaciones']['porEstado']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testSePuedeRegistrarEmpresa(): void
     {
         $this->client->request(
@@ -128,6 +162,10 @@ final class EmpresaControllerTest extends WebTestCase
         self::assertSame('activa', $empresa->getEstadoColaboracion());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testActualizarEmpresaPermiteCambiarEstado(): void
     {
         $empresa = $this->entityManager

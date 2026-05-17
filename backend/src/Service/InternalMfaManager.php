@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -10,11 +16,19 @@ use Symfony\Component\Mime\Email;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class InternalMfaManager
 {
     private const SESSION_CHALLENGE_KEY = '_internal_mfa_challenge';
     private const SESSION_VERIFIED_UNTIL_KEY = '_internal_mfa_verified_until';
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly RequestStack $requestStack,
         private readonly MailerInterface $mailer,
@@ -52,6 +66,10 @@ final class InternalMfaManager
         ];
     }
 
+    /**
+     * Resume la responsabilidad de assertVerified dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function assertVerified(): void
     {
         if ($this->isVerified()) {
@@ -61,6 +79,10 @@ final class InternalMfaManager
         throw new AccessDeniedException('MFA requerido. Solicita y valida un codigo antes de ejecutar esta accion.');
     }
 
+    /**
+     * Resume la responsabilidad de issueChallenge dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function issueChallenge(string $subjectLabel): array
     {
         if ($this->destinationEmail === '') {
@@ -110,6 +132,10 @@ final class InternalMfaManager
         ];
     }
 
+    /**
+     * Resume la responsabilidad de verifyCode dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function verifyCode(string $code): bool
     {
         $session = $this->getSession();
@@ -138,6 +164,10 @@ final class InternalMfaManager
         return true;
     }
 
+    /**
+     * Resume la responsabilidad de isVerified dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isVerified(): bool
     {
         $session = $this->getSession();

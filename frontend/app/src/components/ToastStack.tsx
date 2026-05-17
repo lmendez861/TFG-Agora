@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 import type { ReactNode } from 'react';
 
 export interface ToastMessage {
@@ -16,6 +21,10 @@ const ICONS: Record<ToastMessage['type'], ReactNode> = {
   error: '⚠',
 };
 
+/**
+ * Resume la responsabilidad de ToastStack dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
   if (toasts.length === 0) {
     return null;

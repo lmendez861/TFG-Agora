@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/EmpresaPortalCuentaRepository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Entity;
@@ -10,6 +16,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: EmpresaPortalCuentaRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInterface
@@ -66,6 +76,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?EmpresaSolicitud $solicitud = null;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $now = new \DateTimeImmutable();
@@ -73,6 +87,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         $this->updatedAt = $now;
     }
 
+    /**
+     * Resume la responsabilidad de touch dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function touch(): void
@@ -149,11 +167,19 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->email;
     }
 
+    /**
+     * Resume la responsabilidad de eraseCredentials dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function eraseCredentials(): void
     {
         // No temporal credentials stored.
     }
 
+    /**
+     * Resume la responsabilidad de isActive dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isActive(): bool
     {
         return $this->active;
@@ -176,6 +202,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->setupTokenExpiresAt;
     }
 
+    /**
+     * Resume la responsabilidad de issueSetupToken dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function issueSetupToken(?\DateTimeImmutable $expiresAt = null): string
     {
         $this->setupToken = bin2hex(random_bytes(32));
@@ -184,6 +214,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->setupToken;
     }
 
+    /**
+     * Resume la responsabilidad de clearSetupToken dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function clearSetupToken(): self
     {
         $this->setupToken = null;
@@ -192,6 +226,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de isSetupTokenValid dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isSetupTokenValid(string $token): bool
     {
         return $this->setupToken !== null
@@ -210,6 +248,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->passwordResetTokenExpiresAt;
     }
 
+    /**
+     * Resume la responsabilidad de issuePasswordResetToken dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function issuePasswordResetToken(?\DateTimeImmutable $expiresAt = null): string
     {
         $this->passwordResetToken = bin2hex(random_bytes(32));
@@ -218,6 +260,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->passwordResetToken;
     }
 
+    /**
+     * Resume la responsabilidad de clearPasswordResetToken dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function clearPasswordResetToken(): self
     {
         $this->passwordResetToken = null;
@@ -226,6 +272,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de isPasswordResetTokenValid dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function isPasswordResetTokenValid(string $token): bool
     {
         return $this->passwordResetToken !== null
@@ -239,11 +289,19 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->activatedAt;
     }
 
+    /**
+     * Resume la responsabilidad de hasPassword dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function hasPassword(): bool
     {
         return $this->password !== null && $this->password !== '';
     }
 
+    /**
+     * Resume la responsabilidad de markActivated dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function markActivated(): self
     {
         $this->activatedAt = new \DateTimeImmutable();
@@ -258,6 +316,10 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
         return $this->lastLoginAt;
     }
 
+    /**
+     * Resume la responsabilidad de markLoggedIn dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function markLoggedIn(): self
     {
         $this->lastLoginAt = new \DateTimeImmutable();

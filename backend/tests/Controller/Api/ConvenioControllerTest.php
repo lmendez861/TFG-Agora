@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/Convenio, App/Entity/ConvenioAlerta, App/Entity/ConvenioChecklistItem, App/Entity/EmpresaColaboradora, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Controller\Api;
 
 use App\Entity\Convenio;
@@ -13,6 +19,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class ConvenioControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -28,6 +38,10 @@ final class ConvenioControllerTest extends WebTestCase
         $this->loginAsAdmin();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -36,6 +50,10 @@ final class ConvenioControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function loginAsAdmin(): void
     {
         $this->client->request(
@@ -47,6 +65,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoDevuelveConvenios(): void
     {
         $this->client->request('GET', '/api/convenios');
@@ -59,6 +81,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertArrayHasKey('empresa', $payload[0]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoFiltradoPorEmpresaYEstado(): void
     {
         $empresa = $this->entityManager
@@ -76,6 +102,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('Convenio IA Educativa 2024/2025', $payload[0]['titulo']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetalleIncluyeAsignaciones(): void
     {
         $convenio = $this->entityManager
@@ -94,6 +124,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('Ana', $payload['asignaciones'][0]['estudiante']['nombre']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testSePuedeRegistrarConvenio(): void
     {
         $empresa = $this->entityManager
@@ -129,6 +163,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('vigente', $convenio->getEstado());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearConvenioRechazaFechaFinAnterior(): void
     {
         $empresa = $this->entityManager
@@ -154,6 +192,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearConvenioRechazaFechasFueraDeRangoOperativo(): void
     {
         $empresa = $this->entityManager
@@ -178,6 +220,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testCrearConvenioRechazaEmpresaNoActiva(): void
     {
         $empresa = $this->entityManager
@@ -204,6 +250,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testExtrasIncluyeChecklistDocumentosYAlertas(): void
     {
         $convenio = $this->entityManager
@@ -226,6 +276,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertNotEmpty($payload['alerts']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoPdfSubidoAConvenioSeSirveEnLinea(): void
     {
         $convenio = $this->entityManager
@@ -276,6 +330,10 @@ final class ConvenioControllerTest extends WebTestCase
         );
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoConvenioRechazaTipoQueNoCoincideConLaExtension(): void
     {
         $convenio = $this->entityManager
@@ -311,6 +369,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoConvenioVersionadoPuedeRetirarseYRestaurarse(): void
     {
         $convenio = $this->entityManager
@@ -360,6 +422,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertNull($restoredPayload['deletedAt']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testAdvanceWorkflowActualizaEstado(): void
     {
         $convenio = $this->entityManager
@@ -385,6 +451,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame($payload['estado'], $convenioRefrescado->getEstado());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testToggleChecklistPermiteActualizar(): void
     {
         $convenio = $this->entityManager
@@ -415,6 +485,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame(!$estadoInicial, $itemRefrescado->isCompleted());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDismissAlertaMarcaComoInactiva(): void
     {
         $convenio = $this->entityManager
@@ -446,6 +520,10 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertFalse($alertaRefrescada->isActiva());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testActualizarConvenioPermiteCambiarEstado(): void
     {
         $convenio = $this->entityManager

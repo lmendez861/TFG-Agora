@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Comando de consola Symfony: automatiza tareas administrativas del backend.
+ * Relaciones: Conecta con App/Entity/User.
+ */
+
 namespace App\Command;
 
 use App\Entity\User;
@@ -16,8 +22,16 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
     name: 'app:user:create',
     description: 'Crea un usuario para acceder a la API.'
 )]
+/**
+ * Comando de consola Symfony: automatiza tareas administrativas del backend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class CreateUserCommand extends Command
 {
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
@@ -25,6 +39,10 @@ final class CreateUserCommand extends Command
         parent::__construct();
     }
 
+    /**
+     * Resume la responsabilidad de configure dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function configure(): void
     {
         $this
@@ -37,24 +55,36 @@ final class CreateUserCommand extends Command
                 'Roles adicionales (ROLE_API, ROLE_ADMIN, ...).',
                 ['ROLE_API']
             )
-            ->addOption('full-name', null, InputOption::VALUE_REQUIRED, 'Nombre completo visible en la UI.');
+            ->addOption('full-name', null, InputOption::VALUE_REQUIRED, 'Nombre completo visible en la UI.')
+            ->addOption(
+                'update-if-exists',
+                null,
+                InputOption::VALUE_NONE,
+                'Actualiza el usuario si ya existe en lugar de devolver error.'
+            );
     }
 
+    /**
+     * Resume la responsabilidad de execute dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $username = (string) $input->getArgument('username');
         $password = (string) $input->getArgument('password');
         $roles = $input->getOption('role');
         $fullName = $input->getOption('full-name');
+        $updateIfExists = (bool) $input->getOption('update-if-exists');
 
         $repository = $this->entityManager->getRepository(User::class);
-        if ($repository->findOneBy(['username' => $username])) {
+        $existingUser = $repository->findOneBy(['username' => $username]);
+        if ($existingUser && !$updateIfExists) {
             $output->writeln(sprintf('<error>Ya existe un usuario con username "%s".</error>', $username));
 
             return Command::FAILURE;
         }
 
-        $user = (new User())
+        $user = ($existingUser ?? new User())
             ->setUsername($username)
             ->setRoles($roles)
             ->setFullName($fullName);
@@ -62,10 +92,16 @@ final class CreateUserCommand extends Command
         $hashedPassword = $this->passwordHasher->hashPassword($user, $password);
         $user->setPassword($hashedPassword);
 
-        $this->entityManager->persist($user);
+        if (!$existingUser) {
+            $this->entityManager->persist($user);
+        }
         $this->entityManager->flush();
 
-        $output->writeln(sprintf('<info>Usuario "%s" creado correctamente.</info>', $username));
+        $output->writeln(sprintf(
+            '<info>Usuario "%s" %s correctamente.</info>',
+            $username,
+            $existingUser ? 'actualizado' : 'creado'
+        ));
 
         return Command::SUCCESS;
     }

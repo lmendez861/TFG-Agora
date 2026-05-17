@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Prueba end-to-end: recorre flujos reales del navegador contra la aplicacion levantada.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -18,10 +23,18 @@ const PASSWORD = 'admin123';
 fs.mkdirSync(docsCapturasDir, { recursive: true });
 fs.mkdirSync(docsVideoDir, { recursive: true });
 
+/**
+ * Resume la responsabilidad de sleep dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Resume la responsabilidad de showCaption dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function showCaption(page, title, detail) {
   await page.evaluate(({ title: nextTitle, detail: nextDetail }) => {
     const existing = document.getElementById('codex-demo-caption');
@@ -56,12 +69,20 @@ async function showCaption(page, title, detail) {
   }, { title, detail });
 }
 
+/**
+ * Resume la responsabilidad de hideCaption dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function hideCaption(page) {
   await page.evaluate(() => {
     document.getElementById('codex-demo-caption')?.remove();
   });
 }
 
+/**
+ * Resume la responsabilidad de ensureInternalLogin dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function ensureInternalLogin(page) {
   await page.goto(`${baseURL}/app/login`, { waitUntil: 'networkidle' });
   await page.getByLabel(/usuario|email|username/i).fill(USERNAME);
@@ -74,6 +95,10 @@ async function ensureInternalLogin(page) {
   await page.getByRole('button', { name: /salir/i }).waitFor({ state: 'visible', timeout: 15000 });
 }
 
+/**
+ * Resume la responsabilidad de captureScreenshots dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function captureScreenshots(page) {
   console.log('[capture-demo-assets] screenshot dashboard');
   await page.goto(`${baseURL}/app`, { waitUntil: 'domcontentloaded' });
@@ -111,6 +136,10 @@ async function captureScreenshots(page) {
   await page.screenshot({ path: path.join(docsCapturasDir, '09-portal-externo-acceso.png') });
 }
 
+/**
+ * Resume la responsabilidad de recordDemoVideo dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function recordDemoVideo(page) {
   await showCaption(page, 'Portal interno', 'Pantalla de acceso profesional y arranque del entorno interno.');
   await page.goto(`${baseURL}/app/login`, { waitUntil: 'networkidle' });
@@ -150,6 +179,10 @@ async function recordDemoVideo(page) {
   await hideCaption(page);
 }
 
+/**
+ * Resume la responsabilidad de main dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function main() {
   console.log(`[capture-demo-assets] mode=${mode}`);
   const browser = await chromium.launch({ headless: true });

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Entity/EmpresaDocumento, App/Entity/EmpresaMensaje, App/Entity/EmpresaPortalCuenta, App/Entity/EmpresaSolicitud, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -16,6 +22,10 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class PortalCompanyControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -32,6 +42,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -39,6 +53,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testOverviewDevuelveEmpresaCuentaYDocumentos(): void
     {
         $account = $this->createAndLoginPortalAccount();
@@ -56,6 +74,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertNotEmpty($payload['messages']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testEmpresaPuedeEnviarMensajeDesdeSuArea(): void
     {
         $this->createAndLoginPortalAccount();
@@ -76,6 +98,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertSame('Necesitamos confirmar el calendario de seguimiento.', $payload['texto']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testEmpresaPuedeDescargarDocumentoAsociado(): void
     {
         $this->createAndLoginPortalAccount();
@@ -92,6 +118,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertSame($documento->getUrl(), $this->client->getResponse()->headers->get('location'));
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDocumentoRetiradoNoSeExponeEnPortalEmpresa(): void
     {
         $this->createAndLoginPortalAccount();
@@ -109,6 +139,43 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
+    public function testEmpresaPuedeDescargarDocumentoEmbebidoEnBaseDeDatos(): void
+    {
+        $this->createAndLoginPortalAccount();
+
+        $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy(['email' => 'contacto@innovar.es']);
+        self::assertInstanceOf(EmpresaColaboradora::class, $empresa);
+
+        $documento = (new EmpresaDocumento())
+            ->setEmpresa($empresa)
+            ->setNombre('Prevencion de riesgos')
+            ->setTipo('PDF')
+            ->setOriginalFilename('riesgos.pdf')
+            ->setFileContentBase64(base64_encode("%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF"))
+            ->setMimeType('application/pdf')
+            ->setFileSizeBytes(48)
+            ->setStorageProvider('database_blob');
+
+        $this->entityManager->persist($documento);
+        $this->entityManager->flush();
+
+        $this->client->request('GET', sprintf('/api/portal-company/documents/empresa/%d', $documento->getId()));
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString(
+            'application/pdf',
+            $this->client->getResponse()->headers->get('content-type', '')
+        );
+        self::assertStringContainsString(
+            'inline',
+            $this->client->getResponse()->headers->get('content-disposition', '')
+        );
+    }
+
+    /**
+     * Crea un recurso nuevo a partir de datos ya validados por la capa superior.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function createAndLoginPortalAccount(): EmpresaPortalCuenta
     {
         $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy(['email' => 'contacto@innovar.es']);

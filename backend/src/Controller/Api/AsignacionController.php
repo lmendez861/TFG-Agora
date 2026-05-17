@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/Convenio, App/Entity/EmpresaColaboradora, App/Entity/EvaluacionFinal, App/Entity/Seguimiento, App/Repository/AsignacionPracticaRepository, App/Repository/ConvenioRepository, App/Repository/EmpresaColaboradoraRepository.
+ */
+
 namespace App\Controller\Api;
 
 use App\Entity\AsignacionPractica;
@@ -28,6 +34,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/asignaciones', name: 'api_asignaciones_')]
 #[IsGranted('ROLE_API')]
 final class AsignacionController extends AbstractController
@@ -50,6 +60,10 @@ final class AsignacionController extends AbstractController
         'EXCEL' => ['xls', 'xlsx'],
     ];
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, AsignacionPracticaRepository $repository): JsonResponse
     {
@@ -94,6 +108,10 @@ final class AsignacionController extends AbstractController
         );
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('', name: 'create', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function create(
@@ -148,6 +166,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeDetail($asignacion), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'show', methods: ['GET'])]
     public function show(?AsignacionPractica $asignacion): JsonResponse
     {
@@ -158,6 +180,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeDetail($asignacion), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\\d+>}', name: 'update', methods: ['PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function update(
@@ -217,6 +243,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeDetail($updatedAsignacion), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos', name: 'create_follow_up', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function createSeguimiento(
@@ -297,6 +327,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeSeguimiento($seguimiento), Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos/{seguimientoId<\d+>}', name: 'update_follow_up', methods: ['PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function updateSeguimiento(
@@ -389,6 +423,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeSeguimiento($seguimiento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos/{seguimientoId<\d+>}/close', name: 'close_follow_up', methods: ['PATCH'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function closeSeguimiento(
@@ -422,6 +460,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeSeguimiento($seguimiento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos/{seguimientoId<\d+>}/reopen', name: 'reopen_follow_up', methods: ['PATCH'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function reopenSeguimiento(
@@ -448,6 +490,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeSeguimiento($seguimiento), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos/{seguimientoId<\d+>}/evidencia', name: 'download_follow_up_evidence', methods: ['GET'])]
     public function downloadSeguimientoEvidence(
         ?AsignacionPractica $asignacion,
@@ -474,6 +520,10 @@ final class AsignacionController extends AbstractController
         return $this->file($absolutePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/evaluacion-final', name: 'upsert_evaluation', methods: ['POST', 'PUT'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function upsertEvaluacionFinal(
@@ -567,6 +617,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeEvaluacion($evaluacion), Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/evaluacion-final/cerrar', name: 'close_evaluation', methods: ['PATCH'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function closeEvaluacionFinal(
@@ -588,6 +642,10 @@ final class AsignacionController extends AbstractController
         return $this->json($this->serializeEvaluacion($evaluacion), Response::HTTP_OK);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSummary(AsignacionPractica $asignacion): array
     {
         return [
@@ -609,6 +667,10 @@ final class AsignacionController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeDetail(AsignacionPractica $asignacion): array
     {
         $seguimientos = $asignacion->getSeguimientos()->toArray();
@@ -651,6 +713,10 @@ final class AsignacionController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeSeguimiento(Seguimiento $seguimiento): array
     {
         return [
@@ -669,6 +735,10 @@ final class AsignacionController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeEvaluacion(EvaluacionFinal $evaluacion): array
     {
         return [
@@ -686,6 +756,10 @@ final class AsignacionController extends AbstractController
         ];
     }
 
+    /**
+     * Encapsula una consulta reutilizable para que la capa superior no dependa de SQL/Doctrine.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function findSeguimiento(AsignacionPractica $asignacion, int $seguimientoId): ?Seguimiento
     {
         foreach ($asignacion->getSeguimientos() as $seguimiento) {
@@ -859,6 +933,10 @@ final class AsignacionController extends AbstractController
         ]];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function validateCompanyForAssignment(EmpresaColaboradora $empresa): ?JsonResponse
     {
         if (\in_array($empresa->getEstadoColaboracion(), self::ELIGIBLE_COMPANY_STATES, true)) {
@@ -870,6 +948,10 @@ final class AsignacionController extends AbstractController
         ], Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function validateConvenioForAssignment(Convenio $convenio): ?JsonResponse
     {
         if (\in_array($convenio->getEstado(), self::ELIGIBLE_CONVENIO_STATES, true)) {
@@ -881,6 +963,10 @@ final class AsignacionController extends AbstractController
         ], Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function attachSeguimientoEvidence(
         Seguimiento $seguimiento,
         int $asignacionId,
@@ -928,6 +1014,10 @@ final class AsignacionController extends AbstractController
         return ['type' => $normalizedType ?? $detectedType, 'extension' => $extension];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function normalizeDocumentType(?string $value): ?string
     {
         $normalized = strtoupper(trim((string) $value));
@@ -938,6 +1028,10 @@ final class AsignacionController extends AbstractController
         return array_key_exists($normalized, self::DOCUMENT_TYPE_EXTENSIONS) ? $normalized : null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function detectDocumentTypeByExtension(string $extension): ?string
     {
         foreach (self::DOCUMENT_TYPE_EXTENSIONS as $type => $extensions) {
@@ -949,6 +1043,10 @@ final class AsignacionController extends AbstractController
         return null;
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function sanitizeDocumentBaseName(string $baseName): string
     {
         $normalized = preg_replace('/[^A-Za-z0-9_-]+/', '-', trim($baseName)) ?? 'documento';

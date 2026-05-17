@@ -1,3 +1,8 @@
+/*
+ * Comentario de mantenimiento Agora.
+ * Proposito: Hoja de estilos: define la presentacion visual de la pantalla o modulo asociado.
+ * Relaciones: esta hoja se aplica desde el componente o entrada que la importa.
+ */
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;

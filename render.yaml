@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: agora-web
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /app
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_DEBUG
+        value: "0"
+      - key: APP_SECRET
+        generateValue: true
+      - key: APP_DOCUMENT_STORAGE_DIR
+        value: /data/document-storage
+      - key: APP_ENABLE_DEMO_TEACHERS
+        value: "1"
+      - key: DEMO_TEACHER_PASSWORD
+        value: Abrete01
+      - key: APP_EXTERNAL_BASE_URL
+        sync: false
+      - key: MAILER_DSN
+        sync: false
+      - key: APP_MAIL_FROM
+        sync: false
+      - key: APP_INTERNAL_MFA_EMAIL
+        sync: false
+      - key: SYMFONY_TRUSTED_PROXIES
+        value: "*"
+      - key: SYMFONY_TRUSTED_HEADERS
+        value: x-forwarded-for,x-forwarded-host,x-forwarded-proto,x-forwarded-port,x-forwarded-prefix
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agora-db
+          property: connectionString
+    disk:
+      name: agora-data
+      mountPath: /data
+      sizeGB: 2
+
+databases:
+  - name: agora-db
+    plan: basic-256mb

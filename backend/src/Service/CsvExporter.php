@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -7,6 +13,10 @@ namespace App\Service;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class CsvExporter
 {
     /**
@@ -63,6 +73,10 @@ final class CsvExporter
         ));
     }
 
+    /**
+     * Resume la responsabilidad de escapeValue dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function escapeValue(string|int|float|bool|null $value, string $delimiter): string
     {
         if ($value === null) {

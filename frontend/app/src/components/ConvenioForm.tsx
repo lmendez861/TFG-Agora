@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conecta con modulos locales: ../types.
+ */
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { EmpresaSummary } from '../types';
 
@@ -23,6 +28,10 @@ const CONVENIO_STATUS_OPTIONS = [
 const MIN_ALLOWED_DATE = '2020-01-01';
 const ELIGIBLE_COMPANY_STATES = ['activa'];
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildMaxAllowedDate(): string {
   return `${new Date().getFullYear() + 6}-12-31`;
 }
@@ -50,6 +59,10 @@ interface ConvenioFormProps {
   loadingValues?: boolean;
 }
 
+/**
+ * Resume la responsabilidad de ConvenioForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function ConvenioForm({
   mode,
   initialValues,
@@ -94,6 +107,10 @@ export function ConvenioForm({
     return CONVENIO_STATUS_OPTIONS;
   }, [values.estado]);
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setLocalError(null);
@@ -123,6 +140,10 @@ export function ConvenioForm({
     return null;
   };
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const validationError = validateValues();

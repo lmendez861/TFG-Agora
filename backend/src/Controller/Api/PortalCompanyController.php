@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/ConvenioDocumento, App/Entity/EmpresaDocumento, App/Entity/EmpresaMensaje, App/Entity/EmpresaPortalCuenta, App/Service/DocumentStorageManager.
+ */
+
 declare(strict_types=1);
 
 namespace App\Controller\Api;
@@ -20,14 +26,26 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/portal-company', name: 'api_portal_company_')]
 #[IsGranted('ROLE_COMPANY_PORTAL')]
 final class PortalCompanyController extends AbstractController
 {
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(private readonly ValidatorInterface $validator)
     {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/overview', name: 'overview', methods: ['GET'])]
     public function overview(): JsonResponse
     {
@@ -113,6 +131,10 @@ final class PortalCompanyController extends AbstractController
         ]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/messages', name: 'messages_create', methods: ['POST'])]
     public function postMessage(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -156,6 +178,10 @@ final class PortalCompanyController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/documents/{scope}/{documentId<\d+>}', name: 'download_document', methods: ['GET'])]
     public function downloadDocument(
         string $scope,
@@ -180,7 +206,14 @@ final class PortalCompanyController extends AbstractController
                 return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
             }
 
-            return $this->serveDocumentResponse($documentStorage, $document->getStoragePath(), $document->getOriginalFilename(), $document->getUrl());
+            return $this->serveDocumentResponse(
+                $documentStorage,
+                $document->getStoragePath(),
+                $document->getOriginalFilename(),
+                $document->getUrl(),
+                $document->getDecodedFileContent(),
+                $document->getMimeType()
+            );
         }
 
         if ($scope === 'convenio') {
@@ -200,6 +233,10 @@ final class PortalCompanyController extends AbstractController
         return $this->json(['message' => 'Tipo de documento no soportado.'], Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeEmpresaDocumento(EmpresaDocumento $documento): array
     {
         return [
@@ -212,6 +249,10 @@ final class PortalCompanyController extends AbstractController
         ];
     }
 
+    /**
+     * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serializeConvenioDocumento(ConvenioDocumento $documento): array
     {
         return [
@@ -225,11 +266,17 @@ final class PortalCompanyController extends AbstractController
         ];
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function serveDocumentResponse(
         DocumentStorageManager $documentStorage,
         ?string $storagePath,
         ?string $originalFilename,
         ?string $url,
+        ?string $inlineContent = null,
+        ?string $mimeType = null,
     ): Response
     {
         if ($storagePath !== null) {
@@ -242,6 +289,19 @@ final class PortalCompanyController extends AbstractController
             $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
 
             return $this->file($absolutePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+        }
+
+        if ($inlineContent !== null) {
+            $filename = $originalFilename ?: 'documento';
+            $response = new Response($inlineContent, Response::HTTP_OK, [
+                'Content-Type' => $mimeType ?: 'application/octet-stream',
+            ]);
+            $response->headers->set(
+                'Content-Disposition',
+                (new ResponseHeaderBag())->makeDisposition(ResponseHeaderBag::DISPOSITION_INLINE, $filename)
+            );
+
+            return $response;
         }
 
         if (is_string($url) && $url !== '') {

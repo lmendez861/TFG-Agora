@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/AsignacionPractica, App/Entity/Convenio, App/Entity/EmpresaColaboradora, App/Entity/EmpresaSolicitud, App/Entity/Estudiante, App/Repository/AsignacionPracticaRepository, App/Repository/ConvenioRepository, App/Repository/EmpresaColaboradoraRepository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Controller\Api;
@@ -24,6 +30,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/api/export', name: 'api_export_')]
 #[IsGranted('ROLE_API')]
 final class CsvExportController extends AbstractController
@@ -70,11 +80,20 @@ final class CsvExportController extends AbstractController
         'hibrida',
     ];
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(private readonly CsvExporter $csvExporter)
     {
     }
 
-    #[Route('/empresas.csv', name: 'empresas', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/empresas', name: 'empresas', methods: ['GET'])]
+    #[Route('/empresas.csv', name: 'empresas_legacy', methods: ['GET'])]
     public function empresas(Request $request, EmpresaColaboradoraRepository $repository): Response
     {
         $qb = $repository->createQueryBuilder('e')->orderBy('e.id', 'ASC');
@@ -121,7 +140,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-empresas.csv', $rows);
     }
 
-    #[Route('/convenios.csv', name: 'convenios', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/convenios', name: 'convenios', methods: ['GET'])]
+    #[Route('/convenios.csv', name: 'convenios_legacy', methods: ['GET'])]
     public function convenios(Request $request, ConvenioRepository $repository): Response
     {
         $qb = $repository->createQueryBuilder('c')
@@ -172,7 +196,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-convenios.csv', $rows);
     }
 
-    #[Route('/estudiantes.csv', name: 'estudiantes', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/estudiantes', name: 'estudiantes', methods: ['GET'])]
+    #[Route('/estudiantes.csv', name: 'estudiantes_legacy', methods: ['GET'])]
     public function estudiantes(Request $request, EstudianteRepository $repository): Response
     {
         $qb = $repository->createQueryBuilder('e')->orderBy('e.id', 'ASC');
@@ -214,7 +243,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-estudiantes.csv', $rows);
     }
 
-    #[Route('/asignaciones.csv', name: 'asignaciones', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/asignaciones', name: 'asignaciones', methods: ['GET'])]
+    #[Route('/asignaciones.csv', name: 'asignaciones_legacy', methods: ['GET'])]
     public function asignaciones(Request $request, AsignacionPracticaRepository $repository): Response
     {
         $qb = $repository->createQueryBuilder('a')
@@ -276,7 +310,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-asignaciones.csv', $rows);
     }
 
-    #[Route('/tutores-academicos.csv', name: 'tutores_academicos', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/tutores-academicos', name: 'tutores_academicos', methods: ['GET'])]
+    #[Route('/tutores-academicos.csv', name: 'tutores_academicos_legacy', methods: ['GET'])]
     public function tutoresAcademicos(Request $request, TutorAcademicoRepository $repository): Response
     {
         $qb = $repository->createQueryBuilder('t')->orderBy('t.apellido', 'ASC');
@@ -302,7 +341,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-tutores-academicos.csv', $rows);
     }
 
-    #[Route('/tutores-profesionales.csv', name: 'tutores_profesionales', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/tutores-profesionales', name: 'tutores_profesionales', methods: ['GET'])]
+    #[Route('/tutores-profesionales.csv', name: 'tutores_profesionales_legacy', methods: ['GET'])]
     public function tutoresProfesionales(
         Request $request,
         TutorProfesionalRepository $repository,
@@ -343,7 +387,12 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-tutores-profesionales.csv', $rows);
     }
 
-    #[Route('/empresa-solicitudes.csv', name: 'empresa_solicitudes', methods: ['GET'])]
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/empresa-solicitudes', name: 'empresa_solicitudes', methods: ['GET'])]
+    #[Route('/empresa-solicitudes.csv', name: 'empresa_solicitudes_legacy', methods: ['GET'])]
     public function solicitudes(Request $request, EmpresaSolicitudRepository $repository): Response
     {
         $criteria = [];
@@ -373,6 +422,10 @@ final class CsvExportController extends AbstractController
         return $this->csvExporter->createResponse('agora-solicitudes-empresa.csv', $rows);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function invalidRequest(string $message): JsonResponse
     {
         return $this->json(['message' => $message], Response::HTTP_BAD_REQUEST);

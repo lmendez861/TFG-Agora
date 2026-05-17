@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/EmpresaSolicitud, App/Repository/EmpresaColaboradoraRepository, App/Repository/EmpresaSolicitudRepository, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -10,10 +16,18 @@ use App\Repository\EmpresaSolicitudRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EmpresaSolicitudFlowTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testFullSolicitudFlow(): void
     {
         $client = static::createClient();
@@ -73,5 +87,6 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         $empresaRepo = static::getContainer()->get(EmpresaColaboradoraRepository::class);
         $empresa = $empresaRepo->findOneBy(['nombre' => 'FlowTestCo']);
         self::assertNotNull($empresa, 'La empresa debe crearse al aprobar la solicitud');
+        self::assertSame('activa', $empresa->getEstadoColaboracion());
     }
 }

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Controller\Api;
@@ -10,6 +16,10 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class PublicAccessControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -26,6 +36,10 @@ final class PublicAccessControllerTest extends WebTestCase
         $this->markMfaAsVerified();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -33,6 +47,10 @@ final class PublicAccessControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testStatusDevuelveElSnapshotActual(): void
     {
         $this->client->request('GET', '/api/public-access');
@@ -48,6 +66,10 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testStartDevuelveUnEstadoControlado(): void
     {
         $this->client->request('POST', '/api/public-access/start');
@@ -79,6 +101,10 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertGreaterThan(0, $payload['processId']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testStopDevuelveEstadoInactivo(): void
     {
         $this->client->request('POST', '/api/public-access/stop');
@@ -92,6 +118,10 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertNull($payload['processId']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function loginAsAdmin(): void
     {
         $this->client->request(
@@ -104,11 +134,19 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function decodeResponse(): array
     {
         return json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function markMfaAsVerified(): void
     {
         $sessionFactory = static::getContainer()->get('session.factory');

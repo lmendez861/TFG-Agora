@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conecta con modulos locales: ../types, ../utils/dashboard.
+ */
 import { Link } from 'react-router-dom';
 import type { AsignacionSummary, EstudianteSummary } from '../types';
 import type { DashboardMetric, DashboardStat } from '../utils/dashboard';
@@ -51,6 +56,10 @@ interface DashboardHomePageProps {
   onEditStudent: (student: EstudianteSummary) => void;
 }
 
+/**
+ * Resume la responsabilidad de DashboardHomePage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function DashboardHomePage({
   authError,
   heroMetrics,

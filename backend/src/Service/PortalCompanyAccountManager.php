@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conecta con App/Entity/EmpresaColaboradora, App/Entity/EmpresaPortalCuenta, App/Entity/EmpresaSolicitud, App/Repository/EmpresaPortalCuentaRepository.
+ */
+
 declare(strict_types=1);
 
 namespace App\Service;
@@ -12,22 +18,33 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Mailer\MailerInterface;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class PortalCompanyAccountManager
 {
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly EmpresaPortalCuentaRepository $accountRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly MailerInterface $mailer,
         private readonly MailConfigurationInspector $mailConfigurationInspector,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly ExternalAccessUrlGenerator $externalAccessUrlGenerator,
         private readonly string $fromAddress,
     ) {
     }
 
+    /**
+     * Resume la responsabilidad de provisionApprovedAccount dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function provisionApprovedAccount(EmpresaSolicitud $solicitud, EmpresaColaboradora $empresa): EmpresaPortalCuenta
     {
         $account = $solicitud->getPortalCuenta()
@@ -51,6 +68,10 @@ final class PortalCompanyAccountManager
         return $account;
     }
 
+    /**
+     * Resume la responsabilidad de activateAccount dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function activateAccount(string $token, string $plainPassword): ?EmpresaPortalCuenta
     {
         $account = $this->accountRepository->findOneBySetupToken($token);
@@ -65,6 +86,10 @@ final class PortalCompanyAccountManager
         return $account;
     }
 
+    /**
+     * Resume la responsabilidad de requestPasswordReset dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function requestPasswordReset(string $email): ?EmpresaPortalCuenta
     {
         $account = $this->accountRepository->findOneBy(['email' => mb_strtolower(trim($email))]);
@@ -78,6 +103,10 @@ final class PortalCompanyAccountManager
         return $account;
     }
 
+    /**
+     * Resume la responsabilidad de resetPassword dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function resetPassword(string $token, string $plainPassword): ?EmpresaPortalCuenta
     {
         $account = $this->accountRepository->findOneByPasswordResetToken($token);
@@ -92,13 +121,17 @@ final class PortalCompanyAccountManager
         return $account;
     }
 
+    /**
+     * Resume la responsabilidad de sendActivationEmail dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function sendActivationEmail(EmpresaPortalCuenta $account): bool
     {
         if (!$this->mailConfigurationInspector->snapshot()['canSend'] || $account->getSetupToken() === null) {
             return false;
         }
 
-        $link = $this->buildFrontendLink('/externo/activar-cuenta', ['token' => $account->getSetupToken()]);
+        $link = $this->externalAccessUrlGenerator->buildPortalUrl('/activar-cuenta', ['token' => $account->getSetupToken()]);
         $email = (new Email())
             ->from(Address::create($this->fromAddress))
             ->to($account->getEmail())
@@ -119,13 +152,17 @@ final class PortalCompanyAccountManager
         }
     }
 
+    /**
+     * Resume la responsabilidad de sendPasswordResetEmail dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function sendPasswordResetEmail(EmpresaPortalCuenta $account): bool
     {
         if (!$this->mailConfigurationInspector->snapshot()['canSend'] || $account->getPasswordResetToken() === null) {
             return false;
         }
 
-        $link = $this->buildFrontendLink('/externo/restablecer-clave', ['token' => $account->getPasswordResetToken()]);
+        $link = $this->externalAccessUrlGenerator->buildPortalUrl('/restablecer-clave', ['token' => $account->getPasswordResetToken()]);
         $email = (new Email())
             ->from(Address::create($this->fromAddress))
             ->to($account->getEmail())
@@ -146,19 +183,37 @@ final class PortalCompanyAccountManager
         }
     }
 
-    private function buildFrontendLink(string $path, array $query = []): string
+    /**
+     * Construye una estructura derivada que sera enviada a otra capa del sistema.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function sendRequestRejectedEmail(EmpresaSolicitud $solicitud): bool
     {
-        $baseUrl = rtrim($this->urlGenerator->generate('frontend_portal_index', [], UrlGeneratorInterface::ABSOLUTE_URL), '/');
-
-        if ($query === []) {
-            return $baseUrl . substr($path, strlen('/externo'));
+        if (!$this->mailConfigurationInspector->snapshot()['canSend']) {
+            return false;
         }
 
-        return sprintf(
-            '%s%s?%s',
-            $baseUrl,
-            substr($path, strlen('/externo')),
-            http_build_query($query)
-        );
+        $statusUrl = $this->externalAccessUrlGenerator->buildPortalUrl('/estado', ['token' => $solicitud->getPortalToken()]);
+        $reason = $solicitud->getRejectionReason() ?? 'No se ha indicado un motivo adicional.';
+        $email = (new Email())
+            ->from(Address::create($this->fromAddress))
+            ->to($solicitud->getContactoEmail())
+            ->subject('Actualizacion de tu solicitud de empresa colaboradora')
+            ->html(sprintf(
+                '<p>Hola %s,</p><p>Hemos revisado la solicitud de <strong>%s</strong> y por ahora no ha sido aprobada.</p><p><strong>Motivo:</strong> %s</p><p>Puedes consultar el estado desde este enlace:</p><p><a href="%s">%s</a></p>',
+                htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars($solicitud->getNombreEmpresa(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                nl2br(htmlspecialchars($reason, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')),
+                $statusUrl,
+                $statusUrl,
+            ));
+
+        try {
+            $this->mailer->send($email);
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

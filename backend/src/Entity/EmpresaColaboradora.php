@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/EmpresaColaboradoraRepository.
+ */
+
 namespace App\Entity;
 
 use App\Repository\EmpresaColaboradoraRepository;
@@ -8,6 +14,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: EmpresaColaboradoraRepository::class)]
 class EmpresaColaboradora
 {
@@ -88,6 +98,10 @@ class EmpresaColaboradora
     #[ORM\OneToOne(mappedBy: 'empresa', targetEntity: EmpresaPortalCuenta::class, cascade: ['persist'])]
     private ?EmpresaPortalCuenta $portalCuenta = null;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $this->fechaAlta = new \DateTimeImmutable();
@@ -257,6 +271,10 @@ class EmpresaColaboradora
         return $this->contactos;
     }
 
+    /**
+     * Resume la responsabilidad de addContacto dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addContacto(ContactoEmpresa $contacto): self
     {
         if (!$this->contactos->contains($contacto)) {
@@ -267,6 +285,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeContacto dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeContacto(ContactoEmpresa $contacto): self
     {
         if ($this->contactos->removeElement($contacto)) {
@@ -286,6 +308,10 @@ class EmpresaColaboradora
         return $this->convenios;
     }
 
+    /**
+     * Resume la responsabilidad de addConvenio dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addConvenio(Convenio $convenio): self
     {
         if (!$this->convenios->contains($convenio)) {
@@ -296,6 +322,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeConvenio dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeConvenio(Convenio $convenio): self
     {
         if ($this->convenios->removeElement($convenio)) {
@@ -315,6 +345,10 @@ class EmpresaColaboradora
         return $this->tutoresProfesionales;
     }
 
+    /**
+     * Resume la responsabilidad de addTutorProfesional dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addTutorProfesional(TutorProfesional $tutor): self
     {
         if (!$this->tutoresProfesionales->contains($tutor)) {
@@ -325,6 +359,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeTutorProfesional dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeTutorProfesional(TutorProfesional $tutor): self
     {
         if ($this->tutoresProfesionales->removeElement($tutor)) {
@@ -344,6 +382,10 @@ class EmpresaColaboradora
         return $this->asignaciones;
     }
 
+    /**
+     * Resume la responsabilidad de addAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addAsignacion(AsignacionPractica $asignacion): self
     {
         if (!$this->asignaciones->contains($asignacion)) {
@@ -354,6 +396,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeAsignacion(AsignacionPractica $asignacion): self
     {
         if ($this->asignaciones->removeElement($asignacion)) {
@@ -373,6 +419,10 @@ class EmpresaColaboradora
         return $this->etiquetas;
     }
 
+    /**
+     * Resume la responsabilidad de addEtiqueta dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addEtiqueta(EmpresaEtiqueta $etiqueta): self
     {
         if (!$this->etiquetas->contains($etiqueta)) {
@@ -383,6 +433,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeEtiqueta dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeEtiqueta(EmpresaEtiqueta $etiqueta): self
     {
         if ($this->etiquetas->removeElement($etiqueta)) {
@@ -402,6 +456,10 @@ class EmpresaColaboradora
         return $this->notas;
     }
 
+    /**
+     * Resume la responsabilidad de addNota dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addNota(EmpresaNota $nota): self
     {
         if (!$this->notas->contains($nota)) {
@@ -412,6 +470,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeNota dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeNota(EmpresaNota $nota): self
     {
         if ($this->notas->removeElement($nota)) {
@@ -431,6 +493,10 @@ class EmpresaColaboradora
         return $this->documentos;
     }
 
+    /**
+     * Resume la responsabilidad de addDocumento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addDocumento(EmpresaDocumento $documento): self
     {
         if (!$this->documentos->contains($documento)) {
@@ -441,6 +507,10 @@ class EmpresaColaboradora
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeDocumento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeDocumento(EmpresaDocumento $documento): self
     {
         if ($this->documentos->removeElement($documento)) {

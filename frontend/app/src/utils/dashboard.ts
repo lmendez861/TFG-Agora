@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Utilidad de frontend: contiene transformaciones puras compartidas por componentes y tests.
+ * Relaciones: Conecta con modulos locales: ../types.
+ */
 import type { ApiCollections } from '../types';
 
 export interface DashboardStat {
@@ -10,6 +15,10 @@ export interface DashboardMetric {
   value: number;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function buildDashboardStats(collections: ApiCollections): DashboardStat[] {
   const horasPlanificadas = collections.asignaciones.reduce((total, asignacion) => {
     return total + (asignacion.horasTotales ?? 0);
@@ -24,6 +33,10 @@ export function buildDashboardStats(collections: ApiCollections): DashboardStat[
   ];
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function buildDashboardAnalytics(collections: ApiCollections): DashboardMetric[] {
   const empresasActivas = collections.empresas.filter((empresa) => empresa.estadoColaboracion === 'activa').length;
   const estudiantesEnPracticas = collections.estudiantes.filter((estudiante) => estudiante.estado === 'en_practicas').length;
@@ -46,6 +59,10 @@ export function buildDashboardAnalytics(collections: ApiCollections): DashboardM
   ];
 }
 
+/**
+ * Devuelve DashboardBaseRecordCount sin duplicar logica de acceso en los consumidores.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function getDashboardBaseRecordCount(collections: ApiCollections): number {
   return collections.empresas.length
     + collections.estudiantes.length

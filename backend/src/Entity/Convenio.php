@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/ConvenioRepository.
+ */
+
 namespace App\Entity;
 
 use App\Repository\ConvenioRepository;
@@ -8,6 +14,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: ConvenioRepository::class)]
 class Convenio
 {
@@ -63,6 +73,10 @@ class Convenio
     #[ORM\OrderBy(['registradoEn' => 'ASC'])]
     private Collection $workflowEventos;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $this->fechaInicio = new \DateTimeImmutable();
@@ -194,6 +208,10 @@ class Convenio
         return $this->asignaciones;
     }
 
+    /**
+     * Resume la responsabilidad de addAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addAsignacion(AsignacionPractica $asignacion): self
     {
         if (!$this->asignaciones->contains($asignacion)) {
@@ -204,6 +222,10 @@ class Convenio
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeAsignacion dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeAsignacion(AsignacionPractica $asignacion): self
     {
         if ($this->asignaciones->removeElement($asignacion)) {
@@ -223,6 +245,10 @@ class Convenio
         return $this->checklistItems;
     }
 
+    /**
+     * Resume la responsabilidad de addChecklistItem dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addChecklistItem(ConvenioChecklistItem $item): self
     {
         if (!$this->checklistItems->contains($item)) {
@@ -233,6 +259,10 @@ class Convenio
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeChecklistItem dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeChecklistItem(ConvenioChecklistItem $item): self
     {
         if ($this->checklistItems->removeElement($item)) {
@@ -252,6 +282,10 @@ class Convenio
         return $this->documentos;
     }
 
+    /**
+     * Resume la responsabilidad de addDocumento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addDocumento(ConvenioDocumento $documento): self
     {
         if (!$this->documentos->contains($documento)) {
@@ -262,6 +296,10 @@ class Convenio
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeDocumento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeDocumento(ConvenioDocumento $documento): self
     {
         if ($this->documentos->removeElement($documento)) {
@@ -281,6 +319,10 @@ class Convenio
         return $this->alertas;
     }
 
+    /**
+     * Resume la responsabilidad de addAlerta dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addAlerta(ConvenioAlerta $alerta): self
     {
         if (!$this->alertas->contains($alerta)) {
@@ -291,6 +333,10 @@ class Convenio
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeAlerta dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeAlerta(ConvenioAlerta $alerta): self
     {
         if ($this->alertas->removeElement($alerta)) {
@@ -310,6 +356,10 @@ class Convenio
         return $this->workflowEventos;
     }
 
+    /**
+     * Resume la responsabilidad de addWorkflowEvento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addWorkflowEvento(ConvenioWorkflowEvento $evento): self
     {
         if (!$this->workflowEventos->contains($evento)) {
@@ -320,6 +370,10 @@ class Convenio
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeWorkflowEvento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeWorkflowEvento(ConvenioWorkflowEvento $evento): self
     {
         if ($this->workflowEventos->removeElement($evento)) {

@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Relaciones: Conecta con App/Entity/Estudiante, App/Tests/Support/DemoFixtureLoaderTrait.
+ */
+
 namespace App\Tests\Controller\Api;
 
 use App\Entity\Estudiante;
@@ -9,6 +15,10 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Controlador HTTP de la API interna: valida peticiones, coordina servicios/repositorios y devuelve JSON al frontend.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class EstudianteControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
@@ -26,6 +36,10 @@ final class EstudianteControllerTest extends WebTestCase
         $this->reloadDemoFixtures($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -34,6 +48,10 @@ final class EstudianteControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoDevuelveEstudiantes(): void
     {
         $this->client->request('GET', '/api/estudiantes');
@@ -47,6 +65,10 @@ final class EstudianteControllerTest extends WebTestCase
         self::assertArrayHasKey('asignaciones', $payload[0]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoPermiteFiltrarYBuscar(): void
     {
         $this->client->request('GET', '/api/estudiantes?estado=en_practicas');
@@ -73,6 +95,10 @@ final class EstudianteControllerTest extends WebTestCase
         }
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testListadoRechazaEstadoNoValido(): void
     {
         $this->client->request('GET', '/api/estudiantes?estado=sin_estado');
@@ -80,6 +106,10 @@ final class EstudianteControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetalleIncluyeAsignacionesDelEstudiante(): void
     {
         $estudiante = $this->entityManager
@@ -98,6 +128,10 @@ final class EstudianteControllerTest extends WebTestCase
         self::assertSame('Innovar Formación', $payload['asignaciones'][0]['empresa']);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testAltaDeEstudianteValida(): void
     {
         $this->client->request(
@@ -127,6 +161,10 @@ final class EstudianteControllerTest extends WebTestCase
         self::assertSame('luis.martinez@example.com', $estudiante->getEmail());
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testActualizarEstudianteDetectaColisionesDeEmail(): void
     {
         $estudiante = $this->entityManager

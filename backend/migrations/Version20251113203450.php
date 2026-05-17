@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Migracion Doctrine: versiona cambios de esquema que deben aplicarse sobre la base de datos.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace DoctrineMigrations;
@@ -17,6 +23,10 @@ final class Version20251113203450 extends AbstractMigration
         return 'Baseline schema for the Gestion de Empresas Colaboradoras project.';
     }
 
+    /**
+     * Paso de migracion Doctrine que modifica el esquema de base de datos al ejecutar migrations.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
@@ -323,6 +333,10 @@ final class Version20251113203450 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_75EA56E016BA31DB ON messenger_messages (delivered_at)');
     }
 
+    /**
+     * Paso de migracion Doctrine que modifica el esquema de base de datos al ejecutar migrations.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function down(Schema $schema): void
     {
         $this->throwIrreversibleMigrationException(

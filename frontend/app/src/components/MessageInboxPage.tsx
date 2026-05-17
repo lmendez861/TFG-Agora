@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente React: renderiza una parte reutilizable de la interfaz y comunica eventos al contenedor superior.
+ * Relaciones: Conecta con modulos locales: ../types.
+ */
 import { useMemo } from 'react';
 import type { EmpresaInboxThread, EmpresaSolicitudMensaje } from '../types';
 
@@ -22,6 +27,10 @@ const SOLICITUD_ESTADO_LABELS: Record<string, string> = {
   rechazada: 'Rechazada',
 };
 
+/**
+ * Resume la responsabilidad de formatTimestamp dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function formatTimestamp(value: string | null): string {
   if (!value) {
     return 'Sin actividad';
@@ -41,6 +50,10 @@ function formatTimestamp(value: string | null): string {
   });
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildSnippet(thread: EmpresaInboxThread): string {
   if (thread.lastMessage?.texto) {
     return thread.lastMessage.texto;
@@ -53,6 +66,10 @@ function buildSnippet(thread: EmpresaInboxThread): string {
   return 'Sin mensajes todavia. El centro puede iniciar el hilo desde esta bandeja.';
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildInitials(name: string): string {
   return name
     .split(' ')
@@ -62,6 +79,10 @@ function buildInitials(name: string): string {
     .join('');
 }
 
+/**
+ * Resume la responsabilidad de MessageInboxPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 export function MessageInboxPage({
   threads,
   selectedSolicitudId,

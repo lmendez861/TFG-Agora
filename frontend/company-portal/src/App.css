@@ -1,3 +1,8 @@
+/*
+ * Comentario de mantenimiento Agora.
+ * Proposito: Hoja de estilos: define la presentacion visual de la pantalla o modulo asociado.
+ * Relaciones: esta hoja se aplica desde el componente o entrada que la importa.
+ */
 :root {
   color-scheme: dark;
   font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
@@ -111,11 +116,15 @@ textarea {
   color: var(--text-muted);
   text-decoration: none;
   font-weight: 600;
-  padding: 0.3rem 0.2rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.8rem;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
-.nav__link:hover {
+.nav__link:hover,
+.nav__link--active {
   color: var(--text-main);
+  background: rgba(142, 197, 255, 0.1);
 }
 
 main {
@@ -214,6 +223,16 @@ main {
   border-color: rgba(169, 188, 214, 0.28);
 }
 
+.btn:focus-visible,
+.nav__link:focus-visible,
+.brand__title:focus-visible,
+.link:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(142, 197, 255, 0.38);
+  outline-offset: 3px;
+}
+
 .btn--primary {
   border: none;
   background: linear-gradient(135deg, var(--accent-warm), #f2c58b);
@@ -255,6 +274,16 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.metric-card:hover,
+.surface-card:hover,
+.timeline__item:hover,
+.mail-card:hover,
+.verify-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(142, 197, 255, 0.24);
 }
 
 .metric-card span,
@@ -302,6 +331,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .surface-card p {
@@ -348,6 +378,7 @@ main {
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(169, 188, 214, 0.08);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
 .timeline__item strong {
@@ -473,6 +504,8 @@ code {
   border-radius: 1.2rem;
   padding: 0.9rem;
   min-height: 260px;
+  max-height: 440px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.65rem;

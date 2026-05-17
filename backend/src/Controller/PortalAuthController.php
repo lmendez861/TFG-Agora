@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Controlador Symfony: conecta rutas HTTP con servicios de dominio y plantillas/respuestas.
+ * Relaciones: Conecta con App/Entity/EmpresaPortalCuenta, App/Service/AuditLogger, App/Service/PortalCompanyAccountManager.
+ */
+
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -16,9 +22,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[Route('/portal-auth', name: 'portal_auth_')]
 final class PortalAuthController extends AbstractController
 {
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct(
         private readonly PortalCompanyAccountManager $accountManager,
         private readonly ValidatorInterface $validator,
@@ -26,18 +40,30 @@ final class PortalAuthController extends AbstractController
     ) {
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(): Response
     {
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/logout', name: 'logout', methods: ['POST'])]
     public function logout(): void
     {
         // Managed by the firewall.
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/me', name: 'me', methods: ['GET'])]
     #[IsGranted('ROLE_COMPANY_PORTAL')]
     public function me(): JsonResponse
@@ -60,6 +86,10 @@ final class PortalAuthController extends AbstractController
         ]);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/activate', name: 'activate', methods: ['POST'])]
     public function activate(Request $request): JsonResponse
     {
@@ -71,7 +101,7 @@ final class PortalAuthController extends AbstractController
         $constraints = new Assert\Collection(
             fields: [
                 'token' => [new Assert\NotBlank(), new Assert\Length(min: 16, max: 255)],
-                'password' => [new Assert\NotBlank(), new Assert\Length(min: 10, max: 190)],
+                'password' => $this->passwordConstraints(),
             ],
             allowExtraFields: false
         );
@@ -96,6 +126,10 @@ final class PortalAuthController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/request-reset', name: 'request_reset', methods: ['POST'])]
     public function requestReset(Request $request): JsonResponse
     {
@@ -129,6 +163,10 @@ final class PortalAuthController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/reset-password', name: 'reset_password', methods: ['POST'])]
     public function resetPassword(Request $request): JsonResponse
     {
@@ -140,7 +178,7 @@ final class PortalAuthController extends AbstractController
         $constraints = new Assert\Collection(
             fields: [
                 'token' => [new Assert\NotBlank(), new Assert\Length(min: 16, max: 255)],
-                'password' => [new Assert\NotBlank(), new Assert\Length(min: 10, max: 190)],
+                'password' => $this->passwordConstraints(),
             ],
             allowExtraFields: false
         );
@@ -164,6 +202,10 @@ final class PortalAuthController extends AbstractController
         ], Response::HTTP_OK);
     }
 
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     private function decodePayload(Request $request): array|JsonResponse
     {
         $payload = json_decode($request->getContent(), true);
@@ -172,5 +214,19 @@ final class PortalAuthController extends AbstractController
         }
 
         return $payload;
+    }
+
+    /**
+     * Define las reglas minimas de contrasena para activacion y recuperacion del portal externo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     *
+     * @return list<Assert\Constraint>
+     */
+    private function passwordConstraints(): array
+    {
+        return [
+            new Assert\NotBlank(),
+            new Assert\Length(min: 8, max: 190),
+        ];
     }
 }

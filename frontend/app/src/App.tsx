@@ -1,3 +1,8 @@
+﻿/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Componente raiz React: orquesta rutas, estado principal, formularios y llamadas al cliente de API.
+ * Relaciones: Conecta con modulos locales: ./components/DataTable, ./components/DocumentationGuidePage, ./components/EstudianteForm, ./components/EmpresaForm, ./components/ConvenioForm, ./components/AsignacionForm, ./components/DashboardHomePage, ./components/DocumentPreviewModal.
+ */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DataTable, type TableColumn } from './components/DataTable';
@@ -6,6 +11,8 @@ import { EstudianteForm, type EstudianteFormValues } from './components/Estudian
 import { EmpresaForm, type EmpresaFormValues } from './components/EmpresaForm';
 import { ConvenioForm, type ConvenioFormValues } from './components/ConvenioForm';
 import { AsignacionForm, type AsignacionFormValues } from './components/AsignacionForm';
+import { TutorAcademicoForm, type TutorAcademicoFormValues } from './components/TutorAcademicoForm';
+import { TutorProfesionalForm, type TutorProfesionalFormValues } from './components/TutorProfesionalForm';
 import { DashboardHomePage } from './components/DashboardHomePage';
 import { DocumentPreviewModal } from './components/DocumentPreviewModal';
 import { MessageInboxPage } from './components/MessageInboxPage';
@@ -21,6 +28,8 @@ import {
   createConvenio,
   createEmpresa,
   createEstudiante,
+  createTutorAcademico,
+  createTutorProfesional,
   createSeguimiento,
   addConvenioDocument,
   addEmpresaDocument,
@@ -42,6 +51,8 @@ import {
   getEmpresaDetail,
   getEstudianteDetail,
   toggleConvenioChecklist,
+  updateTutorAcademico,
+  updateTutorProfesional,
   updateAsignacion,
   updateConvenio,
   rejectEmpresaSolicitud,
@@ -94,7 +105,9 @@ import type {
   EstudiantePayload,
   EstudianteSummary,
   TutorAcademicoSummary,
+  TutorAcademicoPayload,
   TutorProfesionalSummary,
+  TutorProfesionalPayload,
   MeResponse,
   PaginatedResponse,
   SeguimientoRecord,
@@ -103,6 +116,10 @@ import './App.css';
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium' });
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildExportFilename(scope: string): string {
   const now = new Date();
   const stamp = [
@@ -139,10 +156,18 @@ interface BootstrapCachePayload {
   updatedAt: string;
 }
 
+/**
+ * Resume la responsabilidad de isCollectionArray dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function isCollectionArray(value: unknown): value is unknown[] {
   return Array.isArray(value);
 }
 
+/**
+ * Resume la responsabilidad de readBootstrapCache dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function readBootstrapCache(): { collections: ApiCollections | null; updatedAt: Date | null } {
   if (typeof window === 'undefined') {
     return { collections: null, updatedAt: null };
@@ -178,6 +203,10 @@ function readBootstrapCache(): { collections: ApiCollections | null; updatedAt: 
   }
 }
 
+/**
+ * Resume la responsabilidad de persistBootstrapCache dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function persistBootstrapCache(collections: ApiCollections, updatedAt: Date): void {
   if (typeof window === 'undefined') {
     return;
@@ -217,6 +246,10 @@ function normalizeListResponse<T>(
   };
 }
 
+/**
+ * Resume la responsabilidad de formatDate dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function formatDate(value: string | null): string {
   if (!value) {
     return 'N/D';
@@ -323,14 +356,26 @@ const EMPTY_STUDENT_VALUES: EstudianteFormValues = {
   estado: 'disponible',
 };
 
+/**
+ * Resume la responsabilidad de cloneStudentForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function cloneStudentForm(values: EstudianteFormValues): EstudianteFormValues {
   return { ...values };
 }
 
+/**
+ * Resume la responsabilidad de sanitizeValue dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function sanitizeValue(value: string | null | undefined): string {
   return value ?? '';
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapSummaryToStudentForm(summary: EstudianteSummary): EstudianteFormValues {
   return {
     nombre: summary.nombre,
@@ -345,6 +390,10 @@ function mapSummaryToStudentForm(summary: EstudianteSummary): EstudianteFormValu
   };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapDetailToStudentForm(detail: EstudianteDetail): EstudianteFormValues {
   return {
     nombre: detail.nombre,
@@ -359,11 +408,19 @@ function mapDetailToStudentForm(detail: EstudianteDetail): EstudianteFormValues 
   };
 }
 
+/**
+ * Resume la responsabilidad de trimOrUndefined dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function trimOrUndefined(value: string): string | undefined {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildEstudiantePayload(values: EstudianteFormValues): EstudiantePayload {
   const payload: EstudiantePayload = {
     nombre: values.nombre.trim(),
@@ -415,10 +472,18 @@ const EMPTY_EMPRESA_VALUES: EmpresaFormValues = {
   observaciones: '',
 };
 
+/**
+ * Resume la responsabilidad de cloneEmpresaForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function cloneEmpresaForm(values: EmpresaFormValues): EmpresaFormValues {
   return { ...values };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapEmpresaDetailToForm(detail: EmpresaDetail): EmpresaFormValues {
   return {
     nombre: detail.nombre ?? '',
@@ -436,6 +501,10 @@ function mapEmpresaDetailToForm(detail: EmpresaDetail): EmpresaFormValues {
   };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapEmpresaSummaryToForm(summary: EmpresaSummary): EmpresaFormValues {
   return {
     nombre: summary.nombre,
@@ -453,6 +522,10 @@ function mapEmpresaSummaryToForm(summary: EmpresaSummary): EmpresaFormValues {
   };
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildEmpresaPayload(values: EmpresaFormValues): EmpresaPayload {
   const payload: EmpresaPayload = {
     nombre: values.nombre.trim(),
@@ -518,10 +591,18 @@ const EMPTY_CONVENIO_VALUES: ConvenioFormValues = {
   observaciones: '',
 };
 
+/**
+ * Resume la responsabilidad de cloneConvenioForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function cloneConvenioForm(values: ConvenioFormValues): ConvenioFormValues {
   return { ...values };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapConvenioDetailToForm(detail: ConvenioDetail): ConvenioFormValues {
   return {
     empresaId: String(detail.empresa.id),
@@ -536,6 +617,10 @@ function mapConvenioDetailToForm(detail: ConvenioDetail): ConvenioFormValues {
   };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapConvenioSummaryToForm(summary: ConvenioSummary): ConvenioFormValues {
   return {
     empresaId: String(summary.empresa.id),
@@ -550,6 +635,10 @@ function mapConvenioSummaryToForm(summary: ConvenioSummary): ConvenioFormValues 
   };
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildConvenioPayload(values: ConvenioFormValues): ConvenioPayload {
   const payload: ConvenioPayload = {
     empresaId: parseInt(values.empresaId, 10),
@@ -597,10 +686,18 @@ const EMPTY_ASIGNACION_VALUES: AsignacionFormValues = {
   estado: '',
 };
 
+/**
+ * Resume la responsabilidad de cloneAsignacionForm dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function cloneAsignacionForm(values: AsignacionFormValues): AsignacionFormValues {
   return { ...values };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapAsignacionDetailToForm(detail: AsignacionDetail): AsignacionFormValues {
   return {
     estudianteId: String(detail.estudiante.id),
@@ -616,6 +713,10 @@ function mapAsignacionDetailToForm(detail: AsignacionDetail): AsignacionFormValu
   };
 }
 
+/**
+ * Transforma datos entre la forma de API, formulario o dominio que usa este modulo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function mapAsignacionSummaryToForm(summary: AsignacionSummary): AsignacionFormValues {
   return {
     estudianteId: String(summary.estudiante.id),
@@ -631,6 +732,10 @@ function mapAsignacionSummaryToForm(summary: AsignacionSummary): AsignacionFormV
   };
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildAsignacionPayload(values: AsignacionFormValues): AsignacionPayload {
   const payload: AsignacionPayload = {
     estudianteId: parseInt(values.estudianteId, 10),
@@ -663,6 +768,109 @@ function buildAsignacionPayload(values: AsignacionFormValues): AsignacionPayload
   return payload;
 }
 
+const EMPTY_TUTOR_ACADEMICO_VALUES: TutorAcademicoFormValues = {
+  nombre: '',
+  apellido: '',
+  email: '',
+  telefono: '',
+  departamento: '',
+  especialidad: '',
+  activo: true,
+};
+
+function cloneTutorAcademicoForm(values: TutorAcademicoFormValues): TutorAcademicoFormValues {
+  return { ...values };
+}
+
+function mapTutorAcademicoToForm(tutor: TutorAcademicoSummary): TutorAcademicoFormValues {
+  return {
+    nombre: tutor.nombre,
+    apellido: tutor.apellido,
+    email: tutor.email,
+    telefono: sanitizeValue(tutor.telefono),
+    departamento: sanitizeValue(tutor.departamento),
+    especialidad: sanitizeValue(tutor.especialidad),
+    activo: tutor.activo,
+  };
+}
+
+function buildTutorAcademicoPayload(values: TutorAcademicoFormValues): TutorAcademicoPayload {
+  const payload: TutorAcademicoPayload = {
+    nombre: values.nombre.trim(),
+    apellido: values.apellido.trim(),
+    email: values.email.trim(),
+    activo: values.activo,
+  };
+
+  const telefono = trimOrUndefined(values.telefono);
+  if (telefono) {
+    payload.telefono = telefono;
+  }
+  const departamento = trimOrUndefined(values.departamento);
+  if (departamento) {
+    payload.departamento = departamento;
+  }
+  const especialidad = trimOrUndefined(values.especialidad);
+  if (especialidad) {
+    payload.especialidad = especialidad;
+  }
+
+  return payload;
+}
+
+const EMPTY_TUTOR_PROFESIONAL_VALUES: TutorProfesionalFormValues = {
+  empresaId: '',
+  nombre: '',
+  email: '',
+  telefono: '',
+  cargo: '',
+  certificaciones: '',
+  activo: true,
+};
+
+function cloneTutorProfesionalForm(values: TutorProfesionalFormValues): TutorProfesionalFormValues {
+  return { ...values };
+}
+
+function mapTutorProfesionalToForm(tutor: TutorProfesionalSummary): TutorProfesionalFormValues {
+  return {
+    empresaId: String(tutor.empresa.id),
+    nombre: tutor.nombre,
+    email: sanitizeValue(tutor.email),
+    telefono: sanitizeValue(tutor.telefono),
+    cargo: sanitizeValue(tutor.cargo),
+    certificaciones: sanitizeValue(tutor.certificaciones),
+    activo: tutor.activo,
+  };
+}
+
+function buildTutorProfesionalPayload(values: TutorProfesionalFormValues): TutorProfesionalPayload {
+  const payload: TutorProfesionalPayload = {
+    empresaId: parseInt(values.empresaId, 10),
+    nombre: values.nombre.trim(),
+    activo: values.activo,
+  };
+
+  const email = trimOrUndefined(values.email);
+  if (email) {
+    payload.email = email;
+  }
+  const telefono = trimOrUndefined(values.telefono);
+  if (telefono) {
+    payload.telefono = telefono;
+  }
+  const cargo = trimOrUndefined(values.cargo);
+  if (cargo) {
+    payload.cargo = cargo;
+  }
+  const certificaciones = trimOrUndefined(values.certificaciones);
+  if (certificaciones) {
+    payload.certificaciones = certificaciones;
+  }
+
+  return payload;
+}
+
 interface ReferenceData {
   tutoresAcademicos: TutorAcademicoSummary[];
   tutoresProfesionales: TutorProfesionalSummary[];
@@ -687,6 +895,8 @@ type StudentModalState = EntityModalState<EstudianteFormValues>;
 type EmpresaModalState = EntityModalState<EmpresaFormValues>;
 type ConvenioModalState = EntityModalState<ConvenioFormValues>;
 type AsignacionModalState = EntityModalState<AsignacionFormValues>;
+type TutorAcademicoModalState = EntityModalState<TutorAcademicoFormValues>;
+type TutorProfesionalModalState = EntityModalState<TutorProfesionalFormValues>;
 
 type StudentDetailTab = 'academico' | 'asignaciones' | 'seguimiento';
 type EmpresaNote = {
@@ -721,12 +931,20 @@ interface LoginPageProps {
   authError?: string | null;
 }
 
+/**
+ * Resume la responsabilidad de LoginPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function LoginPage({ onLogin, authError }: LoginPageProps) {
   const [username, setUsername] = useState(getConfiguredAuthUsername());
   const [password, setPassword] = useState(getConfiguredAuthPassword());
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  /**
+   * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setStatus('Autenticando...');
@@ -829,6 +1047,12 @@ export default function App() {
   const [asignacionModal, setAsignacionModal] = useState<AsignacionModalState | null>(null);
   const [asignacionFormError, setAsignacionFormError] = useState<string | null>(null);
   const [savingAsignacion, setSavingAsignacion] = useState(false);
+  const [tutorAcademicoModal, setTutorAcademicoModal] = useState<TutorAcademicoModalState | null>(null);
+  const [tutorAcademicoFormError, setTutorAcademicoFormError] = useState<string | null>(null);
+  const [savingTutorAcademico, setSavingTutorAcademico] = useState(false);
+  const [tutorProfesionalModal, setTutorProfesionalModal] = useState<TutorProfesionalModalState | null>(null);
+  const [tutorProfesionalFormError, setTutorProfesionalFormError] = useState<string | null>(null);
+  const [savingTutorProfesional, setSavingTutorProfesional] = useState(false);
   const [referenceData, setReferenceData] = useState<ReferenceData | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const navigate = useNavigate();
@@ -1093,14 +1317,14 @@ export default function App() {
   const handleAddEmpresaDocument = useCallback(async (
     empresaId: number,
     name: string,
-    type: string,
+    type?: string,
     urlOrFile?: string | File,
   ) => {
     const trimmedName = name.trim();
     if (!trimmedName) {
       return false;
     }
-    const typeValue = type.trim() || undefined;
+    const typeValue = type?.trim() || undefined;
     const urlValue = typeof urlOrFile === 'string' ? (urlOrFile.trim() || undefined) : undefined;
     const fileValue = urlOrFile instanceof File ? urlOrFile : undefined;
     setSavingConvenioDocument(true);
@@ -1379,17 +1603,26 @@ export default function App() {
     [loadingReferenceData, pushToast],
   );
 
-  const loadMensajes = useCallback(async (solicitudId: number) => {
+  const loadMensajes = useCallback(async (
+    solicitudId: number,
+    options?: { silent?: boolean; background?: boolean },
+  ) => {
     setSelectedInboxId(solicitudId);
-    setLoadingMensajesId(solicitudId);
+    if (!options?.background) {
+      setLoadingMensajesId(solicitudId);
+    }
     try {
       const msgs = await fetchEmpresaMensajes(solicitudId);
       setSolicitudMensajes((prev) => ({ ...prev, [solicitudId]: msgs }));
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudieron cargar los mensajes.';
-      pushToast('error', message);
+      if (!options?.silent) {
+        const message = err instanceof Error ? err.message : 'No se pudieron cargar los mensajes.';
+        pushToast('error', message);
+      }
     } finally {
-      setLoadingMensajesId(null);
+      if (!options?.background) {
+        setLoadingMensajesId(null);
+      }
     }
   }, [pushToast]);
 
@@ -1520,6 +1753,10 @@ export default function App() {
 
     let cancelled = false;
 
+    /**
+     * Resume la responsabilidad de bootstrap dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const bootstrap = async () => {
       setLoading(true);
       try {
@@ -1572,10 +1809,24 @@ export default function App() {
   }, [me, refreshInbox]);
 
   useEffect(() => {
+    if (!me || isDocumentationRoute || referenceData || loadingReferenceData) {
+      return;
+    }
+
+    loadReferenceData({ silent: true }).catch(() => {
+      // errores gestionados dentro
+    });
+  }, [isDocumentationRoute, loadReferenceData, loadingReferenceData, me, referenceData]);
+
+  useEffect(() => {
     if (!me || isDocumentationRoute || isMonitorRoute) {
       return undefined;
     }
 
+    /**
+     * Resume la responsabilidad de refreshSilently dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const refreshSilently = () => {
       loadData({ silent: true }).catch(() => {
         // El error queda reflejado en el estado del panel sin interrumpir la navegacion.
@@ -1583,9 +1834,17 @@ export default function App() {
     };
 
     const intervalId = window.setInterval(refreshSilently, 60_000);
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleWindowFocus = () => {
       refreshSilently();
     };
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         refreshSilently();
@@ -1621,6 +1880,38 @@ export default function App() {
       // errores gestionados dentro
     });
   }, [isBandejaRoute, loadMensajes, selectedInboxId, solicitudMensajes]);
+
+  useEffect(() => {
+    if (!me || !isBandejaRoute) {
+      return undefined;
+    }
+
+    const refreshInboxSilently = () => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      refreshInbox({ silent: true }).catch(() => {
+        // errores gestionados dentro
+      });
+
+      if (selectedInboxId) {
+        loadMensajes(selectedInboxId, { silent: true, background: true }).catch(() => {
+          // errores gestionados dentro
+        });
+      }
+    };
+
+    const intervalId = window.setInterval(refreshInboxSilently, 15_000);
+    window.addEventListener('focus', refreshInboxSilently);
+    document.addEventListener('visibilitychange', refreshInboxSilently);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshInboxSilently);
+      document.removeEventListener('visibilitychange', refreshInboxSilently);
+    };
+  }, [isBandejaRoute, loadMensajes, me, refreshInbox, selectedInboxId]);
 
   useEffect(() => {
     if (isTutoresRoute && !referenceData && !loadingReferenceData) {
@@ -2098,6 +2389,65 @@ export default function App() {
     setSavingAsignacion(false);
   }, []);
 
+  const convenioPageContextRef = useRef<{
+    collections: ApiCollections | null;
+    loadingReferenceData: boolean;
+    handleEditConvenio: (convenio: ConvenioSummary) => void;
+    openCreateAsignacion: (defaults?: Partial<AsignacionFormValues>) => void;
+  } | null>(null);
+  convenioPageContextRef.current = {
+    collections,
+    loadingReferenceData,
+    handleEditConvenio,
+    openCreateAsignacion,
+  };
+
+  const asignacionPageContextRef = useRef<{
+    collections: ApiCollections | null;
+    loadingReferenceData: boolean;
+    handleEditAsignacion: (asignacion: AsignacionSummary) => void;
+    openCreateAsignacion: (defaults?: Partial<AsignacionFormValues>) => void;
+    pushToast: (type: ToastMessage['type'], message: string) => void;
+  } | null>(null);
+  asignacionPageContextRef.current = {
+    collections,
+    loadingReferenceData,
+    handleEditAsignacion,
+    openCreateAsignacion,
+    pushToast,
+  };
+
+  const empresaManagementPageContextRef = useRef<{
+    collections: ApiCollections | null;
+    empresaDocs: Record<number, EmpresaDocument[]>;
+    loadingReferenceData: boolean;
+    handleEditEmpresa: (empresa: EmpresaSummary) => void;
+    openCreateConvenio: (empresaId?: number) => void;
+    openCreateAsignacion: (defaults?: Partial<AsignacionFormValues>) => void;
+    openDocumentPreview: (title: string, url: string | null) => void;
+    handleToggleEmpresaDocument: (empresaId: number, documentId: number, restore?: boolean) => Promise<void>;
+    handleAddEmpresaDocument: (
+      empresaId: number,
+      nombre: string,
+      tipo?: string,
+      urlOrFile?: string | File,
+      maybeFile?: File,
+    ) => Promise<boolean>;
+    savingConvenioDocument: boolean;
+  } | null>(null);
+  empresaManagementPageContextRef.current = {
+    collections,
+    empresaDocs,
+    loadingReferenceData,
+    handleEditEmpresa,
+    openCreateConvenio,
+    openCreateAsignacion,
+    openDocumentPreview,
+    handleToggleEmpresaDocument,
+    handleAddEmpresaDocument,
+    savingConvenioDocument,
+  };
+
   const handleAsignacionSubmit = useCallback(
     async (values: AsignacionFormValues) => {
       if (!asignacionModal) {
@@ -2129,6 +2479,140 @@ export default function App() {
     },
     [asignacionModal, loadData, handleCloseAsignacionModal, pushToast],
   );
+
+  const refreshTutorViews = useCallback(async () => {
+    await loadReferenceData({ silent: true });
+    await loadData({ silent: true });
+
+    if (isTutoresRoute) {
+      await Promise.all([
+        loadTutorAcademicosList(tutorAcademicoPage, tutorAcademicoEstado),
+        loadTutorProfesionalesList(tutorProfesionalPage, tutorProfesionalEstado, tutorProfesionalEmpresa),
+      ]);
+    }
+  }, [
+    isTutoresRoute,
+    loadData,
+    loadReferenceData,
+    loadTutorAcademicosList,
+    loadTutorProfesionalesList,
+    tutorAcademicoEstado,
+    tutorAcademicoPage,
+    tutorProfesionalEmpresa,
+    tutorProfesionalEstado,
+    tutorProfesionalPage,
+  ]);
+
+  const openCreateTutorAcademico = useCallback(() => {
+    setTutorAcademicoFormError(null);
+    setTutorAcademicoModal({
+      mode: 'create',
+      initialValues: cloneTutorAcademicoForm(EMPTY_TUTOR_ACADEMICO_VALUES),
+      loadingValues: false,
+    });
+  }, []);
+
+  const handleEditTutorAcademico = useCallback((tutor: TutorAcademicoSummary) => {
+    setTutorAcademicoFormError(null);
+    setTutorAcademicoModal({
+      mode: 'edit',
+      entityId: tutor.id,
+      initialValues: mapTutorAcademicoToForm(tutor),
+      loadingValues: false,
+    });
+  }, []);
+
+  const handleCloseTutorAcademicoModal = useCallback(() => {
+    setTutorAcademicoModal(null);
+    setTutorAcademicoFormError(null);
+    setSavingTutorAcademico(false);
+  }, []);
+
+  const handleTutorAcademicoSubmit = useCallback(async (values: TutorAcademicoFormValues) => {
+    if (!tutorAcademicoModal) {
+      return;
+    }
+
+    setSavingTutorAcademico(true);
+    setTutorAcademicoFormError(null);
+
+    try {
+      const payload = buildTutorAcademicoPayload(values);
+      if (tutorAcademicoModal.mode === 'create') {
+        await createTutorAcademico(payload);
+        pushToast('success', 'Tutor academico creado correctamente.');
+      } else if (tutorAcademicoModal.entityId) {
+        await updateTutorAcademico(tutorAcademicoModal.entityId, payload);
+        pushToast('success', 'Tutor academico actualizado correctamente.');
+      }
+
+      await refreshTutorViews();
+      handleCloseTutorAcademicoModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo guardar el tutor academico.';
+      setTutorAcademicoFormError(message);
+      pushToast('error', message);
+    } finally {
+      setSavingTutorAcademico(false);
+    }
+  }, [handleCloseTutorAcademicoModal, pushToast, refreshTutorViews, tutorAcademicoModal]);
+
+  const openCreateTutorProfesional = useCallback(() => {
+    setTutorProfesionalFormError(null);
+    setTutorProfesionalModal({
+      mode: 'create',
+      initialValues: cloneTutorProfesionalForm({
+        ...EMPTY_TUTOR_PROFESIONAL_VALUES,
+        empresaId: tutorProfesionalEmpresa !== 'todas' ? tutorProfesionalEmpresa : '',
+      }),
+      loadingValues: false,
+    });
+  }, [tutorProfesionalEmpresa]);
+
+  const handleEditTutorProfesional = useCallback((tutor: TutorProfesionalSummary) => {
+    setTutorProfesionalFormError(null);
+    setTutorProfesionalModal({
+      mode: 'edit',
+      entityId: tutor.id,
+      initialValues: mapTutorProfesionalToForm(tutor),
+      loadingValues: false,
+    });
+  }, []);
+
+  const handleCloseTutorProfesionalModal = useCallback(() => {
+    setTutorProfesionalModal(null);
+    setTutorProfesionalFormError(null);
+    setSavingTutorProfesional(false);
+  }, []);
+
+  const handleTutorProfesionalSubmit = useCallback(async (values: TutorProfesionalFormValues) => {
+    if (!tutorProfesionalModal) {
+      return;
+    }
+
+    setSavingTutorProfesional(true);
+    setTutorProfesionalFormError(null);
+
+    try {
+      const payload = buildTutorProfesionalPayload(values);
+      if (tutorProfesionalModal.mode === 'create') {
+        await createTutorProfesional(payload);
+        pushToast('success', 'Tutor profesional creado correctamente.');
+      } else if (tutorProfesionalModal.entityId) {
+        await updateTutorProfesional(tutorProfesionalModal.entityId, payload);
+        pushToast('success', 'Tutor profesional actualizado correctamente.');
+      }
+
+      await refreshTutorViews();
+      handleCloseTutorProfesionalModal();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo guardar el tutor profesional.';
+      setTutorProfesionalFormError(message);
+      pushToast('error', message);
+    } finally {
+      setSavingTutorProfesional(false);
+    }
+  }, [handleCloseTutorProfesionalModal, pushToast, refreshTutorViews, tutorProfesionalModal]);
 
   const handleStudentSubmit = useCallback(
     async (values: EstudianteFormValues) => {
@@ -2208,22 +2692,22 @@ export default function App() {
 
   const dashboardHeroUpdates = useMemo(() => {
     const referenceStatus = loadingReferenceData
-      ? 'Cargando catálogo de tutores bajo demanda para no penalizar el arranque.'
+      ? 'Cargando catÃ¡logo de tutores bajo demanda para no penalizar el arranque.'
       : referenceData
-        ? `${referenceData.tutoresAcademicos.length} tutores académicos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
-        : 'Los tutores se cargan a demanda cuando entras en el módulo o preparas una asignación.';
+        ? `${referenceData.tutoresAcademicos.length} tutores acadÃ©micos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
+        : 'Los tutores se cargan a demanda cuando entras en el mÃ³dulo o preparas una asignaciÃ³n.';
 
     return [
       {
         title: 'Estado del panel',
         detail: lastUpdated
           ? `Datos sincronizados a las ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`
-          : 'Esperando la primera sincronización completa.',
+          : 'Esperando la primera sincronizaciÃ³n completa.',
       },
       {
-        title: 'Revisión externa',
+        title: 'RevisiÃ³n externa',
         detail: empresaSolicitudes.length > 0
-          ? `${empresaSolicitudes.length} solicitudes requieren revisión desde el equipo interno.`
+          ? `${empresaSolicitudes.length} solicitudes requieren revisiÃ³n desde el equipo interno.`
           : 'No hay solicitudes pendientes de revisar en este momento.',
       },
       {
@@ -2360,7 +2844,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboraciÃ³n, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -2368,7 +2852,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'InformaciÃ³n completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -2376,30 +2860,30 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado acadÃ©mico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'Prácticas en curso',
-      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
+      description: 'PrÃ¡cticas en curso',
+      detail: 'Pipeline Kanban con tutorÃ­as, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'tutores',
       label: 'Tutores',
       total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-      description: 'Académicos y profesionales',
-      detail: 'Filtra por estado y empresa para contactar rápido.',
+      description: 'AcadÃ©micos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rÃ¡pido.',
       accent: 'cyan',
     },
     {
       id: 'documentacion',
-      label: 'Documentación',
+      label: 'DocumentaciÃ³n',
       total: 3,
-      description: 'Guías y recursos listos',
+      description: 'GuÃ­as y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -2420,7 +2904,7 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentación adjunta.',
+        description: 'Estado, fechas y documentaciÃ³n adjunta.',
         path: '/convenios',
       },
       {
@@ -2441,7 +2925,7 @@ const moduleCards = useMemo(
         id: 'tutores',
         label: 'Tutores',
         total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-        description: 'Equipos académicos y de empresa con filtros.',
+        description: 'Equipos acadÃ©micos y de empresa con filtros.',
         path: '/tutores',
       },
     ],
@@ -2967,9 +3451,28 @@ const selectedConvenio = useMemo(() => {
   }, [selectedStudent, selectedStudentAssignments]);
 
 
-  const EmpresaManagementPage = () => {
+  /**
+   * Resume la responsabilidad de EmpresaManagementPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
+  const EmpresaManagementPage = useMemo(() => {
+    return function EmpresaManagementPage() {
     const { empresaId } = useParams();
     const navigate = useNavigate();
+    const shared = empresaManagementPageContextRef.current;
+    const collections = shared?.collections ?? null;
+    const empresaDocs = shared?.empresaDocs ?? {};
+    const loadingReferenceData = shared?.loadingReferenceData ?? false;
+    const editEmpresa = shared?.handleEditEmpresa;
+    const startConvenioFlow = shared?.openCreateConvenio;
+    const startAsignacionFlow = shared?.openCreateAsignacion;
+    const previewDocument = shared?.openDocumentPreview;
+    const toggleEmpresaDocument = shared?.handleToggleEmpresaDocument;
+    const addEmpresaDocument = shared?.handleAddEmpresaDocument;
+    const savingConvenioDocument = shared?.savingConvenioDocument ?? false;
+    const [empresaDocName, setEmpresaDocName] = useState('');
+    const [empresaDocType, setEmpresaDocType] = useState('');
+    const [empresaDocFile, setEmpresaDocFile] = useState<File | null>(null);
 
     if (!empresaId) {
       return (
@@ -3017,9 +3520,6 @@ const selectedConvenio = useMemo(() => {
     const asignacionesEmpresa = collections.asignaciones.filter((asignacion) => asignacion.empresa.id === empresa.id);
     const activityLog = asignacionesEmpresa.slice(0, 5);
     const documents = empresaDocs[empresa.id] ?? [];
-    const [empresaDocName, setEmpresaDocName] = useState('');
-    const [empresaDocType, setEmpresaDocType] = useState('');
-    const [empresaDocFile, setEmpresaDocFile] = useState<File | null>(null);
 
     const highlights = [
       { label: 'Convenios activos', value: conveniosEmpresa.length },
@@ -3042,16 +3542,16 @@ const selectedConvenio = useMemo(() => {
             </p>
           </div>
           <div className="empresa-actions">
-            <button type="button" className="button button--ghost button--sm" onClick={() => handleEditEmpresa(empresa)}>
+            <button type="button" className="button button--ghost button--sm" onClick={() => editEmpresa?.(empresa)}>
               Editar perfil
             </button>
-            <button type="button" className="button button--ghost button--sm" onClick={() => openCreateConvenio(empresa.id)}>
+            <button type="button" className="button button--ghost button--sm" onClick={() => startConvenioFlow?.(empresa.id)}>
               Nuevo convenio
             </button>
             <button
               type="button"
               className="button button--primary button--sm"
-              onClick={() => openCreateAsignacion({ empresaId: String(empresa.id) })}
+              onClick={() => startAsignacionFlow?.({ empresaId: String(empresa.id) })}
               disabled={loadingReferenceData}
               title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
             >
@@ -3140,8 +3640,8 @@ const selectedConvenio = useMemo(() => {
                     <div>
                       <strong title={doc.name}>{doc.name}</strong>
                       <small>
-                        {doc.type ?? 'Documento'} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
-                        {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
+                        {doc.type ?? 'Documento'} - v{doc.version ?? 1} - {formatDate(doc.uploadedAt)}
+                        {doc.deletedAt ? ' - retirado' : doc.active === false ? ' - historico' : ' - activo'}
                       </small>
                     </div>
                     {!doc.deletedAt && doc.url ? (
@@ -3150,7 +3650,7 @@ const selectedConvenio = useMemo(() => {
                           <button
                             type="button"
                             className="button button--ghost button--sm"
-                            onClick={() => openDocumentPreview(doc.name, doc.url)}
+                            onClick={() => previewDocument?.(doc.name, doc.url)}
                           >
                             Vista previa PDF
                           </button>
@@ -3166,7 +3666,7 @@ const selectedConvenio = useMemo(() => {
                         <button
                           type="button"
                           className="button button--ghost button--sm"
-                          onClick={() => void handleToggleEmpresaDocument(empresa.id, doc.id)}
+                          onClick={() => void toggleEmpresaDocument?.(empresa.id, doc.id)}
                         >
                           Retirar
                         </button>
@@ -3178,7 +3678,7 @@ const selectedConvenio = useMemo(() => {
                           <button
                             type="button"
                             className="button button--ghost button--sm"
-                            onClick={() => void handleToggleEmpresaDocument(empresa.id, doc.id, true)}
+                            onClick={() => void toggleEmpresaDocument?.(empresa.id, doc.id, true)}
                           >
                             Restaurar
                           </button>
@@ -3196,7 +3696,7 @@ const selectedConvenio = useMemo(() => {
               onSubmit={async (event) => {
                 event.preventDefault();
                 const resolvedType = empresaDocType || inferUploadDocumentType(empresaDocFile);
-                const saved = await handleAddEmpresaDocument(
+                const saved = await addEmpresaDocument?.(
                   empresa.id,
                   empresaDocName,
                   resolvedType,
@@ -3287,16 +3787,27 @@ const selectedConvenio = useMemo(() => {
         </section>
       </div>
     );
-  };
+    };
+  }, []);
 
-  const ConvenioManagementPage = () => {
-    const { convenioId } = useParams();
-    const navigate = useNavigate();
-    const numericId = convenioId ? Number(convenioId) : Number.NaN;
-    const [detail, setDetail] = useState<ConvenioDetail | null>(null);
-    const [detailError, setDetailError] = useState<string | null>(null);
-    const [detailLoading, setDetailLoading] = useState(false);
-    const [tab, setTab] = useState<'resumen' | 'documentacion'>('resumen');
+  /**
+   * Resume la responsabilidad de ConvenioManagementPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
+  const ConvenioManagementPage = useMemo(() => {
+    return function ConvenioManagementPage() {
+      const { convenioId } = useParams();
+      const navigate = useNavigate();
+      const shared = convenioPageContextRef.current;
+      const collections = shared?.collections ?? null;
+      const loadingReferenceData = shared?.loadingReferenceData ?? false;
+      const editConvenio = shared?.handleEditConvenio;
+      const startAsignacionFlow = shared?.openCreateAsignacion;
+      const numericId = convenioId ? Number(convenioId) : Number.NaN;
+      const [detail, setDetail] = useState<ConvenioDetail | null>(null);
+      const [detailError, setDetailError] = useState<string | null>(null);
+      const [detailLoading, setDetailLoading] = useState(false);
+      const [tab, setTab] = useState<'resumen' | 'documentacion'>('resumen');
 
     useEffect(() => {
       setTab('resumen');
@@ -3320,20 +3831,19 @@ const selectedConvenio = useMemo(() => {
         .then((data) => {
           setDetail(data);
           setDetailError(null);
-          applyConvenioExtras(data.id, data);
         })
         .catch((err) => {
           const message = err instanceof Error ? err.message : 'No se pudo cargar el detalle del convenio.';
           setDetailError(message);
         })
         .finally(() => setDetailLoading(false));
-    }, [applyConvenioExtras, convenioId, numericId]);
+    }, [convenioId, numericId]);
 
     if (!convenioId) {
       return (
         <div className="convenio-page">
           <div className="convenio-page__panel">
-            <p>No se ha indicado ningn convenio para gestionar.</p>
+            <p>No se ha indicado ningun convenio para gestionar.</p>
             <button type="button" className="button button--ghost button--sm" onClick={() => navigate('/')}>
               Volver al inicio
             </button>
@@ -3392,14 +3902,14 @@ const selectedConvenio = useMemo(() => {
             <button
               type="button"
               className="button button--ghost button--sm"
-              onClick={() => handleEditConvenio(convenioSummary)}
+              onClick={() => editConvenio?.(convenioSummary)}
             >
               Editar convenio
             </button>
             <button
               type="button"
               className="button button--primary button--sm"
-              onClick={() => openCreateAsignacion({
+              onClick={() => startAsignacionFlow?.({
                 convenioId: String(convenioSummary.id),
                 empresaId: String(convenioSummary.empresa.id),
               })}
@@ -3469,7 +3979,7 @@ const selectedConvenio = useMemo(() => {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      README raz
+                      README raiz
                     </a>
                   </li>
                   <li>
@@ -3479,7 +3989,7 @@ const selectedConvenio = useMemo(() => {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Gua del frontend
+                      Guia del frontend
                     </a>
                   </li>
                 </ul>
@@ -3497,39 +4007,51 @@ const selectedConvenio = useMemo(() => {
         </section>
       </div>
     );
-  };
+    };
+  }, []);
 
-  const AsignacionManagementPage = () => {
-    const { asignacionId } = useParams();
-    const navigate = useNavigate();
-    const numericId = asignacionId ? Number(asignacionId) : Number.NaN;
-    const [detail, setDetail] = useState<AsignacionDetail | null>(null);
-    const [detailLoading, setDetailLoading] = useState(false);
-    const [detailError, setDetailError] = useState<string | null>(null);
-    const [savingSeguimiento, setSavingSeguimiento] = useState(false);
-    const [savingEvaluacion, setSavingEvaluacion] = useState(false);
-    const [editingSeguimientoId, setEditingSeguimientoId] = useState<number | null>(null);
-    const [seguimientoError, setSeguimientoError] = useState<string | null>(null);
-    const [evaluacionError, setEvaluacionError] = useState<string | null>(null);
-    const [seguimientoDraft, setSeguimientoDraft] = useState<{
-      fecha: string;
-      tipo: string;
-      descripcion: string;
-      accionRequerida: string;
-      evidenciaTipo: string;
-      evidenciaFile: File | null;
-    }>({
-      fecha: new Date().toISOString().slice(0, 10),
-      tipo: 'seguimiento',
-      descripcion: '',
-      accionRequerida: '',
-      evidenciaTipo: '',
-      evidenciaFile: null,
-    });
-    const [evaluacionDraft, setEvaluacionDraft] = useState<Partial<EvaluacionFinalRecord>>({
-      fecha: new Date().toISOString().slice(0, 10),
-      estado: 'borrador',
-    });
+  /**
+   * Resume la responsabilidad de AsignacionManagementPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
+  const AsignacionManagementPage = useMemo(() => {
+    return function AsignacionManagementPage() {
+      const { asignacionId } = useParams();
+      const navigate = useNavigate();
+      const shared = asignacionPageContextRef.current;
+      const collections = shared?.collections ?? null;
+      const loadingReferenceData = shared?.loadingReferenceData ?? false;
+      const editAsignacion = shared?.handleEditAsignacion;
+      const startAsignacionFlow = shared?.openCreateAsignacion;
+      const emitToast = shared?.pushToast ?? (() => undefined);
+      const numericId = asignacionId ? Number(asignacionId) : Number.NaN;
+      const [detail, setDetail] = useState<AsignacionDetail | null>(null);
+      const [detailLoading, setDetailLoading] = useState(false);
+      const [detailError, setDetailError] = useState<string | null>(null);
+      const [savingSeguimiento, setSavingSeguimiento] = useState(false);
+      const [savingEvaluacion, setSavingEvaluacion] = useState(false);
+      const [editingSeguimientoId, setEditingSeguimientoId] = useState<number | null>(null);
+      const [seguimientoError, setSeguimientoError] = useState<string | null>(null);
+      const [evaluacionError, setEvaluacionError] = useState<string | null>(null);
+      const [seguimientoDraft, setSeguimientoDraft] = useState<{
+        fecha: string;
+        tipo: string;
+        descripcion: string;
+        accionRequerida: string;
+        evidenciaTipo: string;
+        evidenciaFile: File | null;
+      }>({
+        fecha: new Date().toISOString().slice(0, 10),
+        tipo: 'seguimiento',
+        descripcion: '',
+        accionRequerida: '',
+        evidenciaTipo: '',
+        evidenciaFile: null,
+      });
+      const [evaluacionDraft, setEvaluacionDraft] = useState<Partial<EvaluacionFinalRecord>>({
+        fecha: new Date().toISOString().slice(0, 10),
+        estado: 'borrador',
+      });
 
     const refreshDetail = useCallback(async () => {
       if (!asignacionId || Number.isNaN(numericId)) {
@@ -3692,6 +4214,10 @@ const selectedConvenio = useMemo(() => {
       },
     ].filter(Boolean) as Array<{ label: string; href: string }>;
 
+    /**
+     * Resume la responsabilidad de resetSeguimientoDraft dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const resetSeguimientoDraft = () => {
       setEditingSeguimientoId(null);
       setSeguimientoDraft({
@@ -3704,6 +4230,10 @@ const selectedConvenio = useMemo(() => {
       });
     };
 
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleEditSeguimiento = (seguimiento: SeguimientoRecord) => {
       setEditingSeguimientoId(seguimiento.id);
       setSeguimientoDraft({
@@ -3717,6 +4247,10 @@ const selectedConvenio = useMemo(() => {
       setSeguimientoError(null);
     };
 
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleSeguimientoSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!detail) {
@@ -3738,10 +4272,10 @@ const selectedConvenio = useMemo(() => {
 
         if (editingSeguimientoId) {
           await updateSeguimiento(detail.id, editingSeguimientoId, payload);
-          pushToast('success', 'Seguimiento actualizado.');
+          emitToast('success', 'Seguimiento actualizado.');
         } else {
           await createSeguimiento(detail.id, payload);
-          pushToast('success', 'Seguimiento registrado.');
+          emitToast('success', 'Seguimiento registrado.');
         }
 
         resetSeguimientoDraft();
@@ -3753,6 +4287,10 @@ const selectedConvenio = useMemo(() => {
       }
     };
 
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleCloseSeguimiento = async (seguimientoId: number, reopen = false) => {
       if (!detail) {
         return;
@@ -3764,11 +4302,11 @@ const selectedConvenio = useMemo(() => {
       try {
         if (reopen) {
           await reopenSeguimiento(detail.id, seguimientoId);
-          pushToast('success', 'Seguimiento reabierto.');
+          emitToast('success', 'Seguimiento reabierto.');
         } else {
           const comentario = window.prompt('Comentario de cierre del seguimiento:', '') ?? '';
           await closeSeguimiento(detail.id, seguimientoId, comentario || undefined);
-          pushToast('success', 'Seguimiento cerrado.');
+          emitToast('success', 'Seguimiento cerrado.');
         }
         await refreshDetail();
       } catch (err) {
@@ -3778,6 +4316,10 @@ const selectedConvenio = useMemo(() => {
       }
     };
 
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleEvaluacionSave = async (closeAfterSave = false) => {
       if (!detail) {
         return;
@@ -3802,9 +4344,9 @@ const selectedConvenio = useMemo(() => {
         await upsertEvaluacionFinal(detail.id, sanitizedPayload);
         if (closeAfterSave) {
           await closeEvaluacionFinal(detail.id);
-          pushToast('success', 'Evaluacion final cerrada.');
+          emitToast('success', 'Evaluacion final cerrada.');
         } else {
-          pushToast('success', 'Evaluacion final guardada.');
+          emitToast('success', 'Evaluacion final guardada.');
         }
         await refreshDetail();
       } catch (err) {
@@ -3831,14 +4373,14 @@ const selectedConvenio = useMemo(() => {
             <button
               type="button"
               className="button button--ghost button--sm"
-              onClick={() => handleEditAsignacion(asignacionSummary)}
+              onClick={() => editAsignacion?.(asignacionSummary)}
             >
               Reprogramar / editar
             </button>
             <button
               type="button"
               className="button button--primary button--sm"
-              onClick={() => openCreateAsignacion({
+              onClick={() => startAsignacionFlow?.({
                 empresaId: String(asignacionSummary.empresa.id),
                 estudianteId: String(asignacionSummary.estudiante.id),
                 convenioId: detail ? String(detail.convenio.id) : '',
@@ -3963,8 +4505,8 @@ const selectedConvenio = useMemo(() => {
                 {seguimientoTimeline.map((seguimiento) => (
                   <div key={seguimiento.id} className="empresa-document">
                     <div>
-                      <strong>{seguimiento.tipo} · {formatDate(seguimiento.fecha)}</strong>
-                      <small>{seguimiento.estado} · {seguimiento.descripcion ?? 'Sin descripcion ampliada'}</small>
+                      <strong>{seguimiento.tipo} - {formatDate(seguimiento.fecha)}</strong>
+                      <small>{seguimiento.estado} - {seguimiento.descripcion ?? 'Sin descripcion ampliada'}</small>
                       {seguimiento.accionRequerida && <small>Accion: {seguimiento.accionRequerida}</small>}
                       {seguimiento.cierreComentario && <small>Cierre: {seguimiento.cierreComentario}</small>}
                     </div>
@@ -4168,8 +4710,13 @@ const selectedConvenio = useMemo(() => {
         </section>
       </div>
     );
-  };
+    };
+  }, []);
 
+  /**
+   * Resume la responsabilidad de ModulePageFallback dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const ModulePageFallback = ({ title }: { title: string }) => (
     <section className="module-page">
       <header className="module-page__header">
@@ -4185,6 +4732,10 @@ const selectedConvenio = useMemo(() => {
     </section>
   );
 
+  /**
+   * Resume la responsabilidad de EmpresasOverviewPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const EmpresasOverviewPage = () => {
     if (!collections) {
       return <ModulePageFallback title="Empresas" />;
@@ -4439,6 +4990,10 @@ const selectedConvenio = useMemo(() => {
     );
   };
 
+  /**
+   * Resume la responsabilidad de ConveniosOverviewPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const ConveniosOverviewPage = () => {
     const [documentName, setDocumentName] = useState('');
     const [documentType, setDocumentType] = useState('');
@@ -4483,6 +5038,10 @@ const selectedConvenio = useMemo(() => {
     const workflowIndex = workflowState ? CONVENIO_STEP_FLOW.indexOf(workflowState) : -1;
     const workflowPosition = workflowIndex >= 0 ? workflowIndex + 1 : 0;
 
+    /**
+     * Gestiona un evento de interfaz y lo enlaza con estado local, API o navegacion.
+     * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+     */
     const handleDocumentSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!selectedConvenio) {
@@ -4730,8 +5289,8 @@ const selectedConvenio = useMemo(() => {
                             <div>
                               <strong title={doc.name}>{doc.name}</strong>
                               <small>
-                                {doc.type} · v{doc.version ?? 1} · {formatDate(doc.uploadedAt)}
-                                {doc.deletedAt ? ' · retirado' : doc.active === false ? ' · historico' : ' · activo'}
+                                {doc.type} - v{doc.version ?? 1} - {formatDate(doc.uploadedAt)}
+                                {doc.deletedAt ? ' - retirado' : doc.active === false ? ' - historico' : ' - activo'}
                               </small>
                             </div>
                             {!doc.deletedAt && doc.url ? (
@@ -4787,7 +5346,7 @@ const selectedConvenio = useMemo(() => {
                         <input
                           value={documentName}
                           onChange={(event) => setDocumentName(event.target.value)}
-                          placeholder="Acta renovacin"
+                          placeholder="Acta renovacion"
                           maxLength={120}
                           required
                         />
@@ -4878,6 +5437,10 @@ const selectedConvenio = useMemo(() => {
     );
   };
 
+  /**
+   * Resume la responsabilidad de EstudiantesOverviewPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const EstudiantesOverviewPage = () => {
     const navigate = useNavigate();
 
@@ -5094,6 +5657,10 @@ const selectedConvenio = useMemo(() => {
     );
   };
 
+  /**
+   * Resume la responsabilidad de AsignacionesOverviewPage dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   const AsignacionesOverviewPage = () => {
     const navigate = useNavigate();
 
@@ -5346,6 +5913,20 @@ const selectedConvenio = useMemo(() => {
       ),
       align: 'center',
     },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      render: (tutor) => (
+        <div className="table-inline-actions">
+          <button type="button" className="button button--ghost button--sm" onClick={() => handleEditTutorAcademico(tutor)}>
+            Editar
+          </button>
+          <a className="button button--link button--sm" href={`mailto:${tutor.email}`}>
+            Contactar
+          </a>
+        </div>
+      ),
+    },
   ];
 
   const tutorProfesionalColumns: Array<TableColumn<TutorProfesionalSummary>> = [
@@ -5362,6 +5943,24 @@ const selectedConvenio = useMemo(() => {
         </span>
       ),
       align: 'center',
+    },
+    {
+      key: 'acciones',
+      header: 'Acciones',
+      render: (tutor) => (
+        <div className="table-inline-actions">
+          <button type="button" className="button button--ghost button--sm" onClick={() => handleEditTutorProfesional(tutor)}>
+            Editar
+          </button>
+          {tutor.email ? (
+            <a className="button button--link button--sm" href={`mailto:${tutor.email}`}>
+              Contactar
+            </a>
+          ) : (
+            <span className="chip chip--ghost">Sin email</span>
+          )}
+        </div>
+      ),
     },
   ];
 
@@ -5394,6 +5993,36 @@ const selectedConvenio = useMemo(() => {
         </div>
       </header>
 
+      <section className="module-page__panel tutor-filters">
+        <label className="form__field">
+          <span>Estado academicos</span>
+          <select value={tutorAcademicoEstado} onChange={(event) => setTutorAcademicoEstado(event.target.value as 'todos' | 'activos' | 'inactivos')}>
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </label>
+        <label className="form__field">
+          <span>Estado profesionales</span>
+          <select value={tutorProfesionalEstado} onChange={(event) => setTutorProfesionalEstado(event.target.value as 'todos' | 'activos' | 'inactivos')}>
+            <option value="todos">Todos</option>
+            <option value="activos">Activos</option>
+            <option value="inactivos">Inactivos</option>
+          </select>
+        </label>
+        <label className="form__field">
+          <span>Empresa</span>
+          <select value={tutorProfesionalEmpresa} onChange={(event) => setTutorProfesionalEmpresa(event.target.value)}>
+            <option value="todas">Todas las empresas</option>
+            {(collections?.empresas ?? []).map((empresa) => (
+              <option key={empresa.id} value={empresa.id}>
+                {empresa.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+      </section>
+
       <div className="module-page__split">
         <div className="module-page__panel">
           <DataTable
@@ -5401,9 +6030,14 @@ const selectedConvenio = useMemo(() => {
             columns={tutorAcademicoColumns}
             data={tutorAcademicosList}
             actions={(
-              <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorAcademicos}>
-                Exportar CSV
-              </button>
+              <>
+                <button type="button" className="button button--primary button--sm" onClick={openCreateTutorAcademico}>
+                  Nuevo tutor
+                </button>
+                <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorAcademicos}>
+                  Exportar CSV
+                </button>
+              </>
             )}
             emptyMessage="No hay tutores academicos registrados."
           />
@@ -5438,9 +6072,14 @@ const selectedConvenio = useMemo(() => {
             columns={tutorProfesionalColumns}
             data={tutorProfesionalesList}
             actions={(
-              <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorProfesionales}>
-                Exportar CSV
-              </button>
+              <>
+                <button type="button" className="button button--primary button--sm" onClick={openCreateTutorProfesional}>
+                  Nuevo tutor
+                </button>
+                <button type="button" className="button button--ghost button--sm" onClick={handleExportTutorProfesionales}>
+                  Exportar CSV
+                </button>
+              </>
             )}
             emptyMessage="No hay tutores profesionales registrados."
           />
@@ -5856,10 +6495,10 @@ const selectedConvenio = useMemo(() => {
                 {
                   title: 'Cobertura docente',
                   detail: loadingReferenceData
-                    ? 'Cargando catalogo de tutores bajo demanda para no penalizar el arranque.'
+                    ? 'Sincronizando catalogo de tutores para actualizar los indicadores.'
                     : referenceData
                       ? `${referenceData.tutoresAcademicos.length} tutores academicos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
-                      : 'Los tutores se cargan a demanda cuando entras en el modulo o preparas una asignacion.',
+                      : `${tutorAcademicoTotal} tutores academicos y ${tutorProfesionalTotal} profesionales disponibles.`,
                 },
               ]}
               moduleCards={[
@@ -5898,7 +6537,9 @@ const selectedConvenio = useMemo(() => {
                 {
                   id: 'tutores',
                   label: 'Tutores',
-                  total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
+                  total: referenceData
+                    ? referenceData.tutoresAcademicos.length + referenceData.tutoresProfesionales.length
+                    : tutorAcademicoTotal + tutorProfesionalTotal,
                   description: 'Academicos y profesionales',
                   detail: 'Filtra por estado y empresa para contactar rapido.',
                   accent: 'cyan',
@@ -6049,27 +6690,42 @@ const selectedConvenio = useMemo(() => {
           />
         </Modal>
       )}
+      {tutorAcademicoModal && (
+        <Modal
+          title={tutorAcademicoModal.mode === 'create' ? 'Crear tutor academico' : 'Editar tutor academico'}
+          onClose={handleCloseTutorAcademicoModal}
+        >
+          <TutorAcademicoForm
+            mode={tutorAcademicoModal.mode}
+            initialValues={tutorAcademicoModal.initialValues}
+            onSubmit={handleTutorAcademicoSubmit}
+            onCancel={handleCloseTutorAcademicoModal}
+            submitting={savingTutorAcademico}
+            errorMessage={tutorAcademicoFormError}
+            loadingValues={tutorAcademicoModal.loadingValues}
+          />
+        </Modal>
+      )}
+      {tutorProfesionalModal && (
+        <Modal
+          title={tutorProfesionalModal.mode === 'create' ? 'Crear tutor profesional' : 'Editar tutor profesional'}
+          onClose={handleCloseTutorProfesionalModal}
+        >
+          <TutorProfesionalForm
+            mode={tutorProfesionalModal.mode}
+            initialValues={tutorProfesionalModal.initialValues}
+            empresas={collections?.empresas ?? []}
+            onSubmit={handleTutorProfesionalSubmit}
+            onCancel={handleCloseTutorProfesionalModal}
+            submitting={savingTutorProfesional}
+            errorMessage={tutorProfesionalFormError}
+            loadingValues={tutorProfesionalModal.loadingValues}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

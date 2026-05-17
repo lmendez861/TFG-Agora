@@ -1,3 +1,8 @@
+/*
+ * Comentario de mantenimiento Agora.
+ * Proposito: Hoja de estilos: define la presentacion visual de la pantalla o modulo asociado.
+ * Relaciones: esta hoja se aplica desde el componente o entrada que la importa.
+ */
 :root {
   --accent-primary: #003366;
   --accent-primary-rgb: 0, 51, 102;
@@ -1249,7 +1254,7 @@
   flex-direction: row;
   align-items: flex-end;
   gap: 1.5rem;
-  min-height: 220px;
+  min-height: 260px;
 }
 
 .analytics-bar__label {
@@ -1282,10 +1287,13 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .analytics-column__fill {
-  width: 42px;
+  width: 52px;
+  min-height: 72px;
+  max-height: 100%;
   border-radius: 1rem;
   background: linear-gradient(180deg, rgba(255, 177, 82, 0.9), rgba(0, 51, 102, 0.95));
   display: flex;
@@ -1293,21 +1301,21 @@
   justify-content: center;
   padding-bottom: 0.4rem;
   transform-origin: bottom;
-  transition: height 0.8s ease;
-  animation-name: swayColumn;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+  transition: height 0.45s ease, transform 0.2s ease, filter 0.2s ease;
+  animation: growBar 0.8s ease both;
 }
 
 .analytics-column__value {
   font-size: 0.85rem;
   font-weight: 600;
+  line-height: 1;
 }
 
 .analytics-column__label {
   text-align: center;
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.7);
+  overflow-wrap: anywhere;
 }
 
 @keyframes growBar {
@@ -1319,18 +1327,6 @@
   to {
     transform: scaleY(1);
     transform-origin: bottom;
-  }
-}
-
-@keyframes swayColumn {
-  0% {
-    transform: scaleY(0.35);
-  }
-  50% {
-    transform: scaleY(1.65);
-  }
-  100% {
-    transform: scaleY(0.35);
   }
 }
 
@@ -1353,12 +1349,23 @@
   padding: 0.75rem;
   margin-top: 0.6rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  min-width: 0;
+  display: grid;
+  gap: 0.45rem;
 }
 
 .kanban-card__tags {
   display: flex;
   gap: 0.4rem;
   margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.kanban-card h5,
+.kanban-card p,
+.kanban-card small {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 .module-page {
   background: rgba(20, 21, 33, 0.9);
@@ -1387,6 +1394,12 @@
   gap: 0.75rem;
   align-items: center;
   justify-content: flex-end;
+}
+
+.tutor-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem 1rem;
 }
 
 .module-search {
@@ -1790,6 +1803,13 @@
   gap: 0.5rem;
 }
 
+.table-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -1802,6 +1822,7 @@
   border-bottom: 1px solid rgba(226, 232, 240, 0.15);
   font-size: 0.9rem;
   color: #d6d7eb;
+  overflow-wrap: anywhere;
 }
 
 .data-table th {
@@ -1816,6 +1837,10 @@
   background-color: rgba(255, 255, 255, 0.04);
 }
 
+.data-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
 .button {
   border: none;
   border-radius: 999px;
@@ -1824,6 +1849,40 @@
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   max-width: 100%;
+}
+
+.button:not(:disabled):hover,
+.module-link-card:hover,
+.data-table__wrapper:hover,
+.ops-route-card:hover,
+.ops-service-card:hover,
+.ops-document-card:hover {
+  transform: translateY(-1px);
+}
+
+.button,
+.module-link-card,
+.data-table__wrapper,
+.ops-route-card,
+.ops-service-card,
+.ops-document-card {
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.button:focus-visible,
+.topbar a:focus-visible,
+.notification-bell:focus-visible,
+.module-link-card:focus-within,
+.data-table a:focus-visible,
+.ops-monitor a:focus-visible,
+.ops-monitor button:focus-visible,
+.ops-monitor input:focus-visible {
+  outline: 3px solid rgba(var(--accent-secondary-rgb), 0.48);
+  outline-offset: 3px;
 }
 
 .button--lg {
@@ -1854,6 +1913,7 @@
 
 .button--ghost:not(:disabled):hover {
   background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .button--link {
@@ -2019,6 +2079,16 @@
 
 .form__field textarea {
   resize: vertical;
+}
+
+.form__field--checkbox {
+  justify-content: flex-end;
+}
+
+.form__field--checkbox input {
+  width: 1rem;
+  height: 1rem;
+  align-self: flex-start;
 }
 
 .form__actions {
@@ -2575,6 +2645,7 @@
   border-radius: 1rem;
   padding: 1.1rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 0;
 }
 
 .asignacion-docs ul {
@@ -3445,6 +3516,7 @@
   justify-content: space-between;
   gap: 0.6rem;
   align-items: baseline;
+  min-width: 0;
 }
 
 .inbox-thread__top span,
@@ -3454,6 +3526,21 @@
 .chat-message__meta span,
 .notification-dropdown__summary {
   color: var(--text-muted);
+}
+
+.inbox-thread__top strong,
+.inbox-thread__meta,
+.inbox-panel__identity p,
+.chat-message__bubble p {
+  overflow-wrap: anywhere;
+}
+
+.inbox-thread__top strong,
+.inbox-thread__meta {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .inbox-thread__snippet {
@@ -3471,6 +3558,7 @@
   flex-direction: column;
   gap: 0.9rem;
   min-height: 76vh;
+  min-width: 0;
 }
 
 .inbox-panel__header,
@@ -3486,6 +3574,7 @@
 .inbox-panel__identity {
   justify-content: flex-start;
   align-items: center;
+  min-width: 0;
 }
 
 .inbox-channel-bar {
@@ -3538,6 +3627,8 @@
   gap: 0.7rem;
   align-items: baseline;
   margin-bottom: 0.35rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .chat-message__bubble p {
@@ -3610,6 +3701,45 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.6rem 0.8rem;
   align-items: end;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem 1rem;
+  align-items: start;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font: inherit;
+  background: #111324;
+  color: #f5f2ff;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(255, 177, 82, 0.2);
+}
+
+.form-grid textarea {
+  resize: vertical;
 }
 
 .empresa-document-form label,
@@ -4892,6 +5022,8 @@
 .ops-log-card,
 .ops-activity-item {
   padding: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .ops-permission-card.is-active {
@@ -4955,13 +5087,31 @@
 }
 
 .ops-log-card pre {
+  display: block;
+  max-width: 100%;
+  max-height: 360px;
   margin: 0.8rem 0 0;
   padding: 0.85rem;
   border-radius: 0.85rem;
   background: rgba(0, 0, 0, 0.32);
   color: #c7d4db;
-  overflow-x: auto;
+  overflow: auto;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.ops-log-card__top {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.ops-log-card__top strong,
+.ops-log-card__top small {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .ops-suite-card--healthy {
@@ -5188,6 +5338,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
 }
 
 .ops-route-grid {
@@ -5256,6 +5407,57 @@
   display: block;
   margin-top: 0.75rem;
   color: #93a4af;
+}
+
+.ops-readiness-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.ops-readiness-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(130, 144, 154, 0.28);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ops-readiness-item > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(186, 142, 63, 0.16);
+  color: #f2d096;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.ops-readiness-item strong,
+.ops-readiness-item small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.ops-readiness-item small {
+  margin-top: 0.2rem;
+  color: #93a4af;
+}
+
+.ops-readiness-item.is-ready {
+  border-color: rgba(15, 167, 141, 0.42);
+  background: rgba(15, 167, 141, 0.07);
+}
+
+.ops-readiness-item.is-ready > span {
+  background: rgba(15, 167, 141, 0.18);
+  color: #78f1d9;
 }
 
 @media (max-width: 1180px) {

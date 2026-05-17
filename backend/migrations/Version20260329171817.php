@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Migracion Doctrine: versiona cambios de esquema que deben aplicarse sobre la base de datos.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
+
 declare(strict_types=1);
 
 namespace DoctrineMigrations;
@@ -17,6 +23,10 @@ final class Version20260329171817 extends AbstractMigration
         return 'Adds company portal accounts, audit logs, hardened document metadata, and follow-up/evaluation lifecycle fields.';
     }
 
+    /**
+     * Paso de migracion Doctrine que modifica el esquema de base de datos al ejecutar migrations.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function up(Schema $schema): void
     {
         $this->addSql(<<<'SQL'
@@ -96,6 +106,10 @@ final class Version20260329171817 extends AbstractMigration
         $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN cerrada_en DATETIME DEFAULT NULL");
     }
 
+    /**
+     * Paso de migracion Doctrine que modifica el esquema de base de datos al ejecutar migrations.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function down(Schema $schema): void
     {
         $this->throwIrreversibleMigrationException('This migration adds operational tables and SQLite column changes that are not rolled back automatically.');

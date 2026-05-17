@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Relaciones: Conecta con App/Service/MailConfigurationInspector.
+ */
+
 declare(strict_types=1);
 
 namespace App\Tests\Service;
@@ -7,8 +13,16 @@ namespace App\Tests\Service;
 use App\Service\MailConfigurationInspector;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Servicio de aplicacion: concentra reglas reutilizables que no pertenecen a una sola entidad o controlador.
+ * Punto de enlace: sus dependencias importadas muestran con que servicios, repositorios o entidades colabora.
+ */
 final class MailConfigurationInspectorTest extends TestCase
 {
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetectaCredencialesPlaceholder(): void
     {
         $inspector = new MailConfigurationInspector(
@@ -22,6 +36,10 @@ final class MailConfigurationInspectorTest extends TestCase
         self::assertSame('warning', $snapshot['status']);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testAceptaConfiguracionNoPlaceholderConRemitenteValido(): void
     {
         $inspector = new MailConfigurationInspector(
@@ -35,6 +53,10 @@ final class MailConfigurationInspectorTest extends TestCase
         self::assertSame('healthy', $snapshot['status']);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testDetectaBrevoApiPlaceholderComoPendiente(): void
     {
         $inspector = new MailConfigurationInspector(
@@ -49,6 +71,10 @@ final class MailConfigurationInspectorTest extends TestCase
         self::assertSame('brevo', $snapshot['provider']);
     }
 
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function testAceptaBrevoApiConClaveReal(): void
     {
         $inspector = new MailConfigurationInspector(

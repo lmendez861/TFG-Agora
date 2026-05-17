@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Entidad Doctrine: define el estado persistente, relaciones y pequenas reglas del modelo de dominio.
+ * Relaciones: Conecta con App/Repository/AsignacionPracticaRepository.
+ */
+
 namespace App\Entity;
 
 use App\Repository\AsignacionPracticaRepository;
@@ -8,6 +14,10 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+/**
+ * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
+ * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+ */
 #[ORM\Entity(repositoryClass: AsignacionPracticaRepository::class)]
 class AsignacionPractica
 {
@@ -59,6 +69,10 @@ class AsignacionPractica
     #[ORM\OneToOne(mappedBy: 'asignacion', targetEntity: EvaluacionFinal::class, cascade: ['persist', 'remove'])]
     private ?EvaluacionFinal $evaluacionFinal = null;
 
+    /**
+     * Recibe las dependencias que necesita este modulo y deja visible su punto de acoplamiento principal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function __construct()
     {
         $this->fechaInicio = new \DateTimeImmutable();
@@ -198,6 +212,10 @@ class AsignacionPractica
         return $this->seguimientos;
     }
 
+    /**
+     * Resume la responsabilidad de addSeguimiento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function addSeguimiento(Seguimiento $seguimiento): self
     {
         if (!$this->seguimientos->contains($seguimiento)) {
@@ -208,6 +226,10 @@ class AsignacionPractica
         return $this;
     }
 
+    /**
+     * Resume la responsabilidad de removeSeguimiento dentro de este modulo y facilita seguir el flujo al revisarlo.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
     public function removeSeguimiento(Seguimiento $seguimiento): self
     {
         if ($this->seguimientos->removeElement($seguimiento)) {

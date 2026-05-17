@@ -57,6 +57,7 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/portal-auth/register, roles: PUBLIC_ACCESS }
         - { path: ^/portal-auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/portal-auth/activate, roles: PUBLIC_ACCESS }
         - { path: ^/portal-auth/request-reset, roles: PUBLIC_ACCESS }

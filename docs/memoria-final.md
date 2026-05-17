@@ -14,7 +14,7 @@ Quiero agradecer a mi tutora Elena el seguimiento continuo del trabajo, la revis
 
 ## Resumen (ES)
 
-Este proyecto desarrolla una plataforma para gestionar empresas colaboradoras, convenios, estudiantes, tutores, seguimientos y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro, una guia documental separada, una capa privada de supervision tecnica y una app de escritorio para operacion local. La aplicacion cubre el ciclo operativo completo: alta de empresas, verificacion por correo, revision interna, activacion de cuentas persistentes de empresa, gestion de convenios, asignacion de estudiantes, seguimiento con evidencias, evaluacion final, control documental versionado, exportacion CSV y control local de servicios con pruebas y backups. La entrega final prioriza mantenibilidad, separacion clara de responsabilidades, despliegue integrado y publicacion reproducible tanto en local como en una VM publica, y una base funcional suficientemente solida para su defensa academica.
+Este proyecto desarrolla una plataforma para gestionar empresas colaboradoras, convenios, estudiantes, tutores, seguimientos y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro, una guia documental separada, una capa privada de supervision tecnica y una app de escritorio para operacion local. La aplicacion cubre el ciclo operativo completo: preregistro de cuentas de empresa, envio de solicitudes corporativas, verificacion por correo, revision interna, continuidad de acceso antes y despues de la aprobacion, gestion de convenios, asignacion de estudiantes, seguimiento con evidencias, evaluacion final, control documental versionado, exportacion CSV y control local de servicios con pruebas y backups. La entrega final prioriza mantenibilidad, separacion clara de responsabilidades, despliegue integrado y publicacion reproducible tanto en local como en una VM publica, y una base funcional suficientemente solida para su defensa academica.
 
 Palabras clave: FP Dual, empresas colaboradoras, convenios, seguimiento, Symfony, React, gestion academica.
 
@@ -41,7 +41,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 1. Digitalizar el ciclo de vida de empresa, convenio, estudiante, tutor y asignacion.
 2. Habilitar un flujo publico de solicitud de empresa con verificacion por correo y revision interna.
 3. Proporcionar un panel interno con dashboard, CRUD operativo, bandeja unificada e indicadores de estado.
-4. Incorporar un portal de empresa postaprobacion con cuenta persistente, acceso y recuperacion de contrasena.
+4. Incorporar un portal de empresa con cuenta persistente previa a la solicitud, acceso continuo, verificacion y recuperacion de contrasena.
 5. Gestionar seguimientos, evidencias y evaluacion final dentro de la ficha de asignacion.
 6. Implantar control documental con versionado, retirada controlada y restauracion.
 7. Permitir la exportacion CSV de la informacion operativa relevante.
@@ -49,7 +49,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 
 ## Alcance
 
-Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el registro externo, la verificacion por correo, la aprobacion interna, la activacion de cuentas de empresa, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, un monitor privado con MFA para operaciones sensibles, una app de escritorio capaz de levantar servicios, ejecutar pruebas, revisar logs y gestionar backups SQLite, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose y PostgreSQL. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el endurecimiento completo de produccion con HTTPS y dominio propio, y el almacenamiento documental en nube gestionada.
+Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, un monitor privado con MFA para operaciones sensibles, una app de escritorio capaz de levantar servicios, ejecutar pruebas, revisar logs y gestionar backups SQLite, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose y PostgreSQL. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el endurecimiento completo de produccion con HTTPS y dominio propio, y el almacenamiento documental en nube gestionada.
 
 # Analisis de requisitos
 
@@ -64,14 +64,14 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 - Tutores profesionales.
 - Estudiantes vinculados a practicas.
 - Empresas interesadas en colaborar con el centro.
-- Empresas ya aprobadas con cuenta persistente en el portal externo.
+- Empresas con cuenta persistente en el portal externo antes y despues de la aprobacion.
 
 ## Requisitos funcionales
 
 - Consultar indicadores y modulos de gestion desde el panel interno.
 - Crear, editar y revisar empresas, convenios, estudiantes y asignaciones.
 - Registrar solicitudes externas de empresa y aprobarlas o rechazarlas desde el panel interno.
-- Verificar el correo de contacto de la empresa y habilitar una cuenta persistente tras la aprobacion.
+- Verificar el correo de contacto de la empresa y mantener una cuenta persistente desde el preregistro hasta la operativa posterior.
 - Consultar y responder mensajes desde una bandeja unificada de conversaciones.
 - Registrar seguimientos, adjuntar evidencias, cerrar hitos y emitir una evaluacion final.
 - Gestionar documentos con versionado, retirada controlada y restauracion.
@@ -109,6 +109,66 @@ Si se expresa la solucion en capas tecnologicas, la arquitectura puede resumirse
 
 Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud.
 
+### Esquema detallado de arquitectura
+
+En la defensa resulta mas claro bajar un nivel adicional y expresar la arquitectura como un recorrido tecnico de extremo a extremo:
+
+```text
+Navegador empresa
+  -> SPA React externa (/externo)
+     -> /portal-auth/register, /portal-auth/login, /portal-auth/me
+     -> /api/portal-company/request, /api/portal-company/overview, /api/portal-company/messages
+     -> /portal/solicitudes/{token} y /registro-empresa/confirmar para enlaces publicos y verificacion
+
+Navegador centro
+  -> SPA React interna (/app)
+     -> /api/login, /api/me, /api/bootstrap
+     -> /api/empresa-solicitudes, /api/empresa-solicitudes/{id}/aprobar, /api/empresa-solicitudes/{id}/rechazar
+     -> /api/empresa-solicitudes/bandeja y /api/empresa-solicitudes/{id}/mensajes
+     -> /api/empresas, /api/convenios, /api/estudiantes, /api/asignaciones
+
+Ambos recorridos
+  -> Apache/PHP en contenedor Docker
+     -> Symfony 7 (controladores + servicios + seguridad + auditoria + MFA)
+        -> Doctrine ORM
+           -> PostgreSQL 16 en VM publica
+        -> Mailer Symfony
+           -> Brevo para verificacion, rechazos, reseteo y MFA
+        -> almacenamiento documental
+           -> volumen persistente montado en la VM
+
+Servicios auxiliares
+  -> /documentacion como shell publica separada
+  -> /monitor como area tecnica privada
+  -> Agora Desktop como capa local de soporte, pruebas y empaquetado
+```
+
+Este esquema deja claro un punto importante para la defensa: el portal externo no es una pagina estatica conectada de forma superficial a la API, sino un cliente autenticado con su propio firewall, su propio proveedor de usuarios y un flujo separado del panel interno, aunque ambos compartan el mismo nucleo de negocio.
+
+Si se quiere explicar tambien el despliegue remoto con mas precision, conviene proyectar el siguiente esquema de nodos:
+
+```text
+Internet
+  -> DNS wildcard nip.io / dominio publico
+     -> VM publica Google Cloud Compute Engine
+        -> reglas firewall 80/443 + SSH administrado
+        -> Docker network "agora"
+           -> contenedor app
+              -> Apache 2.4
+              -> PHP 8.2
+              -> Symfony 7
+              -> build integrada de /app y /externo
+              -> directorios var/cache, var/log y almacenamiento documental
+           -> contenedor db
+              -> PostgreSQL 16
+        -> volumen persistente PostgreSQL
+        -> volumen persistente documentos
+        -> salida SMTP/API
+           -> Brevo
+```
+
+Este segundo nivel ayuda a defender que la solucion ya no depende del portatil de desarrollo. La URL publica termina en una VM aislada, el backend y la base de datos quedan encapsulados en contenedores, los documentos persisten fuera del ciclo de vida del contenedor y el correo transaccional sale por un proveedor externo dedicado.
+
 ## Justificacion tecnica de la separacion
 
 El portal interno y el portal externo se desarrollan como SPA independientes. Esta separacion permite evolucionar cada interfaz segun su contexto sin mezclar dependencias, ciclos de despliegue ni decisiones de UX. El backend se mantiene como pieza central de negocio y seguridad, mientras que documentacion y monitor se sirven como shells diferenciadas para no contaminar el flujo funcional del producto.
@@ -123,19 +183,118 @@ El dominio se organiza en torno a entidades nucleares como `EmpresaColaboradora`
 
 ![Figura 2. Esquema relacional de la base de datos.](capturas/02-esquema-relacional.png)
 
+### Relacion detallada entre cuenta, solicitud y mensajeria
+
+La parte que mas conviene explicar con detalle en la memoria y en la defensa es la relacion entre la cuenta de empresa, la solicitud y el canal de mensajes, porque ese eje es el que da continuidad al flujo externo.
+
+```text
+empresa_portal_cuenta
+  PK id
+  email + password_hash + activated_at + last_login_at
+  0..1 empresa_colaboradora asociada tras aprobacion
+  0..1 empresa_solicitud asociada mientras existe el proceso de alta
+
+empresa_solicitud
+  PK id
+  token + portal_token + estado + email_verificado_en + aprobado_en
+  datos corporativos y datos de contacto
+  1 cuenta portal asociada
+  0..n empresa_mensaje
+
+empresa_mensaje
+  PK id
+  autor + texto + created_at
+  1 solicitud
+  autor = empresa | centro
+  orden cronologico compartido para ambos lados
+
+empresa_colaboradora
+  PK id
+  1 empresa aprobada en el dominio interno
+  1 cuenta portal asociada si el acceso externo sigue activo
+  0..n convenio
+  0..n empresa_documento
+  0..n asignacion_practica
+```
+
+Dicho de otra forma, el sistema ya no fuerza un salto brusco entre una “solicitud anonima” y una “cuenta creada despues”. Primero existe la `EmpresaPortalCuenta`, luego la `EmpresaSolicitud` queda ligada a esa cuenta, y finalmente, cuando el centro aprueba, aparece la `EmpresaColaboradora` asociada al mismo acceso. Ese encadenamiento reduce friccion, conserva el historial de mensajes y evita pedir una contrasena tardia solo para poder continuar el proceso.
+
+La relacion de mensajeria merece un matiz adicional. El chat no cuelga de `EmpresaColaboradora`, sino de `EmpresaSolicitud`. Esa decision permite que el canal exista desde la primera revision, siga operativo mientras la empresa esta pendiente o verificada y permanezca visible cuando el centro aprueba y ya existe la ficha interna. En la practica, la empresa escribe siempre con la misma cuenta; lo unico que cambia es el contexto de negocio que el panel muestra alrededor del canal.
+
 ## Seguridad y control de acceso
 
 La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de roles y una combinacion de `json_login` y sesion de navegador. El sistema diferencia perfiles de administracion, coordinacion, documentacion, monitorizacion y auditoria. Las operaciones sensibles del monitor, como levantar o detener el acceso externo, requieren MFA por correo. Ademas, las acciones relevantes se registran mediante auditoria interna.
 
-El portal externo dispone de un flujo independiente: alta publica, verificacion por correo, aprobacion interna, activacion de cuenta, login persistente y recuperacion de contrasena. Esta separacion evita mezclar el acceso corporativo externo con las credenciales del panel interno.
+El portal externo dispone de un flujo independiente con su propio firewall y su propio proveedor `EmpresaPortalCuenta`. La cuenta de empresa se crea antes de enviar la solicitud, el login externo queda separado del panel interno y la verificacion por correo se aplica sobre la solicitud corporativa. Esta separacion evita mezclar credenciales, conserva contexto de mensajes y mantiene un unico acceso empresarial antes y despues de la aprobacion.
 
 ## Flujo de trabajo operativo
 
-La plataforma no se ha planteado como una suma de CRUD aislados, sino como un flujo de negocio secuencial. El recorrido recomendado comienza en el portal externo: la empresa registra una solicitud, valida su correo y espera revision interna. Ese paso no crea automaticamente una operativa academica completa, sino una entrada controlada para que el centro revise la informacion antes de activar la relacion.
+La plataforma no se ha planteado como una suma de CRUD aislados, sino como un flujo de negocio secuencial. El recorrido recomendado comienza en el portal externo con un preregistro de cuenta de empresa. A partir de ese acceso, la empresa completa la solicitud corporativa, valida su correo y espera revision interna. Ese paso no crea automaticamente una operativa academica completa, sino una entrada controlada para que el centro revise la informacion antes de activar la relacion.
 
 Una vez dentro del portal interno, el primer paso correcto es revisar la solicitud o crear manualmente una empresa ya contrastada. Solo cuando la empresa queda en estado activo tiene sentido registrar un convenio. El convenio sigue su propio ciclo de maduracion, desde borrador hasta firmado o vigente. Sobre esa base ya validada se registran estudiantes y tutores, y solo entonces se planifica la asignacion.
 
-Este orden no es solo recomendable desde el punto de vista funcional, sino que tambien se ha reforzado a nivel de aplicacion. En la revision final se ha ajustado el flujo para que los convenios se creen sobre empresas activas y para que las asignaciones solo puedan registrarse sobre empresas activas y convenios firmados, vigentes o en renovacion. De este modo se evita introducir practicas sobre datos todavia pendientes de validar y se mantiene una coherencia real entre solicitud, empresa, convenio y asignacion.
+Este orden no es solo recomendable desde el punto de vista funcional, sino que tambien se ha reforzado a nivel de aplicacion. En la revision final se ha ajustado el flujo para que la cuenta de empresa exista antes de la solicitud, los convenios se creen solo sobre empresas activas y las asignaciones solo puedan registrarse sobre empresas activas y convenios firmados, vigentes o en renovacion. De este modo se evita introducir practicas sobre datos todavia pendientes de validar y se mantiene una coherencia real entre cuenta, solicitud, empresa, convenio y asignacion.
+
+### Esquema detallado del flujo de trabajo
+
+```text
+1. Preregistro de cuenta externa
+   Empresa -> /portal-auth/register -> empresa_portal_cuenta
+
+2. Acceso al panel privado de empresa
+   Empresa -> /portal-auth/login -> sesion de navegador externa
+
+3. Registro de la solicitud corporativa
+   Empresa -> /api/portal-company/request -> empresa_solicitud asociada a empresa_portal_cuenta
+
+4. Verificacion del correo de la solicitud
+   Empresa -> enlace /registro-empresa/confirmar?token=...
+   Resultado -> empresa_solicitud.estado = email_verificado
+
+5. Revision interna
+   Centro -> /app -> /api/empresa-solicitudes, bandeja y mensajes
+
+6. Aprobacion
+   Centro -> /api/empresa-solicitudes/{id}/aprobar
+   Resultado ->
+     - se crea empresa_colaboradora
+     - se crea contacto_empresa inicial
+     - empresa_portal_cuenta se asocia a empresa_colaboradora
+     - la cuenta conserva el mismo acceso
+
+7. Operativa posterior
+   Empresa -> /api/portal-company/overview, /messages, /documents
+   Centro  -> convenios, asignaciones, seguimientos, evaluacion y bandeja
+```
+
+Este esquema es el que conviene proyectar durante la defensa cuando se explique que la mensajeria no es un modulo aislado. El chat nace en la solicitud, pero sobrevive al alta de empresa porque la cuenta externa y la solicitud quedan enlazadas desde el principio.
+
+Si se necesita una version todavia mas operativa para exponer el flujo diario, puede resumirse asi:
+
+```text
+Estado 1: cuenta creada, sin solicitud
+  - la empresa puede iniciar sesion
+  - el panel privado muestra formulario de alta
+
+Estado 2: solicitud enviada, correo pendiente
+  - la empresa ve el estado de la solicitud
+  - el sistema envia verificacion por Brevo
+
+Estado 3: correo verificado, pendiente de revision
+  - la empresa ya puede usar el canal de mensajes
+  - el centro revisa desde /api/empresa-solicitudes y su bandeja
+
+Estado 4: aprobada
+  - se crea empresa_colaboradora
+  - la misma cuenta externa pasa a ver convenios, asignaciones y documentos
+  - los mensajes anteriores siguen visibles
+
+Estado 5: rechazada
+  - la cuenta sigue existiendo
+  - el portal muestra motivo de rechazo y trazabilidad del intercambio previo
+```
+
+Con esta lectura por estados se entiende mejor por que el refresco automatico de mensajes se resuelve en el portal externo con polling corto sobre `overview`: no se trata de un chat independiente, sino de una vista continua del mismo expediente empresarial a lo largo de todo su ciclo.
 
 ## Diseno de interfaz
 
@@ -165,7 +324,7 @@ El portal interno funciona como shell de gestion academica y administrativa. Des
 
 ## Portal externo
 
-El portal externo ofrece dos momentos de uso claramente diferenciados. En el primero, una empresa interesada completa el alta, revisa el correo de verificacion y consulta el estado de la solicitud. En el segundo, tras la aprobacion del centro, la empresa activa su cuenta, puede iniciar sesion, solicitar recuperacion de contrasena, revisar convenios y asignaciones asociados, descargar documentos y mantener la conversacion con el centro desde un panel privado. En la revision final se ha reforzado ademas el comportamiento de mensajeria para que tanto la bandeja interna como el chat del portal externo se refresquen de forma automatica en segundo plano y al recuperar el foco del navegador, mejorando la percepcion de continuidad operativa durante la demostracion.
+El portal externo ofrece ahora dos momentos de uso enlazados por la misma cuenta. En el primero, una empresa interesada crea un acceso previo con correo y contrasena, entra en su panel privado y desde ahi registra la solicitud corporativa. Despues revisa el correo de verificacion y consulta el estado de la propuesta sin perder el mismo acceso. En el segundo, tras la aprobacion del centro, esa misma cuenta queda asociada a la empresa aprobada y pasa a servir para revisar convenios y asignaciones, descargar documentos y mantener la conversacion con el centro desde un panel privado ya operativo. En la revision final se ha reforzado ademas el comportamiento de mensajeria para que tanto la bandeja interna como el chat del portal externo se refresquen de forma automatica en segundo plano y al recuperar el foco del navegador, mejorando la percepcion de continuidad operativa durante la demostracion.
 
 ## Seguimientos y evaluacion final
 
@@ -220,7 +379,7 @@ La validacion del proyecto combina compilacion de ambos frontends, pruebas autom
 
 ## Resultados observados
 
-La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles tanto en la URL local integrada como en el despliegue remoto de Google Cloud. El flujo de empresa cubre registro, verificacion, revision interna, activacion de cuenta y acceso posterior. La revision final ha confirmado tambien la correccion de exportaciones CSV, validacion de contrasenas del portal externo, detalle de convenios, detalle de asignaciones, edicion de tutores, relacion entre tutores profesionales y empresa, contador de tutores en tarjetas, almacenamiento documental privado de empresa, refresco automatico de mensajeria, notificacion de rechazo por correo y operativa de la app de escritorio.
+La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles tanto en la URL local integrada como en el despliegue remoto de Google Cloud. El flujo de empresa cubre preregistro de cuenta, solicitud corporativa, verificacion, revision interna, continuidad de acceso y operativa posterior. La revision final ha confirmado tambien la correccion de exportaciones CSV, validacion de contrasenas del portal externo, detalle de convenios, detalle de asignaciones, edicion de tutores, relacion entre tutores profesionales y empresa, contador de tutores en tarjetas, almacenamiento documental privado de empresa, refresco automatico de mensajeria, notificacion de rechazo por correo y operativa de la app de escritorio.
 
 De cara a la entrega, los artefactos de apoyo a la defensa, como el video demostrativo y la muestra CSV/Excel utilizada para explicar la exportacion, se han regenerado con datos anonimizados. Esto permite apoyar la exposicion con evidencias reales del sistema sin exponer direcciones de correo u otros datos personales innecesarios.
 
@@ -236,7 +395,7 @@ Tambien he realizado una revision final en 20 pasadas tematicas para asegurar qu
 
 1. Arquitectura general: backend, panel interno, portal externo, documentacion y monitor tienen responsabilidades separadas.
 2. Seguridad interna: las rutas `/api` quedan protegidas por roles y autenticacion.
-3. Seguridad del portal externo: las cuentas de empresa se activan por token y contrasena.
+3. Seguridad del portal externo: la cuenta de empresa se preregistra, mantiene su sesion separada y conserva el mismo acceso durante solicitud, mensajeria y aprobacion.
 4. Contrasenas: la activacion y recuperacion de empresa exigen longitud minima, mayusculas, minusculas y numeros.
 5. Tokens: los enlaces de activacion, recuperacion y portal se tratan como valores opacos y se codifican al enviarlos por URL.
 6. Documentos: el almacenamiento evita rutas absolutas o con `..` para impedir salir del directorio permitido.

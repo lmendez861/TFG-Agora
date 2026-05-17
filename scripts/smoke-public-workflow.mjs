@@ -76,6 +76,10 @@ function assertCondition(condition, message) {
   }
 }
 
+function escapeSqlLiteral(value) {
+  return String(value).replace(/'/g, "''");
+}
+
 async function request(url, {
   method = 'GET',
   headers = {},
@@ -185,6 +189,7 @@ async function main() {
   const studentEmail = `alumno.public.${suffix}@example.com`;
   const adminAuthHeader = buildBasicAuthHeader(adminUser, adminPassword);
   const companyCookieJar = createCookieJar();
+  const rejectedCompanyCookieJar = createCookieJar();
   const result = {
     ok: false,
     baseUrl,
@@ -262,9 +267,45 @@ async function main() {
     };
   });
 
-  const registration = await runStep('registro', 'Registrar solicitud desde el portal externo', async () => {
-    const response = ensureStatus(await request(`${baseUrl}/registro-empresa`, {
+  await runStep('registro-cuenta', 'Crear cuenta externa previa de empresa', async () => {
+    const response = ensureStatus(await request(`${baseUrl}/portal-auth/register`, {
       method: 'POST',
+      body: {
+        displayName: 'Responsable Publico',
+        email: companyEmail,
+        password: companyPassword,
+      },
+    }), 201, 'Registro de cuenta externa');
+
+    return {
+      detail: `Cuenta externa creada para ${companyEmail}`,
+    };
+  });
+
+  await runStep('login-previo-empresa', 'Entrar en el portal externo con la cuenta preregistrada', async () => {
+    ensureStatus(await request(`${baseUrl}/portal-auth/login`, {
+      method: 'POST',
+      body: {
+        email: companyEmail,
+        password: companyPassword,
+      },
+      cookieJar: companyCookieJar,
+    }), 204, 'Login previo empresa');
+
+    const me = ensureStatus(await request(`${baseUrl}/portal-auth/me`, {
+      cookieJar: companyCookieJar,
+    }), 200, 'Sesion previa empresa');
+    assertCondition(me.json?.email === companyEmail, 'La sesion de la cuenta preregistrada no coincide con el email esperado.');
+    assertCondition(me.json?.empresa?.id === null, 'La cuenta preregistrada no deberia estar vinculada ya a una empresa.');
+    assertCondition(me.json?.solicitud === null, 'La cuenta preregistrada no deberia tener solicitud antes de crearla.');
+
+    return { detail: `Sesion iniciada como ${companyEmail}` };
+  });
+
+  const registration = await runStep('registro', 'Registrar solicitud desde el panel privado de empresa', async () => {
+    const response = ensureStatus(await request(`${baseUrl}/api/portal-company/request`, {
+      method: 'POST',
+      cookieJar: companyCookieJar,
       body: {
         nombreEmpresa: companyName,
         cif: `PUB${String(seed).slice(-8)}`,
@@ -273,38 +314,46 @@ async function main() {
         web: 'https://example.com',
         descripcion: 'Solicitud de validacion publica automatizada.',
         contactoNombre: 'Responsable Publico',
-        contactoEmail: companyEmail,
         contactoTelefono: '600123123',
       },
-    }), 201, 'Registro externo');
+    }), 201, 'Registro privado de solicitud');
 
-    const verificationUrl = response.json?.verificationUrl;
     const portalToken = response.json?.portalToken;
-    assertCondition(typeof verificationUrl === 'string' && verificationUrl !== '', 'La respuesta de registro no incluye verificationUrl.');
-    assertCondition(typeof portalToken === 'string' && portalToken !== '', 'La respuesta de registro no incluye portalToken.');
-
-    const verificationHost = new URL(verificationUrl).host;
-    const expectedHost = new URL(baseUrl).host;
+    assertCondition(typeof portalToken === 'string' && portalToken !== '', 'La respuesta de solicitud no incluye portalToken.');
     assertCondition(
-      verificationHost === expectedHost,
-      `El enlace de verificacion apunta a ${verificationHost} y se esperaba ${expectedHost}.`,
+      ['sent', 'unavailable', 'failed'].includes(response.json?.emailDelivery),
+      'La respuesta de solicitud no informa el estado de envio de correo.',
     );
 
     return {
-      detail: `Solicitud #${response.json.id} registrada`,
+      detail: `Solicitud #${response.json.id} registrada desde panel privado`,
       value: response.json,
       artifacts: {
         solicitudId: response.json.id,
         portalToken,
-        verificationUrl,
         companyEmail,
         companyName,
       },
     };
   });
 
+  const verificationToken = await runStep('token-verificacion', 'Recuperar token de verificacion desde la VM', async () => {
+    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(registration.id)} AND contacto_email = '${escapeSqlLiteral(companyEmail)}' LIMIT 1;`;
+    const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
+    const token = (await sshExec(sshTarget, command)).trim();
+    assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud principal.');
+
+    return { detail: 'Token de verificacion recuperado', value: token };
+  });
+
   await runStep('verificacion', 'Confirmar correo de empresa con la URL publica', async () => {
-    ensureStatus(await request(registration.verificationUrl), 200, 'Confirmacion publica');
+    ensureStatus(await request(`${baseUrl}/registro-empresa/confirmar?token=${encodeURIComponent(verificationToken)}`), 200, 'Confirmacion publica');
+
+    const overview = ensureStatus(await request(`${baseUrl}/api/portal-company/overview`, {
+      cookieJar: companyCookieJar,
+    }), 200, 'Overview tras verificacion');
+    assertCondition(overview.json?.solicitud?.estado === 'email_verificado', 'La solicitud no ha pasado a estado email_verificado tras confirmar el correo.');
+
     return { detail: 'Correo corporativo verificado con URL publica' };
   });
 
@@ -436,45 +485,6 @@ async function main() {
     };
   });
 
-  const activationToken = await runStep('token-activacion', 'Recuperar token de activacion desde la VM', async () => {
-    const sql = `SELECT setup_token FROM empresa_portal_cuenta WHERE id = ${Number(approval.portalAccount.id)} LIMIT 1;`;
-    const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
-    const token = (await sshExec(sshTarget, command)).trim();
-    assertCondition(token !== '', 'No se ha encontrado token de activacion para la cuenta portal.');
-
-    return { detail: 'Token de activacion obtenido', value: token };
-  });
-
-  await runStep('activar-cuenta', 'Activar la cuenta de empresa aprobada', async () => {
-    ensureStatus(await request(`${baseUrl}/portal-auth/activate`, {
-      method: 'POST',
-      body: {
-        token: activationToken,
-        password: companyPassword,
-      },
-    }), 200, 'Activar cuenta empresa');
-
-    return { detail: `Cuenta ${companyEmail} activada` };
-  });
-
-  await runStep('login-empresa', 'Entrar en el portal de empresa con sesion persistente', async () => {
-    ensureStatus(await request(`${baseUrl}/portal-auth/login`, {
-      method: 'POST',
-      body: {
-        email: companyEmail,
-        password: companyPassword,
-      },
-      cookieJar: companyCookieJar,
-    }), 204, 'Login empresa');
-
-    const me = ensureStatus(await request(`${baseUrl}/portal-auth/me`, {
-      cookieJar: companyCookieJar,
-    }), 200, 'Sesion empresa');
-    assertCondition(me.json?.email === companyEmail, 'La sesion del portal empresa no coincide con el email aprobado.');
-
-    return { detail: `Sesion de empresa iniciada como ${companyEmail}` };
-  });
-
   await runStep('overview-empresa', 'Comprobar convenios, asignaciones y cuenta en el portal empresa', async () => {
     const overview = ensureStatus(await request(`${baseUrl}/api/portal-company/overview`, {
       cookieJar: companyCookieJar,
@@ -527,7 +537,7 @@ async function main() {
     return { detail: `Bandeja interna detecta ${thread.companyMessageCount} mensaje(s) de empresa` };
   });
 
-  await runStep('mensaje-centro', 'Responder desde la API interna y verificar visibilidad externa', async () => {
+  await runStep('mensaje-centro', 'Responder desde la API interna y verificar continuidad del chat en la cuenta externa', async () => {
     ensureStatus(await request(`${baseUrl}/api/empresa-solicitudes/${registration.id}/mensajes`, {
       method: 'POST',
       headers: {
@@ -539,12 +549,14 @@ async function main() {
       },
     }), 201, 'Respuesta centro');
 
-    const messages = ensureStatus(await request(`${baseUrl}/portal/solicitudes/${registration.portalToken}/mensajes`), 200, 'Chat publico empresa');
-    const textos = Array.isArray(messages.json) ? messages.json.map((item) => item.texto) : [];
+    const overview = ensureStatus(await request(`${baseUrl}/api/portal-company/overview`, {
+      cookieJar: companyCookieJar,
+    }), 200, 'Overview chat empresa');
+    const textos = Array.isArray(overview.json?.messages) ? overview.json.messages.map((item) => item.texto) : [];
     assertCondition(textos.includes(`Mensaje empresa smoke ${suffix}`), 'El mensaje de empresa no aparece en el canal publico.');
     assertCondition(textos.includes(`Respuesta centro smoke ${suffix}`), 'La respuesta del centro no aparece en el canal publico.');
 
-    return { detail: 'Conversacion visible desde ambos lados' };
+    return { detail: 'Conversacion visible desde ambos lados con la misma cuenta externa' };
   });
 
   await runStep('colecciones-internas', 'Comprobar colecciones internas desde la URL publica', async () => {
@@ -569,22 +581,43 @@ async function main() {
   });
 
   const rejectedEmail = `agora.reject.${suffix}@example.com`;
+  const rejectedPassword = `AgoraReject${String(seed).slice(-6)}Bb2`;
   const rejectedCompanyName = `Agora Reject ${suffix}`;
-  const rejectedRegistration = await runStep('registro-rechazo', 'Registrar una segunda solicitud para validar rechazo', async () => {
-    const response = ensureStatus(await request(`${baseUrl}/registro-empresa`, {
+  await runStep('registro-cuenta-rechazo', 'Crear segunda cuenta externa para validar rechazo', async () => {
+    ensureStatus(await request(`${baseUrl}/portal-auth/register`, {
       method: 'POST',
+      body: {
+        displayName: 'Responsable Rechazo',
+        email: rejectedEmail,
+        password: rejectedPassword,
+      },
+    }), 201, 'Registro cuenta rechazo');
+
+    ensureStatus(await request(`${baseUrl}/portal-auth/login`, {
+      method: 'POST',
+      body: {
+        email: rejectedEmail,
+        password: rejectedPassword,
+      },
+      cookieJar: rejectedCompanyCookieJar,
+    }), 204, 'Login cuenta rechazo');
+
+    return { detail: `Cuenta rechazo creada para ${rejectedEmail}` };
+  });
+
+  const rejectedRegistration = await runStep('registro-rechazo', 'Registrar una segunda solicitud privada para validar rechazo', async () => {
+    const response = ensureStatus(await request(`${baseUrl}/api/portal-company/request`, {
+      method: 'POST',
+      cookieJar: rejectedCompanyCookieJar,
       body: {
         nombreEmpresa: rejectedCompanyName,
         cif: `REJ${String(seed).slice(-8)}`,
         sector: 'Servicios',
         ciudad: 'Sevilla',
         contactoNombre: 'Responsable Rechazo',
-        contactoEmail: rejectedEmail,
         contactoTelefono: '600999888',
       },
-    }), 201, 'Registro externo rechazo');
-
-    assertCondition(typeof response.json?.verificationUrl === 'string', 'La solicitud de rechazo no expone verificationUrl.');
+    }), 201, 'Registro solicitud rechazo');
 
     return {
       detail: `Solicitud #${response.json.id} preparada para rechazo`,
@@ -596,8 +629,17 @@ async function main() {
     };
   });
 
+  const rejectedVerificationToken = await runStep('token-verificacion-rechazo', 'Recuperar token de verificacion de la solicitud rechazada', async () => {
+    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(rejectedRegistration.id)} AND contacto_email = '${escapeSqlLiteral(rejectedEmail)}' LIMIT 1;`;
+    const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
+    const token = (await sshExec(sshTarget, command)).trim();
+    assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud rechazada.');
+
+    return { detail: 'Token de rechazo recuperado', value: token };
+  });
+
   await runStep('verificacion-rechazo', 'Verificar correo de la solicitud destinada a rechazo', async () => {
-    ensureStatus(await request(rejectedRegistration.verificationUrl), 200, 'Confirmacion rechazo');
+    ensureStatus(await request(`${baseUrl}/registro-empresa/confirmar?token=${encodeURIComponent(rejectedVerificationToken)}`), 200, 'Confirmacion rechazo');
     return { detail: 'Correo verificado antes del rechazo' };
   });
 
@@ -612,10 +654,16 @@ async function main() {
       },
     }), 200, 'Rechazo interno');
 
-    const statusResponse = ensureStatus(await request(`${baseUrl}/portal/solicitudes/${rejectedRegistration.portalToken}`), 200, 'Estado externo rechazo');
-    assertCondition(statusResponse.json?.estado === 'rechazada', 'El portal externo no refleja el estado rechazada.');
+    const statusResponse = ensureStatus(await request(`${baseUrl}/api/portal-company/overview`, {
+      cookieJar: rejectedCompanyCookieJar,
+    }), 200, 'Overview externo rechazo');
+    assertCondition(statusResponse.json?.solicitud?.estado === 'rechazada', 'El portal externo autenticado no refleja el estado rechazada.');
+    assertCondition(
+      statusResponse.json?.solicitud?.motivoRechazo === 'Validacion automatizada del flujo de rechazo.',
+      'El motivo de rechazo no queda visible en el portal externo autenticado.',
+    );
 
-    return { detail: 'El rechazo queda visible en el portal externo' };
+    return { detail: 'El rechazo queda visible en el portal externo autenticado' };
   });
 
   result.ok = true;

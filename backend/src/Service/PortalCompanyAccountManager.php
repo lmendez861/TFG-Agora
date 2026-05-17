@@ -42,6 +42,32 @@ final class PortalCompanyAccountManager
     }
 
     /**
+     * Registra una cuenta previa de empresa para que el portal privado exista antes de enviar la solicitud formal.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function registerAccount(string $email, string $displayName, string $plainPassword): ?EmpresaPortalCuenta
+    {
+        $normalizedEmail = mb_strtolower(trim($email));
+        if ($this->accountRepository->findOneBy(['email' => $normalizedEmail]) instanceof EmpresaPortalCuenta) {
+            return null;
+        }
+
+        $account = (new EmpresaPortalCuenta())
+            ->setEmail($normalizedEmail)
+            ->setDisplayName(trim($displayName))
+            ->setRoles(['ROLE_COMPANY_PORTAL'])
+            ->setActive(true);
+
+        $account->setPassword($this->passwordHasher->hashPassword($account, $plainPassword));
+        $account->markActivated();
+
+        $this->entityManager->persist($account);
+        $this->entityManager->flush();
+
+        return $account;
+    }
+
+    /**
      * Resume la responsabilidad de provisionApprovedAccount dentro de este modulo y facilita seguir el flujo al revisarlo.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
      */

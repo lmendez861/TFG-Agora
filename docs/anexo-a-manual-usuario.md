@@ -11,25 +11,27 @@ Este anexo describe el uso funcional de la plataforma "Gestion de Empresas Colab
 - `ROLE_DOCUMENT_MANAGER`: control documental, versionado y restauracion de evidencias.
 - `ROLE_MONITOR`: supervision tecnica, logs y acceso publico temporal.
 - `ROLE_AUDITOR`: consulta de trazas y actividad sensible.
-- Empresa externa: uso del portal publico para registrar su interes, verificar el correo, activar cuenta y comunicarse con el centro.
+- Empresa externa: uso del portal publico para crear cuenta, registrar su interes, verificar el correo y comunicarse con el centro.
 
 ## 3. Acceso al sistema
 
 ### 3.0 Acceso externo para evaluacion
 
-Durante la evaluacion, si el alumno mantiene activo el entorno de demostracion, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica temporal generada con `cloudflared`, por ejemplo `https://...trycloudflare.com`, y sobre esa misma URL abrir:
+Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como `http://agora.34.175.224.87.nip.io/`, y sobre esa misma direccion abrir:
 
 - `/app` para el panel interno;
 - `/externo` para el portal de empresa;
 - `/documentacion` para la guia funcional;
 - `/monitor` para el monitor privado.
 
-Este acceso remoto depende de que el equipo local del alumno, el servidor Symfony y el tunel publico sigan levantados. Si el tunel se cierra, la URL deja de ser valida y hay que generar una nueva. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.
+Este acceso remoto depende de que la VM publica y el stack Docker sigan levantados. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.
 
 ### 3.1 Panel interno integrado
 
 - URL: `http://127.0.0.1:8000/app`
 - Credenciales demo:
+  - `profesora / Abrete01`
+  - `profesor / Abrete01`
   - `admin / admin123`
   - `coordinador / coordinador123`
 
@@ -46,8 +48,14 @@ Este acceso remoto depende de que el equipo local del alumno, el servidor Symfon
 ### 3.4 Portal externo
 
 - URL: `http://127.0.0.1:8000/externo`
-- El registro inicial es publico.
-- El acceso persistente de empresa se habilita tras aprobacion interna.
+- La cuenta inicial de empresa se crea desde el portal publico.
+- La solicitud corporativa se completa despues, ya dentro del panel privado de empresa.
+
+### 3.5 Agora Desktop
+
+- App Windows para levantar el entorno local sin abrir consola manualmente.
+- Permite arrancar backend, abrir portales, ejecutar pruebas, revisar logs, crear backups SQLite y restaurarlos.
+- Incluye control MFA para activar la URL externa temporal.
 
 ## 4. Navegacion principal del panel interno
 
@@ -163,17 +171,29 @@ Desde el monitor privado el usuario puede:
 - levantar o detener el acceso publico temporal;
 - copiar la URL externa cuando el tunel este activo.
 
+## 12 bis. Agora Desktop
+
+Desde la app de escritorio el usuario tecnico puede:
+
+- preparar el entorno local;
+- levantar o detener backend y acceso externo;
+- abrir portal interno, monitor y portal externo;
+- ejecutar pruebas de escritorio, backend, frontend y E2E;
+- abrir logs y diagnosticos;
+- crear y restaurar backups SQLite;
+- lanzar una prueba completa de flujo entre portales.
+
 ## 13. Portal externo
 
 El flujo del portal externo es:
 
-1. La empresa completa el formulario de solicitud.
-2. Recibe un enlace de verificacion por correo.
-3. Consulta el estado de la solicitud.
-4. El centro aprueba la empresa desde el panel interno.
-5. La empresa recibe un correo de activacion de cuenta.
-6. Activa la cuenta, inicia sesion y puede recuperar su contrasena si lo necesita.
-7. Accede a su panel para revisar informacion, documentos y mensajes.
+1. La empresa crea su cuenta con correo y contrasena.
+2. Inicia sesion en el panel privado de empresa.
+3. Completa el formulario de solicitud con los datos corporativos.
+4. Recibe un enlace de verificacion por correo.
+5. Consulta el estado de la solicitud y mantiene el canal de mensajes.
+6. El centro aprueba o rechaza la empresa desde el panel interno.
+7. Si se aprueba, la misma cuenta sirve para revisar informacion, documentos, convenios, asignaciones y mensajes.
 
 ## 14. Errores y validaciones comunes
 

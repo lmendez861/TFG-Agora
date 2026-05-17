@@ -48,7 +48,7 @@ final class Version20260329171817 extends AbstractMigration
         $this->addPortableSql(<<<'SQL'
             CREATE TABLE empresa_portal_cuenta (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              empresa_id INTEGER NOT NULL,
+              empresa_id INTEGER DEFAULT NULL,
               solicitud_id INTEGER DEFAULT NULL,
               email VARCHAR(180) NOT NULL,
               roles CLOB NOT NULL --(DC2Type:json)

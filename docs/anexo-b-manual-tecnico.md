@@ -141,7 +141,7 @@ Este chequeo usa exactamente los recursos empaquetados de `dist/win-unpacked/res
 - El portal interno usa `json_login` y sesion.
 - El backend mantiene `http_basic` como soporte operativo para pruebas y utilidades.
 - El portal externo usa un firewall separado con proveedor `EmpresaPortalCuenta`.
-- Existen rutas publicas para activacion de cuenta, login, solicitud de reseteo y restablecimiento de contrasena.
+- Existen rutas publicas para preregistro de cuenta, activacion legacy, login, solicitud de reseteo y restablecimiento de contrasena.
 - El monitor privado exige rol de monitorizacion y MFA para activar o detener el acceso publico.
 - La auditoria registra operaciones sensibles como aprobaciones, acceso publico, MFA, login de empresa y acciones de seguimiento.
 
@@ -238,6 +238,18 @@ Archivos clave:
 - `frontend/company-portal/src/App.tsx`
 - `backend/src/Controller/PortalAuthController.php`
 - `backend/src/Controller/Api/PortalCompanyController.php`
+- `backend/src/Entity/EmpresaPortalCuenta.php`
+- `backend/src/Entity/EmpresaSolicitud.php`
+- `backend/src/Entity/EmpresaMensaje.php`
+
+El flujo tecnico del portal externo queda asi:
+
+1. `POST /portal-auth/register` crea `EmpresaPortalCuenta`.
+2. `POST /portal-auth/login` abre la sesion del firewall externo.
+3. `POST /api/portal-company/request` crea `EmpresaSolicitud` asociada a la cuenta.
+4. `GET /registro-empresa/confirmar?token=...` verifica el correo de la solicitud.
+5. `GET /api/portal-company/overview` devuelve cuenta, solicitud, mensajes y, cuando ya existe, la empresa aprobada.
+6. `POST /api/portal-company/messages` mantiene la conversacion desde la misma cuenta antes y despues de la aprobacion.
 - `backend/src/Service/PortalCompanyAccountManager.php`
 
 ## 12. App de escritorio

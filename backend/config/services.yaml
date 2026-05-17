@@ -24,6 +24,10 @@ services:
         arguments:
             $fromAddress: '%app.mail_from%'
 
+    App\Controller\Api\PortalCompanyController:
+        arguments:
+            $fromAddress: '%app.mail_from%'
+
     App\Service\MailConfigurationInspector:
         arguments:
             $mailerDsn: '%env(string:MAILER_DSN)%'

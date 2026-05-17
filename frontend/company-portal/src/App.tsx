@@ -7,14 +7,21 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNo
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
-type SolicitudPayload = {
+type AccountRegistrationPayload = {
+  displayName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type CompanyRequestPayload = {
   nombreEmpresa: string;
+  cif?: string;
   sector?: string;
   ciudad?: string;
   web?: string;
   descripcion?: string;
   contactoNombre: string;
-  contactoEmail: string;
   contactoTelefono?: string;
 };
 
@@ -26,6 +33,12 @@ type RegistroResponse = {
   portalUrl?: string;
   emailDelivery?: 'sent' | 'failed' | 'unavailable';
   mailDetail?: string;
+};
+
+type CompanyAccountRegistrationResponse = {
+  message?: string;
+  email?: string;
+  displayName?: string;
 };
 
 type PortalSession = {
@@ -107,7 +120,7 @@ type CompanyPortalOverview = {
     telefono: string | null;
     web: string | null;
     estadoColaboracion: string | null;
-  };
+  } | null;
   convenios: Array<{
     id: number;
     titulo: string;
@@ -156,6 +169,16 @@ type CompanyPortalOverview = {
     id: number;
     estado: string;
     portalToken: string;
+    nombreEmpresa: string;
+    sector: string | null;
+    ciudad: string | null;
+    web: string | null;
+    contactoNombre: string;
+    contactoEmail: string;
+    contactoTelefono: string | null;
+    emailVerificadoEn: string | null;
+    aprobadoEn: string | null;
+    motivoRechazo: string | null;
   } | null;
 };
 
@@ -188,95 +211,97 @@ const PUBLIC_NAV_LINKS = [
   { href: '/estado', label: 'Estado' },
   { href: '/correo', label: 'Correo' },
   { href: '/acceso', label: 'Acceso empresa' },
+  { href: '/panel', label: 'Panel empresa' },
   { href: '/recursos', label: 'Recursos' },
 ];
 
 const IMPACT_METRICS: MetricCard[] = [
   {
-    label: 'Alta guiada',
-    value: '1 flujo',
-    detail: 'Registro, verificacion y seguimiento en un mismo recorrido.',
+    label: 'Cuenta previa',
+    value: '1 acceso',
+    detail: 'La empresa define correo y contrasena antes de enviar la solicitud.',
   },
   {
     label: 'Canal directo',
     value: 'Chat',
-    detail: 'Mensajeria asociada a la solicitud cuando el enlace esta validado.',
+    detail: 'La mensajeria queda asociada a la solicitud y al panel privado.',
   },
   {
     label: 'Revision interna',
-    value: 'Centralizada',
-    detail: 'La solicitud pasa al panel interno sin duplicar informacion.',
+    value: 'Coordinada',
+    detail: 'La empresa registra la solicitud y el centro la revisa en el portal interno.',
   },
 ];
 
 const CAPABILITIES: CapabilityCard[] = [
   {
-    title: 'Registro corporativo',
-    detail: 'La empresa presenta su solicitud con datos estructurados y contacto principal verificado.',
+    title: 'Cuenta previa de empresa',
+    detail: 'La empresa crea su acceso con correo y contrasena antes de remitir la solicitud formal.',
   },
   {
-    title: 'Correo de validacion',
-    detail: 'El backend emite un enlace de verificacion para confirmar la direccion corporativa.',
+    title: 'Solicitud posterior',
+    detail: 'Una vez dentro del panel, la empresa rellena sus datos corporativos y remite la propuesta.',
   },
   {
     title: 'Seguimiento continuo',
-    detail: 'El centro y la empresa comparten contexto desde un canal asociado a la solicitud.',
+    detail: 'El centro y la empresa comparten contexto desde un canal asociado a la solicitud y a la cuenta.',
   },
 ];
 
 const PROCESS_STEPS: ProcessStep[] = [
   {
-    title: '1. Registro inicial',
-    detail: 'La empresa envia sus datos, ambito de colaboracion y persona de contacto.',
+    title: '1. Crear cuenta',
+    detail: 'La empresa registra su acceso inicial con correo corporativo y contrasena.',
   },
   {
-    title: '2. Verificacion de correo',
-    detail: 'El sistema remite un enlace seguro para validar la cuenta corporativa.',
+    title: '2. Completar solicitud',
+    detail: 'Ya dentro del portal, la empresa remite datos corporativos, contacto y propuesta de colaboracion.',
   },
   {
-    title: '3. Revision del centro',
-    detail: 'El portal interno recibe la solicitud para su aprobacion o rechazo.',
+    title: '3. Verificacion de correo',
+    detail: 'El sistema remite un enlace seguro para validar el correo asociado a la solicitud.',
   },
   {
-    title: '4. Canal operativo',
-    detail: 'Tras la validacion, la empresa dispone de un canal de comunicacion vinculado.',
+    title: '4. Revision y operativa',
+    detail: 'El portal interno recibe la solicitud, la aprueba o rechaza y mantiene el canal operativo.',
   },
 ];
 
 const JOURNEY_SUMMARY = [
   {
-    title: 'Registro guiado',
-    detail: 'La empresa completa un alta clara con datos de contacto, sector y objetivo de colaboracion.',
+    title: 'Cuenta corporativa',
+    detail: 'La empresa define un acceso persistente antes de empezar el flujo de colaboracion.',
   },
   {
-    title: 'Validacion del correo',
-    detail: 'El sistema remite un enlace para confirmar la identidad corporativa antes de pasar a revision.',
+    title: 'Solicitud estructurada',
+    detail: 'La peticion se rellena ya dentro del portal, con los datos de la empresa y el contacto principal.',
   },
   {
-    title: 'Revision y acceso',
-    detail: 'El centro aprueba la solicitud y, cuando corresponde, habilita la cuenta persistente de empresa.',
+    title: 'Revision y continuidad',
+    detail: 'El centro revisa la solicitud y la empresa mantiene el mismo acceso para estado, chat y operativa posterior.',
   },
 ];
 
 const MAIL_CHECKLIST = [
+  'Confirma que la cuenta del portal se creo con el correo corporativo correcto.',
   'Revisar entrada, promociones y spam del correo corporativo.',
   'Abrir el enlace de verificacion completo recibido por email.',
-  'Volver a la pagina de estado para confirmar el avance del registro.',
-  'Entrar en Acceso empresa solo cuando el centro haya activado la cuenta.',
+  'Volver al panel o a la pagina de estado para confirmar el avance del registro.',
+  'Mantener el mismo acceso de empresa para consultar mensajes y estado.',
 ];
 
 const FAQ_ITEMS = [
   {
     question: 'Que ocurre despues de enviar la solicitud?',
-    answer: 'Se registra la empresa, se envia un correo de verificacion y la solicitud pasa a revision interna.',
+    answer: 'La solicitud queda ligada a la cuenta de empresa, se envia el correo de verificacion y el centro la revisa internamente.',
   },
   {
     question: 'Como puedo seguir el estado?',
-    answer: 'El portal guarda una sesion local y permite abrir la pagina de estado con el token asociado.',
+    answer: 'Puedes seguirlo desde la pagina de estado o desde el panel privado, usando el mismo acceso de empresa.',
   },
   {
     question: 'Cuando se habilita la mensajeria?',
-    answer: 'La mensajeria queda disponible en cuanto existe acceso de portal con token valido.',
+    answer: 'La mensajeria queda disponible en cuanto la cuenta tiene una solicitud asociada, sin esperar a recargar manualmente.',
   },
 ];
 
@@ -408,9 +433,7 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
  */
 function Layout({ children, session }: { children: ReactNode; session: PortalSession | null }) {
   const location = useLocation();
-  const navigationLinks = session
-    ? [...PUBLIC_NAV_LINKS, { href: '/panel', label: 'Panel empresa' }]
-    : PUBLIC_NAV_LINKS;
+  const navigationLinks = PUBLIC_NAV_LINKS;
 
   return (
     <div className="app-shell">
@@ -454,15 +477,11 @@ function LandingPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
-  const [payload, setPayload] = useState<SolicitudPayload>({
-    nombreEmpresa: '',
-    sector: '',
-    ciudad: '',
-    web: '',
-    descripcion: '',
-    contactoNombre: '',
-    contactoEmail: '',
-    contactoTelefono: '',
+  const [payload, setPayload] = useState<AccountRegistrationPayload>({
+    displayName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
 
   /**
@@ -471,59 +490,41 @@ function LandingPage() {
    */
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (payload.password !== payload.confirmPassword) {
+      setStatus({ kind: 'error', message: 'Las contrasenas no coinciden.' });
+      return;
+    }
+
     setStatus(null);
     setLoading(true);
 
     try {
-      const response = await fetch(REGISTRO_ENDPOINT, {
+      await portalFetch<CompanyAccountRegistrationResponse>('/portal-auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nombreEmpresa: payload.nombreEmpresa,
-          sector: payload.sector || undefined,
-          ciudad: payload.ciudad || undefined,
-          web: payload.web || undefined,
-          descripcion: payload.descripcion || undefined,
-          contactoNombre: payload.contactoNombre,
-          contactoEmail: payload.contactoEmail,
-          contactoTelefono: payload.contactoTelefono || undefined,
+          displayName: payload.displayName,
+          email: payload.email,
+          password: payload.password,
+        }),
+      });
+      await portalFetch<void>('/portal-auth/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: payload.email,
+          password: payload.password,
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as RegistroResponse | null;
-      if (!response.ok) {
-        throw new Error(data?.message || `Error ${response.status}`);
-      }
-
-      if (data?.portalToken) {
-        writePortalSession({
-          portalToken: data.portalToken,
-          verificationUrl: data.verificationUrl ?? '',
-          portalUrl: data.portalUrl ?? '',
-          companyName: payload.nombreEmpresa,
-          contactEmail: payload.contactoEmail,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
-      setStatus({
-        kind: 'success',
-        message: data?.message || 'Solicitud enviada. Revisa tu correo y sigue el enlace de verificacion.',
-      });
+      setStatus({ kind: 'success', message: 'Cuenta creada correctamente. Completa ahora la solicitud de colaboracion.' });
       setPayload({
-        nombreEmpresa: '',
-        sector: '',
-        ciudad: '',
-        web: '',
-        descripcion: '',
-        contactoNombre: '',
-        contactoEmail: '',
-        contactoTelefono: '',
+        displayName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
       });
-      const delivery = data?.emailDelivery ?? 'sent';
-      navigate(`/correo?enviada=1&delivery=${encodeURIComponent(delivery)}`);
+      navigate('/panel');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo enviar la solicitud.';
+      const message = err instanceof Error ? err.message : 'No se pudo crear la cuenta de empresa.';
       setStatus({ kind: 'error', message });
     } finally {
       setLoading(false);
@@ -535,15 +536,15 @@ function LandingPage() {
       <section className="hero hero--landing">
         <div className="hero__copy">
           <p className="eyebrow">Portal externo para empresas</p>
-          <h1>Presenta la colaboracion, valida el correo y activa el acceso empresarial sin salir del mismo flujo.</h1>
+          <h1>Crea la cuenta de empresa primero y remite la solicitud formal desde tu propio panel privado.</h1>
           <p className="lede">
-            Agora concentra el registro inicial, la validacion por correo, el seguimiento de la solicitud y el
-            acceso posterior de la empresa en un recorrido unico, mas claro y mas facil de operar.
+            Agora separa el alta de acceso y la solicitud corporativa para que la empresa conserve el mismo usuario
+            durante la verificacion, la revision interna, la mensajeria y la operativa posterior.
           </p>
           <div className="hero__actions">
-            <a className="btn btn--primary" href="#registro">Solicitar colaboracion</a>
+            <a className="btn btn--primary" href="#registro">Crear cuenta</a>
             <Link className="btn btn--ghost" to="/estado">Ver estado de una solicitud</Link>
-            <Link className="btn btn--ghost" to="/acceso">Acceso empresa aprobada</Link>
+            <Link className="btn btn--ghost" to="/acceso">Entrar al portal</Link>
           </div>
 
           <div className="metric-grid">
@@ -562,16 +563,16 @@ function LandingPage() {
             <p className="eyebrow">Ruta operativa</p>
             <h2>Un recorrido coherente de principio a fin.</h2>
             <ul className="rail-list">
-              <li>Alta de empresa con datos estructurados.</li>
+              <li>Cuenta previa con correo y contrasena.</li>
+              <li>Solicitud corporativa desde el panel privado.</li>
               <li>Correo de verificacion emitido por backend.</li>
-              <li>Estado visible durante toda la revision.</li>
-              <li>Acceso persistente cuando la empresa queda aprobada.</li>
+              <li>Estado y mensajeria con el mismo acceso.</li>
             </ul>
           </div>
           <div className="hero__rail-card hero__rail-card--soft">
             <span className="eyebrow">Acceso empresarial</span>
-            <strong>La cuenta privada se activa solo cuando el centro lo confirma.</strong>
-            <p>Evita accesos prematuros y mantiene una transicion limpia entre solicitud, aprobacion y operativa.</p>
+            <strong>La cuenta existe antes de la solicitud y se mantiene despues de la aprobacion.</strong>
+            <p>Evita pedir una contrasena tardia y da continuidad al chat, al estado y al panel de empresa.</p>
           </div>
         </aside>
       </section>
@@ -624,11 +625,11 @@ function LandingPage() {
             </div>
           </header>
           <ul className="feature-list">
-            <li>Formulario claro para contacto y descripcion de la colaboracion.</li>
+            <li>Cuenta previa con contrasena definida por la propia empresa.</li>
+            <li>Formulario de solicitud dentro del area privada.</li>
             <li>Pagina de correo para reenviar y seguir el enlace de validacion.</li>
             <li>Pagina de estado con hitos y proximos pasos visibles.</li>
-            <li>Acceso privado solo tras la aprobacion y activacion de la cuenta.</li>
-            <li>Mensajeria y documentos cuando ya existe contexto operativo.</li>
+            <li>Mensajeria y operativa posterior sobre el mismo acceso.</li>
           </ul>
         </article>
       </section>
@@ -636,13 +637,13 @@ function LandingPage() {
       <section className="panel" id="registro">
         <div className="panel__header">
           <div>
-            <p className="eyebrow">Solicitud online</p>
-            <h2>Registrar mi empresa</h2>
-            <p>Usa un correo corporativo para agilizar la validacion y reducir incidencias.</p>
+            <p className="eyebrow">Cuenta previa</p>
+            <h2>Crear acceso de empresa</h2>
+            <p>Usa un correo corporativo valido. Despues entraras al panel para completar la solicitud de colaboracion.</p>
           </div>
           <div className="panel__meta">
-            <span className="chip">Registro seguro</span>
-            <code>Validacion por correo corporativo</code>
+            <span className="chip">Acceso seguro</span>
+            <code>Cuenta previa + solicitud posterior</code>
           </div>
         </div>
 
@@ -654,73 +655,26 @@ function LandingPage() {
 
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
-            <span>Nombre de la empresa*</span>
-            <input
-              required
-              value={payload.nombreEmpresa}
-              onChange={(e) => setPayload((current) => ({ ...current, nombreEmpresa: e.target.value }))}
-            />
+            <span>Persona responsable*</span>
+            <input required value={payload.displayName} onChange={(e) => setPayload((current) => ({ ...current, displayName: e.target.value }))} />
           </label>
           <label>
-            <span>Sector</span>
-            <input value={payload.sector} onChange={(e) => setPayload((current) => ({ ...current, sector: e.target.value }))} />
+            <span>Email corporativo*</span>
+            <input required type="email" value={payload.email} onChange={(e) => setPayload((current) => ({ ...current, email: e.target.value }))} />
           </label>
           <label>
-            <span>Ciudad</span>
-            <input value={payload.ciudad} onChange={(e) => setPayload((current) => ({ ...current, ciudad: e.target.value }))} />
+            <span>Contrasena*</span>
+            <input required type="password" minLength={8} value={payload.password} onChange={(e) => setPayload((current) => ({ ...current, password: e.target.value }))} />
           </label>
           <label>
-            <span>Web</span>
-            <input
-              value={payload.web}
-              onChange={(e) => setPayload((current) => ({ ...current, web: e.target.value }))}
-              type="url"
-              placeholder="https://example.com"
-            />
+            <span>Confirmar contrasena*</span>
+            <input required type="password" minLength={8} value={payload.confirmPassword} onChange={(e) => setPayload((current) => ({ ...current, confirmPassword: e.target.value }))} />
           </label>
-          <label className="full-row">
-            <span>Descripcion</span>
-            <textarea
-              rows={3}
-              value={payload.descripcion}
-              onChange={(e) => setPayload((current) => ({ ...current, descripcion: e.target.value }))}
-              placeholder="Cuesta, perfiles, duracion, objetivos y alcance de la colaboracion."
-            />
-          </label>
-          <fieldset className="full-row">
-            <legend>Persona de contacto</legend>
-            <div className="form-grid">
-              <label>
-                <span>Nombre completo*</span>
-                <input
-                  required
-                  value={payload.contactoNombre}
-                  onChange={(e) => setPayload((current) => ({ ...current, contactoNombre: e.target.value }))}
-                />
-              </label>
-              <label>
-                <span>Email corporativo*</span>
-                <input
-                  required
-                  type="email"
-                  value={payload.contactoEmail}
-                  onChange={(e) => setPayload((current) => ({ ...current, contactoEmail: e.target.value }))}
-                />
-              </label>
-              <label>
-                <span>Telefono</span>
-                <input
-                  value={payload.contactoTelefono}
-                  onChange={(e) => setPayload((current) => ({ ...current, contactoTelefono: e.target.value }))}
-                />
-              </label>
-            </div>
-          </fieldset>
           <div className="form__actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
-              {loading ? 'Enviando...' : 'Enviar solicitud'}
+              {loading ? 'Creando...' : 'Crear cuenta y entrar'}
             </button>
-            <p className="form__hint">Recibiras un correo con el enlace de verificacion.</p>
+            <p className="form__hint">La solicitud se completa en el siguiente paso, ya dentro del panel privado.</p>
           </div>
         </form>
       </section>
@@ -1360,7 +1314,7 @@ function CompanyLoginPage() {
           <div>
             <p className="eyebrow">Cuenta empresa</p>
             <h2>Acceso persistente</h2>
-            <p>Disponible para empresas aprobadas con cuenta activada desde el correo corporativo.</p>
+            <p>Accede con la cuenta previa de empresa para completar la solicitud, seguir el estado o trabajar ya con la empresa aprobada.</p>
           </div>
         </div>
         {status && <div className="alert alert--error">{status}</div>}
@@ -1436,8 +1390,8 @@ function ActivateAccountPage() {
         <div className="panel__header">
           <div>
             <p className="eyebrow">Activacion</p>
-            <h2>Crear acceso de empresa</h2>
-            <p>Define la contrasena inicial para el portal privado posterior a la aprobacion.</p>
+            <h2>Definir contrasena inicial</h2>
+            <p>Esta pantalla queda como respaldo para cuentas antiguas o activaciones por correo que todavia no tengan contrasena.</p>
           </div>
         </div>
         {status && <div className={`alert ${status.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{status.message}</div>}
@@ -1601,6 +1555,18 @@ function CompanyAreaPage() {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [requestFeedback, setRequestFeedback] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
+  const [requestPayload, setRequestPayload] = useState<CompanyRequestPayload>({
+    nombreEmpresa: '',
+    cif: '',
+    sector: '',
+    ciudad: '',
+    web: '',
+    descripcion: '',
+    contactoNombre: '',
+    contactoTelefono: '',
+  });
 
   /**
    * Resume la responsabilidad de loadOverview dentro de este modulo y facilita seguir el flujo al revisarlo.
@@ -1617,6 +1583,10 @@ function CompanyAreaPage() {
       ]);
       setMe(meResponse);
       setOverview(overviewResponse);
+      setRequestPayload((current) => ({
+        ...current,
+        contactoNombre: current.contactoNombre || meResponse.displayName || '',
+      }));
       if (!options?.silent) {
         setStatus(null);
       }
@@ -1692,6 +1662,53 @@ function CompanyAreaPage() {
     }
   };
 
+  const handleCreateRequest = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setRequestLoading(true);
+    setRequestFeedback(null);
+
+    try {
+      const response = await portalFetch<RegistroResponse>('/api/portal-company/request', {
+        method: 'POST',
+        body: JSON.stringify({
+          nombreEmpresa: requestPayload.nombreEmpresa,
+          cif: requestPayload.cif || undefined,
+          sector: requestPayload.sector || undefined,
+          ciudad: requestPayload.ciudad || undefined,
+          web: requestPayload.web || undefined,
+          descripcion: requestPayload.descripcion || undefined,
+          contactoNombre: requestPayload.contactoNombre,
+          contactoTelefono: requestPayload.contactoTelefono || undefined,
+        }),
+      });
+
+      if (response.portalToken && me?.email) {
+        writePortalSession({
+          portalToken: response.portalToken,
+          verificationUrl: response.verificationUrl ?? '',
+          portalUrl: response.portalUrl ?? '',
+          companyName: requestPayload.nombreEmpresa,
+          contactEmail: me.email,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      setRequestFeedback({
+        kind: 'success',
+        message: response.message || 'Solicitud enviada correctamente.',
+      });
+      await loadOverview();
+      navigate(`/correo?enviada=1&delivery=${encodeURIComponent(response.emailDelivery ?? 'sent')}`);
+    } catch (err) {
+      setRequestFeedback({
+        kind: 'error',
+        message: err instanceof Error ? err.message : 'No se pudo registrar la solicitud de colaboracion.',
+      });
+    } finally {
+      setRequestLoading(false);
+    }
+  };
+
   if (loading) {
     return <div className="page"><section className="panel"><p>Cargando panel de empresa...</p></section></div>;
   }
@@ -1710,22 +1727,53 @@ function CompanyAreaPage() {
     );
   }
 
+  const hasApprovedCompany = overview.company !== null;
+  const requestStateLabel = overview.solicitud ? getStatusLabel(overview.solicitud.estado) : 'Sin solicitud';
+  const requestTimeline = overview.solicitud ? [
+    {
+      label: 'Solicitud creada',
+      detail: overview.solicitud.nombreEmpresa,
+      done: true,
+    },
+    {
+      label: 'Correo verificado',
+      detail: overview.solicitud.emailVerificadoEn
+        ? new Date(overview.solicitud.emailVerificadoEn).toLocaleString('es-ES')
+        : 'Pendiente',
+      done: Boolean(overview.solicitud.emailVerificadoEn),
+    },
+    {
+      label: 'Revision interna',
+      detail: requestStateLabel,
+      done: ['email_verificado', 'aprobada', 'rechazada'].includes(overview.solicitud.estado),
+    },
+    {
+      label: 'Aprobacion operativa',
+      detail: overview.solicitud.aprobadoEn
+        ? new Date(overview.solicitud.aprobadoEn).toLocaleString('es-ES')
+        : 'Pendiente',
+      done: Boolean(overview.solicitud.aprobadoEn),
+    },
+  ] : [];
+
   return (
     <div className="page">
       <section className="hero hero--landing">
         <div className="hero__copy">
           <p className="eyebrow">Area privada empresa</p>
-          <h1>{overview.company.nombre}</h1>
+          <h1>{overview.company?.nombre ?? overview.solicitud?.nombreEmpresa ?? (me.displayName ?? 'Portal de empresa')}</h1>
           <p className="lede">
-            Cuenta activa para revisar convenios, asignaciones, documentacion y el canal operativo con el centro.
+            {hasApprovedCompany
+              ? 'Cuenta activa para revisar convenios, asignaciones, documentacion y el canal operativo con el centro.'
+              : 'Cuenta previa registrada. Desde aqui completas la solicitud, sigues el estado y mantienes el canal con el centro.'}
           </p>
           <div className="hero__actions">
             <button type="button" className="btn btn--primary" onClick={() => void loadOverview()}>Actualizar</button>
             <button type="button" className="btn btn--ghost" onClick={() => void handleLogout()}>Cerrar sesion</button>
           </div>
           <div className="metric-grid">
-            <article className="metric-card"><span>Convenios</span><strong>{overview.convenios.length}</strong><small>Acuerdos visibles</small></article>
-            <article className="metric-card"><span>Asignaciones</span><strong>{overview.asignaciones.length}</strong><small>Practicas vinculadas</small></article>
+            <article className="metric-card"><span>Solicitud</span><strong>{requestStateLabel}</strong><small>{hasApprovedCompany ? 'Operativa completada' : 'Seguimiento del alta'}</small></article>
+            <article className="metric-card"><span>Convenios</span><strong>{overview.convenios.length}</strong><small>{hasApprovedCompany ? 'Acuerdos visibles' : 'Apareceran tras la aprobacion'}</small></article>
             <article className="metric-card"><span>Mensajes</span><strong>{overview.messages.length}</strong><small>Canal con el centro</small></article>
           </div>
         </div>
@@ -1741,73 +1789,224 @@ function CompanyAreaPage() {
 
       {status && <div className="alert alert--error">{status}</div>}
 
-      <section className="section-grid">
-        <article className="surface-card">
-          <p className="eyebrow">Empresa</p>
-          <h3>Ficha de colaboracion</h3>
-          <p>{overview.company.sector ?? 'Sector pendiente'}  |  {overview.company.ciudad ?? 'Ciudad pendiente'}</p>
-          <small>{overview.company.email ?? 'Sin email'}  |  {overview.company.telefono ?? 'Sin telefono'}</small>
-        </article>
-        <article className="surface-card">
-          <p className="eyebrow">Estado</p>
-          <h3>{overview.company.estadoColaboracion ?? 'Sin estado'}</h3>
-          <p>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</p>
-        </article>
-      </section>
+      {!hasApprovedCompany && !overview.solicitud && (
+        <>
+          <section className="section-grid">
+            <article className="surface-card">
+              <p className="eyebrow">Cuenta</p>
+              <h3>{me.displayName ?? me.email}</h3>
+              <p>{me.email}</p>
+              <small>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</small>
+            </article>
+            <article className="surface-card">
+              <p className="eyebrow">Siguiente paso</p>
+              <h3>Completar solicitud</h3>
+              <p>La cuenta ya existe. Ahora falta registrar la empresa, el contacto y el alcance de colaboracion.</p>
+            </article>
+          </section>
 
-      <section className="content-grid">
-        <article className="panel panel--soft">
-          <header className="panel__header">
-            <div>
-              <p className="eyebrow">Convenios</p>
-              <h2>Acuerdos disponibles</h2>
-            </div>
-          </header>
-          <div className="timeline">
-            {overview.convenios.map((convenio) => (
-              <article key={convenio.id} className="timeline__item">
-                <strong>{convenio.titulo}</strong>
-                <p>{convenio.estado}</p>
-                <small>{convenio.fechaInicio}  |  {convenio.fechaFin ?? 'sin fin'}</small>
+          <section className="content-grid">
+            <article className="panel panel--soft">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Solicitud de colaboracion</p>
+                  <h2>Datos de la empresa</h2>
+                </div>
+              </header>
+              {requestFeedback && <div className={`alert ${requestFeedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{requestFeedback.message}</div>}
+              <form className="form-grid" onSubmit={handleCreateRequest}>
+                <label>
+                  <span>Nombre de la empresa*</span>
+                  <input required value={requestPayload.nombreEmpresa} onChange={(event) => setRequestPayload((current) => ({ ...current, nombreEmpresa: event.target.value }))} />
+                </label>
+                <label>
+                  <span>CIF</span>
+                  <input value={requestPayload.cif} onChange={(event) => setRequestPayload((current) => ({ ...current, cif: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Sector</span>
+                  <input value={requestPayload.sector} onChange={(event) => setRequestPayload((current) => ({ ...current, sector: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Ciudad</span>
+                  <input value={requestPayload.ciudad} onChange={(event) => setRequestPayload((current) => ({ ...current, ciudad: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Web</span>
+                  <input type="url" placeholder="https://example.com" value={requestPayload.web} onChange={(event) => setRequestPayload((current) => ({ ...current, web: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Telefono de contacto</span>
+                  <input value={requestPayload.contactoTelefono} onChange={(event) => setRequestPayload((current) => ({ ...current, contactoTelefono: event.target.value }))} />
+                </label>
+                <label className="full-row">
+                  <span>Persona responsable*</span>
+                  <input required value={requestPayload.contactoNombre} onChange={(event) => setRequestPayload((current) => ({ ...current, contactoNombre: event.target.value }))} />
+                </label>
+                <label className="full-row">
+                  <span>Descripcion</span>
+                  <textarea rows={4} value={requestPayload.descripcion} onChange={(event) => setRequestPayload((current) => ({ ...current, descripcion: event.target.value }))} placeholder="Perfiles, duracion, objetivos y alcance de la colaboracion." />
+                </label>
+                <div className="form__actions">
+                  <button type="submit" className="btn btn--primary" disabled={requestLoading}>
+                    {requestLoading ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                  <p className="form__hint">La verificacion del correo se hara sobre {me.email}.</p>
+                </div>
+              </form>
+            </article>
+
+            <article className="panel panel--dark">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Recorrido</p>
+                  <h2>Que ocurrira despues</h2>
+                </div>
+              </header>
+              <ul className="feature-list">
+                <li>Se registra la solicitud vinculada a esta cuenta.</li>
+                <li>Recibiras un correo de verificacion en el mismo email del portal.</li>
+                <li>El centro revisara la propuesta desde el panel interno.</li>
+                <li>El mismo acceso servira despues para chat, documentos y operativa.</li>
+              </ul>
+            </article>
+          </section>
+        </>
+      )}
+
+      {!hasApprovedCompany && overview.solicitud && (
+        <>
+          <section className="section-grid">
+            <article className="surface-card">
+              <p className="eyebrow">Solicitud</p>
+              <h3>{overview.solicitud.nombreEmpresa}</h3>
+              <p>{requestStateLabel}</p>
+              <small>{overview.solicitud.contactoEmail}  |  {overview.solicitud.contactoTelefono ?? 'sin telefono'}</small>
+            </article>
+            <article className="surface-card">
+              <p className="eyebrow">Estado</p>
+              <h3>{overview.solicitud.aprobadoEn ? 'Aprobada' : 'En revision'}</h3>
+              <p>{overview.solicitud.emailVerificadoEn ? 'Correo validado' : 'Pendiente de verificacion por correo'}</p>
+              {overview.solicitud.motivoRechazo && <small>Motivo rechazo: {overview.solicitud.motivoRechazo}</small>}
+            </article>
+          </section>
+
+          <section className="content-grid">
+            <article className="panel panel--soft">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Seguimiento</p>
+                  <h2>Linea temporal de la solicitud</h2>
+                </div>
+              </header>
+              <div className="timeline">
+                {requestTimeline.map((step) => (
+                  <article key={step.label} className={`timeline__item${step.done ? ' timeline__item--done' : ''}`}>
+                    <strong>{step.label}</strong>
+                    <p>{step.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </article>
+
+            <article className="panel panel--dark">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Mensajeria</p>
+                  <h2>Canal con el centro</h2>
+                </div>
+              </header>
+              <div className="chat">
+                <div className="chat__messages">
+                  {overview.messages.length === 0 && <p className="detail-placeholder">Aun no hay mensajes en esta solicitud.</p>}
+                  {overview.messages.map((message) => (
+                    <div key={message.id} className={`chat__bubble chat__bubble--${message.autor}`}>
+                      <p>{message.texto}</p>
+                      <small>{message.autor}  |  {new Date(message.createdAt).toLocaleString('es-ES')}</small>
+                    </div>
+                  ))}
+                </div>
+                <div className="chat__input">
+                  <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Mensaje para el centro..." />
+                  <button type="button" className="btn btn--primary" onClick={() => void handleSendMessage()}>Enviar</button>
+                </div>
+              </div>
+            </article>
+          </section>
+        </>
+      )}
+
+      {hasApprovedCompany && overview.company && (
+        <>
+          <section className="section-grid">
+            <article className="surface-card">
+              <p className="eyebrow">Empresa</p>
+              <h3>Ficha de colaboracion</h3>
+              <p>{overview.company.sector ?? 'Sector pendiente'}  |  {overview.company.ciudad ?? 'Ciudad pendiente'}</p>
+              <small>{overview.company.email ?? 'Sin email'}  |  {overview.company.telefono ?? 'Sin telefono'}</small>
+            </article>
+            <article className="surface-card">
+              <p className="eyebrow">Estado</p>
+              <h3>{overview.company.estadoColaboracion ?? 'Sin estado'}</h3>
+              <p>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</p>
+            </article>
+          </section>
+
+          <section className="content-grid">
+            <article className="panel panel--soft">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Convenios</p>
+                  <h2>Acuerdos disponibles</h2>
+                </div>
+              </header>
+              <div className="timeline">
+                {overview.convenios.map((convenio) => (
+                  <article key={convenio.id} className="timeline__item">
+                    <strong>{convenio.titulo}</strong>
+                    <p>{convenio.estado}</p>
+                    <small>{convenio.fechaInicio}  |  {convenio.fechaFin ?? 'sin fin'}</small>
+                  </article>
+                ))}
+              </div>
+            </article>
+
+            <article className="panel panel--dark">
+              <header className="panel__header">
+                <div>
+                  <p className="eyebrow">Mensajeria</p>
+                  <h2>Canal con el centro</h2>
+                </div>
+              </header>
+              <div className="chat">
+                <div className="chat__messages">
+                  {overview.messages.map((message) => (
+                    <div key={message.id} className={`chat__bubble chat__bubble--${message.autor}`}>
+                      <p>{message.texto}</p>
+                      <small>{message.autor}  |  {new Date(message.createdAt).toLocaleString('es-ES')}</small>
+                    </div>
+                  ))}
+                </div>
+                <div className="chat__input">
+                  <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Mensaje para el centro..." />
+                  <button type="button" className="btn btn--primary" onClick={() => void handleSendMessage()}>Enviar</button>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section className="section-grid">
+            {[...overview.documents.empresa, ...overview.documents.convenio].map((document) => (
+              <article key={`${document.id}-${document.url}`} className="surface-card">
+                <p className="eyebrow">Documento</p>
+                <h3>{document.name}</h3>
+                <p>Version {document.version}  |  {document.type ?? 'Documento'}</p>
+                <a className="link" href={document.url} target="_blank" rel="noreferrer">Descargar</a>
               </article>
             ))}
-          </div>
-        </article>
-
-        <article className="panel panel--dark">
-          <header className="panel__header">
-            <div>
-              <p className="eyebrow">Mensajeria</p>
-              <h2>Canal con el centro</h2>
-            </div>
-          </header>
-          <div className="chat">
-            <div className="chat__messages">
-              {overview.messages.map((message) => (
-                <div key={message.id} className={`chat__bubble chat__bubble--${message.autor}`}>
-                  <p>{message.texto}</p>
-                  <small>{message.autor}  |  {new Date(message.createdAt).toLocaleString('es-ES')}</small>
-                </div>
-              ))}
-            </div>
-            <div className="chat__input">
-              <input value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="Mensaje para el centro..." />
-              <button type="button" className="btn btn--primary" onClick={() => void handleSendMessage()}>Enviar</button>
-            </div>
-          </div>
-        </article>
-      </section>
-
-      <section className="section-grid">
-        {[...overview.documents.empresa, ...overview.documents.convenio].map((document) => (
-          <article key={`${document.id}-${document.url}`} className="surface-card">
-            <p className="eyebrow">Documento</p>
-            <h3>{document.name}</h3>
-            <p>Version {document.version}  |  {document.type ?? 'Documento'}</p>
-            <a className="link" href={document.url} target="_blank" rel="noreferrer">Descargar</a>
-          </article>
-        ))}
-      </section>
+          </section>
+        </>
+      )}
     </div>
   );
 }

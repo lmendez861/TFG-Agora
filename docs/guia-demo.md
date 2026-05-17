@@ -85,13 +85,14 @@ npm run build:backend
 
 ### Orden funcional recomendado
 
-1. La empresa se registra desde `http://agora.34.175.224.87.nip.io/externo/`.
-2. El correo queda verificado y la solicitud pasa a revision interna.
-3. El centro revisa la solicitud desde la campana del portal interno y, si procede, aprueba la empresa.
-4. Solo con la empresa activa se formaliza el convenio.
-5. Solo con el convenio firmado, vigente o en renovacion se planifica la asignacion.
-6. Despues se registran seguimientos, evidencias, mensajeria y evaluacion final.
-7. Si la solicitud se rechaza, la empresa recibe correo y tambien ve el estado actualizado en el portal externo.
+1. La empresa crea su cuenta desde `http://agora.34.175.224.87.nip.io/externo/`.
+2. Entra en el panel privado y desde ahi rellena la solicitud corporativa.
+3. El correo queda verificado y la solicitud pasa a revision interna.
+4. El centro revisa la solicitud desde la campana del portal interno y, si procede, aprueba la empresa.
+5. Solo con la empresa activa se formaliza el convenio.
+6. Solo con el convenio firmado, vigente o en renovacion se planifica la asignacion.
+7. Despues se registran seguimientos, evidencias, mensajeria y evaluacion final.
+8. Si la solicitud se rechaza, la empresa recibe correo y tambien ve el estado actualizado en el portal externo.
 
 ### Recorrido de exposicion
 
@@ -103,9 +104,10 @@ npm run build:backend
 6. Abrir `Bandeja` para ensenar la conversacion unificada y comentar que el refresco es automatico.
 7. Abrir `Convenios` o `Asignaciones` para mostrar documentos, seguimientos y evaluacion final.
 8. Pasar a `http://agora.34.175.224.87.nip.io/externo/`.
-9. Ensenar registro, estado, acceso empresa y recuperacion de contrasena.
-10. Abrir `http://agora.34.175.224.87.nip.io/documentacion/flujo`.
-11. Si hace falta justificar despliegue, abrir `http://agora.34.175.224.87.nip.io/monitor/` y explicar que la VM corre Symfony, React y PostgreSQL con Docker Compose.
+9. Ensenar alta de cuenta previa, acceso empresa y luego la solicitud desde el panel privado.
+10. Mostrar que el chat externo se actualiza automaticamente sin recarga manual.
+11. Abrir `http://agora.34.175.224.87.nip.io/documentacion/flujo`.
+12. Si hace falta justificar despliegue, abrir `http://agora.34.175.224.87.nip.io/monitor/` y explicar que la VM corre Symfony, React y PostgreSQL con Docker Compose.
 
 ## Verificaciones tecnicas recomendadas
 

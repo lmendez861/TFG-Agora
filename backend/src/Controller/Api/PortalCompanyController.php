@@ -14,6 +14,9 @@ use App\Entity\ConvenioDocumento;
 use App\Entity\EmpresaDocumento;
 use App\Entity\EmpresaMensaje;
 use App\Entity\EmpresaPortalCuenta;
+use App\Entity\EmpresaSolicitud;
+use App\Service\ExternalAccessUrlGenerator;
+use App\Service\MailConfigurationInspector;
 use App\Service\DocumentStorageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,10 +24,15 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Throwable;
 
 /**
  * Punto de entrada anotado por atributos Symfony/Doctrine; el atributo define como se enlaza con framework o persistencia.
@@ -38,8 +46,14 @@ final class PortalCompanyController extends AbstractController
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
      */
-    public function __construct(private readonly ValidatorInterface $validator)
-    {
+    public function __construct(
+        private readonly ValidatorInterface $validator,
+        private readonly ExternalAccessUrlGenerator $externalAccessUrlGenerator,
+        private readonly MailConfigurationInspector $mailConfigurationInspector,
+        private readonly MailerInterface $mailer,
+        private readonly KernelInterface $kernel,
+        private readonly string $fromAddress,
+    ) {
     }
 
     /**
@@ -55,9 +69,6 @@ final class PortalCompanyController extends AbstractController
         }
 
         $empresa = $account->getEmpresa();
-        if ($empresa === null) {
-            return $this->json(['message' => 'La cuenta no esta asociada a ninguna empresa.'], Response::HTTP_CONFLICT);
-        }
 
         $solicitud = $account->getSolicitud();
         $messages = $solicitud ? array_map(
@@ -77,7 +88,7 @@ final class PortalCompanyController extends AbstractController
                 'activatedAt' => $account->getActivatedAt()?->format(\DateTimeInterface::ATOM),
                 'lastLoginAt' => $account->getLastLoginAt()?->format(\DateTimeInterface::ATOM),
             ],
-            'company' => [
+            'company' => $empresa ? [
                 'id' => $empresa->getId(),
                 'nombre' => $empresa->getNombre(),
                 'sector' => $empresa->getSector(),
@@ -86,8 +97,8 @@ final class PortalCompanyController extends AbstractController
                 'telefono' => $empresa->getTelefono(),
                 'web' => $empresa->getWeb(),
                 'estadoColaboracion' => $empresa->getEstadoColaboracion(),
-            ],
-            'convenios' => array_map(static function ($convenio): array {
+            ] : null,
+            'convenios' => $empresa ? array_map(static function ($convenio): array {
                 return [
                     'id' => $convenio->getId(),
                     'titulo' => $convenio->getTitulo(),
@@ -95,8 +106,8 @@ final class PortalCompanyController extends AbstractController
                     'fechaInicio' => $convenio->getFechaInicio()->format('Y-m-d'),
                     'fechaFin' => $convenio->getFechaFin()?->format('Y-m-d'),
                 ];
-            }, $empresa->getConvenios()->toArray()),
-            'asignaciones' => array_map(static function ($asignacion): array {
+            }, $empresa->getConvenios()->toArray()) : [],
+            'asignaciones' => $empresa ? array_map(static function ($asignacion): array {
                 return [
                     'id' => $asignacion->getId(),
                     'estado' => $asignacion->getEstado(),
@@ -109,26 +120,136 @@ final class PortalCompanyController extends AbstractController
                         'apellido' => $asignacion->getEstudiante()->getApellido(),
                     ],
                 ];
-            }, $empresa->getAsignaciones()->toArray()),
+            }, $empresa->getAsignaciones()->toArray()) : [],
             'documents' => [
-                'empresa' => array_map(fn (EmpresaDocumento $documento): array => $this->serializeEmpresaDocumento($documento), array_filter(
+                'empresa' => $empresa ? array_map(fn (EmpresaDocumento $documento): array => $this->serializeEmpresaDocumento($documento), array_filter(
                     $empresa->getDocumentos()->toArray(),
                     static fn (EmpresaDocumento $documento): bool => $documento->isActive() && $documento->getDeletedAt() === null
-                )),
-                'convenio' => array_values(array_merge(...array_map(function ($convenio): array {
+                )) : [],
+                'convenio' => $empresa ? array_values(array_merge(...array_map(function ($convenio): array {
                     return array_map(fn (ConvenioDocumento $documento): array => $this->serializeConvenioDocumento($documento), array_filter(
                         $convenio->getDocumentos()->toArray(),
                         static fn (ConvenioDocumento $documento): bool => $documento->isActive() && $documento->getDeletedAt() === null
                     ));
-                }, $empresa->getConvenios()->toArray()))),
+                }, $empresa->getConvenios()->toArray()))) : [],
             ],
             'messages' => $messages,
             'solicitud' => $solicitud ? [
                 'id' => $solicitud->getId(),
                 'estado' => $solicitud->getEstado(),
                 'portalToken' => $solicitud->getPortalToken(),
+                'nombreEmpresa' => $solicitud->getNombreEmpresa(),
+                'sector' => $solicitud->getSector(),
+                'ciudad' => $solicitud->getCiudad(),
+                'web' => $solicitud->getWeb(),
+                'contactoNombre' => $solicitud->getContactoNombre(),
+                'contactoEmail' => $solicitud->getContactoEmail(),
+                'contactoTelefono' => $solicitud->getContactoTelefono(),
+                'emailVerificadoEn' => $solicitud->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
+                'aprobadoEn' => $solicitud->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
+                'motivoRechazo' => $solicitud->getRejectionReason(),
             ] : null,
         ]);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/request', name: 'create_request', methods: ['POST'])]
+    public function createRequest(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $account = $this->getUser();
+        if (!$account instanceof EmpresaPortalCuenta) {
+            return $this->json(['message' => 'No autenticado'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($account->getEmpresa() !== null) {
+            return $this->json(['message' => 'La cuenta ya esta vinculada a una empresa aprobada.'], Response::HTTP_CONFLICT);
+        }
+
+        if ($account->getSolicitud() !== null) {
+            return $this->json(['message' => 'La cuenta ya dispone de una solicitud asociada.'], Response::HTTP_CONFLICT);
+        }
+
+        $payload = json_decode($request->getContent(), true);
+        if (!is_array($payload)) {
+            return $this->json(['message' => 'JSON invalido.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $violations = $this->validator->validate(
+            $payload,
+            new Assert\Collection(
+                fields: [
+                    'nombreEmpresa' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                    'cif' => new Assert\Optional([new Assert\Length(max: 32)]),
+                    'sector' => new Assert\Optional([new Assert\Length(max: 120)]),
+                    'ciudad' => new Assert\Optional([new Assert\Length(max: 100)]),
+                    'web' => new Assert\Optional([new Assert\Url(requireTld: false)]),
+                    'descripcion' => new Assert\Optional(),
+                    'contactoNombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                    'contactoTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                ],
+                allowExtraFields: false
+            )
+        );
+
+        if ($violations->count() > 0) {
+            return $this->json(['message' => 'No se pudo validar la solicitud de colaboracion.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $solicitud = (new EmpresaSolicitud())
+            ->setNombreEmpresa($payload['nombreEmpresa'])
+            ->setCif($payload['cif'] ?? null)
+            ->setSector($payload['sector'] ?? null)
+            ->setCiudad($payload['ciudad'] ?? null)
+            ->setWeb($payload['web'] ?? null)
+            ->setDescripcion($payload['descripcion'] ?? null)
+            ->setContactoNombre($payload['contactoNombre'])
+            ->setContactoEmail($account->getEmail())
+            ->setContactoTelefono($payload['contactoTelefono'] ?? null);
+
+        $account
+            ->setDisplayName($payload['contactoNombre'])
+            ->setSolicitud($solicitud);
+
+        $entityManager->persist($solicitud);
+        $entityManager->persist($account);
+        $entityManager->flush();
+
+        $verificationUrl = $this->externalAccessUrlGenerator->buildRouteUrl('registro_empresa_confirm', [
+            'token' => $solicitud->getToken(),
+        ], $request);
+        $portalUrl = $this->externalAccessUrlGenerator->buildRouteUrl('portal_solicitudes_show', [
+            'token' => $solicitud->getPortalToken(),
+        ], $request);
+
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+        $emailDelivery = 'sent';
+        if (!$mailSnapshot['canSend']) {
+            $emailDelivery = 'unavailable';
+        } elseif (!$this->trySendVerificationEmail($solicitud, $verificationUrl)) {
+            $emailDelivery = 'failed';
+        }
+
+        $response = [
+            'message' => match ($emailDelivery) {
+                'sent' => 'Solicitud registrada correctamente. Revisa el correo corporativo para verificar la cuenta de contacto.',
+                'unavailable' => 'Solicitud registrada correctamente, pero el correo saliente no esta configurado todavia. Debes revisar SMTP antes de verificar desde fuera.',
+                default => 'Solicitud registrada correctamente, pero no hemos podido enviar el correo de verificacion. Reintenta el envio o revisa el correo saliente.',
+            },
+            'id' => $solicitud->getId(),
+            'portalToken' => $solicitud->getPortalToken(),
+            'portalUrl' => $portalUrl,
+            'emailDelivery' => $emailDelivery,
+            'mailDetail' => $mailSnapshot['detail'],
+        ];
+
+        if ($this->shouldExposeVerificationLinks()) {
+            $response['verificationUrl'] = $verificationUrl;
+        }
+
+        return $this->json($response, Response::HTTP_CREATED);
     }
 
     /**
@@ -309,5 +430,60 @@ final class PortalCompanyController extends AbstractController
         }
 
         return $this->json(['message' => 'Documento no disponible.'], Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    private function sendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): void
+    {
+        $email = (new Email())
+            ->from(Address::create($this->fromAddress))
+            ->to($solicitud->getContactoEmail())
+            ->subject('Confirma tu registro de empresa colaboradora')
+            ->html(sprintf(
+                <<<HTML
+<p>Hola %s,</p>
+<p>Hemos recibido tu solicitud para colaborar con nuestro centro educativo. Por favor confirma tu correo pulsando en el siguiente enlace:</p>
+<p><a href="%s">%s</a></p>
+<p>En cuanto verifiquemos los datos, el equipo de practicas revisara la informacion para darte de alta.</p>
+HTML,
+                htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                $verificationUrl,
+                $verificationUrl
+            ));
+
+        $this->mailer->send($email);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    private function trySendVerificationEmail(EmpresaSolicitud $solicitud, string $verificationUrl): bool
+    {
+        try {
+            $this->sendVerificationEmail($solicitud, $verificationUrl);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    private function shouldExposeVerificationLinks(): bool
+    {
+        if ($this->kernel->getEnvironment() === 'test' || $this->kernel->isDebug()) {
+            return true;
+        }
+
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+
+        return ($mailSnapshot['provider'] ?? null) === 'null' || !($mailSnapshot['canSend'] ?? false);
     }
 }

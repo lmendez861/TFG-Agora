@@ -44,6 +44,48 @@ final class PortalAuthController extends AbstractController
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
+    #[Route('/register', name: 'register', methods: ['POST'])]
+    public function register(Request $request): JsonResponse
+    {
+        $payload = $this->decodePayload($request);
+        if ($payload instanceof JsonResponse) {
+            return $payload;
+        }
+
+        $constraints = new Assert\Collection(
+            fields: [
+                'displayName' => [new Assert\NotBlank(), new Assert\Length(min: 3, max: 160)],
+                'email' => [new Assert\NotBlank(), new Assert\Email()],
+                'password' => $this->passwordConstraints(),
+            ],
+            allowExtraFields: false
+        );
+
+        $violations = $this->validator->validate($payload, $constraints);
+        if ($violations->count() > 0) {
+            return $this->json(['message' => 'No se pudo validar la cuenta de empresa.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $account = $this->accountManager->registerAccount($payload['email'], $payload['displayName'], $payload['password']);
+        if (!$account instanceof EmpresaPortalCuenta) {
+            return $this->json(['message' => 'Ya existe una cuenta de empresa asociada a ese correo.'], Response::HTTP_CONFLICT);
+        }
+
+        $this->auditLogger->log('portal_company.register', 'empresa_portal_cuenta', $account->getId(), [
+            'email' => $account->getEmail(),
+        ]);
+
+        return $this->json([
+            'message' => 'Cuenta creada correctamente. Ya puedes entrar al portal y completar la solicitud de colaboracion.',
+            'email' => $account->getEmail(),
+            'displayName' => $account->getDisplayName(),
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/login', name: 'login', methods: ['POST'])]
     public function login(): Response
     {
@@ -83,6 +125,15 @@ final class PortalAuthController extends AbstractController
                 'id' => $account->getEmpresa()?->getId(),
                 'nombre' => $account->getEmpresa()?->getNombre(),
             ],
+            'solicitud' => $account->getSolicitud() ? [
+                'id' => $account->getSolicitud()?->getId(),
+                'estado' => $account->getSolicitud()?->getEstado(),
+                'portalToken' => $account->getSolicitud()?->getPortalToken(),
+                'nombreEmpresa' => $account->getSolicitud()?->getNombreEmpresa(),
+                'emailVerificadoEn' => $account->getSolicitud()?->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
+                'aprobadoEn' => $account->getSolicitud()?->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
+                'motivoRechazo' => $account->getSolicitud()?->getRejectionReason(),
+            ] : null,
         ]);
     }
 

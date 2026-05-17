@@ -54,6 +54,45 @@ final class PortalAuthControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
+    public function testPuedeRegistrarCuentaPreviaYAccederAlPortal(): void
+    {
+        $this->client->request(
+            'POST',
+            '/portal-auth/register',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'displayName' => 'Portal Preregistro',
+                'email' => 'preregistro@example.com',
+                'password' => 'PortalPrevio123',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('preregistro@example.com', $payload['email']);
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/login',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'email' => 'preregistro@example.com',
+                'password' => 'PortalPrevio123',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $this->client->request('GET', '/portal-auth/me');
+        self::assertResponseIsSuccessful();
+
+        $profile = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('preregistro@example.com', $profile['email']);
+        self::assertNull($profile['empresa']['id']);
+        self::assertNull($profile['solicitud']);
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.

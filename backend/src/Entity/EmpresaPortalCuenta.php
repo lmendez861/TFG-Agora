@@ -69,7 +69,7 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\OneToOne(inversedBy: 'portalCuenta')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ?EmpresaColaboradora $empresa = null;
 
     #[ORM\OneToOne(inversedBy: 'portalCuenta')]

@@ -98,6 +98,55 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertSame('Necesitamos confirmar el calendario de seguimiento.', $payload['texto']);
     }
 
+    public function testOverviewPermiteCuentaPrerregistradaSinEmpresaAprobada(): void
+    {
+        $account = $this->createAndLoginPreRegisteredAccount();
+
+        $this->client->request('GET', '/api/portal-company/overview');
+
+        self::assertResponseIsSuccessful();
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertSame($account->getEmail(), $payload['account']['email']);
+        self::assertNull($payload['company']);
+        self::assertSame([], $payload['convenios']);
+        self::assertSame([], $payload['asignaciones']);
+        self::assertNull($payload['solicitud']);
+    }
+
+    public function testCuentaPrerregistradaPuedeCrearSolicitudDesdeElPortal(): void
+    {
+        $account = $this->createAndLoginPreRegisteredAccount();
+
+        $this->client->request(
+            'POST',
+            '/api/portal-company/request',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombreEmpresa' => 'Empresa Portal Previa',
+                'sector' => 'Servicios',
+                'ciudad' => 'Madrid',
+                'web' => 'https://empresa-portal.example',
+                'descripcion' => 'Solicitud creada desde cuenta previa.',
+                'contactoNombre' => 'Portal Preregistro',
+                'contactoTelefono' => '600555444',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertArrayHasKey('portalToken', $payload);
+        self::assertSame('sent', $payload['emailDelivery']);
+
+        $this->entityManager->clear();
+        $refreshed = $this->entityManager->getRepository(EmpresaPortalCuenta::class)->find($account->getId());
+        self::assertInstanceOf(EmpresaPortalCuenta::class, $refreshed);
+        self::assertInstanceOf(EmpresaSolicitud::class, $refreshed->getSolicitud());
+        self::assertSame('empresa-portal@example.com', $refreshed->getSolicitud()?->getContactoEmail());
+        self::assertSame('Empresa Portal Previa', $refreshed->getSolicitud()?->getNombreEmpresa());
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
@@ -212,6 +261,34 @@ final class PortalCompanyControllerTest extends WebTestCase
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode([
                 'email' => 'portal-overview@example.com',
+                'password' => 'PortalArea123',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        return $account;
+    }
+
+    private function createAndLoginPreRegisteredAccount(): EmpresaPortalCuenta
+    {
+        $account = (new EmpresaPortalCuenta())
+            ->setEmail('empresa-portal@example.com')
+            ->setDisplayName('Portal Preregistro')
+            ->setRoles(['ROLE_COMPANY_PORTAL'])
+            ->setActive(true);
+        $account->setPassword($this->passwordHasher->hashPassword($account, 'PortalArea123'));
+        $account->markActivated();
+
+        $this->entityManager->persist($account);
+        $this->entityManager->flush();
+
+        $this->client->request(
+            'POST',
+            '/portal-auth/login',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'email' => 'empresa-portal@example.com',
                 'password' => 'PortalArea123',
             ], JSON_THROW_ON_ERROR)
         );

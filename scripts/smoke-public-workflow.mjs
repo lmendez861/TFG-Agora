@@ -568,6 +568,56 @@ async function main() {
     return { detail: 'Colecciones internas visibles desde el despliegue publico' };
   });
 
+  const rejectedEmail = `agora.reject.${suffix}@example.com`;
+  const rejectedCompanyName = `Agora Reject ${suffix}`;
+  const rejectedRegistration = await runStep('registro-rechazo', 'Registrar una segunda solicitud para validar rechazo', async () => {
+    const response = ensureStatus(await request(`${baseUrl}/registro-empresa`, {
+      method: 'POST',
+      body: {
+        nombreEmpresa: rejectedCompanyName,
+        cif: `REJ${String(seed).slice(-8)}`,
+        sector: 'Servicios',
+        ciudad: 'Sevilla',
+        contactoNombre: 'Responsable Rechazo',
+        contactoEmail: rejectedEmail,
+        contactoTelefono: '600999888',
+      },
+    }), 201, 'Registro externo rechazo');
+
+    assertCondition(typeof response.json?.verificationUrl === 'string', 'La solicitud de rechazo no expone verificationUrl.');
+
+    return {
+      detail: `Solicitud #${response.json.id} preparada para rechazo`,
+      value: response.json,
+      artifacts: {
+        rejectedSolicitudId: response.json.id,
+        rejectedPortalToken: response.json.portalToken,
+      },
+    };
+  });
+
+  await runStep('verificacion-rechazo', 'Verificar correo de la solicitud destinada a rechazo', async () => {
+    ensureStatus(await request(rejectedRegistration.verificationUrl), 200, 'Confirmacion rechazo');
+    return { detail: 'Correo verificado antes del rechazo' };
+  });
+
+  await runStep('rechazo', 'Rechazar solicitud desde el portal interno y validar estado externo', async () => {
+    ensureStatus(await request(`${baseUrl}/api/empresa-solicitudes/${rejectedRegistration.id}/rechazar`, {
+      method: 'POST',
+      headers: {
+        Authorization: adminAuthHeader,
+      },
+      body: {
+        motivo: 'Validacion automatizada del flujo de rechazo.',
+      },
+    }), 200, 'Rechazo interno');
+
+    const statusResponse = ensureStatus(await request(`${baseUrl}/portal/solicitudes/${rejectedRegistration.portalToken}`), 200, 'Estado externo rechazo');
+    assertCondition(statusResponse.json?.estado === 'rechazada', 'El portal externo no refleja el estado rechazada.');
+
+    return { detail: 'El rechazo queda visible en el portal externo' };
+  });
+
   result.ok = true;
   result.finishedAt = new Date().toISOString();
   console.log(JSON.stringify(result, null, 2));

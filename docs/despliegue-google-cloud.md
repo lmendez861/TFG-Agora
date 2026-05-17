@@ -215,6 +215,7 @@ Ese script valida desde fuera el flujo completo:
 - activacion de cuenta de empresa;
 - login del portal externo;
 - mensajeria en ambos sentidos;
+- rechazo de solicitud y estado visible en el portal externo;
 - visibilidad de colecciones internas desde la URL publica.
 
 ## Usuarios de prueba

@@ -1,45 +1,43 @@
-# Uso de GitHub Codespaces para levantar LocalAI (Ágora)
+# GitHub Codespaces para Agora
 
-Si no puedes usar Docker localmente (p. ej. en entornos cloud gaming como Shadow), puedes usar GitHub Codespaces para ejecutar LocalAI y el entorno de desarrollo.
+Este repositorio ya queda preparado para ejecutar Agora en GitHub Codespaces sin depender de Oracle, Azure ni del equipo local.
 
-Pasos rápidos:
+## Ruta rapida
 
-1. Abre el repo en GitHub y crea un Codespace (botón "Code" → "Open with Codespaces" → "New codespace")
-2. Codespaces usará la configuración en `.devcontainer/` y levantará los servicios definidos en `docker-compose.yml`.
-3. Una vez iniciado, en la terminal del Codespace ejecuta:
+1. Sube el proyecto a GitHub.
+2. Crea un Codespace desde el repositorio.
+3. Espera a que termine el `postCreateCommand`.
+4. Ejecuta:
 
 ```bash
-# Ver contenedores
-docker ps
-
-# Ver logs de LocalAI
-docker logs agora-localai-codespace --tail 200
-
-# Probar health
-curl http://localhost:8080/health
+bash .devcontainer/scripts/start-agora.sh
 ```
 
-4. Abre `http://localhost:8080` en la vista de puertos de Codespaces (Forwarded Ports) o usa el reenvío que ofrece Codespaces.
+5. Si necesitas reiniciar la demo desde cero:
 
-Notas:
-- El directorio `localai-models/` está montado en el workspace para que puedas subir modelos y configuraciones.
-- Ajusta `THREADS` en `.devcontainer/docker-compose.yml` según la capacidad del Codespace.
+```bash
+bash .devcontainer/scripts/start-agora.sh --reset-demo
+```
 
-Scripts de ayuda incluidos
--------------------------
-En `.devcontainer/scripts/` encontrarás dos scripts que facilitan comprobar y arrancar LocalAI dentro del Codespace:
+## Que deja listo
 
-- `check-localai.sh` — script Bash. Uso:
-	```bash
-	# desde el Codespace
-	bash .devcontainer/scripts/check-localai.sh
-	```
+- backend Symfony servido en `8000`
+- panel interno en `/app`
+- portal externo en `/externo`
+- monitor en `/monitor`
+- SQLite dentro del Codespace
+- usuarios `profesora` y `profesor` con `Abrete01`
 
-- `check-localai.ps1` — script PowerShell. Uso:
-	```powershell
-	# desde el Codespace PowerShell
-	.devcontainer\scripts\check-localai.ps1
-	```
+## Correo
 
-Ambos scripts intentan arrancar el servicio `localai` (vía `docker compose up -d localai`), muestran el estado del contenedor, los últimos logs y prueban el endpoint `http://localhost:8080/health`.
+Por defecto `MAILER_DSN` queda en `null://null`. Eso evita dependencias externas, pero no envia correos reales.
 
+Si quieres probar verificacion, rechazo o MFA por email, configura secrets de Codespaces con:
+
+- `MAILER_DSN`
+- `APP_MAIL_FROM`
+- `APP_INTERNAL_MFA_EMAIL`
+
+## Documentacion
+
+La guia completa queda en [docs/despliegue-codespaces.md](./docs/despliegue-codespaces.md).

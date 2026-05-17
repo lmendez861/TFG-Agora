@@ -344,6 +344,12 @@ HTML,
      */
     private function shouldExposeVerificationLinks(): bool
     {
-        return $this->kernel->getEnvironment() === 'test' || $this->kernel->isDebug();
+        if ($this->kernel->getEnvironment() === 'test' || $this->kernel->isDebug()) {
+            return true;
+        }
+
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+
+        return ($mailSnapshot['provider'] ?? null) === 'null' || !($mailSnapshot['canSend'] ?? false);
     }
 }

@@ -1,12 +1,12 @@
 # Guia operativa (TFG Agora)
 
-## Servicios verificados el 29/03/2026
+## Servicios verificados el 18/05/2026
 
-- Backend API Symfony: `http://127.0.0.1:8000`
-- Panel interno integrado: `http://127.0.0.1:8000/app`
-- Portal externo integrado: `http://127.0.0.1:8000/externo`
-- Documentacion publica: `http://127.0.0.1:8000/documentacion`
-- Monitor privado: `http://127.0.0.1:8000/monitor`
+- Backend API Symfony en VM publica de Google Cloud.
+- Panel interno integrado: `http://agora.34.175.224.87.nip.io/app/`
+- Portal externo integrado: `http://agora.34.175.224.87.nip.io/externo/`
+- Documentacion publica: `http://agora.34.175.224.87.nip.io/documentacion/`
+- Monitor privado: `http://agora.34.175.224.87.nip.io/monitor/`
 
 ## Requisitos previos
 
@@ -49,27 +49,30 @@ npm run build:backend
 - `http://127.0.0.1:8000/documentacion`
 - `http://127.0.0.1:8000/monitor`
 
-## URL publica temporal
+## URL publica de demo
 
-- El acceso publico usa `cloudflared` y se comparte para `/app` y `/externo`.
-- Se puede activar o detener desde el monitor privado.
-- Antes de levantar o bajar el tunel, el monitor exige MFA por correo.
-- La guia documental sigue accesible en local aunque el acceso publico este apagado.
+- El acceso principal ya no depende de tunel temporal ni del portatil local.
+- La demo se comparte desde la VM publica de Google Cloud.
+- Para evitar comprar dominio solo para la defensa se usa un hostname wildcard gratuito de `nip.io`.
+- La URL operativa actual es `http://agora.34.175.224.87.nip.io/`.
 
 ## Como puede probarlo la profesora
 
-- Si el entorno esta levantado por el alumno, la profesora no necesita instalar nada.
-- El alumno comparte la URL temporal que muestre `cloudflared`, con formato `https://...trycloudflare.com`.
-- Con esa URL se abren `URL/app`, `URL/externo`, `URL/documentacion` y `URL/monitor`.
-- Para el panel interno se usan las credenciales demo indicadas en esta guia.
-- La URL solo funciona mientras sigan activos el equipo local, el backend y el tunel publico.
+- La profesora no necesita instalar nada.
+- El alumno comparte `http://agora.34.175.224.87.nip.io/`.
+- Con esa URL se abren `URL/app/`, `URL/externo/`, `URL/documentacion/` y `URL/monitor/`.
+- Para el panel interno se recomienda usar `profesora / Abrete01` o `profesor / Abrete01` como acceso de prueba.
+- La URL funciona mientras siga activa la VM publica.
 - Si se quiere reproducir todo desde cero en otro ordenador, entonces si hacen falta PHP, Composer, Node.js, npm y los `.env.local`.
+- Los enlaces de verificacion y activacion deben generarse con esa URL publica, no con `127.0.0.1`.
 
 ## Credenciales internas
 
 - `admin / admin123`
 - `coordinador / coordinador123`
 - `lectura / lectura123`
+- `profesora / Abrete01`
+- `profesor / Abrete01`
 
 ## Material de apoyo recomendado
 
@@ -82,26 +85,27 @@ npm run build:backend
 
 ### Orden funcional recomendado
 
-1. La empresa se registra desde `http://127.0.0.1:8000/externo`.
+1. La empresa se registra desde `http://agora.34.175.224.87.nip.io/externo/`.
 2. El correo queda verificado y la solicitud pasa a revision interna.
 3. El centro revisa la solicitud desde la campana del portal interno y, si procede, aprueba la empresa.
 4. Solo con la empresa activa se formaliza el convenio.
 5. Solo con el convenio firmado, vigente o en renovacion se planifica la asignacion.
 6. Despues se registran seguimientos, evidencias, mensajeria y evaluacion final.
+7. Si la solicitud se rechaza, la empresa recibe correo y tambien ve el estado actualizado en el portal externo.
 
 ### Recorrido de exposicion
 
-1. Entrar en `http://127.0.0.1:8000/app/login`.
-2. Acceder con `admin / admin123`.
+1. Entrar en `http://agora.34.175.224.87.nip.io/app/login`.
+2. Acceder con `profesora / Abrete01` o `profesor / Abrete01`.
 3. Mostrar dashboard y exportacion CSV.
 4. Abrir la campana superior para ensenar solicitudes y acceso a mensajes.
 5. Abrir `Solicitudes` y ensenar el flujo de aprobacion.
-6. Abrir `Bandeja` para ensenar la conversacion unificada.
+6. Abrir `Bandeja` para ensenar la conversacion unificada y comentar que el refresco es automatico.
 7. Abrir `Convenios` o `Asignaciones` para mostrar documentos, seguimientos y evaluacion final.
-8. Pasar a `http://127.0.0.1:8000/externo`.
+8. Pasar a `http://agora.34.175.224.87.nip.io/externo/`.
 9. Ensenar registro, estado, acceso empresa y recuperacion de contrasena.
-10. Abrir `http://127.0.0.1:8000/documentacion/flujo`.
-11. Si hace falta justificar despliegue, abrir `http://127.0.0.1:8000/monitor`.
+10. Abrir `http://agora.34.175.224.87.nip.io/documentacion/flujo`.
+11. Si hace falta justificar despliegue, abrir `http://agora.34.175.224.87.nip.io/monitor/` y explicar que la VM corre Symfony, React y PostgreSQL con Docker Compose.
 
 ## Verificaciones tecnicas recomendadas
 
@@ -114,6 +118,6 @@ npm run build:backend
 ## Contingencias
 
 - Si no da tiempo a toda la demo, priorizar dashboard, bandeja, convenios y portal externo.
-- Si falla el acceso publico, seguir la demo completa en local.
+- Si falla el acceso publico, seguir la demo completa en local o reiniciar el stack Docker de la VM.
 - Si el correo MFA tarda en llegar, solicitar uno nuevo y usar solo el ultimo codigo recibido.
 - Si un flujo puntual falla, apoyar la explicacion con la memoria final, el manual tecnico y las pruebas ejecutadas.

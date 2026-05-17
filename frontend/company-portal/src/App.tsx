@@ -181,7 +181,7 @@ function resolveDefaultApiBase(): string {
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || resolveDefaultApiBase();
 const REGISTRO_ENDPOINT = `${API_BASE.replace(/\/$/, '')}/registro-empresa`;
 const PORTAL_BASE = `${API_BASE.replace(/\/$/, '')}/portal/solicitudes`;
-const LIVE_REFRESH_MS = 15_000;
+const LIVE_REFRESH_MS = 5_000;
 
 const PUBLIC_NAV_LINKS = [
   { href: '/', label: 'Inicio' },
@@ -386,7 +386,11 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
         message = `${message}: ${payload.message}`;
       }
     } catch {
-      // ignored
+      if (response.status === 401) {
+        message = 'Error 401: la sesion de empresa no es valida o ha caducado.';
+      } else if (response.status >= 500) {
+        message = `Error ${response.status}: el servidor no ha podido completar la operacion.`;
+      }
     }
     throw new Error(message);
   }

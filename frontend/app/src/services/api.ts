@@ -236,7 +236,11 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
         message = `${message}: ${payload.message}`;
       }
     } catch {
-      // Ignored: fallback to default message when the body is not JSON.
+      if (response.status === 401) {
+        message = 'Error 401: la sesion no es valida o las credenciales no se han enviado correctamente.';
+      } else if (response.status >= 500) {
+        message = `Error ${response.status}: el servidor no ha podido completar la operacion.`;
+      }
     }
 
     throw new Error(message);

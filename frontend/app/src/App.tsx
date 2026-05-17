@@ -144,6 +144,7 @@ const SOLICITUD_ESTADO_LABELS: Record<EmpresaSolicitudSummary['estado'], string>
 
 const TUTOR_PAGE_SIZE = 8;
 const APP_BOOTSTRAP_CACHE_KEY = 'agora.internal.bootstrap.v1';
+const INBOX_LIVE_REFRESH_MS = 5_000;
 const EMPTY_COLLECTIONS: ApiCollections = {
   empresas: [],
   estudiantes: [],
@@ -1902,7 +1903,7 @@ export default function App() {
       }
     };
 
-    const intervalId = window.setInterval(refreshInboxSilently, 15_000);
+    const intervalId = window.setInterval(refreshInboxSilently, INBOX_LIVE_REFRESH_MS);
     window.addEventListener('focus', refreshInboxSilently);
     document.addEventListener('visibilitychange', refreshInboxSilently);
 
@@ -6726,6 +6727,5 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
-
 
 

@@ -2,15 +2,18 @@
 
 ## 1. Arquitectura general
 
-La solucion se compone de cinco bloques:
+La solucion se compone de seis bloques:
 
 - `backend/`: API Symfony con Doctrine ORM, seguridad, correo, auditoria y monitorizacion.
 - `frontend/app/`: portal interno React 18 + TypeScript + Vite.
 - `frontend/company-portal/`: portal externo React 19 + TypeScript + Vite.
+- `desktop/`: app de escritorio Electron para operacion local, pruebas y empaquetado Windows.
 - `docs/`: memoria, anexos, capturas y artefactos de entrega.
-- `tools/`: utilidades auxiliares como `cloudflared` para acceso publico temporal.
+- `tools/`: utilidades auxiliares de operacion local.
 
 ## 2. Requisitos locales
+
+### 2.1 Desarrollo desde repositorio
 
 - PHP 8.2
 - Composer 2.x
@@ -18,6 +21,10 @@ La solucion se compone de cinco bloques:
 - npm
 - SQLite con `pdo_sqlite` activo en PHP
 - Symfony CLI opcional
+
+### 2.2 Ejecucion empaquetada
+
+Para la app instalada no hace falta que el equipo destino tenga PHP, Composer, Node.js o npm. Agora Desktop empaqueta una copia portable de PHP y reutiliza las builds integradas del backend.
 
 ## 3. Arranque del entorno
 
@@ -71,9 +78,35 @@ Con las builds generadas, Symfony sirve:
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si el alumno mantiene la demo activa. El alumno ejecuta `start-demo-public.bat`, espera a que `cloudflared` muestre una URL `https://...trycloudflare.com` y comparte esa direccion. La evaluadora accede desde el navegador a `URL/app`, `URL/externo`, `URL/documentacion` o `URL/monitor`.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTP y resuelta con un hostname wildcard `nip.io`, por ejemplo `http://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/monitor/`.
 
-Este modo no sustituye al despliegue permanente: depende del equipo local, del backend en ejecucion y del tunel temporal. Si cualquiera de esos elementos se detiene, la URL deja de responder y debe levantarse de nuevo.
+Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
+
+### 3.6 App de escritorio empaquetada
+
+La app de escritorio puede generarse asi:
+
+```bash
+cd desktop
+npm install
+npm run package:win
+```
+
+El build deja dos artefactos principales en `desktop/dist/`:
+
+- `Agora Desktop Setup <version>.exe`: instalador Windows.
+- `win-unpacked/Agora Desktop.exe`: carpeta ejecutable para validacion directa.
+
+La build incluye `resources/backend`, `resources/tools/cloudflared.exe` y `resources/php/php.exe`. En tiempo de ejecucion la app controla migraciones, SQLite, acceso externo local, pruebas, logs, backups y restauracion desde su propia interfaz.
+
+Validacion headless del paquete:
+
+```bash
+cd desktop
+npm run validate:packaged
+```
+
+Este chequeo usa exactamente los recursos empaquetados de `dist/win-unpacked/resources` y confirma que el backend, la SQLite, `/app`, `/externo`, `/api/monitor` y la exportacion CSV responden sin depender de PHP o Node instalados fuera del binario.
 
 ## 4. Variables de entorno relevantes
 
@@ -86,6 +119,9 @@ Este modo no sustituye al despliegue permanente: depende del equipo local, del b
 - `APP_MFA_TTL_SECONDS`
 - `APP_DOCUMENT_STORAGE_DIR`
 - `APP_PUBLIC_URL_TARGET`
+- `APP_EXTERNAL_BASE_URL`
+- `APP_ENABLE_DEMO_TEACHERS`
+- `DEMO_TEACHER_PASSWORD`
 - `DEFAULT_URI`
 - `CORS_ALLOW_ORIGIN`
 
@@ -204,7 +240,29 @@ Archivos clave:
 - `backend/src/Controller/Api/PortalCompanyController.php`
 - `backend/src/Service/PortalCompanyAccountManager.php`
 
-## 12. Exportacion CSV
+## 12. App de escritorio
+
+Archivos clave:
+
+- `desktop/main.js`
+- `desktop/preload.js`
+- `desktop/renderer/index.html`
+- `desktop/renderer/app.js`
+- `desktop/renderer/styles.css`
+- `desktop/scripts/build-desktop.js`
+
+Capacidades principales:
+
+- levantar y detener backend local;
+- activar y desactivar acceso externo con MFA;
+- abrir portal interno, externo y monitor;
+- ejecutar baterias de pruebas;
+- abrir logs, diagnosticar dependencias;
+- crear backups SQLite y restaurarlos;
+- ejecutar un smoke workflow extremo a extremo;
+- empaquetar la app con PHP portable.
+
+## 13. Exportacion CSV
 
 La exportacion CSV se realiza de forma mixta:
 
@@ -221,7 +279,7 @@ Actualmente se exportan:
 - tutores;
 - solicitudes.
 
-## 13. Validacion tecnica
+## 14. Validacion tecnica
 
 Comandos principales:
 
@@ -242,9 +300,9 @@ cd frontend/company-portal
 npm run build:backend
 ```
 
-## 14. Riesgos tecnicos abiertos
+## 15. Riesgos tecnicos abiertos
 
 - el acceso publico depende de una maquina local y de un tunel temporal;
 - la autenticacion corporativa no esta integrada con SSO institucional;
-- el almacenamiento documental sigue siendo local;
+- el almacenamiento documental sigue siendo local aunque el binario de nuevos documentos de empresa ya queda embebido en base de datos;
 - la optimizacion de rendimiento puede profundizarse con perfilado adicional en produccion real.

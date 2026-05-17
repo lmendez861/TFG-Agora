@@ -31,34 +31,108 @@ final class Version20251113203450 extends AbstractMigration
      */
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
         $this->addPortableSql(<<<'SQL'
-            CREATE TABLE asignacion_practica (
+            CREATE TABLE empresa_colaboradora (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              estudiante_id INTEGER NOT NULL,
-              convenio_id INTEGER NOT NULL,
-              empresa_id INTEGER NOT NULL,
-              tutor_academico_id INTEGER NOT NULL,
-              tutor_profesional_id INTEGER DEFAULT NULL,
-              fecha_inicio DATE NOT NULL --(DC2Type:date_immutable)
+              nombre VARCHAR(150) NOT NULL,
+              sector VARCHAR(120) DEFAULT NULL,
+              direccion VARCHAR(255) DEFAULT NULL,
+              ciudad VARCHAR(100) DEFAULT NULL,
+              provincia VARCHAR(100) DEFAULT NULL,
+              pais VARCHAR(100) DEFAULT NULL,
+              telefono VARCHAR(50) DEFAULT NULL,
+              email VARCHAR(150) DEFAULT NULL,
+              web VARCHAR(150) DEFAULT NULL,
+              estado_colaboracion VARCHAR(30) NOT NULL,
+              fecha_alta DATE NOT NULL --(DC2Type:date_immutable)
               ,
-              fecha_fin DATE DEFAULT NULL --(DC2Type:date_immutable)
-              ,
-              modalidad VARCHAR(20) NOT NULL,
-              horas_totales INTEGER DEFAULT NULL,
-              estado VARCHAR(20) NOT NULL,
-              CONSTRAINT FK_9774186459590C39 FOREIGN KEY (estudiante_id) REFERENCES estudiante (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
-              CONSTRAINT FK_97741864F9D43F2A FOREIGN KEY (convenio_id) REFERENCES convenio (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
-              CONSTRAINT FK_97741864521E1991 FOREIGN KEY (empresa_id) REFERENCES empresa_colaboradora (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
-              CONSTRAINT FK_9774186431F6068A FOREIGN KEY (tutor_academico_id) REFERENCES tutor_academico (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
-              CONSTRAINT FK_97741864DD48975E FOREIGN KEY (tutor_profesional_id) REFERENCES tutor_profesional (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+              observaciones CLOB DEFAULT NULL
             )
         SQL);
-        $this->addPortableSql('CREATE INDEX IDX_9774186459590C39 ON asignacion_practica (estudiante_id)');
-        $this->addPortableSql('CREATE INDEX IDX_97741864F9D43F2A ON asignacion_practica (convenio_id)');
-        $this->addPortableSql('CREATE INDEX IDX_97741864521E1991 ON asignacion_practica (empresa_id)');
-        $this->addPortableSql('CREATE INDEX IDX_9774186431F6068A ON asignacion_practica (tutor_academico_id)');
-        $this->addPortableSql('CREATE INDEX IDX_97741864DD48975E ON asignacion_practica (tutor_profesional_id)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE empresa_solicitud (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              nombre_empresa VARCHAR(150) NOT NULL,
+              cif VARCHAR(32) DEFAULT NULL,
+              sector VARCHAR(120) DEFAULT NULL,
+              ciudad VARCHAR(100) DEFAULT NULL,
+              web VARCHAR(150) DEFAULT NULL,
+              descripcion CLOB DEFAULT NULL,
+              contacto_nombre VARCHAR(150) NOT NULL,
+              contacto_email VARCHAR(150) NOT NULL,
+              contacto_telefono VARCHAR(50) DEFAULT NULL,
+              token VARCHAR(64) NOT NULL,
+              estado VARCHAR(30) NOT NULL,
+              created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+              ,
+              updated_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+              ,
+              email_verificado_en DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
+              ,
+              aprobado_en DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
+              ,
+              rejection_reason CLOB DEFAULT NULL,
+              portal_token VARCHAR(64) NOT NULL
+            )
+        SQL);
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_9A64EEBF5F37A13B ON empresa_solicitud (token)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_9A64EEBFF7DA88A9 ON empresa_solicitud (portal_token)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE estudiante (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              nombre VARCHAR(120) NOT NULL,
+              apellido VARCHAR(120) NOT NULL,
+              dni VARCHAR(16) NOT NULL,
+              email VARCHAR(150) NOT NULL,
+              telefono VARCHAR(50) DEFAULT NULL,
+              grado VARCHAR(120) DEFAULT NULL,
+              curso VARCHAR(30) DEFAULT NULL,
+              expediente VARCHAR(30) DEFAULT NULL,
+              estado VARCHAR(30) NOT NULL
+            )
+        SQL);
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_3B3F3FAD7F8F253B ON estudiante (dni)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_3B3F3FADE7927C74 ON estudiante (email)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE tutor_academico (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              nombre VARCHAR(120) NOT NULL,
+              apellido VARCHAR(120) NOT NULL,
+              email VARCHAR(150) NOT NULL,
+              telefono VARCHAR(50) DEFAULT NULL,
+              departamento VARCHAR(120) DEFAULT NULL,
+              especialidad VARCHAR(120) DEFAULT NULL,
+              activo BOOLEAN NOT NULL
+            )
+        SQL);
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_1C78E9DFE7927C74 ON tutor_academico (email)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              username VARCHAR(180) NOT NULL,
+              roles CLOB NOT NULL --(DC2Type:json)
+              ,
+              password VARCHAR(255) NOT NULL,
+              full_name VARCHAR(255) DEFAULT NULL
+            )
+        SQL);
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_1483A5E9F85E0677 ON users (username)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE messenger_messages (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              body CLOB NOT NULL,
+              headers CLOB NOT NULL,
+              queue_name VARCHAR(190) NOT NULL,
+              created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+              ,
+              available_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
+              ,
+              delivered_at DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
+            )
+        SQL);
+        $this->addPortableSql('CREATE INDEX IDX_75EA56E0FB7336F0 ON messenger_messages (queue_name)');
+        $this->addPortableSql('CREATE INDEX IDX_75EA56E0E3BD61CE ON messenger_messages (available_at)');
+        $this->addPortableSql('CREATE INDEX IDX_75EA56E016BA31DB ON messenger_messages (delivered_at)');
         $this->addPortableSql(<<<'SQL'
             CREATE TABLE contacto_empresa (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -141,24 +215,6 @@ final class Version20251113203450 extends AbstractMigration
         SQL);
         $this->addPortableSql('CREATE INDEX IDX_A35A1ED1F9D43F2A ON convenio_workflow_evento (convenio_id)');
         $this->addPortableSql(<<<'SQL'
-            CREATE TABLE empresa_colaboradora (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              nombre VARCHAR(150) NOT NULL,
-              sector VARCHAR(120) DEFAULT NULL,
-              direccion VARCHAR(255) DEFAULT NULL,
-              ciudad VARCHAR(100) DEFAULT NULL,
-              provincia VARCHAR(100) DEFAULT NULL,
-              pais VARCHAR(100) DEFAULT NULL,
-              telefono VARCHAR(50) DEFAULT NULL,
-              email VARCHAR(150) DEFAULT NULL,
-              web VARCHAR(150) DEFAULT NULL,
-              estado_colaboracion VARCHAR(30) NOT NULL,
-              fecha_alta DATE NOT NULL --(DC2Type:date_immutable)
-              ,
-              observaciones CLOB DEFAULT NULL
-            )
-        SQL);
-        $this->addPortableSql(<<<'SQL'
             CREATE TABLE empresa_documento (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
               empresa_id INTEGER NOT NULL,
@@ -208,49 +264,46 @@ final class Version20251113203450 extends AbstractMigration
         SQL);
         $this->addPortableSql('CREATE INDEX IDX_AD8C691E521E1991 ON empresa_nota (empresa_id)');
         $this->addPortableSql(<<<'SQL'
-            CREATE TABLE empresa_solicitud (
+            CREATE TABLE tutor_profesional (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              nombre_empresa VARCHAR(150) NOT NULL,
-              cif VARCHAR(32) DEFAULT NULL,
-              sector VARCHAR(120) DEFAULT NULL,
-              ciudad VARCHAR(100) DEFAULT NULL,
-              web VARCHAR(150) DEFAULT NULL,
-              descripcion CLOB DEFAULT NULL,
-              contacto_nombre VARCHAR(150) NOT NULL,
-              contacto_email VARCHAR(150) NOT NULL,
-              contacto_telefono VARCHAR(50) DEFAULT NULL,
-              token VARCHAR(64) NOT NULL,
-              estado VARCHAR(30) NOT NULL,
-              created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-              ,
-              updated_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-              ,
-              email_verificado_en DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
-              ,
-              aprobado_en DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
-              ,
-              rejection_reason CLOB DEFAULT NULL,
-              portal_token VARCHAR(64) NOT NULL
-            )
-        SQL);
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_9A64EEBF5F37A13B ON empresa_solicitud (token)');
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_9A64EEBFF7DA88A9 ON empresa_solicitud (portal_token)');
-        $this->addPortableSql(<<<'SQL'
-            CREATE TABLE estudiante (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              nombre VARCHAR(120) NOT NULL,
-              apellido VARCHAR(120) NOT NULL,
-              dni VARCHAR(16) NOT NULL,
-              email VARCHAR(150) NOT NULL,
+              empresa_id INTEGER NOT NULL,
+              nombre VARCHAR(150) NOT NULL,
+              email VARCHAR(150) DEFAULT NULL,
               telefono VARCHAR(50) DEFAULT NULL,
-              grado VARCHAR(120) DEFAULT NULL,
-              curso VARCHAR(30) DEFAULT NULL,
-              expediente VARCHAR(30) DEFAULT NULL,
-              estado VARCHAR(30) NOT NULL
+              cargo VARCHAR(120) DEFAULT NULL,
+              certificaciones CLOB DEFAULT NULL,
+              activo BOOLEAN NOT NULL,
+              CONSTRAINT FK_F9766148521E1991 FOREIGN KEY (empresa_id) REFERENCES empresa_colaboradora (id) NOT DEFERRABLE INITIALLY IMMEDIATE
             )
         SQL);
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_3B3F3FAD7F8F253B ON estudiante (dni)');
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_3B3F3FADE7927C74 ON estudiante (email)');
+        $this->addPortableSql('CREATE INDEX IDX_F9766148521E1991 ON tutor_profesional (empresa_id)');
+        $this->addPortableSql(<<<'SQL'
+            CREATE TABLE asignacion_practica (
+              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+              estudiante_id INTEGER NOT NULL,
+              convenio_id INTEGER NOT NULL,
+              empresa_id INTEGER NOT NULL,
+              tutor_academico_id INTEGER NOT NULL,
+              tutor_profesional_id INTEGER DEFAULT NULL,
+              fecha_inicio DATE NOT NULL --(DC2Type:date_immutable)
+              ,
+              fecha_fin DATE DEFAULT NULL --(DC2Type:date_immutable)
+              ,
+              modalidad VARCHAR(20) NOT NULL,
+              horas_totales INTEGER DEFAULT NULL,
+              estado VARCHAR(20) NOT NULL,
+              CONSTRAINT FK_9774186459590C39 FOREIGN KEY (estudiante_id) REFERENCES estudiante (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
+              CONSTRAINT FK_97741864F9D43F2A FOREIGN KEY (convenio_id) REFERENCES convenio (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
+              CONSTRAINT FK_97741864521E1991 FOREIGN KEY (empresa_id) REFERENCES empresa_colaboradora (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
+              CONSTRAINT FK_9774186431F6068A FOREIGN KEY (tutor_academico_id) REFERENCES tutor_academico (id) NOT DEFERRABLE INITIALLY IMMEDIATE,
+              CONSTRAINT FK_97741864DD48975E FOREIGN KEY (tutor_profesional_id) REFERENCES tutor_profesional (id) NOT DEFERRABLE INITIALLY IMMEDIATE
+            )
+        SQL);
+        $this->addPortableSql('CREATE INDEX IDX_9774186459590C39 ON asignacion_practica (estudiante_id)');
+        $this->addPortableSql('CREATE INDEX IDX_97741864F9D43F2A ON asignacion_practica (convenio_id)');
+        $this->addPortableSql('CREATE INDEX IDX_97741864521E1991 ON asignacion_practica (empresa_id)');
+        $this->addPortableSql('CREATE INDEX IDX_9774186431F6068A ON asignacion_practica (tutor_academico_id)');
+        $this->addPortableSql('CREATE INDEX IDX_97741864DD48975E ON asignacion_practica (tutor_profesional_id)');
         $this->addPortableSql(<<<'SQL'
             CREATE TABLE evaluacion_final (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -279,60 +332,6 @@ final class Version20251113203450 extends AbstractMigration
             )
         SQL);
         $this->addPortableSql('CREATE INDEX IDX_1B2181DD3B92F9E ON seguimiento (asignacion_id)');
-        $this->addPortableSql(<<<'SQL'
-            CREATE TABLE tutor_academico (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              nombre VARCHAR(120) NOT NULL,
-              apellido VARCHAR(120) NOT NULL,
-              email VARCHAR(150) NOT NULL,
-              telefono VARCHAR(50) DEFAULT NULL,
-              departamento VARCHAR(120) DEFAULT NULL,
-              especialidad VARCHAR(120) DEFAULT NULL,
-              activo BOOLEAN NOT NULL
-            )
-        SQL);
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_1C78E9DFE7927C74 ON tutor_academico (email)');
-        $this->addPortableSql(<<<'SQL'
-            CREATE TABLE tutor_profesional (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              empresa_id INTEGER NOT NULL,
-              nombre VARCHAR(150) NOT NULL,
-              email VARCHAR(150) DEFAULT NULL,
-              telefono VARCHAR(50) DEFAULT NULL,
-              cargo VARCHAR(120) DEFAULT NULL,
-              certificaciones CLOB DEFAULT NULL,
-              activo BOOLEAN NOT NULL,
-              CONSTRAINT FK_F9766148521E1991 FOREIGN KEY (empresa_id) REFERENCES empresa_colaboradora (id) NOT DEFERRABLE INITIALLY IMMEDIATE
-            )
-        SQL);
-        $this->addPortableSql('CREATE INDEX IDX_F9766148521E1991 ON tutor_profesional (empresa_id)');
-        $this->addPortableSql(<<<'SQL'
-            CREATE TABLE users (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              username VARCHAR(180) NOT NULL,
-              roles CLOB NOT NULL --(DC2Type:json)
-              ,
-              password VARCHAR(255) NOT NULL,
-              full_name VARCHAR(255) DEFAULT NULL
-            )
-        SQL);
-        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_1483A5E9F85E0677 ON users (username)');
-        $this->addPortableSql(<<<'SQL'
-            CREATE TABLE messenger_messages (
-              id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-              body CLOB NOT NULL,
-              headers CLOB NOT NULL,
-              queue_name VARCHAR(190) NOT NULL,
-              created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-              ,
-              available_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-              ,
-              delivered_at DATETIME DEFAULT NULL --(DC2Type:datetime_immutable)
-            )
-        SQL);
-        $this->addPortableSql('CREATE INDEX IDX_75EA56E0FB7336F0 ON messenger_messages (queue_name)');
-        $this->addPortableSql('CREATE INDEX IDX_75EA56E0E3BD61CE ON messenger_messages (available_at)');
-        $this->addPortableSql('CREATE INDEX IDX_75EA56E016BA31DB ON messenger_messages (delivered_at)');
     }
 
     /**

@@ -18,6 +18,8 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20260329171817 extends AbstractMigration
 {
+    private const SQLITE_AUTOINCREMENT = 'INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL';
+
     public function getDescription(): string
     {
         return 'Adds company portal accounts, audit logs, hardened document metadata, and follow-up/evaluation lifecycle fields.';
@@ -29,7 +31,7 @@ final class Version20260329171817 extends AbstractMigration
      */
     public function up(Schema $schema): void
     {
-        $this->addSql(<<<'SQL'
+        $this->addPortableSql(<<<'SQL'
             CREATE TABLE audit_log (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
               actor_type VARCHAR(60) NOT NULL,
@@ -43,7 +45,7 @@ final class Version20260329171817 extends AbstractMigration
               created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
             )
         SQL);
-        $this->addSql(<<<'SQL'
+        $this->addPortableSql(<<<'SQL'
             CREATE TABLE empresa_portal_cuenta (
               id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
               empresa_id INTEGER NOT NULL,
@@ -74,36 +76,36 @@ final class Version20260329171817 extends AbstractMigration
                 NULL NOT DEFERRABLE INITIALLY IMMEDIATE
             )
         SQL);
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_598C39CFE7927C74 ON empresa_portal_cuenta (email)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_598C39CFFAD37B28 ON empresa_portal_cuenta (setup_token)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_598C39CF6B7BA4B6 ON empresa_portal_cuenta (password_reset_token)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_598C39CF521E1991 ON empresa_portal_cuenta (empresa_id)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_598C39CF1CB9D6E4 ON empresa_portal_cuenta (solicitud_id)');
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN storage_path VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN original_filename VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN storage_provider VARCHAR(40) NOT NULL DEFAULT 'external_fs'");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN version INTEGER NOT NULL DEFAULT 1");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN deleted_at DATETIME DEFAULT NULL");
-        $this->addSql("ALTER TABLE empresa_documento ADD COLUMN deleted_by VARCHAR(190) DEFAULT NULL");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN storage_path VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN original_filename VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN storage_provider VARCHAR(40) NOT NULL DEFAULT 'external_fs'");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN version INTEGER NOT NULL DEFAULT 1");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN deleted_at DATETIME DEFAULT NULL");
-        $this->addSql("ALTER TABLE convenio_documento ADD COLUMN deleted_by VARCHAR(190) DEFAULT NULL");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN estado VARCHAR(20) NOT NULL DEFAULT 'abierto'");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN evidencia_nombre VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN evidencia_tipo VARCHAR(80) DEFAULT NULL");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN evidencia_url VARCHAR(255) DEFAULT NULL");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN cerrado_en DATETIME DEFAULT NULL");
-        $this->addSql("ALTER TABLE seguimiento ADD COLUMN cierre_comentario CLOB DEFAULT NULL");
-        $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN nota_empresa INTEGER DEFAULT NULL");
-        $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN nota_estudiante INTEGER DEFAULT NULL");
-        $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN nota_tutor_academico INTEGER DEFAULT NULL");
-        $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN estado VARCHAR(20) NOT NULL DEFAULT 'borrador'");
-        $this->addSql("ALTER TABLE evaluacion_final ADD COLUMN cerrada_en DATETIME DEFAULT NULL");
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_598C39CFE7927C74 ON empresa_portal_cuenta (email)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_598C39CFFAD37B28 ON empresa_portal_cuenta (setup_token)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_598C39CF6B7BA4B6 ON empresa_portal_cuenta (password_reset_token)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_598C39CF521E1991 ON empresa_portal_cuenta (empresa_id)');
+        $this->addPortableSql('CREATE UNIQUE INDEX UNIQ_598C39CF1CB9D6E4 ON empresa_portal_cuenta (solicitud_id)');
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN storage_path VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN original_filename VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN storage_provider VARCHAR(40) NOT NULL DEFAULT 'external_fs'");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN version INTEGER NOT NULL DEFAULT 1");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN deleted_at DATETIME DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE empresa_documento ADD COLUMN deleted_by VARCHAR(190) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN storage_path VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN original_filename VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN storage_provider VARCHAR(40) NOT NULL DEFAULT 'external_fs'");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN version INTEGER NOT NULL DEFAULT 1");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN deleted_at DATETIME DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE convenio_documento ADD COLUMN deleted_by VARCHAR(190) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN estado VARCHAR(20) NOT NULL DEFAULT 'abierto'");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN evidencia_nombre VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN evidencia_tipo VARCHAR(80) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN evidencia_url VARCHAR(255) DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN cerrado_en DATETIME DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE seguimiento ADD COLUMN cierre_comentario CLOB DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE evaluacion_final ADD COLUMN nota_empresa INTEGER DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE evaluacion_final ADD COLUMN nota_estudiante INTEGER DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE evaluacion_final ADD COLUMN nota_tutor_academico INTEGER DEFAULT NULL");
+        $this->addPortableSql("ALTER TABLE evaluacion_final ADD COLUMN estado VARCHAR(20) NOT NULL DEFAULT 'borrador'");
+        $this->addPortableSql("ALTER TABLE evaluacion_final ADD COLUMN cerrada_en DATETIME DEFAULT NULL");
     }
 
     /**
@@ -113,5 +115,24 @@ final class Version20260329171817 extends AbstractMigration
     public function down(Schema $schema): void
     {
         $this->throwIrreversibleMigrationException('This migration adds operational tables and SQLite column changes that are not rolled back automatically.');
+    }
+
+    private function addPortableSql(string $sql): void
+    {
+        $this->addSql($this->normalizeForPlatform($sql));
+    }
+
+    private function normalizeForPlatform(string $sql): string
+    {
+        if ($this->connection->getDatabasePlatform()->getName() !== 'postgresql') {
+            return $sql;
+        }
+
+        $sql = str_replace(self::SQLITE_AUTOINCREMENT, 'SERIAL PRIMARY KEY', $sql);
+        $sql = preg_replace('/\bCLOB\b/', 'TEXT', $sql) ?? $sql;
+        $sql = preg_replace('/\bDATETIME\b/', 'TIMESTAMP(0) WITHOUT TIME ZONE', $sql) ?? $sql;
+        $sql = str_replace('BOOLEAN NOT NULL DEFAULT 1', 'BOOLEAN NOT NULL DEFAULT TRUE', $sql);
+
+        return $sql;
     }
 }

@@ -1,10 +1,42 @@
 {
-  "name": "Agora Codespace",
-  "dockerComposeFile": ["docker-compose.yml"],
-  "service": "workspace",
-  "workspaceFolder": "/workspace",
-  "shutdownAction": "stopCompose",
-  "forwardPorts": [8080],
-  "postCreateCommand": "echo 'Codespace preparado: inicia LocalAI se no está levantado'",
-  "remoteUser": "vscode"
+  "name": "Agora Codespaces",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "forwardPorts": [
+    8000
+  ],
+  "portsAttributes": {
+    "8000": {
+      "label": "Agora web",
+      "onAutoForward": "notify",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "docs/despliegue-codespaces.md"
+      ]
+    },
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "ms-playwright.playwright"
+      ]
+    }
+  }
 }

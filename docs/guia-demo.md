@@ -3,10 +3,10 @@
 ## Servicios verificados el 18/05/2026
 
 - Backend API Symfony en VM publica de Google Cloud.
-- Panel interno integrado: `http://agora.34.175.224.87.nip.io/app/`
-- Portal externo integrado: `http://agora.34.175.224.87.nip.io/externo/`
-- Documentacion publica: `http://agora.34.175.224.87.nip.io/documentacion/`
-- Monitor privado: `http://agora.34.175.224.87.nip.io/monitor/`
+- Panel interno integrado: `https://agora.34.175.224.87.nip.io/app/`
+- Portal externo integrado: `https://agora.34.175.224.87.nip.io/externo/`
+- Documentacion publica: `https://agora.34.175.224.87.nip.io/documentacion/`
+- Consola tecnica: `Agora Desktop` en modo `cloud`
 
 ## Requisitos previos
 
@@ -47,20 +47,20 @@ npm run build:backend
 - `http://127.0.0.1:8000/app`
 - `http://127.0.0.1:8000/externo`
 - `http://127.0.0.1:8000/documentacion`
-- `http://127.0.0.1:8000/monitor`
 
 ## URL publica de demo
 
 - El acceso principal ya no depende de tunel temporal ni del portatil local.
 - La demo se comparte desde la VM publica de Google Cloud.
 - Para evitar comprar dominio solo para la defensa se usa un hostname wildcard gratuito de `nip.io`.
-- La URL operativa actual es `http://agora.34.175.224.87.nip.io/`.
+- La URL operativa actual es `https://agora.34.175.224.87.nip.io/`.
 
 ## Como puede probarlo la profesora
 
 - La profesora no necesita instalar nada.
-- El alumno comparte `http://agora.34.175.224.87.nip.io/`.
-- Con esa URL se abren `URL/app/`, `URL/externo/`, `URL/documentacion/` y `URL/monitor/`.
+- El alumno comparte `https://agora.34.175.224.87.nip.io/`.
+- Con esa URL se abren `URL/app/`, `URL/externo/` y `URL/documentacion/`.
+- La supervision tecnica del despliegue se realiza desde `Agora Desktop`, no desde una pagina web adicional.
 - Para el panel interno se recomienda usar `profesora / Abrete01` o `profesor / Abrete01` como acceso de prueba.
 - La URL funciona mientras siga activa la VM publica.
 - Si se quiere reproducir todo desde cero en otro ordenador, entonces si hacen falta PHP, Composer, Node.js, npm y los `.env.local`.
@@ -85,7 +85,7 @@ npm run build:backend
 
 ### Orden funcional recomendado
 
-1. La empresa crea su cuenta desde `http://agora.34.175.224.87.nip.io/externo/`.
+1. La empresa crea su cuenta desde `https://agora.34.175.224.87.nip.io/externo/`.
 2. Entra en el panel privado y desde ahi rellena la solicitud corporativa.
 3. El correo queda verificado y la solicitud pasa a revision interna.
 4. El centro revisa la solicitud desde la campana del portal interno y, si procede, aprueba la empresa.
@@ -96,18 +96,18 @@ npm run build:backend
 
 ### Recorrido de exposicion
 
-1. Entrar en `http://agora.34.175.224.87.nip.io/app/login`.
+1. Entrar en `https://agora.34.175.224.87.nip.io/app/login`.
 2. Acceder con `profesora / Abrete01` o `profesor / Abrete01`.
 3. Mostrar dashboard y exportacion CSV.
 4. Abrir la campana superior para ensenar solicitudes y acceso a mensajes.
 5. Abrir `Solicitudes` y ensenar el flujo de aprobacion.
 6. Abrir `Bandeja` para ensenar la conversacion unificada y comentar que el refresco es automatico.
 7. Abrir `Convenios` o `Asignaciones` para mostrar documentos, seguimientos y evaluacion final.
-8. Pasar a `http://agora.34.175.224.87.nip.io/externo/`.
+8. Pasar a `https://agora.34.175.224.87.nip.io/externo/`.
 9. Ensenar alta de cuenta previa, acceso empresa y luego la solicitud desde el panel privado.
 10. Mostrar que el chat externo se actualiza automaticamente sin recarga manual.
-11. Abrir `http://agora.34.175.224.87.nip.io/documentacion/flujo`.
-12. Si hace falta justificar despliegue, abrir `http://agora.34.175.224.87.nip.io/monitor/` y explicar que la VM corre Symfony, React y PostgreSQL con Docker Compose.
+11. Abrir `https://agora.34.175.224.87.nip.io/documentacion/flujo`.
+12. Si hace falta justificar despliegue, abrir `Agora Desktop` en modo `cloud` y ensenar estado, logs, smoke y servicios remotos de la VM.
 
 ## Verificaciones tecnicas recomendadas
 

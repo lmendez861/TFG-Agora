@@ -393,7 +393,7 @@ Antes de cerrar la entrega he revisado soluciones actuales de gestion de practic
 
 Tambien he realizado una revision final en 20 pasadas tematicas para asegurar que la aplicacion esta preparada para ensenarla:
 
-1. Arquitectura general: backend, panel interno, portal externo, documentacion y monitor tienen responsabilidades separadas.
+1. Arquitectura general: backend, panel interno, portal externo, documentacion y Agora Desktop tienen responsabilidades separadas.
 2. Seguridad interna: las rutas `/api` quedan protegidas por roles y autenticacion.
 3. Seguridad del portal externo: la cuenta de empresa se preregistra, mantiene su sesion separada y conserva el mismo acceso durante solicitud, mensajeria y aprobacion.
 4. Contrasenas: el preregistro y la recuperacion de empresa exigen longitud minima, mayusculas, minusculas y numeros.
@@ -409,7 +409,7 @@ Tambien he realizado una revision final en 20 pasadas tematicas para asegurar qu
 14. Rendimiento: el snapshot de bootstrap reduce carga inicial del panel.
 15. UX interna: el panel concentra dashboard, modulos y bandeja para trabajo diario.
 16. UX externa: la empresa tiene un recorrido independiente sin entrar al panel interno.
-17. Monitorizacion: el monitor separa supervision tecnica de gestion funcional.
+17. Supervision tecnica: Agora Desktop separa operacion tecnica de gestion funcional.
 18. Pruebas backend: PHPUnit cubre controladores, repositorios, seguridad y servicios.
 19. Pruebas frontend: los tests unitarios y E2E validan utilidades y flujos reales.
 20. Documentacion y defensa: memoria, anexos, guion, presentacion y PDF final quedan alineados.

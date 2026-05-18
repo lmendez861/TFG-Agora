@@ -594,7 +594,7 @@ Estado 5: rechazada
 <p>Antes de cerrar la entrega he revisado soluciones actuales de gestion de practicas, aprendizaje en empresa y portales de empleadores. La comparacion me ha servido para comprobar que el proyecto no se queda en un CRUD basico, sino que cubre una parte importante de lo que ya se espera en este tipo de plataformas: portal externo para empresas, seguimiento de estados, comunicacion centralizada, documentos versionados, evaluaciones, panel de coordinacion, reporting y evidencias para auditoria. En productos como SkillNex se insiste en que el portal de empresa debe reducir la coordinacion por correo, permitir comunicacion con coordinadores y registrar evaluaciones. TrackHelix destaca hojas de horas, aprobacion por empresa, reporting y acuerdos digitales. ImBlaze pone el foco en base de oportunidades, seguimiento del proceso, asistencia, cumplimiento y experiencia del estudiante. Estas referencias confirman que el enfoque del proyecto es actual y que las lineas futuras elegidas son coherentes.</p>
 <p>Tambien he realizado una revision final en 20 pasadas tematicas para asegurar que la aplicacion esta preparada para ensenarla:</p>
 <ol>
-<li>Arquitectura general: backend, panel interno, portal externo, documentacion y monitor tienen responsabilidades separadas.</li>
+<li>Arquitectura general: backend, panel interno, portal externo, documentacion y Agora Desktop tienen responsabilidades separadas.</li>
 <li>Seguridad interna: las rutas <code>/api</code> quedan protegidas por roles y autenticacion.</li>
 <li>Seguridad del portal externo: la cuenta de empresa se preregistra, mantiene su sesion separada y conserva el mismo acceso durante solicitud, mensajeria y aprobacion.</li>
 <li>Contrasenas: el preregistro y la recuperacion de empresa exigen longitud minima, mayusculas, minusculas y numeros.</li>
@@ -610,7 +610,7 @@ Estado 5: rechazada
 <li>Rendimiento: el snapshot de bootstrap reduce carga inicial del panel.</li>
 <li>UX interna: el panel concentra dashboard, modulos y bandeja para trabajo diario.</li>
 <li>UX externa: la empresa tiene un recorrido independiente sin entrar al panel interno.</li>
-<li>Monitorizacion: el monitor separa supervision tecnica de gestion funcional.</li>
+<li>Supervision tecnica: Agora Desktop separa operacion tecnica de gestion funcional.</li>
 <li>Pruebas backend: PHPUnit cubre controladores, repositorios, seguridad y servicios.</li>
 <li>Pruebas frontend: los tests unitarios y E2E validan utilidades y flujos reales.</li>
 <li>Documentacion y defensa: memoria, anexos, guion, presentacion y PDF final quedan alineados.</li>

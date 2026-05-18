@@ -158,10 +158,6 @@ async function recordDemoVideo(page) {
   await showCaption(page, 'Bandeja unificada', 'La comunicacion con empresas se concentra en una vista tipo inbox enlazada con las solicitudes.');
   await sleep(2200);
 
-  await page.goto(`${baseURL}/monitor/acceso`, { waitUntil: 'networkidle' });
-  await showCaption(page, 'Monitor privado', 'El monitor muestra servicios, logs y el control del acceso publico con MFA por correo.');
-  await sleep(2400);
-
   await page.goto(`${baseURL}/externo`, { waitUntil: 'networkidle' });
   await showCaption(page, 'Portal externo', 'La empresa puede registrarse, verificar su correo, consultar estado y continuar el flujo desde una interfaz dedicada.');
   await sleep(2400);

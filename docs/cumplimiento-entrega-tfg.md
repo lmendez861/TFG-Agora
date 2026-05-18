@@ -15,7 +15,7 @@
 - OK portal interno independiente en React y TypeScript.
 - OK portal externo independiente para empresas.
 - OK documentacion separada del flujo operativo.
-- OK monitor privado separado para supervision tecnica.
+- OK Agora Desktop como consola tecnica local/cloud, separada del flujo funcional.
 
 ## 3. Funcionalidad esencial entregada
 
@@ -27,7 +27,7 @@
 - OK cuenta persistente de empresa con activacion, login y recuperacion de contrasena.
 - OK seguimientos con evidencias y evaluacion final.
 - OK control documental con versionado, retirada y restauracion.
-- OK monitor con MFA para operaciones sensibles.
+- OK operaciones tecnicas sensibles concentradas en Agora Desktop segun el modo activo.
 
 ## 4. Validacion tecnica
 
@@ -36,7 +36,7 @@
 - OK `npm run test:e2e` en `frontend/app`
 - OK `npm run build:backend` en `frontend/app`
 - OK `npm run build:backend` en `frontend/company-portal`
-- OK comprobaciones HTTP de `/app`, `/externo`, `/documentacion` y `/monitor`
+- OK comprobaciones HTTP de `/app`, `/externo` y `/documentacion`
 - OK comprobaciones autenticadas de `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`
 
 ## 5. Material de defensa
@@ -49,7 +49,7 @@
 
 ## 6. Limitaciones reconocidas
 
-- El acceso publico sigue dependiendo de una maquina local y de un tunel temporal.
+- El acceso publico de la entrega se sirve desde una VM publica en Google Cloud con HTTPS.
 - No existe integracion con SSO institucional.
 - El almacenamiento documental sigue siendo local.
 - El despliegue permanente en infraestructura dedicada queda fuera del alcance de esta entrega.

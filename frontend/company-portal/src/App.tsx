@@ -30,7 +30,7 @@ type RegistroResponse = {
   id?: number;
   verificationUrl?: string;
   portalUrl?: string;
-  emailDelivery?: 'sent' | 'failed' | 'unavailable';
+  emailDelivery?: 'sent' | 'failed' | 'unavailable' | 'not_required';
   mailDetail?: string;
 };
 
@@ -736,30 +736,13 @@ function MailPage() {
    * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
    */
   const handleResend = async () => {
-    if (!session?.contactEmail) {
-      setFeedback({
-        kind: 'error',
-        message: 'No hay una solicitud guardada en este navegador para reenviar el correo.',
-      });
-      return;
-    }
-
     setResending(true);
     setFeedback(null);
 
     try {
-      const response = await fetch(`${REGISTRO_ENDPOINT}/reenviar`, {
+      const data = await portalFetch<RegistroResponse>('/api/portal-company/resend-verification', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contactoEmail: session?.contactEmail || undefined,
-        }),
       });
-
-      const data = (await response.json().catch(() => null)) as RegistroResponse | null;
-      if (!response.ok) {
-        throw new Error(data?.message || `Error ${response.status}`);
-      }
 
       if (session && data?.verificationUrl) {
         writePortalSession({

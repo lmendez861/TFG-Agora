@@ -57,6 +57,8 @@ final class PortalCompanyController extends AbstractController
         private readonly string $fromAddress,
         #[Autowire(service: 'limiter.portal_company_request')]
         private readonly RateLimiterFactory $portalCompanyRequestLimiter,
+        #[Autowire(service: 'limiter.portal_auth_recovery')]
+        private readonly RateLimiterFactory $portalVerificationResendLimiter,
     ) {
     }
 
@@ -261,6 +263,70 @@ final class PortalCompanyController extends AbstractController
         }
 
         return $this->json($response, Response::HTTP_CREATED);
+    }
+
+    #[Route('/resend-verification', name: 'resend_verification', methods: ['POST'])]
+    public function resendVerification(Request $request): JsonResponse
+    {
+        $account = $this->getUser();
+        if (!$account instanceof EmpresaPortalCuenta) {
+            return $this->json(['message' => 'No autenticado'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->portalVerificationResendLimiter,
+            $account->getEmail(),
+            'Has superado el limite temporal de reenvios. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
+        }
+
+        $solicitud = $account->getSolicitud();
+        if (!$solicitud instanceof EmpresaSolicitud) {
+            return $this->json([
+                'message' => 'La cuenta no dispone de ninguna solicitud asociada para reenviar la verificacion.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        if ($solicitud->isEmailVerified()) {
+            return $this->json([
+                'message' => 'La direccion de correo ya esta verificada.',
+                'emailDelivery' => 'not_required',
+            ], Response::HTTP_OK);
+        }
+
+        $verificationUrl = $this->externalAccessUrlGenerator->buildRouteUrl('registro_empresa_confirm', [
+            'token' => $solicitud->getToken(),
+        ], $request);
+
+        $mailSnapshot = $this->mailConfigurationInspector->snapshot();
+        if (!$mailSnapshot['canSend']) {
+            return $this->json([
+                'message' => 'No hemos podido reenviar el correo de verificacion porque el correo saliente no esta configurado correctamente.',
+                'emailDelivery' => 'unavailable',
+                'mailDetail' => $mailSnapshot['detail'],
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        if (!$this->trySendVerificationEmail($solicitud, $verificationUrl)) {
+            return $this->json([
+                'message' => 'No hemos podido reenviar el correo de verificacion. Revisa la configuracion SMTP e intentalo de nuevo.',
+                'emailDelivery' => 'failed',
+                'mailDetail' => 'La configuracion parece valida, pero el transporte rechazo el envio.',
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
+
+        $response = [
+            'message' => 'Hemos reenviado el correo de verificacion a la direccion registrada.',
+            'emailDelivery' => 'sent',
+            'mailDetail' => $mailSnapshot['detail'],
+        ];
+
+        if ($this->shouldExposeVerificationLinks()) {
+            $response['verificationUrl'] = $verificationUrl;
+        }
+
+        return $this->json($response, Response::HTTP_OK);
     }
 
     /**

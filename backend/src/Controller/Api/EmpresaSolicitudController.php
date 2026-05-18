@@ -55,6 +55,7 @@ final class EmpresaSolicitudController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('', name: 'create', methods: ['POST'])]
+    #[IsGranted('ROLE_API')]
     public function create(Request $request): JsonResponse
     {
         $payload = $this->decodePayload($request);

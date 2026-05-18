@@ -34,27 +34,51 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         $entityManager = static::getContainer()->get('doctrine')->getManager();
         $this->reloadDemoFixtures($entityManager);
 
-        $payload = [
+        $registrationPayload = [
+            'displayName' => 'Ana Flow',
+            'email' => 'ana.flow@example.com',
+            'password' => 'PortalFlow123',
+        ];
+
+        $requestPayload = [
             'nombreEmpresa' => 'FlowTestCo',
             'sector' => 'IT',
             'ciudad' => 'Madrid',
             'web' => 'https://flowtest.co',
             'descripcion' => 'Empresa demo para pruebas E2E de solicitudes',
             'contactoNombre' => 'Ana Flow',
-            'contactoEmail' => 'ana.flow@example.com',
             'contactoTelefono' => '600123123',
         ];
 
         $client->request(
             'POST',
-            '/api/empresa-solicitudes',
-            content: json_encode($payload, JSON_THROW_ON_ERROR),
+            '/portal-auth/register',
+            content: json_encode($registrationPayload, JSON_THROW_ON_ERROR),
+            server: ['CONTENT_TYPE' => 'application/json'],
+        );
+        self::assertResponseStatusCodeSame(201);
+
+        $client->request(
+            'POST',
+            '/portal-auth/login',
+            content: json_encode([
+                'email' => 'ana.flow@example.com',
+                'password' => 'PortalFlow123',
+            ], JSON_THROW_ON_ERROR),
+            server: ['CONTENT_TYPE' => 'application/json'],
+        );
+        self::assertResponseStatusCodeSame(204);
+
+        $client->request(
+            'POST',
+            '/api/portal-company/request',
+            content: json_encode($requestPayload, JSON_THROW_ON_ERROR),
             server: ['CONTENT_TYPE' => 'application/json'],
         );
         self::assertResponseStatusCodeSame(201);
 
         $solicitudRepository = static::getContainer()->get(EmpresaSolicitudRepository::class);
-        $solicitud = $solicitudRepository->findOneBy(['nombreEmpresa' => 'FlowTestCo']);
+        $solicitud = $solicitudRepository->findOneBy(['contactoEmail' => 'ana.flow@example.com']);
         self::assertInstanceOf(EmpresaSolicitud::class, $solicitud);
         self::assertSame(EmpresaSolicitud::ESTADO_PENDIENTE, $solicitud->getEstado());
         self::assertNotEmpty($solicitud->getToken());
@@ -81,7 +105,7 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $entityManager->clear();
-        $solicitud = $solicitudRepository->find($solicitud->getId());
+        $solicitud = static::getContainer()->get(EmpresaSolicitudRepository::class)->find($solicitud->getId());
         self::assertSame(EmpresaSolicitud::ESTADO_APROBADA, $solicitud?->getEstado());
 
         $empresaRepo = static::getContainer()->get(EmpresaColaboradoraRepository::class);

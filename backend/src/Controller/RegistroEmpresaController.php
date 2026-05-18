@@ -65,6 +65,10 @@ final class RegistroEmpresaController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
+        if ($this->isLegacyPublicFlowDisabled()) {
+            return $this->legacyPublicFlowDisabledResponse();
+        }
+
         if ($rateLimitResponse = $this->consumeRateLimit(
             $this->publicCompanyRequestLimiter,
             $this->buildLimiterKey($request),
@@ -154,6 +158,10 @@ final class RegistroEmpresaController extends AbstractController
     #[Route('/reenviar', name: 'resend', methods: ['POST'])]
     public function resend(Request $request): JsonResponse
     {
+        if ($this->isLegacyPublicFlowDisabled()) {
+            return $this->legacyPublicFlowDisabledResponse();
+        }
+
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
@@ -318,6 +326,18 @@ final class RegistroEmpresaController extends AbstractController
 HTML;
 
         return new Response($html, $status);
+    }
+
+    private function isLegacyPublicFlowDisabled(): bool
+    {
+        return $this->kernel->getEnvironment() === 'prod' && !$this->kernel->isDebug();
+    }
+
+    private function legacyPublicFlowDisabledResponse(): JsonResponse
+    {
+        return $this->json([
+            'message' => 'El alta publica directa ya no esta disponible. Crea primero una cuenta de empresa y completa la solicitud desde el portal externo autenticado.',
+        ], Response::HTTP_GONE);
     }
 
     /**

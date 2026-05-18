@@ -219,14 +219,14 @@ final class PortalCompanyAccountManager
             return false;
         }
 
-        $statusUrl = $this->externalAccessUrlGenerator->buildPortalUrl('/estado', ['token' => $solicitud->getPortalToken()]);
+        $statusUrl = $this->externalAccessUrlGenerator->buildPortalUrl('/estado');
         $reason = $solicitud->getRejectionReason() ?? 'No se ha indicado un motivo adicional.';
         $email = (new Email())
             ->from(Address::create($this->fromAddress))
             ->to($solicitud->getContactoEmail())
             ->subject('Actualizacion de tu solicitud de empresa colaboradora')
             ->html(sprintf(
-                '<p>Hola %s,</p><p>Hemos revisado la solicitud de <strong>%s</strong> y por ahora no ha sido aprobada.</p><p><strong>Motivo:</strong> %s</p><p>Puedes consultar el estado desde este enlace:</p><p><a href="%s">%s</a></p>',
+                '<p>Hola %s,</p><p>Hemos revisado la solicitud de <strong>%s</strong> y por ahora no ha sido aprobada.</p><p><strong>Motivo:</strong> %s</p><p>Puedes consultar el estado accediendo con tu cuenta de empresa desde este enlace:</p><p><a href="%s">%s</a></p>',
                 htmlspecialchars($solicitud->getContactoNombre(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 htmlspecialchars($solicitud->getNombreEmpresa(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                 nl2br(htmlspecialchars($reason, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')),

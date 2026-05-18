@@ -149,6 +149,35 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertSame('Empresa Portal Previa', $refreshed->getSolicitud()?->getNombreEmpresa());
     }
 
+    public function testCuentaPrerregistradaPuedeReenviarLaVerificacionDesdeElPortal(): void
+    {
+        $this->createAndLoginPreRegisteredAccount();
+
+        $this->client->request(
+            'POST',
+            '/api/portal-company/request',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'nombreEmpresa' => 'Empresa Portal Reenvio',
+                'sector' => 'Servicios',
+                'ciudad' => 'Madrid',
+                'web' => 'https://empresa-reenvio.example',
+                'descripcion' => 'Solicitud para probar el reenvio autenticado.',
+                'contactoNombre' => 'Portal Preregistro',
+                'contactoTelefono' => '600555444',
+            ], JSON_THROW_ON_ERROR)
+        );
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+
+        $this->client->request('POST', '/api/portal-company/resend-verification');
+        self::assertResponseStatusCodeSame(Response::HTTP_OK);
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('sent', $payload['emailDelivery']);
+        self::assertArrayHasKey('verificationUrl', $payload);
+        self::assertArrayNotHasKey('portalToken', $payload);
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.

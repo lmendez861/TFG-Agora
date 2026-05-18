@@ -71,7 +71,6 @@ security:
         - { path: ^/portal-auth/logout, roles: ROLE_COMPANY_PORTAL }
         - { path: ^/portal-auth/me, roles: ROLE_COMPANY_PORTAL }
         - { path: ^/api/portal-company, roles: ROLE_COMPANY_PORTAL }
-        - { path: ^/api/empresa-solicitudes$, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/logout, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: ROLE_API }

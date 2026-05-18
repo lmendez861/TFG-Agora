@@ -19,6 +19,7 @@ use App\Service\ExternalAccessUrlGenerator;
 use App\Service\MailConfigurationInspector;
 use App\Service\DocumentStorageManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +29,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -53,6 +55,8 @@ final class PortalCompanyController extends AbstractController
         private readonly MailerInterface $mailer,
         private readonly KernelInterface $kernel,
         private readonly string $fromAddress,
+        #[Autowire(service: 'limiter.portal_company_request')]
+        private readonly RateLimiterFactory $portalCompanyRequestLimiter,
     ) {
     }
 
@@ -137,7 +141,6 @@ final class PortalCompanyController extends AbstractController
             'solicitud' => $solicitud ? [
                 'id' => $solicitud->getId(),
                 'estado' => $solicitud->getEstado(),
-                'portalToken' => $solicitud->getPortalToken(),
                 'nombreEmpresa' => $solicitud->getNombreEmpresa(),
                 'sector' => $solicitud->getSector(),
                 'ciudad' => $solicitud->getCiudad(),
@@ -145,6 +148,7 @@ final class PortalCompanyController extends AbstractController
                 'contactoNombre' => $solicitud->getContactoNombre(),
                 'contactoEmail' => $solicitud->getContactoEmail(),
                 'contactoTelefono' => $solicitud->getContactoTelefono(),
+                'creadaEn' => $solicitud->getCreatedAt()->format(\DateTimeInterface::ATOM),
                 'emailVerificadoEn' => $solicitud->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
                 'aprobadoEn' => $solicitud->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
                 'motivoRechazo' => $solicitud->getRejectionReason(),
@@ -162,6 +166,14 @@ final class PortalCompanyController extends AbstractController
         $account = $this->getUser();
         if (!$account instanceof EmpresaPortalCuenta) {
             return $this->json(['message' => 'No autenticado'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->portalCompanyRequestLimiter,
+            $account->getEmail(),
+            'Has superado el limite temporal de registro de solicitudes. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
         }
 
         if ($account->getEmpresa() !== null) {
@@ -239,14 +251,13 @@ final class PortalCompanyController extends AbstractController
                 default => 'Solicitud registrada correctamente, pero no hemos podido enviar el correo de verificacion. Reintenta el envio o revisa el correo saliente.',
             },
             'id' => $solicitud->getId(),
-            'portalToken' => $solicitud->getPortalToken(),
-            'portalUrl' => $portalUrl,
             'emailDelivery' => $emailDelivery,
             'mailDetail' => $mailSnapshot['detail'],
         ];
 
         if ($this->shouldExposeVerificationLinks()) {
             $response['verificationUrl'] = $verificationUrl;
+            $response['portalUrl'] = $portalUrl;
         }
 
         return $this->json($response, Response::HTTP_CREATED);
@@ -485,5 +496,21 @@ HTML,
         $mailSnapshot = $this->mailConfigurationInspector->snapshot();
 
         return ($mailSnapshot['provider'] ?? null) === 'null' || !($mailSnapshot['canSend'] ?? false);
+    }
+
+    private function consumeRateLimit(RateLimiterFactory $factory, string $key, string $message): ?JsonResponse
+    {
+        $limit = $factory->create(mb_strtolower(trim($key)))->consume();
+        if ($limit->isAccepted()) {
+            return null;
+        }
+
+        $retryAfter = $limit->getRetryAfter();
+        $headers = [];
+        if ($retryAfter instanceof \DateTimeInterface) {
+            $headers['Retry-After'] = (string) max(1, $retryAfter->getTimestamp() - time());
+        }
+
+        return $this->json(['message' => $message], Response::HTTP_TOO_MANY_REQUESTS, $headers);
     }
 }

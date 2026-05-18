@@ -72,6 +72,7 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertNotEmpty($payload['asignaciones']);
         self::assertNotEmpty($payload['documents']['empresa']);
         self::assertNotEmpty($payload['messages']);
+        self::assertArrayNotHasKey('portalToken', $payload['solicitud']);
     }
 
     /**
@@ -136,7 +137,8 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
 
         $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
-        self::assertArrayHasKey('portalToken', $payload);
+        self::assertArrayNotHasKey('portalToken', $payload);
+        self::assertArrayHasKey('verificationUrl', $payload);
         self::assertSame('sent', $payload['emailDelivery']);
 
         $this->entityManager->clear();

@@ -28,7 +28,6 @@ type CompanyRequestPayload = {
 type RegistroResponse = {
   message?: string;
   id?: number;
-  portalToken?: string;
   verificationUrl?: string;
   portalUrl?: string;
   emailDelivery?: 'sent' | 'failed' | 'unavailable';
@@ -42,9 +41,9 @@ type CompanyAccountRegistrationResponse = {
 };
 
 type PortalSession = {
-  portalToken: string;
-  verificationUrl: string;
-  portalUrl: string;
+  portalToken?: string;
+  verificationUrl?: string;
+  portalUrl?: string;
   companyName: string;
   contactEmail: string;
   createdAt: string;
@@ -168,7 +167,6 @@ type CompanyPortalOverview = {
   solicitud: {
     id: number;
     estado: string;
-    portalToken: string;
     nombreEmpresa: string;
     sector: string | null;
     ciudad: string | null;
@@ -176,6 +174,7 @@ type CompanyPortalOverview = {
     contactoNombre: string;
     contactoEmail: string;
     contactoTelefono: string | null;
+    creadaEn: string;
     emailVerificadoEn: string | null;
     aprobadoEn: string | null;
     motivoRechazo: string | null;
@@ -321,14 +320,14 @@ function readPortalSession(): PortalSession | null {
     }
 
     const parsed = JSON.parse(raw) as Partial<PortalSession>;
-    if (!parsed.portalToken) {
+    if (!parsed.contactEmail && !parsed.companyName && !parsed.portalToken && !parsed.verificationUrl) {
       return null;
     }
 
     return {
-      portalToken: parsed.portalToken,
-      verificationUrl: parsed.verificationUrl ?? '',
-      portalUrl: parsed.portalUrl ?? '',
+      portalToken: parsed.portalToken ?? undefined,
+      verificationUrl: parsed.verificationUrl ?? undefined,
+      portalUrl: parsed.portalUrl ?? undefined,
       companyName: parsed.companyName ?? 'Empresa registrada',
       contactEmail: parsed.contactEmail ?? 'sin-dato',
       createdAt: parsed.createdAt ?? new Date().toISOString(),
@@ -393,6 +392,29 @@ function normalizeChatMessage(message: ChatMessage): Required<Pick<ChatMessage, 
     author: message.author ?? message.autor ?? 'empresa',
     text: message.text ?? message.texto ?? '',
     createdAt: message.createdAt,
+  };
+}
+
+function mapOverviewToStatusSnapshot(overview: CompanyPortalOverview): PortalStatusSnapshot | null {
+  if (!overview.solicitud) {
+    return null;
+  }
+
+  return {
+    id: overview.solicitud.id,
+    nombreEmpresa: overview.solicitud.nombreEmpresa,
+    estado: overview.solicitud.estado,
+    sector: overview.solicitud.sector,
+    ciudad: overview.solicitud.ciudad,
+    web: overview.solicitud.web,
+    creadaEn: overview.solicitud.creadaEn,
+    emailVerificadoEn: overview.solicitud.emailVerificadoEn,
+    aprobadoEn: overview.solicitud.aprobadoEn,
+    portalAccount: {
+      email: overview.account.email,
+      activatedAt: overview.account.activatedAt,
+      activationPending: overview.account.activatedAt === null,
+    },
   };
 }
 
@@ -714,7 +736,7 @@ function MailPage() {
    * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
    */
   const handleResend = async () => {
-    if (!session?.portalToken && !session?.contactEmail) {
+    if (!session?.contactEmail) {
       setFeedback({
         kind: 'error',
         message: 'No hay una solicitud guardada en este navegador para reenviar el correo.',
@@ -730,7 +752,6 @@ function MailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          portalToken: session?.portalToken || undefined,
           contactoEmail: session?.contactEmail || undefined,
         }),
       });
@@ -744,7 +765,6 @@ function MailPage() {
         writePortalSession({
           ...session,
           verificationUrl: data.verificationUrl,
-          portalUrl: data.portalUrl ?? session.portalUrl,
         });
       }
 
@@ -799,7 +819,7 @@ function MailPage() {
             )}
             <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisara la solicitud desde el portal interno.</p>
             <div className="hero__actions">
-              <Link className="btn btn--ghost" to={session?.portalToken ? `/estado?token=${encodeURIComponent(session.portalToken)}` : '/estado'}>
+              <Link className="btn btn--ghost" to="/estado">
                 Ver estado
               </Link>
               <button type="button" className="btn btn--primary" onClick={handleResend} disabled={resending}>
@@ -839,13 +859,9 @@ function StatusPage() {
   const [tokenInput, setTokenInput] = useState(activeToken);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const visibleStatus = activeToken ? status : null;
+  const visibleStatus = status;
 
   useEffect(() => {
-    if (!activeToken) {
-      return;
-    }
-
     let cancelled = false;
     queueMicrotask(() => {
       if (!cancelled) {
@@ -854,27 +870,39 @@ function StatusPage() {
       }
     });
 
-    fetch(`${PORTAL_BASE}/${encodeURIComponent(activeToken)}`)
-      .then(async (response) => {
-        const data = (await response.json().catch(() => null)) as PortalStatusSnapshot | { message?: string } | null;
-        if (!response.ok) {
-          throw new Error((data as { message?: string } | null)?.message || `Error ${response.status}`);
+    const loadStatus = async () => {
+      try {
+        if (activeToken) {
+          const response = await fetch(`${PORTAL_BASE}/${encodeURIComponent(activeToken)}`);
+          const data = (await response.json().catch(() => null)) as PortalStatusSnapshot | { message?: string } | null;
+          if (!response.ok) {
+            throw new Error((data as { message?: string } | null)?.message || `Error ${response.status}`);
+          }
+
+          if (!cancelled) {
+            setStatus(data as PortalStatusSnapshot);
+          }
+
+          return;
         }
+
+        const overview = await portalFetch<CompanyPortalOverview>('/api/portal-company/overview');
         if (!cancelled) {
-          setStatus(data as PortalStatusSnapshot);
+          setStatus(mapOverviewToStatusSnapshot(overview));
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!cancelled) {
           setStatus(null);
           setError(err instanceof Error ? err.message : 'No se pudo cargar el estado de la solicitud.');
         }
-      })
-      .finally(() => {
+      } finally {
         if (!cancelled) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    void loadStatus();
 
     return () => {
       cancelled = true;
@@ -896,7 +924,7 @@ function StatusPage() {
   const nextActions = useMemo(() => {
     if (!visibleStatus) {
       return [
-        'Introduce el token del portal o utiliza la sesion guardada para recuperar la solicitud.',
+        'Inicia sesion en el portal de empresa o abre el enlace publico recibido por correo para recuperar la solicitud.',
         'Si acabas de registrarte, revisa primero la pagina de correo para verificar la direccion.',
       ];
     }
@@ -920,7 +948,9 @@ function StatusPage() {
         visibleStatus.portalAccount?.activationPending
           ? 'Revisa el correo de activacion de cuenta para crear tu contrasena inicial.'
           : 'Accede al area privada de empresa para revisar convenios, mensajes y documentos.',
-        'Conserva este token para consultar el historial de la solicitud cuando lo necesites.',
+        activeToken
+          ? 'Conserva el enlace publico solo para consultas puntuales desde fuera de tu sesion.'
+          : 'Tu propia cuenta de empresa ya sirve como acceso principal al estado y a la operativa.',
       ];
     }
 
@@ -928,7 +958,7 @@ function StatusPage() {
       'La solicitud ha sido rechazada. Revisa el motivo indicado por el centro y prepara una nueva propuesta si procede.',
       'Si necesitas aclaraciones, utiliza el canal habilitado o contacta con el centro.',
     ];
-  }, [visibleStatus]);
+  }, [activeToken, visibleStatus]);
 
   return (
     <div className="page">
@@ -1023,7 +1053,6 @@ function StatusPage() {
  */
 function VerifyPage() {
   const query = useQuery();
-  const session = readPortalSession();
   const token = query.get('token') ?? '';
   const [verification, setVerification] = useState<{ token: string; status: 'ok' | 'error'; message: string } | null>(null);
   const effectiveStatus: 'idle' | 'loading' | 'ok' | 'error' = token
@@ -1091,10 +1120,10 @@ function VerifyPage() {
           </span>
           <p className="verify-card__message">{effectiveMessage}</p>
           <div className="verify-card__actions">
-            <Link to={session?.portalToken ? `/chat?token=${encodeURIComponent(session.portalToken)}` : '/chat'} className="btn btn--ghost">
+            <Link to="/chat" className="btn btn--ghost">
               Ir a mensajeria
             </Link>
-            <Link to={session?.portalToken ? `/estado?token=${encodeURIComponent(session.portalToken)}` : '/estado'} className="btn btn--primary">
+            <Link to="/estado" className="btn btn--primary">
               Ir al estado
             </Link>
           </div>
@@ -1115,16 +1144,14 @@ function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const location = useLocation();
-  const token = useMemo(() => {
+  const publicToken = useMemo(() => {
     const query = new URLSearchParams(location.search);
     return query.get('token') ?? session?.portalToken ?? '';
   }, [location.search, session?.portalToken]);
+  const usePublicThread = publicToken !== '';
+  const canAttemptChat = usePublicThread || Boolean(session?.contactEmail);
 
   const loadMessages = useCallback(async (options?: { background?: boolean; silent?: boolean }) => {
-    if (!token) {
-      return;
-    }
-
     if (!options?.background) {
       setLoading(true);
     }
@@ -1133,33 +1160,34 @@ function ChatPage() {
     }
 
     try {
-      const response = await fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`);
-      if (!response.ok) {
-        throw new Error('No se pudo cargar el chat');
-      }
+      if (usePublicThread) {
+        const response = await fetch(`${PORTAL_BASE}/${encodeURIComponent(publicToken)}/mensajes`);
+        if (!response.ok) {
+          throw new Error('No se pudo cargar el chat');
+        }
 
-      const data = (await response.json()) as ChatMessage[];
-      setMessages(data.map(normalizeChatMessage));
+        const data = (await response.json()) as ChatMessage[];
+        setMessages(data.map(normalizeChatMessage));
+      } else {
+        const overview = await portalFetch<CompanyPortalOverview>('/api/portal-company/overview');
+        setMessages(overview.messages.map(normalizeChatMessage));
+      }
     } catch (err) {
       if (!options?.silent) {
-        setStatus(err instanceof Error ? err.message : 'Error de red');
+        setStatus(err instanceof Error ? err.message : 'No se pudo cargar el chat.');
       }
     } finally {
       if (!options?.background) {
         setLoading(false);
       }
     }
-  }, [token]);
+  }, [publicToken, usePublicThread]);
 
   useEffect(() => {
     void loadMessages();
   }, [loadMessages]);
 
   useEffect(() => {
-    if (!token) {
-      return undefined;
-    }
-
     const refreshSilently = () => {
       if (document.visibilityState === 'visible') {
         void loadMessages({ background: true, silent: true });
@@ -1175,29 +1203,38 @@ function ChatPage() {
       window.removeEventListener('focus', refreshSilently);
       document.removeEventListener('visibilitychange', refreshSilently);
     };
-  }, [loadMessages, token]);
+  }, [loadMessages]);
 
   /**
    * Resume la responsabilidad de sendMessage dentro de este modulo y facilita seguir el flujo al revisarlo.
    * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
    */
   const sendMessage = () => {
-    if (!draft.trim() || !token) {
+    if (!draft.trim()) {
       return;
     }
 
     setLoading(true);
-    fetch(`${PORTAL_BASE}/${encodeURIComponent(token)}/mensajes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto: draft.trim() }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json().catch(() => undefined);
+    const requestPromise = usePublicThread
+      ? fetch(`${PORTAL_BASE}/${encodeURIComponent(publicToken)}/mensajes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto: draft.trim() }),
+      }).then(async (response) => {
+        if (!response.ok) {
+          const data = await response.json().catch(() => undefined);
           throw new Error(data?.message || 'No se pudo enviar el mensaje');
         }
-        const message = normalizeChatMessage((await res.json()) as ChatMessage);
+
+        return normalizeChatMessage((await response.json()) as ChatMessage);
+      })
+      : portalFetch<ChatMessage>('/api/portal-company/messages', {
+        method: 'POST',
+        body: JSON.stringify({ texto: draft.trim() }),
+      }).then((response) => normalizeChatMessage(response));
+
+    requestPromise
+      .then((message) => {
         setMessages((current) => [...current, message]);
         setDraft('');
         void loadMessages({ background: true, silent: true });
@@ -1214,7 +1251,7 @@ function ChatPage() {
             <p className="eyebrow">Canal</p>
             <h2>Mensajeria con el centro</h2>
             <p>Utiliza este canal para resolver dudas y compartir aclaraciones durante la revision de la solicitud.</p>
-            {!token && <p className="alert alert--error">Abre el enlace recibido por correo para consultar la mensajeria.</p>}
+            {!canAttemptChat && <p className="alert alert--error">Inicia sesion o abre el enlace recibido por correo para consultar la mensajeria.</p>}
           </div>
         </div>
         <div className="chat">
@@ -1239,9 +1276,9 @@ function ChatPage() {
                   sendMessage();
                 }
               }}
-              disabled={!token || loading}
+              disabled={!canAttemptChat || loading}
             />
-            <button type="button" className="btn btn--primary" onClick={sendMessage} disabled={!token || loading}>
+            <button type="button" className="btn btn--primary" onClick={sendMessage} disabled={!canAttemptChat || loading}>
               Enviar
             </button>
           </div>
@@ -1695,11 +1732,9 @@ function CompanyAreaPage() {
         }),
       });
 
-      if (response.portalToken && me?.email) {
+      if (me?.email) {
         writePortalSession({
-          portalToken: response.portalToken,
-          verificationUrl: response.verificationUrl ?? '',
-          portalUrl: response.portalUrl ?? '',
+          verificationUrl: response.verificationUrl ?? undefined,
           companyName: requestPayload.nombreEmpresa,
           contactEmail: me.email,
           createdAt: new Date().toISOString(),

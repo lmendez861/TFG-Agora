@@ -33,6 +33,7 @@
         "symfony/process": "7.3.*",
         "symfony/property-access": "7.3.*",
         "symfony/property-info": "7.3.*",
+        "symfony/rate-limiter": "7.3",
         "symfony/runtime": "7.3.*",
         "symfony/security-bundle": "7.3.*",
         "symfony/serializer": "7.3.*",
@@ -100,7 +101,7 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "*",
-        "phpunit/phpunit": "^11.5",
+        "phpunit/phpunit": "^11.5.55",
         "symfony/browser-kit": "7.3.*",
         "symfony/css-selector": "7.3.*",
         "symfony/debug-bundle": "7.3.*",

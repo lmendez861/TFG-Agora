@@ -32,6 +32,9 @@ security:
                 check_path: /portal-auth/login
                 username_path: email
                 password_path: password
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
             logout:
                 path: /portal-auth/logout
                 invalidate_session: true
@@ -43,6 +46,9 @@ security:
                 check_path: /api/login
                 username_path: username
                 password_path: password
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
             http_basic: ~
             logout:
                 path: /api/logout

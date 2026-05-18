@@ -13,6 +13,7 @@ use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaSolicitudRepository;
 use App\Service\ExternalAccessUrlGenerator;
 use App\Service\MailConfigurationInspector;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -49,6 +51,10 @@ final class RegistroEmpresaController extends AbstractController
         private readonly KernelInterface $kernel,
         private readonly MailConfigurationInspector $mailConfigurationInspector,
         private readonly string $fromAddress,
+        #[Autowire(service: 'limiter.public_company_request')]
+        private readonly RateLimiterFactory $publicCompanyRequestLimiter,
+        #[Autowire(service: 'limiter.portal_auth_recovery')]
+        private readonly RateLimiterFactory $recoveryLimiter,
     ) {
     }
 
@@ -59,6 +65,14 @@ final class RegistroEmpresaController extends AbstractController
     #[Route('', name: 'create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->publicCompanyRequestLimiter,
+            $this->buildLimiterKey($request),
+            'Has superado el limite temporal de altas publicas. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
+        }
+
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
@@ -143,6 +157,14 @@ final class RegistroEmpresaController extends AbstractController
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->recoveryLimiter,
+            $this->buildLimiterKey($request, (string) ($payload['contactoEmail'] ?? $payload['portalToken'] ?? '')),
+            'Has superado el limite temporal de reenvios. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
         }
 
         $constraints = new Assert\Collection(
@@ -351,5 +373,32 @@ HTML,
         $mailSnapshot = $this->mailConfigurationInspector->snapshot();
 
         return ($mailSnapshot['provider'] ?? null) === 'null' || !($mailSnapshot['canSend'] ?? false);
+    }
+
+    /**
+     * Aplica limitacion por IP o identificador publico para proteger formularios expuestos sin autenticacion.
+     */
+    private function consumeRateLimit(RateLimiterFactory $factory, string $key, string $message): ?JsonResponse
+    {
+        $limit = $factory->create($key)->consume();
+        if ($limit->isAccepted()) {
+            return null;
+        }
+
+        $retryAfter = $limit->getRetryAfter();
+        $headers = [];
+        if ($retryAfter instanceof \DateTimeInterface) {
+            $headers['Retry-After'] = (string) max(1, $retryAfter->getTimestamp() - time());
+        }
+
+        return $this->json(['message' => $message], Response::HTTP_TOO_MANY_REQUESTS, $headers);
+    }
+
+    private function buildLimiterKey(Request $request, string $suffix = ''): string
+    {
+        $ip = trim((string) ($request->getClientIp() ?? 'unknown'));
+        $normalizedSuffix = mb_strtolower(trim($suffix));
+
+        return $normalizedSuffix !== '' ? sprintf('%s|%s', $ip, $normalizedSuffix) : $ip;
     }
 }

@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { execFile } from 'node:child_process';
+import os from 'node:os';
+import path from 'node:path';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -137,10 +139,14 @@ function ensureStatus(response, expectedStatus, label) {
   return response;
 }
 
-async function sshExec(target, command) {
+function defaultSshKeyPath() {
+  return path.join(os.homedir(), '.ssh', 'id_rsa');
+}
+
+async function sshExec(target, command, keyPath = defaultSshKeyPath()) {
   const args = [
     '-i',
-    `${process.env.USERPROFILE}\\.ssh\\id_rsa`,
+    keyPath,
     '-o',
     'StrictHostKeyChecking=no',
     target,
@@ -175,6 +181,7 @@ async function main() {
   const adminUser = options['admin-user'] || process.env.ADMIN_USER || 'profesor';
   const adminPassword = options['admin-password'] || process.env.ADMIN_PASSWORD || 'Abrete01';
   const sshTarget = options['ssh-target'] || process.env.SSH_TARGET || 'lmendezgsd@34.175.224.87';
+  const sshKeyPath = options['ssh-key'] || process.env.SSH_KEY_PATH || defaultSshKeyPath();
   const dbContainer = options['db-container'] || process.env.DB_CONTAINER || 'agora-db-1';
   const seed = Date.now();
   const suffix = seed.toString(36);
@@ -314,8 +321,6 @@ async function main() {
       },
     }), 201, 'Registro privado de solicitud');
 
-    const portalToken = response.json?.portalToken;
-    assertCondition(typeof portalToken === 'string' && portalToken !== '', 'La respuesta de solicitud no incluye portalToken.');
     assertCondition(
       ['sent', 'unavailable', 'failed'].includes(response.json?.emailDelivery),
       'La respuesta de solicitud no informa el estado de envio de correo.',
@@ -326,7 +331,6 @@ async function main() {
       value: response.json,
       artifacts: {
         solicitudId: response.json.id,
-        portalToken,
         companyEmail,
         companyName,
       },
@@ -336,7 +340,7 @@ async function main() {
   const verificationToken = await runStep('token-verificacion', 'Recuperar token de verificacion desde la VM', async () => {
     const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(registration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
-    const token = (await sshExec(sshTarget, command)).trim();
+    const token = (await sshExec(sshTarget, command, sshKeyPath)).trim();
     assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud principal.');
 
     return { detail: 'Token de verificacion recuperado', value: token };
@@ -620,7 +624,6 @@ async function main() {
       value: response.json,
       artifacts: {
         rejectedSolicitudId: response.json.id,
-        rejectedPortalToken: response.json.portalToken,
       },
     };
   });
@@ -628,7 +631,7 @@ async function main() {
   const rejectedVerificationToken = await runStep('token-verificacion-rechazo', 'Recuperar token de verificacion de la solicitud rechazada', async () => {
     const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(rejectedRegistration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
-    const token = (await sshExec(sshTarget, command)).trim();
+    const token = (await sshExec(sshTarget, command, sshKeyPath)).trim();
     assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud rechazada.');
 
     return { detail: 'Token de rechazo recuperado', value: token };

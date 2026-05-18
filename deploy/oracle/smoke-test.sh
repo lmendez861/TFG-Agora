@@ -21,10 +21,14 @@ curl -fsS "${BASE_URL}/app" >/dev/null
 echo "Comprobando portal externo..."
 curl -fsS "${BASE_URL}/externo" >/dev/null
 
-echo "Comprobando autenticacion del profesor de prueba..."
-curl -fsS -u "profesor:${DEMO_TEACHER_PASSWORD}" "${BASE_URL}/api/empresas" >/dev/null
+if [ -n "${SMOKE_API_USER:-}" ] && [ -n "${SMOKE_API_PASSWORD:-}" ]; then
+    echo "Comprobando autenticacion API con credenciales de smoke..."
+    curl -fsS -u "${SMOKE_API_USER}:${SMOKE_API_PASSWORD}" "${BASE_URL}/api/empresas" >/dev/null
+fi
 
-echo "Comprobando monitor con credenciales del profesor..."
-curl -fsS -u "profesor:${DEMO_TEACHER_PASSWORD}" "${BASE_URL}/api/monitor" >/dev/null
+if [ -n "${SMOKE_MONITOR_USER:-}" ] && [ -n "${SMOKE_MONITOR_PASSWORD:-}" ]; then
+    echo "Comprobando monitor con credenciales de smoke..."
+    curl -fsS -u "${SMOKE_MONITOR_USER}:${SMOKE_MONITOR_PASSWORD}" "${BASE_URL}/api/monitor" >/dev/null
+fi
 
 echo "Smoke test completado correctamente sobre ${BASE_URL}."

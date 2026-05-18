@@ -7,8 +7,11 @@ export PORT="${PORT:-10000}"
 export APP_SECRET="${APP_SECRET:-change-this-in-production}"
 export APP_DOCUMENT_STORAGE_DIR="${APP_DOCUMENT_STORAGE_DIR:-/data/document-storage}"
 export DATABASE_URL="${DATABASE_URL:-sqlite:////data/agora.sqlite}"
-export APP_ENABLE_DEMO_TEACHERS="${APP_ENABLE_DEMO_TEACHERS:-1}"
-export DEMO_TEACHER_PASSWORD="${DEMO_TEACHER_PASSWORD:-Abrete01}"
+export APP_ENABLE_DEMO_TEACHERS="${APP_ENABLE_DEMO_TEACHERS:-0}"
+export DEMO_TEACHER_PASSWORD="${DEMO_TEACHER_PASSWORD:-}"
+export APP_ENABLE_DESKTOP_OPERATORS="${APP_ENABLE_DESKTOP_OPERATORS:-0}"
+export DESKTOP_ADMIN_PASSWORD="${DESKTOP_ADMIN_PASSWORD:-}"
+export DESKTOP_MONITOR_PASSWORD="${DESKTOP_MONITOR_PASSWORD:-}"
 export DEFAULT_URI="${DEFAULT_URI:-${APP_EXTERNAL_BASE_URL:-http://127.0.0.1:${PORT}}}"
 
 mkdir -p "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var
@@ -54,8 +57,21 @@ exit(1);
 php bin/console doctrine:migrations:migrate --no-interaction
 
 if [ "${APP_ENABLE_DEMO_TEACHERS}" = "1" ]; then
+    if [ -z "${DEMO_TEACHER_PASSWORD}" ]; then
+        echo "DEMO_TEACHER_PASSWORD es obligatorio cuando APP_ENABLE_DEMO_TEACHERS=1." >&2
+        exit 1
+    fi
     php bin/console app:user:create profesora "${DEMO_TEACHER_PASSWORD}" --role=ROLE_COORDINATOR --full-name="Profesora evaluadora" --update-if-exists --no-interaction
     php bin/console app:user:create profesor "${DEMO_TEACHER_PASSWORD}" --role=ROLE_COORDINATOR --full-name="Profesor evaluador" --update-if-exists --no-interaction
+fi
+
+if [ "${APP_ENABLE_DESKTOP_OPERATORS}" = "1" ]; then
+    if [ -z "${DESKTOP_ADMIN_PASSWORD}" ] || [ -z "${DESKTOP_MONITOR_PASSWORD}" ]; then
+        echo "DESKTOP_ADMIN_PASSWORD y DESKTOP_MONITOR_PASSWORD son obligatorios cuando APP_ENABLE_DESKTOP_OPERATORS=1." >&2
+        exit 1
+    fi
+    php bin/console app:user:create admin "${DESKTOP_ADMIN_PASSWORD}" --role=ROLE_ADMIN --full-name="Administrador TFG" --update-if-exists --no-interaction
+    php bin/console app:user:create monitor "${DESKTOP_MONITOR_PASSWORD}" --role=ROLE_MONITOR --full-name="Monitor tecnico" --update-if-exists --no-interaction
 fi
 
 chown -R www-data:www-data "${APP_DOCUMENT_STORAGE_DIR}" /var/www/html/backend/var

@@ -13,10 +13,12 @@ namespace App\Controller;
 use App\Entity\EmpresaPortalCuenta;
 use App\Service\AuditLogger;
 use App\Service\PortalCompanyAccountManager;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -37,6 +39,10 @@ final class PortalAuthController extends AbstractController
         private readonly PortalCompanyAccountManager $accountManager,
         private readonly ValidatorInterface $validator,
         private readonly AuditLogger $auditLogger,
+        #[Autowire(service: 'limiter.portal_auth_register')]
+        private readonly RateLimiterFactory $registerLimiter,
+        #[Autowire(service: 'limiter.portal_auth_recovery')]
+        private readonly RateLimiterFactory $recoveryLimiter,
     ) {
     }
 
@@ -50,6 +56,14 @@ final class PortalAuthController extends AbstractController
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->registerLimiter,
+            $this->buildLimiterKey($request, (string) ($payload['email'] ?? '')),
+            'Has superado el limite temporal de altas de cuenta. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
         }
 
         $constraints = new Assert\Collection(
@@ -128,7 +142,6 @@ final class PortalAuthController extends AbstractController
             'solicitud' => $account->getSolicitud() ? [
                 'id' => $account->getSolicitud()?->getId(),
                 'estado' => $account->getSolicitud()?->getEstado(),
-                'portalToken' => $account->getSolicitud()?->getPortalToken(),
                 'nombreEmpresa' => $account->getSolicitud()?->getNombreEmpresa(),
                 'emailVerificadoEn' => $account->getSolicitud()?->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
                 'aprobadoEn' => $account->getSolicitud()?->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
@@ -147,6 +160,14 @@ final class PortalAuthController extends AbstractController
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->recoveryLimiter,
+            $this->buildLimiterKey($request, (string) ($payload['token'] ?? '')),
+            'Has superado el limite temporal de activaciones. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
         }
 
         $constraints = new Assert\Collection(
@@ -189,6 +210,14 @@ final class PortalAuthController extends AbstractController
             return $payload;
         }
 
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->recoveryLimiter,
+            $this->buildLimiterKey($request, (string) ($payload['email'] ?? '')),
+            'Has superado el limite temporal de solicitudes de recuperacion. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
+        }
+
         $constraints = new Assert\Collection(
             fields: [
                 'email' => [new Assert\NotBlank(), new Assert\Email()],
@@ -224,6 +253,14 @@ final class PortalAuthController extends AbstractController
         $payload = $this->decodePayload($request);
         if ($payload instanceof JsonResponse) {
             return $payload;
+        }
+
+        if ($rateLimitResponse = $this->consumeRateLimit(
+            $this->recoveryLimiter,
+            $this->buildLimiterKey($request, (string) ($payload['token'] ?? '')),
+            'Has superado el limite temporal de cambios de contrasena. Espera unos minutos antes de reintentarlo.'
+        )) {
+            return $rateLimitResponse;
         }
 
         $constraints = new Assert\Collection(
@@ -279,5 +316,32 @@ final class PortalAuthController extends AbstractController
             new Assert\NotBlank(),
             new Assert\Length(min: 8, max: 190),
         ];
+    }
+
+    /**
+     * Aplica limitacion por IP/identificador para frenar automatismos sobre endpoints sensibles del portal externo.
+     */
+    private function consumeRateLimit(RateLimiterFactory $factory, string $key, string $message): ?JsonResponse
+    {
+        $limit = $factory->create($key)->consume();
+        if ($limit->isAccepted()) {
+            return null;
+        }
+
+        $retryAfter = $limit->getRetryAfter();
+        $headers = [];
+        if ($retryAfter instanceof \DateTimeInterface) {
+            $headers['Retry-After'] = (string) max(1, $retryAfter->getTimestamp() - time());
+        }
+
+        return $this->json(['message' => $message], Response::HTTP_TOO_MANY_REQUESTS, $headers);
+    }
+
+    private function buildLimiterKey(Request $request, string $suffix = ''): string
+    {
+        $ip = trim((string) ($request->getClientIp() ?? 'unknown'));
+        $normalizedSuffix = mb_strtolower(trim($suffix));
+
+        return $normalizedSuffix !== '' ? sprintf('%s|%s', $ip, $normalizedSuffix) : $ip;
     }
 }

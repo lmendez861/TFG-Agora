@@ -270,6 +270,7 @@ final class PortalAuthControllerTest extends WebTestCase
         $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
         self::assertSame($account->getEmail(), $payload['email']);
         self::assertSame('ROLE_COMPANY_PORTAL', $payload['roles'][0]);
+        self::assertArrayNotHasKey('portalToken', $payload['solicitud']);
 
         self::assertGreaterThan(
             0,

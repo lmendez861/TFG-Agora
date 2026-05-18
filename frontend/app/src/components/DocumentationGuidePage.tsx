@@ -68,8 +68,8 @@ const routeCards: RouteCard[] = [
   },
   {
     title: 'Monitor privado',
-    path: '/monitor',
-    detail: 'Supervision de servicios, acceso publico, errores, validacion tecnica y enlaces operativos.',
+    path: '/legacy/monitor',
+    detail: 'Shell legacy de supervision tecnica, acceso publico temporal, errores y validacion operativa.',
   },
 ];
 

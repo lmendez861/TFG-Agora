@@ -58,11 +58,18 @@ final class FrontendController extends AbstractController
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
-    #[Route('/monitor', name: 'frontend_monitor_index', methods: ['GET'])]
-    #[Route('/monitor/{path}', name: 'frontend_monitor_path', requirements: ['path' => '.*'], methods: ['GET'])]
-    public function monitor(): Response
+    #[Route('/legacy/monitor', name: 'frontend_monitor_legacy_index', methods: ['GET'])]
+    #[Route('/legacy/monitor/{path}', name: 'frontend_monitor_legacy_path', requirements: ['path' => '.*'], methods: ['GET'])]
+    public function monitorLegacy(): Response
     {
         return $this->serveFrontendIndex('app');
+    }
+
+    #[Route('/monitor', name: 'frontend_monitor_index', methods: ['GET'])]
+    #[Route('/monitor/{path}', name: 'frontend_monitor_path', requirements: ['path' => '.*'], methods: ['GET'])]
+    public function monitor(): RedirectResponse
+    {
+        return $this->redirect('/legacy/monitor');
     }
 
     /**
@@ -73,7 +80,7 @@ final class FrontendController extends AbstractController
     #[Route('/control/{path}', name: 'frontend_control_path_redirect', requirements: ['path' => '.*'], methods: ['GET'])]
     public function control(): RedirectResponse
     {
-        return $this->redirect('/monitor');
+        return $this->redirect('/legacy/monitor');
     }
 
     /**

@@ -47,9 +47,9 @@ test('internal portal login and dashboard load', async ({ page }) => {
 
 test('private monitor shell renders sections', async ({ page }) => {
   const readyLocator = page.getByText(/Supervision operativa separada del portal funcional/i);
-  await page.goto('/monitor');
+  await page.goto('/legacy/monitor');
   await ensureInternalLogin(page, readyLocator);
-  await page.waitForURL(/\/monitor(\/sistemas)?/);
+  await page.waitForURL(/\/legacy\/monitor(\/sistemas)?/);
 
   await expect(page.getByText(/Supervision operativa separada del portal funcional/i)).toBeVisible();
   await expect(page.getByText(/Estado de componentes/i)).toBeVisible();

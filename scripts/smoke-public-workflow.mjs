@@ -76,10 +76,6 @@ function assertCondition(condition, message) {
   }
 }
 
-function escapeSqlLiteral(value) {
-  return String(value).replace(/'/g, "''");
-}
-
 async function request(url, {
   method = 'GET',
   headers = {},
@@ -338,7 +334,7 @@ async function main() {
   });
 
   const verificationToken = await runStep('token-verificacion', 'Recuperar token de verificacion desde la VM', async () => {
-    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(registration.id)} AND contacto_email = '${escapeSqlLiteral(companyEmail)}' LIMIT 1;`;
+    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(registration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
     const token = (await sshExec(sshTarget, command)).trim();
     assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud principal.');
@@ -630,7 +626,7 @@ async function main() {
   });
 
   const rejectedVerificationToken = await runStep('token-verificacion-rechazo', 'Recuperar token de verificacion de la solicitud rechazada', async () => {
-    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(rejectedRegistration.id)} AND contacto_email = '${escapeSqlLiteral(rejectedEmail)}' LIMIT 1;`;
+    const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(rejectedRegistration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
     const token = (await sshExec(sshTarget, command)).trim();
     assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud rechazada.');

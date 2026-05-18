@@ -56,15 +56,24 @@ test('private monitor shell renders sections', async ({ page }) => {
   await expect(page.getByText(/Respuesta y datos cargados/i)).toBeVisible();
 });
 
-test('external registration flow reaches mail step', async ({ page }) => {
+test('external account-first flow reaches mail step', async ({ page }) => {
   await page.goto('/externo');
   const unique = Date.now();
+  const password = `AgoraE2E${String(unique).slice(-6)}Aa1`;
+
+  await page.getByLabel(/Persona responsable/i).fill('Contacto E2E');
+  await page.getByLabel(/Email corporativo/i).fill(`e2e-${unique}@example.com`);
+  await page.getByLabel(/^Contrasena/i).fill(password);
+  await page.getByLabel(/Confirmar contrasena/i).fill(password);
+  await page.getByRole('button', { name: /Crear cuenta y entrar/i }).click();
+
+  await expect(page).toHaveURL(/\/externo\/panel/);
+  await expect(page.getByText(/Completar solicitud/i)).toBeVisible();
 
   await page.getByLabel(/Nombre de la empresa/i).fill(`Empresa E2E ${unique}`);
   await page.getByLabel(/^Sector$/i).fill('Tecnologia');
   await page.getByLabel(/^Ciudad$/i).fill('Madrid');
-  await page.getByLabel(/Nombre completo/i).fill('Contacto E2E');
-  await page.getByLabel(/Email corporativo/i).fill(`e2e-${unique}@example.com`);
+  await page.getByLabel(/Persona responsable/i).fill('Contacto E2E');
   await page.getByRole('button', { name: /Enviar solicitud/i }).click();
 
   await expect(page).toHaveURL(/\/externo\/correo/);
@@ -72,7 +81,14 @@ test('external registration flow reaches mail step', async ({ page }) => {
 });
 
 test('csv export endpoints respond across operational scopes', async ({ request }) => {
-  const auth = Buffer.from('admin:admin123').toString('base64');
+  const loginResponse = await request.post('/api/login', {
+    data: {
+      username: 'admin',
+      password: 'admin123',
+    },
+  });
+  expect(loginResponse.status()).toBe(204);
+
   const exportPaths = [
     '/api/export/empresas.csv',
     '/api/export/convenios.csv',
@@ -87,7 +103,6 @@ test('csv export endpoints respond across operational scopes', async ({ request 
     const response = await request.get(path, {
       headers: {
         Accept: 'text/csv',
-        Authorization: `Basic ${auth}`,
       },
     });
 

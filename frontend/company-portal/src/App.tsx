@@ -351,6 +351,18 @@ function writePortalSession(session: PortalSession): void {
 }
 
 /**
+ * Elimina la sesion local del portal externo para evitar incoherencias tras cerrar sesion.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
+function clearPortalSession(): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.removeItem(PORTAL_STORAGE_KEY);
+}
+
+/**
  * Devuelve StatusLabel sin duplicar logica de acceso en los consumidores.
  * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
  */
@@ -1658,6 +1670,7 @@ function CompanyAreaPage() {
     } catch {
       // ignored
     } finally {
+      clearPortalSession();
       navigate('/acceso');
     }
   };

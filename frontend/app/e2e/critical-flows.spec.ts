@@ -48,7 +48,7 @@ test('internal portal login and dashboard load', async ({ page }) => {
 test('legacy monitor routes are retired and redirect into the internal portal shell', async ({ page }) => {
   const readyLocator = page.getByRole('button', { name: /salir/i });
   await page.goto('/legacy/monitor');
-  await page.waitForURL(/\/app$/);
+  await page.waitForURL(/\/app\/?$/);
   await ensureInternalLogin(page, readyLocator);
   await expect(page.getByText('Empresas').first()).toBeVisible();
 });

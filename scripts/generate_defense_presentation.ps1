@@ -1,3 +1,8 @@
+<#
+ Comentario de mantenimiento Agora.
+ Proposito: Script auxiliar de documentacion/demo: automatiza generacion de entregables del TFG.
+ Relaciones: script auxiliar invocado manualmente durante documentacion, capturas o defensa.
+#>
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -276,26 +281,26 @@ try {
 
     # 4. Arquitectura
     $slide = Add-Slide $presentation
-    Add-Header $slide '03 / Arquitectura' 'Separacion por responsabilidades' 'Un unico nucleo de datos y negocio, con interfaces distintas para cada tipo de usuario.'
+    Add-Header $slide '03 / Arquitectura' 'Topologia operativa y de despliegue' 'La misma URL publica sirve los dos portales, la documentacion y el monitor legacy, mientras el escritorio opera por API y SSH.'
     Add-FittedImage -Slide $slide -Path (Join-Path $captures '01-bloques-funcionalidad.png') -Left 62 -Top 158 -MaxWidth 510 -MaxHeight 310 | Out-Null
     Add-BulletList $slide 625 174 260 205 @(
-        'API REST Symfony como centro de negocio.',
-        'Panel interno React para coordinacion.',
-        'Portal externo React para empresas.',
-        'Documentacion y monitor separados del flujo operativo.',
-        'Modo integrado bajo una unica URL.'
+        'Caddy expone HTTPS y enruta a la aplicacion.',
+        'Symfony concentra seguridad, negocio y APIs.',
+        'PostgreSQL y documentos persisten fuera del contenedor.',
+        'Agora Desktop trabaja en local o en cloud.',
+        'La shell web de monitor queda en legacy.'
     ) 18 | Out-Null
 
     # 5. Modelo y flujo
     $slide = Add-Slide $presentation
-    Add-Header $slide '04 / Modelo de datos' 'Del alta de empresa a la asignacion'
+    Add-Header $slide '04 / Modelo de datos' 'De la cuenta de empresa a la asignacion'
     Add-FittedImage -Slide $slide -Path (Join-Path $captures '02-esquema-relacional.png') -Left 46 -Top 140 -MaxWidth 470 -MaxHeight 330 | Out-Null
     Add-Text -Slide $slide -Left 570 -Top 158 -Width 310 -Height 34 -Text 'Regla de negocio defendible' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-BulletList $slide 590 210 285 190 @(
-        'Primero se revisa o activa la empresa.',
-        'Despues se formaliza el convenio.',
-        'Solo con convenio operativo se planifica la asignacion.',
-        'Seguimientos, evidencias y evaluacion cierran el ciclo.'
+        'La cuenta portal sobrevive al preregistro inicial.',
+        'La solicitud concentra verificacion, estado y mensajes.',
+        'La empresa aprobada hereda convenios, documentos y tutores.',
+        'Asignacion, seguimiento y evaluacion cierran el ciclo.'
     ) 19 | Out-Null
 
     # 6. Panel interno
@@ -325,90 +330,148 @@ try {
     Add-Text -Slide $slide -Left 712 -Top 184 -Width 140 -Height 32 -Text 'Sin acceso interno' -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 690 -Top 258 -Width 190 -Height 86 -Text 'El portal externo tiene su propio recorrido y no mezcla credenciales de empresa con el panel del centro.' -Size 15 -Rgb $colors.muted | Out-Null
 
-    # 9. Documentacion y monitor
+    # 9. Como lo he desarrollado
     $slide = Add-Slide $presentation
-    Add-Header $slide '08 / Operacion y documentacion' 'No solo es una app: tambien se puede mantener y explicar'
-    Add-FittedImage -Slide $slide -Path (Join-Path $captures '06-documentacion-guia.png') -Left 48 -Top 145 -MaxWidth 390 -MaxHeight 300 | Out-Null
-    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-monitor-operativo.png') -Left 500 -Top 145 -MaxWidth 390 -MaxHeight 300 | Out-Null
-    Add-Text -Slide $slide -Left 72 -Top 462 -Width 340 -Height 28 -Text 'Guia funcional publica' -Size 15 -Rgb $colors.muted | Out-Null
-    Add-Text -Slide $slide -Left 522 -Top 462 -Width 340 -Height 28 -Text 'Monitor privado con MFA y estado tecnico' -Size 15 -Rgb $colors.muted | Out-Null
+    Add-Header $slide '08 / Desarrollo' 'Como lo he desarrollado y que partes tiene' 'La presentacion se apoya en bloques funcionales y decisiones de arquitectura, no en fragmentos de codigo.'
+    $developmentBlocks = @(
+        @('Analisis del problema', 'Necesidad real del centro y alcance viable para el TFG.'),
+        @('Modelo y reglas', 'Empresa, convenio, asignacion, seguimiento y evaluacion.'),
+        @('Backend Symfony', 'API, seguridad, correo, tokens, auditoria y persistencia.'),
+        @('Portal interno', 'Gestion academica, bandeja, documentos y exportacion CSV.'),
+        @('Portal externo', 'Registro, verificacion, estado, acceso empresa y chat.'),
+        @('Operacion final', 'App de escritorio, pruebas, logs, backups y empaquetado.')
+    )
+    for ($i = 0; $i -lt $developmentBlocks.Count; $i++) {
+        $x = 60 + (($i % 2) * 420)
+        $y = 154 + ([Math]::Floor($i / 2) * 104)
+        Add-Box -Slide $slide -Left $x -Top $y -Width 360 -Height 82 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 14) -Width 300 -Height 24 -Text $developmentBlocks[$i][0] -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
+        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 42) -Width 320 -Height 28 -Text $developmentBlocks[$i][1] -Size 13 -Rgb $colors.darkInk | Out-Null
+    }
 
-    # 10. Codigo: registro externo
+    # 10. Correo, verificacion y rechazo
     $slide = Add-Slide $presentation
-    Add-Header $slide '09 / Codigo clave' 'Registro externo con validacion y correo' 'Este fragmento une formulario publico, validacion backend, token y enlace de verificacion.'
-    Add-CodePanel -Slide $slide -Left 56 -Top 152 -Width 538 -Height 305 -Code $codeRegistro -Caption 'backend/src/Controller/RegistroEmpresaController.php'
-    Add-BulletList $slide 640 174 250 185 @(
-        'Valida datos obligatorios antes de persistir.',
-        'Genera una solicitud con token propio.',
-        'Crea una URL absoluta para confirmar el correo.',
-        'Permite explicar por que la empresa no entra directamente al panel interno.'
+    Add-Header $slide '09 / Correo y rechazo' 'Gestor de correos y comunicaciones transaccionales' 'El proveedor configurado es Brevo y cubre tanto correo funcional como operaciones sensibles.'
+    Add-Box -Slide $slide -Left 58 -Top 160 -Width 250 -Height 226 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 92 -Top 192 -Width 182 -Height 36 -Text 'Brevo' -Size 28 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-BulletList $slide 86 246 190 120 @(
+        'Verificacion de solicitud',
+        'Activacion de cuenta',
+        'Recuperacion de contrasena',
+        'MFA tecnico',
+        'Aviso de rechazo'
+    ) 16 $colors.ink | Out-Null
+    $mailFlow = @(
+        @('1. Registro', 'La empresa envia la solicitud.'),
+        @('2. Verificacion', 'Recibe enlace y confirma correo.'),
+        @('3. Revision', 'El centro aprueba o rechaza.'),
+        @('4. Resultado', 'Si se rechaza llega correo y el estado sigue visible en el portal.')
+    )
+    for ($i = 0; $i -lt $mailFlow.Count; $i++) {
+        $y = 160 + ($i * 68)
+        Add-Box -Slide $slide -Left 362 -Top $y -Width 510 -Height 54 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+        Add-Text -Slide $slide -Left 384 -Top ($y + 10) -Width 132 -Height 22 -Text $mailFlow[$i][0] -Size 16 -Rgb $colors.blue -Bold $true | Out-Null
+        Add-Text -Slide $slide -Left 520 -Top ($y + 10) -Width 320 -Height 26 -Text $mailFlow[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
+    }
+
+    # 11. Dominio externo y enlaces publicos
+    $slide = Add-Slide $presentation
+    Add-Header $slide '10 / Dominio externo' 'Como resuelvo el acceso publico y los enlaces de correo' 'El problema ya no es una IP local incrustada: la plataforma publica una URL HTTPS estable sobre la VM cloud.'
+    Add-Box -Slide $slide -Left 72 -Top 194 -Width 190 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+    Add-Text -Slide $slide -Left 96 -Top 214 -Width 150 -Height 22 -Text 'Infraestructura' -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 96 -Top 246 -Width 150 -Height 24 -Text 'GCP + Docker Compose' -Size 12 -Rgb $colors.darkInk -Font 'Consolas' | Out-Null
+    Add-Box -Slide $slide -Left 376 -Top 194 -Width 190 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+    Add-Text -Slide $slide -Left 404 -Top 214 -Width 150 -Height 22 -Text 'Borde HTTPS' -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 426 -Top 246 -Width 90 -Height 24 -Text 'Caddy' -Size 14 -Rgb $colors.darkInk -Font 'Consolas' | Out-Null
+    Add-Box -Slide $slide -Left 650 -Top 194 -Width 242 -Height 92 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 674 -Top 214 -Width 180 -Height 22 -Text 'URL publica' -Size 18 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175...' -Size 10 -Rgb $colors.ink -Font 'Consolas' | Out-Null
+    Add-BulletList $slide 92 332 760 104 @(
+        'El portal externo y los correos usan ya el origen publico correcto de la VM.',
+        'APP_EXTERNAL_BASE_URL fija la URL canonica para enlaces y notificaciones.',
+        'El siguiente paso natural seria cambiar nip.io por dominio institucional propio.'
     ) 17 | Out-Null
 
-    # 11. Codigo: reglas de asignacion
+    # 12. Mensajeria y refresco automatico
     $slide = Add-Slide $presentation
-    Add-Header $slide '10 / Codigo clave' 'Reglas de negocio en asignaciones' 'La aplicacion impide asignaciones incoherentes aunque alguien intente saltarse el formulario.'
-    Add-CodePanel -Slide $slide -Left 56 -Top 152 -Width 548 -Height 305 -Code $codeAsignacion -Caption 'backend/src/Controller/Api/AsignacionController.php'
-    Add-BulletList $slide 646 174 245 185 @(
-        'Solo empresas activas.',
-        'Solo convenios firmados, vigentes o en renovacion.',
-        'El convenio debe pertenecer a la empresa elegida.',
-        'La regla vive en backend y no depende solo de la UI.'
-    ) 17 | Out-Null
+    Add-Header $slide '11 / Mensajeria' 'Bandeja y chat con actualizacion automatica' 'La comunicacion entre centro y empresa no depende ya de recargar la pagina a mano.'
+    Add-FittedImage -Slide $slide -Path (Join-Path $captures '04-panel-interno-bandeja.png') -Left 50 -Top 150 -MaxWidth 520 -MaxHeight 312 | Out-Null
+    Add-Box -Slide $slide -Left 620 -Top 164 -Width 250 -Height 84 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 650 -Top 184 -Width 190 -Height 24 -Text 'Actualizacion automatica' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 694 -Top 214 -Width 104 -Height 22 -Text '5 s' -Size 26 -Rgb $colors.ink -Bold $true | Out-Null
+    Add-BulletList $slide 624 274 250 158 @(
+        'Refresco periodico del chat y de la bandeja.',
+        'Nueva carga cuando la ventana recupera el foco.',
+        'La empresa tambien ve cambios en su panel externo.',
+        'El rechazo queda comunicado por correo y visible en estado.'
+    ) 16 | Out-Null
 
-    # 12. Codigo: cliente API
+    # 13. Operacion local y app de escritorio
     $slide = Add-Slide $presentation
-    Add-Header $slide '11 / Codigo clave' 'Cliente API compartido por el panel interno' 'Centraliza credenciales, sesion, errores y llamadas al backend.'
-    Add-CodePanel -Slide $slide -Left 56 -Top 152 -Width 548 -Height 305 -Code $codeFrontendApi -Caption 'frontend/app/src/services/api.ts'
-    Add-BulletList $slide 646 174 245 185 @(
-        'Todas las llamadas pasan por un unico punto.',
-        'Usa sesion de navegador y cabecera Authorization cuando procede.',
-        'Normaliza errores para mostrarlos en la interfaz.',
-        'Facilita mantener el frontend sin duplicar fetch en cada pantalla.'
-    ) 17 | Out-Null
-
-    # 13. Codigo: pruebas E2E
-    $slide = Add-Slide $presentation
-    Add-Header $slide '12 / Codigo clave' 'Pruebas E2E sobre flujos reales' 'La defensa no se apoya solo en capturas: hay pruebas que navegan por la app.'
-    Add-CodePanel -Slide $slide -Left 56 -Top 152 -Width 548 -Height 305 -Code $codeTests -Caption 'frontend/app/e2e/critical-flows.spec.ts'
-    Add-BulletList $slide 646 174 245 185 @(
-        'Abre el portal externo como usuario real.',
-        'Rellena el formulario de empresa.',
-        'Comprueba que llega al paso de correo.',
-        'Complementa los tests backend y unitarios.'
+    Add-Header $slide '12 / Agora Desktop' 'Consola tecnica local y cloud' 'La parte tecnica ya no depende de varios terminales sueltos: queda centralizada en una sola app.'
+    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-monitor-operativo.png') -Left 50 -Top 150 -MaxWidth 430 -MaxHeight 305 | Out-Null
+    Add-BulletList $slide 540 162 320 210 @(
+        'Modo local para backend, SQLite y demo offline.',
+        'Modo cloud para monitor, smoke, logs y reinicios remotos.',
+        'MFA en operaciones sensibles del flujo local.',
+        'Diagnostico, logs y backups desde una sola interfaz.',
+        'Empaquetado Windows listo para la defensa.'
     ) 17 | Out-Null
 
     # 14. Validacion
     $slide = Add-Slide $presentation
-    Add-Header $slide '13 / Validacion' 'Comprobaciones realizadas antes de la defensa'
-    Add-Metric $slide 70 162 '90' 'tests backend' $colors.green
-    Add-Metric $slide 292 162 '522' 'aserciones' $colors.cyan
+    Add-Header $slide '13 / Validacion' 'Comprobaciones ejecutadas antes de la revision final'
+    Add-Metric $slide 70 162 '101' 'tests backend' $colors.green
+    Add-Metric $slide 292 162 '567' 'aserciones' $colors.cyan
     Add-Metric $slide 514 162 '14/14' 'tests frontend' $colors.green
-    Add-Metric $slide 736 162 '3/3' 'E2E Playwright' $colors.green
-    Add-BulletList $slide 94 314 740 95 @(
-        'Build integrada de los dos frontends publicada en Symfony.',
-        'Rutas /app, /externo, /documentacion y /monitor comprobadas con HTTP 200.',
-        'Flujos criticos: login interno, monitor privado y registro externo hasta correo.'
+    Add-Metric $slide 736 162 '6/6' 'E2E Playwright' $colors.green
+    Add-BulletList $slide 94 314 740 110 @(
+        'Build integrada de /app y /externo publicada en Symfony.',
+        'Verificados correo, rechazo, URLs publicas, chat, monitor legacy y app de escritorio.',
+        'Tambien se ha validado el empaquetado Windows con PHP embebido y SQLite.'
     ) 18 | Out-Null
-    Add-Text -Slide $slide -Left 94 -Top 440 -Width 730 -Height 32 -Text 'Queda una deprecacion tecnica de Doctrine/PHPUnit, no bloqueante para la demo ni para la funcionalidad.' -Size 14 -Rgb $colors.muted | Out-Null
+    Add-Text -Slide $slide -Left 94 -Top 438 -Width 730 -Height 32 -Text 'Queda una deprecacion tecnica de PHPUnit, no bloqueante para la demo ni para la funcionalidad.' -Size 14 -Rgb $colors.muted | Out-Null
 
-    # 15. Como probarla
+    # 15. Acceso de evaluacion
     $slide = Add-Slide $presentation
-    Add-Header $slide '14 / Acceso de evaluacion' 'Como puede probarla la profesora' 'No necesita instalar dependencias si el entorno de demostracion esta levantado.'
-    Add-Box -Slide $slide -Left 70 -Top 160 -Width 820 -Height 130 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
-    Add-Text -Slide $slide -Left 98 -Top 184 -Width 760 -Height 32 -Text 'https://...trycloudflare.com' -Size 30 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
-    Add-Text -Slide $slide -Left 100 -Top 230 -Width 760 -Height 26 -Text 'URL temporal generada con cloudflared mientras el equipo local y el backend estan activos.' -Size 15 -Rgb $colors.darkInk | Out-Null
-    Add-BulletList $slide 104 330 740 95 @(
-        'URL/app: panel interno.',
-        'URL/externo: portal de empresa.',
-        'URL/documentacion: guia funcional.',
-        'URL/monitor: supervision tecnica protegida.'
+    Add-Header $slide '14 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
+    Add-Box -Slide $slide -Left 68 -Top 158 -Width 824 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+    Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text 'https://agora.34.175.224.87.nip.io/app   |   https://agora.34.175.224.87.nip.io/externo' -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo, documentacion y la shell legacy.' -Size 14 -Rgb $colors.darkInk | Out-Null
+    Add-Box -Slide $slide -Left 86 -Top 302 -Width 320 -Height 118 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 118 -Top 328 -Width 250 -Height 22 -Text 'Usuario de prueba' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 118 -Top 362 -Width 250 -Height 22 -Text 'profesora / Abrete01' -Size 18 -Rgb $colors.ink -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 118 -Top 392 -Width 220 -Height 20 -Text 'Rol: coordinacion' -Size 14 -Rgb $colors.muted | Out-Null
+    Add-BulletList $slide 470 306 360 110 @(
+        'Puede revisar solicitudes, convenios, asignaciones y mensajes.',
+        'La empresa prueba el recorrido por /externo.',
+        'El acceso remoto depende de que la VM siga activa.'
+    ) 17 | Out-Null
+
+    # 16. Despliegue futuro
+    $slide = Add-Slide $presentation
+    Add-Header $slide '15 / Mejoras futuras' 'Que endureceria despues de esta entrega' 'El nucleo ya esta cerrado; lo siguiente ya no es supervivencia de la demo, sino evolucion del producto.'
+    $deployOptions = @(
+        @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar politicas TLS.', $colors.green),
+        @('Servicios gestionados', 'Mover documentos, backups y observabilidad a piezas gestionadas.', $colors.cyan),
+        @('Cliente tecnico', 'Decidir si Agora Desktop absorbe por completo la shell web legacy.', $colors.amber)
+    )
+    for ($i = 0; $i -lt $deployOptions.Count; $i++) {
+        $x = 56 + ($i * 298)
+        Add-Box -Slide $slide -Left $x -Top 176 -Width 252 -Height 176 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+        Add-Text -Slide $slide -Left ($x + 20) -Top 196 -Width 190 -Height 26 -Text $deployOptions[$i][0] -Size 21 -Rgb $deployOptions[$i][2] -Bold $true | Out-Null
+        Add-Text -Slide $slide -Left ($x + 20) -Top 236 -Width 210 -Height 76 -Text $deployOptions[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
+    }
+    Add-BulletList $slide 88 392 760 78 @(
+        'Mantendria PostgreSQL en servidor y endureceria automatizacion, dominio y observabilidad.',
+        'No meteria nuevas funciones secundarias sin cerrar antes seguridad, pruebas y operacion.'
     ) 18 | Out-Null
 
-    # 16. Limitaciones y futuro
+    # 17. Limitaciones
     $slide = Add-Slide $presentation
-    Add-Header $slide '15 / Limitaciones' 'Que queda fuera de esta entrega'
+    Add-Header $slide '16 / Limitaciones' 'Que queda fuera de esta entrega'
     Add-BulletList $slide 78 160 360 230 @(
-        'Despliegue permanente en infraestructura dedicada.',
+        'Despliegue permanente completamente automatizado.',
         'Integracion con SSO o identidad corporativa.',
         'Firma electronica avanzada.',
         'Almacenamiento documental en nube gestionada.',
@@ -416,16 +479,16 @@ try {
     ) 19 | Out-Null
     Add-Box -Slide $slide -Left 536 -Top 162 -Width 320 -Height 210 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 568 -Top 192 -Width 260 -Height 32 -Text 'Siguiente iteracion' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 568 -Top 244 -Width 245 -Height 82 -Text 'Endurecer seguridad, desplegar en infraestructura estable y ampliar automatizacion E2E.' -Size 23 -Rgb $colors.ink -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 568 -Top 244 -Width 245 -Height 82 -Text 'Despliegue estable, dominio propio, base de datos de servidor y seguridad endurecida.' -Size 23 -Rgb $colors.ink -Bold $true | Out-Null
 
-    # 17. Cierre
+    # 18. Cierre
     $slide = Add-Slide $presentation
-    Add-Header $slide '16 / Cierre' 'Resultado defendible'
+    Add-Header $slide '17 / Cierre' 'Resultado defendible'
     Add-Text -Slide $slide -Left 92 -Top 158 -Width 760 -Height 118 -Text 'El proyecto transforma una gestion dispersa en una plataforma web funcional, trazable y documentada para empresas colaboradoras y practicas de FP Dual.' -Size 30 -Rgb $colors.ink -Bold $true | Out-Null
     Add-BulletList $slide 128 322 690 90 @(
         'Problema real del centro.',
-        'Arquitectura completa con backend, dos frontends, documentacion y monitor.',
-        'Validacion tecnica y material de demo preparados.'
+        'Arquitectura completa con backend, dos frontends y operacion local.',
+        'Validacion tecnica, empaquetado y demo preparados.'
     ) 19 | Out-Null
     Add-Text -Slide $slide -Left 330 -Top 468 -Width 300 -Height 32 -Text 'Demo y preguntas' -Size 22 -Rgb $colors.amber -Bold $true | Out-Null
 
@@ -468,41 +531,44 @@ Explica solicitudes, verificacion por correo, aprobacion interna y bandeja. Este
 ## 8. Portal externo
 Explica que la empresa puede registrarse, consultar estado, activar cuenta, recuperar contrasena y comunicarse sin acceder al panel interno.
 
-## 9. Documentacion y monitor
-Justifica madurez del proyecto: hay guia funcional, monitor privado, MFA y supervision de rutas/servicios.
+## 9. Como lo he desarrollado
+Explica por fases: problema real, modelo de datos, backend, portal interno, portal externo y operacion final con escritorio, pruebas y empaquetado.
 
-## 10. Codigo: registro externo
-Explica que el formulario publico no inserta datos sin control: el backend valida los campos, crea una solicitud y genera un token de verificacion por correo.
+## 10. Gestor de correos
+Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta, recuperacion de contrasena, MFA tecnico local y avisos de rechazo.
 
-## 11. Codigo: reglas de asignacion
-Usa esta diapositiva para defender que hay reglas de negocio reales en backend: una asignacion solo se permite si la empresa esta activa y el convenio esta en un estado operativo.
+## 11. Dominio externo
+Explica el problema que habia: una URL local en el correo no sirve fuera. Ahora los enlaces publicos salen con el origen correcto de la VM cloud y quedan bajo HTTPS.
 
-## 12. Codigo: cliente API
-Explica que el frontend no hace llamadas sueltas: centraliza credenciales, sesion, errores y llamadas HTTP en un cliente API comun.
+## 12. Mensajeria
+Senala que la bandeja y el chat ya se refrescan solos. Esto mejora la demo y evita dar una imagen de aplicacion estatica.
 
-## 13. Codigo: pruebas E2E
-Muestra que se prueba un flujo de usuario real: entrar al portal externo, rellenar el formulario y llegar al paso de correo.
+## 13. Agora Desktop
+Muestra que ya no dependes de varios terminales: la app de escritorio centraliza modo local, modo cloud, logs, smoke, reinicios y backups.
 
 ## 14. Validacion
-Da cifras exactas: 90 tests backend, 522 aserciones, 14 tests frontend, 3 E2E. Si preguntan por la deprecacion, di que es aviso de libreria, no fallo funcional.
+Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
 ## 15. Acceso de evaluacion
-Aclara que la profesora no necesita instalar nada si tu equipo esta levantado: recibe URL temporal de cloudflared y entra a /app, /externo, /documentacion o /monitor.
+Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
-## 16. Limitaciones
+## 16. Mejoras futuras
+Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y decidir si el escritorio absorbe por completo el monitor legacy.
+
+## 17. Limitaciones
 No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
 
-## 17. Cierre
+## 18. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
-1. Abrir `http://127.0.0.1:8000/app`.
-2. Login con `admin / admin123`.
+1. Abrir `https://agora.34.175.224.87.nip.io/app/`.
+2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
-4. Solicitudes y bandeja.
+4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
-6. Portal externo en `http://127.0.0.1:8000/externo`.
-7. Documentacion y monitor si queda tiempo.
+6. Portal externo en `https://agora.34.175.224.87.nip.io/externo/`.
+7. Agora Desktop en modo cloud o shell `/legacy/monitor` si queda tiempo.
 '@
 
 Set-Content -Path $notesPath -Value $notes -Encoding UTF8

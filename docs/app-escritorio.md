@@ -43,7 +43,7 @@ Agora Desktop consume `/api/monitor` y concentra en una sola interfaz:
 - actividad reciente e incidencias detectadas;
 - suites de prueba disponibles para backend, frontend y E2E.
 
-La ruta web `/monitor` se mantiene solo como fallback tecnico. El uso diario recomendado pasa por la propia app de escritorio.
+La ruta web `/legacy/monitor` se mantiene solo como fallback tecnico. El uso diario recomendado pasa por la propia app de escritorio.
 
 ## Herramientas operativas
 
@@ -85,7 +85,7 @@ En modo cloud, el smoke se lanza contra la URL publica configurada en el perfil 
 ### Local
 
 - Portal interno local: `http://127.0.0.1:8000/app`
-- Monitor local: `http://127.0.0.1:8000/monitor`
+- Monitor local: `http://127.0.0.1:8000/legacy/monitor`
 - Portal externo local: `http://127.0.0.1:8000/externo`
 
 ### Cloud

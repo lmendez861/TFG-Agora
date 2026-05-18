@@ -74,11 +74,11 @@ Con las builds generadas, Symfony sirve:
 - `http://127.0.0.1:8000/app`
 - `http://127.0.0.1:8000/externo`
 - `http://127.0.0.1:8000/documentacion`
-- `http://127.0.0.1:8000/monitor`
+- `http://127.0.0.1:8000/legacy/monitor`
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/monitor/`.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/legacy/monitor/`.
 
 Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
 

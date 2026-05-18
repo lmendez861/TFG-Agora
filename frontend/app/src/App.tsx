@@ -1063,10 +1063,10 @@ export default function App() {
     || rawPathname.startsWith('/documentacion/')
     || rawPathname === '/app/documentacion'
     || rawPathname.startsWith('/app/documentacion/');
-  const isMonitorRoute = rawPathname === '/monitor'
-    || rawPathname.startsWith('/monitor/')
-    || rawPathname === '/app/monitor'
-    || rawPathname.startsWith('/app/monitor/');
+  const isMonitorRoute = rawPathname === '/legacy/monitor'
+    || rawPathname.startsWith('/legacy/monitor/')
+    || rawPathname === '/app/legacy/monitor'
+    || rawPathname.startsWith('/app/legacy/monitor/');
   const isEmpresasRoute = rawPathname === '/empresas'
     || rawPathname.startsWith('/empresas/')
     || rawPathname === '/app/empresas'
@@ -6307,7 +6307,6 @@ const selectedConvenio = useMemo(() => {
             <li><Link to="/solicitudes">Revisar solicitudes de empresas</Link></li>
             <li><Link to="/empresas">Ver empresas activas</Link></li>
             <li><Link to="/asignaciones">Asignaciones en curso</Link></li>
-            <li><a href="/monitor">Monitor privado</a></li>
             <li><a href="/documentacion">Documentacion</a></li>
           </ul>
         </article>
@@ -6623,8 +6622,9 @@ const selectedConvenio = useMemo(() => {
         />
         <Route path="/solicitudes" element={solicitudesElement} />
         <Route path="/perfil" element={profileElement} />
-        <Route path="/control" element={<Navigate to="/monitor" replace />} />
-        <Route path="/monitor" element={<Navigate to="/" replace />} />
+        <Route path="/control" element={<Navigate to="/legacy/monitor" replace />} />
+        <Route path="/monitor" element={<Navigate to="/legacy/monitor" replace />} />
+        <Route path="/legacy/monitor" element={<Navigate to="/" replace />} />
       </Routes>
 
       {studentModal && (
@@ -6727,5 +6727,4 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
-
 

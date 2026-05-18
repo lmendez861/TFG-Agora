@@ -92,9 +92,9 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 
 La solucion se estructura en seis bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el preregistro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es una capa de supervision tecnica formada por un monitor web de respaldo y por una consola de escritorio. El sexto es Agora Desktop, una app Electron para operacion tecnica local o remota, automatizacion de pruebas, diagnostico, logs, reinicios y empaquetado Windows.
 
-El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor privado bajo `/monitor` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre esas mismas rutas, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
+El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor web de respaldo bajo `/legacy/monitor` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre esas mismas rutas, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
 
-![Figura 1. Esquema de bloques de funcionalidad del sistema.](capturas/01-bloques-funcionalidad.png)
+![Figura 1. Arquitectura operativa y de despliegue del sistema.](capturas/01-bloques-funcionalidad.png)
 
 ## Arquitectura tecnologica
 
@@ -107,11 +107,11 @@ Si se expresa la solucion en capas tecnologicas, la arquitectura puede resumirse
 5. **Capa documental y operativa**: documentacion publica, monitor web de respaldo y app de escritorio para soporte tecnico, pruebas y empaquetado.
 6. **Capa de infraestructura**: VM publica en Google Cloud Compute Engine o entorno local empaquetado, contenedores Docker, proxy HTTPS, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por DNS wildcard.
 
-Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud.
+Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud. La Figura 1 resume precisamente esa topologia final: dos clientes web, una consola tecnica, un borde HTTPS y un backend contenedorizado sobre infraestructura persistente.
 
 ### Esquema detallado de arquitectura
 
-En la defensa resulta mas claro bajar un nivel adicional y expresar la arquitectura como un recorrido tecnico de extremo a extremo:
+En la defensa resulta mas claro bajar un nivel adicional y expresar la arquitectura como un recorrido tecnico de extremo a extremo. El esquema visual de la Figura 1 se complementa con este recorrido textual para justificar que la misma raiz publica sirve los dos portales, la documentacion y la shell legacy, mientras la consola de escritorio opera por API y SSH:
 
 ```text
 Navegador empresa
@@ -139,7 +139,7 @@ Ambos recorridos
 
 Servicios auxiliares
   -> /documentacion como shell publica separada
-  -> /monitor como area tecnica privada
+  -> /legacy/monitor como area tecnica de respaldo
   -> Agora Desktop como capa local de soporte, pruebas y empaquetado
 ```
 
@@ -181,11 +181,11 @@ Esta decision tambien mejora la defensa tecnica del proyecto. Permite explicar c
 
 El dominio se organiza en torno a entidades nucleares como `EmpresaColaboradora`, `Convenio`, `Estudiante`, `TutorAcademico`, `TutorProfesional` y `AsignacionPractica`. Sobre ese nucleo se apoyan entidades de soporte como `EmpresaSolicitud`, `EmpresaMensaje`, `EmpresaPortalCuenta`, `EmpresaDocumento`, `ConvenioDocumento`, `Seguimiento`, `EvaluacionFinal`, `ConvenioChecklistItem` y `ConvenioAlerta`. Esta estructura permite cubrir tanto la operacion principal como la trazabilidad, la evidencia documental y la evolucion hacia un area persistente de empresa.
 
-![Figura 2. Esquema relacional de la base de datos.](capturas/02-esquema-relacional.png)
+![Figura 2. Esquema relacional del nucleo empresa-centro y operativa academica.](capturas/02-esquema-relacional.png)
 
 ### Relacion detallada entre cuenta, solicitud y mensajeria
 
-La parte que mas conviene explicar con detalle en la memoria y en la defensa es la relacion entre la cuenta de empresa, la solicitud y el canal de mensajes, porque ese eje es el que da continuidad al flujo externo.
+La parte que mas conviene explicar con detalle en la memoria y en la defensa es la relacion entre la cuenta de empresa, la solicitud y el canal de mensajes, porque ese eje es el que da continuidad al flujo externo. La Figura 2 ya no se limita al esquema academico basico: incorpora tambien `EmpresaPortalCuenta`, `EmpresaSolicitud`, `EmpresaMensaje`, `EmpresaDocumento`, `ContactoEmpresa` y los satelites de `Convenio` para reflejar la operativa real del despliegue final.
 
 ```text
 empresa_portal_cuenta
@@ -348,7 +348,7 @@ En la practica, la autenticacion interna combina configuracion de frontend y bac
 
 ## Publicacion integrada
 
-La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/monitor` para la supervision tecnica. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
+La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/legacy/monitor` como shell tecnica de respaldo. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
 
 Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo.
 
@@ -359,7 +359,7 @@ Para que la profesora pueda probar la aplicacion no es necesario que instale PHP
 - `URL/app` para el panel interno;
 - `URL/externo` para el portal de empresa;
 - `URL/documentacion` para la guia funcional;
-- `URL/monitor` como fallback tecnico protegido, aunque la supervision ordinaria se realiza ya desde Agora Desktop.
+- `URL/legacy/monitor` como fallback tecnico protegido, aunque la supervision ordinaria se realiza ya desde Agora Desktop.
 
 Como alternativa existe la app de escritorio empaquetada en Windows, que incorpora el runtime PHP y automatiza la preparacion del entorno local. En ese caso la persona evaluadora solo tendria que abrir la aplicacion, levantar el entorno y acceder a las rutas locales desde la propia interfaz. Aun asi, para una revision remota real la via recomendada ya no es el tunel temporal, sino la URL publica de la VM.
 
@@ -426,7 +426,7 @@ En la revision final se han ejecutado, como minimo, estas comprobaciones:
 - `npm run build:backend` en `frontend/app`;
 - `npm run build:backend` en `frontend/company-portal`;
 - `npm run check`, `npm run smoke:workflow`, `npm run package:win` y `npm run validate:packaged` en `desktop`;
-- comprobaciones HTTP de `/app`, `/externo`, `/documentacion`, `/monitor`, `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`.
+- comprobaciones HTTP de `/app`, `/externo`, `/documentacion`, `/legacy/monitor`, `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`.
 
 En la ultima validacion completa, el backend ha quedado en 101 tests y 567 aserciones correctas, el frontend interno en 14 tests unitarios, Playwright en 6 pruebas E2E superadas y Agora Desktop en smoke de flujo, instalador Windows y validacion del runtime empaquetado con PHP embebido, SQLite y rutas integradas respondiendo correctamente.
 
@@ -449,7 +449,7 @@ El proyecto cumple el objetivo principal de centralizar la gestion de empresas c
 
 Las siguientes iteraciones deberian priorizar mejoras secundarias o de evolucion, no bloqueantes para la entrega actual:
 
-1. consolidar Agora Desktop como cliente tecnico principal y retirar la pagina web `/monitor` del flujo diario cuando toda la supervision ya este absorbida por la app;
+1. consolidar Agora Desktop como cliente tecnico principal y decidir si la shell web `/legacy/monitor` debe retirarse por completo cuando ya no aporte valor operativo;
 2. decidir si el escritorio debe seguir siendo solo consola tecnica o si debe incorporar bandeja, aprobaciones y mensajeria del negocio;
 3. integrar identidad corporativa o SSO institucional para evitar cuentas aisladas del centro;
 4. mover almacenamiento documental y copias de seguridad a servicios gestionados con politicas de retencion;

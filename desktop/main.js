@@ -29,7 +29,7 @@ const ROOT_PUBLIC_OUT_LOG = path.join(ROOT_DIR, 'cloudflared.out.log');
 const ROOT_PUBLIC_ERR_LOG = path.join(ROOT_DIR, 'cloudflared.err.log');
 const INTERNAL_URL = `http://127.0.0.1:${PORT}/app`;
 const EXTERNAL_URL = `http://127.0.0.1:${PORT}/externo`;
-const MONITOR_URL = `http://127.0.0.1:${PORT}/monitor`;
+const MONITOR_URL = `http://127.0.0.1:${PORT}/legacy/monitor`;
 const API_HEALTH_URL = `http://127.0.0.1:${PORT}/api/empresas`;
 const PUBLIC_TARGET_URL = `http://127.0.0.1:${PORT}`;
 const CLOUDFLARED_URL = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe';
@@ -570,6 +570,7 @@ function buildRuntimeUrls(config = getDesktopConfig()) {
     publicInternal: baseUrl ? `${baseUrl}/app/` : null,
   };
 }
+
 
 function createCookieJar() {
   const cookies = new Map();
@@ -1638,7 +1639,8 @@ async function runCloudWorkflowSmokeTest(config) {
 }
 
 async function runTestSuite(suite) {
-  assertLocalMode('Ejecutar esta suite de pruebas');
+  const config = getDesktopConfig();
+  const cloudMode = isCloudMode(config);
   const phpPath = getPhpPath();
   const npmPath = getNpmPath();
   const startedAt = new Date().toISOString();
@@ -1653,7 +1655,33 @@ async function runTestSuite(suite) {
       label = 'Check Agora Desktop';
       output = await runProcess(npmPath, ['run', 'check'], DESKTOP_DIR, 'Ejecutando check de Agora Desktop...');
       break;
+    case 'cloud-health': {
+      if (!cloudMode) {
+        throw new Error('La validacion de salud cloud solo esta disponible en modo cloud.');
+      }
+      label = 'Salud del despliegue cloud';
+      const status = await getStatus();
+      let monitor = null;
+      try {
+        monitor = await getMonitorOverview();
+      } catch {
+        monitor = null;
+      }
+
+      output = {
+        stdout: JSON.stringify({
+          checkedAt: new Date().toISOString(),
+          baseUrl: config.remote.baseUrl,
+          status,
+          monitorAvailable: Boolean(monitor),
+          monitorGeneratedAt: monitor?.generatedAt ?? null,
+        }, null, 2),
+        stderr: '',
+      };
+      break;
+    }
     case 'backend-flow':
+      assertLocalMode('Ejecutar esta suite de pruebas', config);
       if (!phpPath) {
         throw new Error('No se encontro PHP para ejecutar PHPUnit.');
       }
@@ -1669,6 +1697,7 @@ async function runTestSuite(suite) {
       ], BACKEND_DIR, 'Ejecutando PHPUnit de flujos backend...');
       break;
     case 'frontend-unit':
+      assertLocalMode('Ejecutar esta suite de pruebas', config);
       if (!npmPath) {
         throw new Error('No se encontro npm para ejecutar tests frontend.');
       }
@@ -1676,6 +1705,7 @@ async function runTestSuite(suite) {
       output = await runProcess(npmPath, ['test'], INTERNAL_DIR, 'Ejecutando tests unitarios frontend...');
       break;
     case 'frontend-e2e':
+      assertLocalMode('Ejecutar esta suite de pruebas', config);
       if (!npmPath) {
         throw new Error('No se encontro npm para ejecutar Playwright.');
       }

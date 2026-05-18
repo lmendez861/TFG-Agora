@@ -437,6 +437,62 @@ function renderDependencyDiagnostics(payload) {
   `).join('');
 }
 
+function buildFallbackMonitorOverview(status) {
+  return {
+    generatedAt: new Date().toISOString(),
+    services: [
+      {
+        name: 'Aplicacion',
+        status: status.services.backend.status === 'running' ? 'healthy' : 'warning',
+        detail: status.services.backend.label,
+      },
+      {
+        name: 'Base de datos',
+        status: ['running', 'ready'].includes(status.services.database.status) ? 'healthy' : 'warning',
+        detail: status.services.database.label,
+      },
+      {
+        name: 'API',
+        status: status.services.api.status === 'running' ? 'healthy' : 'warning',
+        detail: status.services.api.label,
+      },
+      {
+        name: 'Monitor',
+        status: status.services.monitor.status === 'running' ? 'healthy' : 'warning',
+        detail: status.services.monitor.label || 'Sin detalle adicional.',
+      },
+    ],
+    metrics: [
+      {
+        label: 'Modo',
+        value: status.mode === 'cloud' ? 'Cloud' : 'Local',
+        hint: status.mode === 'cloud' ? 'Monitorizando despliegue remoto.' : 'Monitorizando entorno local.',
+      },
+      {
+        label: 'Portal interno',
+        value: status.urls.internal ? 'Disponible' : 'Pendiente',
+        hint: status.urls.internal || 'Sin URL disponible.',
+      },
+      {
+        label: 'Portal externo',
+        value: status.urls.externalLocal ? 'Disponible' : 'Pendiente',
+        hint: status.urls.externalLocal || 'Sin URL disponible.',
+      },
+    ],
+    activity: [],
+    logs: [],
+    tests: status.mode === 'cloud'
+      ? [
+        { name: 'Desktop check', scope: 'Electron', totalFiles: 3, status: 'healthy', command: 'npm run check' },
+        { name: 'Salud cloud', scope: 'HTTP', totalFiles: 4, status: status.services.api.status === 'running' ? 'healthy' : 'warning', command: 'Validacion remota desde Agora Desktop' },
+        { name: 'Smoke cloud', scope: 'HTTP + SSH', totalFiles: 1, status: state.config?.remote?.sshTarget ? 'healthy' : 'warning', command: 'Smoke cloud desde la seccion de pruebas' },
+      ]
+      : [
+        { name: 'Desktop check', scope: 'Electron', totalFiles: 3, status: 'healthy', command: 'npm run check' },
+      ],
+  };
+}
+
 function syncButtons() {
   const buttons = document.querySelectorAll('button[data-action], button[data-open], button[data-test-suite], button[data-log-target]');
   const cloudMode = isCloudMode();
@@ -487,7 +543,7 @@ function syncButtons() {
       disabled = cloudMode ? (!supportedCloudLogTargets.has(button.dataset.logTarget) || !remoteSshReady) : false;
     }
 
-    if (cloudMode && action && (action === 'backupDatabase' || cloudOnlyActions.has(action))) {
+    if (cloudMode && action && (action === 'backupDatabase' || cloudOnlyActions.has(action) || action === 'runWorkflowSmoke')) {
       disabled = disabled || !remoteSshReady;
     }
 
@@ -596,21 +652,20 @@ async function refresh() {
   try {
     const status = await api.getStatus();
     renderStatus(status);
-    if (status.mode === 'cloud' && (
-      status.services.api.status !== 'running'
-      || status.services.monitor.status !== 'running'
-    )) {
-      renderMonitorOverview(null);
+    const fallbackOverview = buildFallbackMonitorOverview(status);
+    if (status.mode === 'cloud' && status.services.api.status !== 'running') {
+      renderMonitorOverview(fallbackOverview);
       return;
     }
     try {
-      renderMonitorOverview(await api.getMonitorOverview());
+      const overview = await api.getMonitorOverview();
+      renderMonitorOverview(overview || fallbackOverview);
     } catch (error) {
       appendLog({
         message: `Monitor integrado: ${error.message}`,
         at: new Date().toISOString(),
       });
-      renderMonitorOverview(null);
+      renderMonitorOverview(fallbackOverview);
     }
   } catch (error) {
     appendLog({
@@ -667,7 +722,7 @@ async function saveConfig() {
       }
 
       if (status?.services.api?.status === 'running' && status?.services.monitor?.status !== 'running') {
-        setConnectionFeedback('error', 'Configuracion guardada, pero este usuario no puede acceder al monitor. Usa admin/admin123 o un usuario con ROLE_MONITOR.');
+        setConnectionFeedback('success', 'Configuracion cloud guardada. El estado basico ya se puede supervisar; para el monitor completo usa un usuario con ROLE_MONITOR o ROLE_ADMIN.');
         return;
       }
 

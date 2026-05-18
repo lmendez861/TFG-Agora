@@ -2,8 +2,8 @@
 
 ## Indice de capturas
 
-1. Figura 1. Esquema de bloques de funcionalidad del sistema.
-2. Figura 2. Esquema relacional de la base de datos.
+1. Figura 1. Arquitectura operativa y de despliegue del sistema.
+2. Figura 2. Esquema relacional del nucleo empresa-centro y operativa academica.
 3. Figura 3. Dashboard del portal interno con KPI y exportacion CSV.
 4. Figura 4. Bandeja unificada de mensajes con empresas en el portal interno.
 5. Figura 5. Portal externo con acceso de empresa y flujo de colaboracion.
@@ -26,7 +26,7 @@ Las evidencias tecnicas que acompanan a la memoria y a la defensa se apoyan en e
 
 - compilacion del portal interno con `npm run build:backend`;
 - compilacion del portal externo con `npm run build:backend`;
-- validacion de rutas integradas bajo `/app`, `/externo`, `/documentacion` y `/monitor`;
+- validacion de rutas integradas bajo `/app`, `/externo`, `/documentacion` y `/legacy/monitor`;
 - comprobacion funcional de exportacion CSV desde dashboard y modulos principales;
 - regeneracion del video de demo y de la muestra CSV/Excel con datos anonimizados para la entrega;
 - verificacion del flujo de registro, verificacion, activacion y acceso de empresa;

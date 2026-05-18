@@ -650,7 +650,7 @@ function ErrorsSection({
                 <strong>Servicios y acceso</strong>
                 <small>Revisar el estado de Symfony, el entorno activo y las URLs expuestas.</small>
               </div>
-              <code>/monitor/sistemas | /monitor/acceso</code>
+              <code>/legacy/monitor/sistemas | /legacy/monitor/acceso</code>
             </div>
           </article>
           <article className={`ops-suite-card ops-suite-card--${criticalCount > 0 ? 'warning' : 'healthy'}`}>
@@ -668,7 +668,7 @@ function ErrorsSection({
                 <strong>Validacion final</strong>
                 <small>Usar la seccion de calidad para revisar pruebas, PDFs y trazabilidad documental.</small>
               </div>
-              <code>/monitor/calidad</code>
+              <code>/legacy/monitor/calidad</code>
             </div>
           </article>
         </div>
@@ -1091,8 +1091,8 @@ export function MonitorPage({
       },
       {
         label: 'Monitor privado',
-        url: `${origin}/monitor`,
-        detail: 'Shell privada de supervision tecnica.',
+        url: `${origin}/legacy/monitor`,
+        detail: 'Shell legacy de supervision tecnica.',
       },
     ];
 
@@ -1100,7 +1100,7 @@ export function MonitorPage({
       links.push({
         label: 'URL publica',
         url: publicAccess.publicUrl,
-        detail: 'Acceso externo publicado bajo demanda desde este monitor.',
+        detail: 'Acceso externo publicado bajo demanda desde este monitor legacy.',
       });
     }
 
@@ -1118,11 +1118,11 @@ export function MonitorPage({
     <section className="ops-monitor">
       <header className="ops-monitor__hero">
         <div className="ops-monitor__hero-copy">
-          <p className="ops-monitor__eyebrow">Monitor privado</p>
-          <h1>Supervision operativa separada del portal funcional.</h1>
+          <p className="ops-monitor__eyebrow">Monitor legacy</p>
+          <h1>Supervision tecnica mantenida como respaldo.</h1>
           <p>
-            Esta consola agrupa estado de servicios, acceso publico, trazas, pruebas, documentos y enlaces operativos
-            en una shell propia con navegacion por secciones.
+            Esta shell se conserva como respaldo tecnico. La supervision operativa diaria se desplaza a Agora Desktop,
+            tanto en modo local como en modo cloud.
           </p>
         </div>
 

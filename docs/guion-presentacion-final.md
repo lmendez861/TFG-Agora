@@ -1,122 +1,66 @@
-# Guion para la presentacion final
+﻿# Guion para la presentacion final
 
 Duracion recomendada: 8-10 minutos, dejando 2-3 minutos para preguntas.
 
 ## 1. Portada
-Presenta el proyecto como una plataforma para gestionar empresas colaboradoras, convenios y practicas de FP Dual. Empieza por el problema real, no por la tecnologia.
+Presenta el proyecto como una plataforma para gestionar empresas colaboradoras, convenios y practicas de FP Dual. No empieces por tecnologia: empieza por el problema real.
 
 ## 2. Problema
-Explica que antes habia informacion dispersa, poca trazabilidad y dependencia de correos, hojas de calculo y conocimiento manual. La idea clave es que el centro necesitaba una vista unica y operativa.
+Explica que antes habia informacion dispersa, poca trazabilidad y dependencia de correos/hojas de calculo. La idea clave es que el centro necesitaba una vista unica.
 
 ## 3. Objetivos
-Resume cuatro objetivos:
+Resume cuatro objetivos: centralizar datos, abrir canal externo, dejar trazabilidad documental y construir algo defendible tecnicamente.
 
-1. centralizar datos y estados;
-2. abrir un canal externo controlado con empresas;
-3. dejar trazabilidad documental y operativa;
-4. entregar algo defendible tecnicamente y accesible desde fuera.
+## 4. Arquitectura
+Defiende la separacion: Symfony concentra negocio y seguridad; React se divide en panel interno y portal externo; documentacion y monitor no contaminan el flujo operativo.
 
-## 4. Alcance cerrado
-Aqui conviene ser muy claro: el nucleo entregado y cerrado es:
+## 5. Modelo y flujo
+Insiste en el orden de negocio: empresa activa, convenio operativo, asignacion, seguimiento y evaluacion. Esto demuestra que no son CRUD aislados.
 
-- portal interno;
-- portal externo con preregistro, solicitud, verificacion y mensajeria;
-- backend central con seguridad y persistencia;
-- despliegue cloud en Google Cloud con HTTPS;
-- consola de escritorio para operacion tecnica local o remota.
+## 6. Panel interno
+Muestra dashboard, KPI, modulos y exportacion CSV. Di que es la herramienta de trabajo diaria para coordinacion.
 
-## 5. Arquitectura
-Defiende la separacion:
+## 7. Flujo empresa-centro
+Explica solicitudes, verificacion por correo, aprobacion interna y bandeja. Este punto conecta el centro con empresas reales.
 
-- Symfony concentra negocio, seguridad y persistencia;
-- React se divide en panel interno y portal externo;
-- Docker Compose publica la solucion en cloud;
-- Agora Desktop se reserva para supervision tecnica y soporte, no para duplicar el portal interno.
+## 8. Portal externo
+Explica que la empresa puede registrarse, consultar estado, activar cuenta, recuperar contrasena y comunicarse sin acceder al panel interno.
 
-## 6. Modelo y flujo
-Insiste en el orden de negocio:
+## 9. Como lo he desarrollado
+Explica por fases: problema real, modelo de datos, backend, portal interno, portal externo y operacion final con escritorio, pruebas y empaquetado.
 
-1. la empresa crea cuenta;
-2. envia solicitud;
-3. verifica correo;
-4. el centro revisa;
-5. se activa la relacion academica;
-6. despues llegan convenio, estudiante, asignacion, seguimiento y evaluacion.
+## 10. Gestor de correos
+Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta, recuperacion de contrasena, MFA tecnico local y avisos de rechazo.
 
-Esto demuestra que no son CRUD aislados.
-
-## 7. Panel interno
-Muestra dashboard, KPI, modulos operativos, bandeja y exportacion CSV. Di que es la herramienta de trabajo diaria para coordinacion.
-
-## 8. Flujo empresa-centro
-Explica solicitudes, verificacion por correo, aprobacion interna y mensajeria. Este punto conecta el centro con empresas reales y es el eje funcional del proyecto.
-
-## 9. Portal externo
-Explica que la empresa puede:
-
-- preregistrarse;
-- iniciar sesion;
-- rellenar su solicitud desde area privada;
-- consultar estado;
-- recuperar contrasena;
-- comunicarse con el centro sin acceder al panel interno.
-
-## 10. Despliegue cloud
-Este es uno de los cierres importantes:
-
-- VM Ubuntu en Google Cloud Compute Engine;
-- Docker Compose;
-- PostgreSQL;
-- proxy HTTPS con certificados;
-- URL publica accesible desde fuera.
-
-Aqui debes remarcar que ya no dependes del portatil para la demo principal.
-
-## 11. Correo y enlaces externos
-Aclara que Brevo gestiona verificacion, reseteo de contrasena, MFA tecnico local y avisos de rechazo. Explica que los enlaces ya se generan con el origen publico correcto, no con `127.0.0.1`.
+## 11. Dominio externo
+Explica el problema que habia: una URL local en el correo no sirve fuera. Ahora los enlaces publicos salen con el origen correcto de la VM cloud y quedan bajo HTTPS.
 
 ## 12. Mensajeria
-Senala que el chat entre empresa y centro se refresca automaticamente por polling y queda ligado a la solicitud, no a una entidad suelta. Eso preserva el contexto antes y despues de la aprobacion.
+Senala que la bandeja y el chat ya se refrescan solos. Esto mejora la demo y evita dar una imagen de aplicacion estatica.
 
 ## 13. Agora Desktop
-Presentalo como consola tecnica:
-
-- modo local para demo offline;
-- modo cloud para revisar monitor, logs, reinicios, backups y smoke del despliegue.
-
-Aclara que no intenta sustituir toda la operativa funcional del portal interno.
+Muestra que ya no dependes de varios terminales: la app de escritorio centraliza modo local, modo cloud, logs, smoke, reinicios y backups.
 
 ## 14. Validacion
-Da cifras reales y recientes de las pruebas que quieras ensear. No infles cobertura. Lo importante es explicar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
+Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
 ## 15. Acceso de evaluacion
-Indica la URL publica:
-
-- `https://agora.34.175.224.87.nip.io/app/`
-
-Usuarios de prueba:
-
-- `profesora / Abrete01`
-- `profesor / Abrete01`
+Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
 ## 16. Mejoras futuras
-No escondas el recorte de alcance. Explica que algunas lineas quedan como mejora futura porque no son nucleares para la entrega:
+Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y decidir si el escritorio absorbe por completo el monitor legacy.
 
-- absorber todo el monitor en la app de escritorio y retirar `/monitor` del uso diario;
-- decidir si el escritorio debe incorporar tambien bandeja y chat;
-- SSO institucional;
-- almacenamiento documental gestionado;
-- dominio institucional propio;
-- mas observabilidad, pruebas de carga y alta disponibilidad.
+## 17. Limitaciones
+No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
 
-## 17. Cierre
-Cierra con una idea simple: el valor del proyecto no esta en abarcarlo todo, sino en haber cerrado bien el nucleo funcional y tecnico que hace util, demostrable y defendible la plataforma.
+## 18. Cierre
+Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
 1. Abrir `https://agora.34.175.224.87.nip.io/app/`.
 2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
-4. Solicitudes, bandeja y chat.
-5. Convenios y asignaciones.
+4. Solicitudes, bandeja y refresco de mensajes.
+5. Convenios/asignaciones.
 6. Portal externo en `https://agora.34.175.224.87.nip.io/externo/`.
-7. Si queda tiempo, Agora Desktop en modo cloud.
+7. Agora Desktop en modo cloud o shell `/legacy/monitor` si queda tiempo.

@@ -1,63 +1,136 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
   <defs>
     <style>
       .bg { fill: #f5f7fb; }
-      .title { font: 700 32px 'Segoe UI', Arial, sans-serif; fill: #15314b; }
-      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #44607a; }
-      .box { fill: #ffffff; stroke: #183153; stroke-width: 2; rx: 24; ry: 24; }
-      .box-blue { fill: #eaf2fb; stroke: #183153; stroke-width: 2; rx: 24; ry: 24; }
-      .box-gold { fill: #fff3dc; stroke: #9d6a14; stroke-width: 2; rx: 24; ry: 24; }
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #17314c; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #4a6179; }
+      .card { fill: #ffffff; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
+      .card-soft { fill: #eef4fb; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
+      .card-warm { fill: #fff4de; stroke: #9f6b17; stroke-width: 2; rx: 22; ry: 22; }
+      .card-dark { fill: #142a44; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
       .head { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #183153; }
-      .text { font: 400 18px 'Segoe UI', Arial, sans-serif; fill: #22364a; }
-      .small { font: 400 16px 'Segoe UI', Arial, sans-serif; fill: #445a70; }
-      .line { stroke: #335c85; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .head-dark { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .text { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #22374b; }
+      .text-dark { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #dce7f5; }
+      .small { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #567089; letter-spacing: 0.04em; text-transform: uppercase; }
+      .small-dark { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #f2c46d; letter-spacing: 0.04em; text-transform: uppercase; }
+      .line { stroke: #345e88; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .line-soft { stroke: #6d8fb2; stroke-width: 3; fill: none; marker-end: url(#arrowSoft); }
+      .footer { font: 600 15px 'Segoe UI', Arial, sans-serif; fill: #365472; }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#335c85"/>
+      <path d="M0,0 L12,6 L0,12 z" fill="#345e88"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#6d8fb2"/>
     </marker>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1400" height="900"/>
-  <text class="title" x="60" y="70">Esquema de bloques de funcionalidad</text>
-  <text class="subtitle" x="60" y="105">Plataforma de gestion de empresas colaboradoras para FP Dual</text>
+  <rect class="bg" x="0" y="0" width="1600" height="980"/>
+  <text class="title" x="58" y="70">Arquitectura operativa y de despliegue de Agora</text>
+  <text class="subtitle" x="58" y="104">Una sola URL publica, dos portales separados, backend Symfony y consola de escritorio local/cloud.</text>
 
-  <rect class="box-gold" x="70" y="170" width="360" height="210"/>
-  <text class="head" x="95" y="215">Portal externo de empresa</text>
-  <text class="text" x="95" y="255">- Alta publica de empresa</text>
-  <text class="text" x="95" y="290">- Verificacion por token</text>
-  <text class="text" x="95" y="325">- Chat empresa-centro</text>
-  <text class="small" x="95" y="360">Frontend React + TypeScript + Vite</text>
+  <rect class="card-warm" x="55" y="150" width="325" height="180"/>
+  <text class="small" x="82" y="184">Acceso centro</text>
+  <text class="head" x="82" y="220">Panel interno /app</text>
+  <text class="text" x="82" y="258">- dashboard, CRUD y bandeja</text>
+  <text class="text" x="82" y="288">- convenios, asignaciones y CSV</text>
+  <text class="text" x="82" y="318">- mensajeria y revision de solicitudes</text>
 
-  <rect class="box-blue" x="520" y="120" width="360" height="300"/>
-  <text class="head" x="545" y="165">API backend</text>
-  <text class="text" x="545" y="205">- Empresas</text>
-  <text class="text" x="545" y="240">- Convenios</text>
-  <text class="text" x="545" y="275">- Estudiantes</text>
-  <text class="text" x="545" y="310">- Asignaciones</text>
-  <text class="text" x="545" y="345">- Solicitudes y mensajeria</text>
-  <text class="small" x="545" y="385">Symfony + Doctrine + Seguridad + JSON API</text>
+  <rect class="card-warm" x="55" y="365" width="325" height="180"/>
+  <text class="small" x="82" y="399">Acceso empresa</text>
+  <text class="head" x="82" y="435">Portal externo /externo</text>
+  <text class="text" x="82" y="473">- preregistro y cuenta persistente</text>
+  <text class="text" x="82" y="503">- solicitud, estado y verificacion</text>
+  <text class="text" x="82" y="533">- chat y seguimiento posterior</text>
 
-  <rect class="box" x="970" y="170" width="360" height="210"/>
-  <text class="head" x="995" y="215">Panel interno</text>
-  <text class="text" x="995" y="255">- Dashboard KPI</text>
-  <text class="text" x="995" y="290">- CRUD operativo</text>
-  <text class="text" x="995" y="325">- Workflow de convenios</text>
-  <text class="text" x="995" y="360">- Exportacion CSV</text>
-  <text class="small" x="995" y="395">Frontend React + TypeScript + Vite</text>
+  <rect class="card" x="55" y="580" width="325" height="135"/>
+  <text class="small" x="82" y="614">Acceso publico</text>
+  <text class="head" x="82" y="650">Guia publica /documentacion</text>
+  <text class="text" x="82" y="685">Guia funcional y apoyo a la defensa.</text>
 
-  <rect class="box" x="520" y="510" width="360" height="220"/>
-  <text class="head" x="545" y="555">Base de datos</text>
-  <text class="text" x="545" y="595">- Empresas y contactos</text>
-  <text class="text" x="545" y="630">- Convenios y checklist</text>
-  <text class="text" x="545" y="665">- Estudiantes y asignaciones</text>
-  <text class="text" x="545" y="700">- Solicitudes, mensajes y documentos</text>
-  <text class="small" x="545" y="735">SQLite en desarrollo, portable a otros motores</text>
+  <rect class="card-dark" x="55" y="750" width="325" height="165"/>
+  <text class="small-dark" x="82" y="784">Operacion tecnica</text>
+  <text class="head-dark" x="82" y="820">Agora Desktop</text>
+  <text class="text-dark" x="82" y="858">- modo local y modo cloud</text>
+  <text class="text-dark" x="82" y="888">- monitor, logs, reinicios y backups</text>
 
-  <path class="line" d="M430 275 H500"/>
-  <path class="line" d="M880 275 H950"/>
-  <path class="line" d="M700 420 V485"/>
+  <rect class="card-soft" x="500" y="118" width="250" height="90"/>
+  <text class="small" x="530" y="150">Borde publico</text>
+  <text class="head" x="530" y="185">DNS nip.io + HTTPS</text>
 
-  <text class="small" x="460" y="255">HTTP JSON</text>
-  <text class="small" x="900" y="255">HTTP JSON</text>
-  <text class="small" x="720" y="465">Doctrine ORM</text>
+  <rect class="card-soft" x="430" y="235" width="410" height="525"/>
+  <text class="small" x="462" y="270">VM Google Cloud + Docker network</text>
+  <text class="head" x="462" y="305">Proxy Caddy + contenedor app</text>
+
+  <rect class="card" x="465" y="338" width="340" height="132"/>
+  <text class="small" x="492" y="370">Frontend servido por Symfony</text>
+  <text class="head" x="492" y="404">Shell integrada</text>
+  <text class="text" x="492" y="438">/app, /externo, /documentacion</text>
+  <text class="text" x="492" y="464">/legacy/monitor como respaldo tecnico</text>
+
+  <rect class="card" x="465" y="498" width="340" height="220"/>
+  <text class="small" x="492" y="532">Backend de negocio</text>
+  <text class="head" x="492" y="567">Symfony 7 + Apache/PHP</text>
+  <text class="text" x="492" y="603">- seguridad, roles, sesiones y rate limit</text>
+  <text class="text" x="492" y="633">- solicitudes, cuentas portal y mensajeria</text>
+  <text class="text" x="492" y="663">- convenios, estudiantes y asignaciones</text>
+  <text class="text" x="492" y="693">- auditoria, correo y pruebas tecnicas</text>
+
+  <rect class="card-soft" x="930" y="120" width="280" height="115"/>
+  <text class="small" x="960" y="152">Persistencia</text>
+  <text class="head" x="960" y="186">PostgreSQL 16</text>
+  <text class="text" x="960" y="220">Motor permanente de la VM cloud.</text>
+
+  <rect class="card-soft" x="930" y="270" width="280" height="150"/>
+  <text class="small" x="960" y="302">Datos binarios</text>
+  <text class="head" x="960" y="336">Volumenes persistentes</text>
+  <text class="text" x="960" y="370">- documentos privados</text>
+  <text class="text" x="960" y="400">- datos PostgreSQL</text>
+
+  <rect class="card-soft" x="930" y="455" width="280" height="130"/>
+  <text class="small" x="960" y="487">Correo transaccional</text>
+  <text class="head" x="960" y="522">Brevo</text>
+  <text class="text" x="960" y="556">Verificacion, rechazo, reset y MFA local.</text>
+
+  <rect class="card-soft" x="930" y="620" width="280" height="165"/>
+  <text class="small" x="960" y="652">Operacion remota</text>
+  <text class="head" x="960" y="686">SSH + Docker Compose</text>
+  <text class="text" x="960" y="720">- logs y reinicios desde desktop</text>
+  <text class="text" x="960" y="750">- smoke cloud y backup PostgreSQL</text>
+  <text class="text" x="960" y="780">- build/deploy de la instancia</text>
+
+  <rect class="card" x="1290" y="228" width="250" height="120"/>
+  <text class="small" x="1320" y="260">Flujo local</text>
+  <text class="head" x="1320" y="294">Desktop + localhost</text>
+  <text class="text" x="1320" y="328">SQLite para demo local</text>
+  <text class="text" x="1320" y="356">y MFA del acceso temporal.</text>
+
+  <rect class="card" x="1290" y="392" width="250" height="150"/>
+  <text class="small" x="1320" y="424">Flujo cloud</text>
+  <text class="head" x="1320" y="458">Desktop + URL publica</text>
+  <text class="text" x="1320" y="492">API HTTPS para estado y pruebas</text>
+  <text class="text" x="1320" y="522">+ SSH para logs y servicios</text>
+
+  <rect class="card" x="1290" y="585" width="250" height="155"/>
+  <text class="small" x="1320" y="617">Resultado defendible</text>
+  <text class="head" x="1320" y="651">Un proyecto cerrado</text>
+  <text class="text" x="1320" y="685">Portales, despliegue, correo</text>
+  <text class="text" x="1320" y="715">desktop y shell legacy coherentes.</text>
+
+  <path class="line" d="M380 240 H490"/>
+  <path class="line" d="M380 455 H490"/>
+  <path class="line" d="M380 645 H490"/>
+  <path class="line" d="M380 832 H490"/>
+
+  <path class="line" d="M625 208 V225"/>
+  <path class="line" d="M840 500 H920"/>
+  <path class="line" d="M840 565 H920"/>
+  <path class="line" d="M840 645 H920"/>
+
+  <path class="line-soft" d="M1210 500 H1280"/>
+  <path class="line-soft" d="M1210 690 H1280"/>
+  <path class="line-soft" d="M1210 330 H1280"/>
+
+  <text class="footer" x="60" y="948">La misma base publica por HTTPS sirve panel interno, portal externo, documentacion y monitor legacy; Agora Desktop opera en local o en cloud sobre esa misma topologia.</text>
 </svg>

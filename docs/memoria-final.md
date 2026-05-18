@@ -49,7 +49,7 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 
 ## Alcance
 
-Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, un monitor privado con MFA para operaciones sensibles, una app de escritorio capaz de levantar servicios, ejecutar pruebas, revisar logs y gestionar backups SQLite, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose y PostgreSQL. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el endurecimiento completo de produccion con HTTPS y dominio propio, y el almacenamiento documental en nube gestionada.
+Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, una app de escritorio para operacion tecnica en local o en cloud, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose, PostgreSQL, proxy HTTPS y correo transaccional operativo. Se mantiene ademas un monitor privado y el flujo local con MFA para acceso publico temporal, pero ya no forman parte del recorrido principal de la demo cloud. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el almacenamiento documental en nube gestionada, un cliente de escritorio completo para toda la operativa funcional del negocio y una instrumentacion avanzada de produccion con alta disponibilidad.
 
 # Analisis de requisitos
 
@@ -90,9 +90,9 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 
 ## Arquitectura general
 
-La solucion se estructura en seis bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el registro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es un monitor privado para supervision tecnica y control del acceso externo. El sexto es Agora Desktop, una app Electron para operacion local, monitor integrado, automatizacion de pruebas, diagnostico y empaquetado Windows.
+La solucion se estructura en seis bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el preregistro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es una capa de supervision tecnica formada por un monitor web de respaldo y por una consola de escritorio. El sexto es Agora Desktop, una app Electron para operacion tecnica local o remota, automatizacion de pruebas, diagnostico, logs, reinicios y empaquetado Windows.
 
-El backend publica rutas protegidas bajo `/api`, rutas publicas para el registro y la verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor privado bajo `/monitor` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre esas mismas rutas locales y no introduce una logica paralela distinta, sino una capa de control sobre el mismo backend.
+El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor privado bajo `/monitor` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre esas mismas rutas, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
 
 ![Figura 1. Esquema de bloques de funcionalidad del sistema.](capturas/01-bloques-funcionalidad.png)
 
@@ -104,8 +104,8 @@ Si se expresa la solucion en capas tecnologicas, la arquitectura puede resumirse
 2. **Capa de presentacion externa**: SPA independiente en React y TypeScript servida bajo `/externo`, destinada a empresas colaboradoras antes y despues de su aprobacion.
 3. **Capa de negocio**: backend Symfony 7 que centraliza autenticacion, roles, validacion, reglas de negocio, auditoria, MFA y exposicion de API REST.
 4. **Capa de persistencia**: Doctrine ORM sobre SQLite en desarrollo y sobre un motor de servidor como PostgreSQL o MariaDB en despliegue permanente.
-5. **Capa documental y operativa**: documentacion publica, monitor privado y app de escritorio para soporte tecnico, pruebas y empaquetado.
-6. **Capa de infraestructura**: VM publica en cloud o entorno local empaquetado, contenedores Docker, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por dominio o DNS wildcard.
+5. **Capa documental y operativa**: documentacion publica, monitor web de respaldo y app de escritorio para soporte tecnico, pruebas y empaquetado.
+6. **Capa de infraestructura**: VM publica en Google Cloud Compute Engine o entorno local empaquetado, contenedores Docker, proxy HTTPS, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por DNS wildcard.
 
 Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud.
 
@@ -223,7 +223,7 @@ La relacion de mensajeria merece un matiz adicional. El chat no cuelga de `Empre
 
 ## Seguridad y control de acceso
 
-La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de roles y una combinacion de `json_login` y sesion de navegador. El sistema diferencia perfiles de administracion, coordinacion, documentacion, monitorizacion y auditoria. Las operaciones sensibles del monitor, como levantar o detener el acceso externo, requieren MFA por correo. Ademas, las acciones relevantes se registran mediante auditoria interna.
+La seguridad del entorno interno se apoya en autenticacion Symfony, jerarquia de roles y una combinacion de `json_login` y sesion de navegador. El sistema diferencia perfiles de administracion, coordinacion, documentacion, monitorizacion y auditoria. En el despliegue cloud, la exposicion publica se sirve tras un proxy HTTPS con certificados de Let's Encrypt, encabezados de seguridad, cookies seguras y limitacion de peticiones. Las operaciones sensibles del flujo local de acceso publico temporal siguen requiriendo MFA por correo. Ademas, las acciones relevantes se registran mediante auditoria interna.
 
 El portal externo dispone de un flujo independiente con su propio firewall y su propio proveedor `EmpresaPortalCuenta`. La cuenta de empresa se crea antes de enviar la solicitud, el login externo queda separado del panel interno y la verificacion por correo se aplica sobre la solicitud corporativa. Esta separacion evita mezclar credenciales, conserva contexto de mensajes y mantiene un unico acceso empresarial antes y despues de la aprobacion.
 
@@ -342,24 +342,24 @@ Para ejecutar el proyecto en local desde el repositorio son necesarios PHP, Comp
 
 ## Configuracion
 
-La configuracion se apoya en variables de entorno para base de datos, correo saliente, credenciales del panel, destino MFA, URL base y opciones de desarrollo. Esta aproximacion evita credenciales embebidas y permite reproducir el entorno con mayor control. En la entrega final se ha dejado preparado Brevo como proveedor de correo transaccional para verificacion de empresas, activacion y recuperacion de cuentas de empresa, MFA interno y avisos de rechazo de solicitudes externas.
+La configuracion se apoya en variables de entorno para base de datos, correo saliente, credenciales del panel, destino MFA, URL base y opciones de desarrollo. Esta aproximacion evita credenciales embebidas y permite reproducir el entorno con mayor control. En la entrega final se ha dejado preparado Brevo como proveedor de correo transaccional para verificacion de empresas, recuperacion de cuentas de empresa, MFA interno y avisos de rechazo de solicitudes externas.
 
 En la practica, la autenticacion interna combina configuracion de frontend y backend. El frontend interno lee desde `import.meta.env` las variables `VITE_API_BASE_URL`, `VITE_API_USERNAME` y `VITE_API_PASSWORD`, que determinan contra que API se conecta y con que credenciales iniciales realiza el acceso. A partir de ahi, el backend Symfony resuelve la autenticacion real mediante `json_login`, genera la sesion del navegador y aplica los permisos correspondientes sobre las rutas protegidas. De forma paralela, el backend utiliza su propio `.env.local` para base de datos, correo saliente, remitente, MFA y resto de configuracion operativa. Esta separacion permite cambiar credenciales o infraestructura sin modificar el codigo fuente.
 
 ## Publicacion integrada
 
-La entrega se mantiene integrada bajo una unica raiz HTTP: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/monitor` para la supervision tecnica. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL y volumen persistente para documentos, de modo que los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline.
+La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/monitor` para la supervision tecnica. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
 
-Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion, activacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo.
+Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo.
 
 ## Acceso para evaluacion externa
 
-Para que la profesora pueda probar la aplicacion no es necesario que instale PHP, Composer, Node.js ni npm. La via principal es el despliegue publico en Google Cloud, accesible por IP publica o por un hostname `nip.io` derivado de esa IP. Desde esa misma direccion se accede a los espacios principales de la entrega:
+Para que la profesora pueda probar la aplicacion no es necesario que instale PHP, Composer, Node.js ni npm. La via principal es el despliegue publico en Google Cloud, accesible por HTTPS mediante un hostname `nip.io` derivado de la IP publica. Desde esa misma direccion se accede a los espacios principales de la entrega:
 
 - `URL/app` para el panel interno;
 - `URL/externo` para el portal de empresa;
 - `URL/documentacion` para la guia funcional;
-- `URL/monitor` para la supervision tecnica, protegida con autenticacion y MFA.
+- `URL/monitor` como fallback tecnico protegido, aunque la supervision ordinaria se realiza ya desde Agora Desktop.
 
 Como alternativa existe la app de escritorio empaquetada en Windows, que incorpora el runtime PHP y automatiza la preparacion del entorno local. En ese caso la persona evaluadora solo tendria que abrir la aplicacion, levantar el entorno y acceder a las rutas locales desde la propia interfaz. Aun asi, para una revision remota real la via recomendada ya no es el tunel temporal, sino la URL publica de la VM.
 
@@ -367,9 +367,9 @@ Para facilitar pruebas externas controladas se han dejado preparados dos usuario
 
 ## Despliegue permanente previsto
 
-Aunque la entrega sigue siendo academica, la arquitectura ya se ha llevado a un despliegue remoto funcional. La opcion aplicada en esta revision ha sido una VM Linux en Google Cloud Compute Engine con Docker Compose, Apache/PHP en contenedor, PostgreSQL 16 y volumen persistente. Esta base encaja bien con el proyecto porque reutiliza la estructura actual sin reescribir Agora hacia servicios mas opinionados como Cloud Run o Cloud SQL. En este escenario, SQLite deja de ser la base recomendada y pasa a utilizarse solo como soporte de desarrollo o demo local.
+Aunque la entrega sigue siendo academica, la arquitectura ya se ha llevado a un despliegue remoto funcional. La opcion aplicada en esta revision ha sido una VM Linux en Google Cloud Compute Engine con Docker Compose, proxy Caddy con certificados de Let's Encrypt, Apache/PHP en contenedor, PostgreSQL 16 y volumen persistente. Esta base encaja bien con el proyecto porque reutiliza la estructura actual sin reescribir Agora hacia servicios mas opinionados como Cloud Run o Cloud SQL. En este escenario, SQLite deja de ser la base recomendada y pasa a utilizarse solo como soporte de desarrollo o demo local.
 
-Como mejora posterior seguiria siendo recomendable sustituir el hostname wildcard gratuito por un dominio propio con HTTPS, declarar proxies confiables para que Symfony resuelva correctamente encabezados reenviados y conectar credenciales reales de Brevo para correo transaccional. Estas necesidades no implican rehacer la aplicacion, sino completar la capa de infraestructura y endurecimiento para un uso continuo fuera del entorno academico.
+Como mejora posterior seguiria siendo recomendable sustituir el hostname wildcard gratuito por un dominio institucional propio, automatizar rotacion de secretos y backups fuera de la propia VM, y mover el almacenamiento documental a un servicio gestionado con politicas de retencion. Estas necesidades no implican rehacer la aplicacion, sino completar la capa de infraestructura y endurecimiento para un uso continuo fuera del entorno academico.
 
 # Pruebas y validacion
 
@@ -396,8 +396,8 @@ Tambien he realizado una revision final en 20 pasadas tematicas para asegurar qu
 1. Arquitectura general: backend, panel interno, portal externo, documentacion y monitor tienen responsabilidades separadas.
 2. Seguridad interna: las rutas `/api` quedan protegidas por roles y autenticacion.
 3. Seguridad del portal externo: la cuenta de empresa se preregistra, mantiene su sesion separada y conserva el mismo acceso durante solicitud, mensajeria y aprobacion.
-4. Contrasenas: la activacion y recuperacion de empresa exigen longitud minima, mayusculas, minusculas y numeros.
-5. Tokens: los enlaces de activacion, recuperacion y portal se tratan como valores opacos y se codifican al enviarlos por URL.
+4. Contrasenas: el preregistro y la recuperacion de empresa exigen longitud minima, mayusculas, minusculas y numeros.
+5. Tokens: los enlaces de verificacion y recuperacion se tratan como valores opacos y se codifican al enviarlos por URL.
 6. Documentos: el almacenamiento evita rutas absolutas o con `..` para impedir salir del directorio permitido.
 7. Validacion de formularios: backend y frontend validan datos obligatorios antes de persistir.
 8. Reglas de negocio: las asignaciones solo se permiten con empresa activa y convenio operativo.
@@ -434,20 +434,28 @@ En la ultima validacion completa, el backend ha quedado en 101 tests y 567 aserc
 
 Aunque la base tecnica es ya consistente, el proyecto sigue teniendo limitaciones propias de una entrega academica avanzada y no de un producto desplegado en produccion permanente:
 
-- el correo transaccional real todavia depende de conectar credenciales validas de Brevo en la VM;
 - no existe todavia integracion con identidad corporativa o SSO institucional;
-- el almacenamiento documental general sigue siendo local, aunque los nuevos documentos privados de empresa ya pueden quedar embebidos en base de datos;
-- el rendimiento ha mejorado de forma clara, pero no se ha realizado un perfilado profundo en infraestructura de produccion ni se ha incorporado HTTPS con dominio propio.
+- el almacenamiento documental general sigue apoyandose en volumen local de la VM, aunque los documentos privados de empresa ya puedan embebirse en base de datos;
+- la app de escritorio ya cubre supervision tecnica local y remota, pero no absorbe aun toda la operativa funcional del portal interno;
+- el rendimiento ha mejorado de forma clara, pero no se ha realizado todavia un perfilado profundo con carga concurrente, observabilidad completa ni estrategia de alta disponibilidad.
 
 # Resultados, limitaciones y lineas futuras
 
 ## Resultados principales
 
-El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el externo, la documentacion, la supervision tecnica y la operacion local desde escritorio. Ademas, deja preparado un flujo demostrable y comprensible para la defensa: registro externo, verificacion por correo, seguimiento del estado, activacion de cuenta, revision interna, gestion de entidades, control documental, exportacion CSV y arranque autocontenido mediante app Windows.
+El proyecto cumple el objetivo principal de centralizar la gestion de empresas colaboradoras y practicas en una sola plataforma, diferenciando correctamente el espacio interno, el externo, la documentacion, la supervision tecnica y la operacion desde escritorio. Ademas, deja preparado un flujo demostrable y comprensible para la defensa: preregistro externo, verificacion por correo, seguimiento del estado, revision interna, gestion de entidades, control documental, exportacion CSV, despliegue cloud accesible por HTTPS y consola tecnica de soporte en Windows.
 
 ## Lineas futuras
 
-Las siguientes iteraciones deberian priorizar, por este orden, el despliegue sobre infraestructura permanente, la integracion con identidad corporativa, el almacenamiento documental en nube con politicas de retencion, la ampliacion de cuadros de mando por perfil, hojas de horas con aprobacion de empresa, matching basico entre estudiantes y convenios, firma electronica avanzada y una instrumentacion de rendimiento mas profunda.
+Las siguientes iteraciones deberian priorizar mejoras secundarias o de evolucion, no bloqueantes para la entrega actual:
+
+1. consolidar Agora Desktop como cliente tecnico principal y retirar la pagina web `/monitor` del flujo diario cuando toda la supervision ya este absorbida por la app;
+2. decidir si el escritorio debe seguir siendo solo consola tecnica o si debe incorporar bandeja, aprobaciones y mensajeria del negocio;
+3. integrar identidad corporativa o SSO institucional para evitar cuentas aisladas del centro;
+4. mover almacenamiento documental y copias de seguridad a servicios gestionados con politicas de retencion;
+5. sustituir el hostname `nip.io` por un dominio institucional propio y formalizar la gestion de secretos;
+6. ampliar la suite de regresion automatica y el perfilado de rendimiento con carga concurrente;
+7. valorar firma electronica avanzada, hojas de horas, matching entre estudiantes y convenios y cuadros de mando por perfil como ampliaciones funcionales posteriores.
 
 # Conclusiones
 

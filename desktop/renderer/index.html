@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agora Desktop</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="desktop-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <span class="brand-mark">A</span>
+          <div>
+            <h1>Agora Desktop</h1>
+            <p id="brandContext">Control local</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Secciones">
+          <button class="nav-item is-active" type="button" data-scroll-target="connection">Conexion</button>
+          <button class="nav-item" type="button" data-scroll-target="services">Servicios</button>
+          <button class="nav-item" type="button" data-scroll-target="operation">Operacion</button>
+          <button class="nav-item" type="button" data-scroll-target="tools">Herramientas</button>
+          <button class="nav-item" type="button" data-scroll-target="access">Accesos</button>
+          <button class="nav-item" type="button" data-scroll-target="workflow">Pruebas</button>
+          <button class="nav-item" type="button" data-scroll-target="logs">Registro</button>
+        </nav>
+
+        <div class="side-status">
+          <span class="status-dot" id="sideStatusDot"></span>
+          <div>
+            <strong id="sideStatusTitle">Comprobando</strong>
+            <span id="sideStatusDetail">Puerto 8000</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="topbarEyebrow">Entorno local</p>
+            <h2>Panel de arranque y acceso</h2>
+          </div>
+          <div class="topbar-actions">
+            <button class="button button-secondary" type="button" data-action="refresh">Actualizar</button>
+            <button class="button button-primary" type="button" data-action="startLocal" data-mode-visible="local">Levantar local</button>
+            <button class="button button-primary" type="button" data-action="runWorkflowSmoke" data-mode-visible="cloud">Smoke cloud</button>
+          </div>
+        </header>
+
+        <section class="section-band" id="connection">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Conexion</p>
+              <h3>Modo operativo del escritorio</h3>
+            </div>
+            <span class="task-pill" id="modePill">Modo local</span>
+          </div>
+
+          <div class="connection-grid">
+            <article class="tool-panel tool-panel-wide">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Perfil</span>
+                  <strong>Destino de trabajo</strong>
+                </div>
+              </div>
+              <div class="config-grid">
+                <label class="config-field">
+                  <span>Modo</span>
+                  <select id="modeInput">
+                    <option value="local">Local</option>
+                    <option value="cloud">Cloud</option>
+                  </select>
+                </label>
+                <label class="config-field config-field--wide">
+                  <span>URL base cloud</span>
+                  <input id="remoteBaseUrlInput" type="url" placeholder="https://agora.midominio.tld" />
+                </label>
+                <label class="config-field">
+                  <span>Usuario API</span>
+                  <input id="remoteApiUsernameInput" type="text" placeholder="profesor" />
+                </label>
+                <label class="config-field">
+                  <span>Clave API</span>
+                  <input id="remoteApiPasswordInput" type="password" placeholder="Credencial remota" />
+                  <small id="remoteApiPasswordHint" class="field-hint">La credencial se guarda cifrada en este equipo.</small>
+                </label>
+                <label class="config-field config-field--wide">
+                  <span>SSH target</span>
+                  <input id="remoteSshTargetInput" type="text" placeholder="usuario@host" />
+                </label>
+                <label class="config-field config-field--wide">
+                  <span>Ruta clave SSH</span>
+                  <input id="remoteSshKeyPathInput" type="text" placeholder="C:\Users\usuario\.ssh\id_rsa" />
+                </label>
+                <label class="config-field">
+                  <span>Contenedor app</span>
+                  <input id="remoteAppContainerInput" type="text" placeholder="agora-app-1" />
+                </label>
+                <label class="config-field">
+                  <span>Contenedor DB</span>
+                  <input id="remoteDbContainerInput" type="text" placeholder="agora-db-1" />
+                </label>
+              </div>
+              <div class="button-row">
+                <button class="button button-primary" type="button" data-action="saveConfig">Guardar conexion</button>
+                <button class="button button-secondary" type="button" data-action="refresh">Refrescar estado</button>
+              </div>
+              <p class="config-feedback" id="connectionFeedback">Sin comprobaciones recientes.</p>
+              <p class="config-hint" id="connectionSummary">El escritorio usara el entorno local hasta que guardes un perfil cloud.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="status-strip" aria-label="Resumen">
+          <div class="metric-tile">
+            <span>Backend</span>
+            <strong id="metricBackend">-</strong>
+          </div>
+          <div class="metric-tile">
+            <span>Base de datos</span>
+            <strong id="metricDatabase">-</strong>
+          </div>
+          <div class="metric-tile">
+            <span>Builds</span>
+            <strong id="metricBuilds">-</strong>
+          </div>
+          <div class="metric-tile">
+            <span>URL externa</span>
+            <strong id="metricPublic">-</strong>
+          </div>
+        </section>
+
+        <section class="section-band" id="services">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Servicios</p>
+              <h3>Control de ejecución</h3>
+            </div>
+            <span class="task-pill" id="taskPill">Sin tareas</span>
+          </div>
+
+          <div class="service-grid">
+            <article class="service-card" data-service-card="backend">
+              <div class="service-card-top">
+                <span>Servicio app</span>
+                <strong id="backendStatus">-</strong>
+              </div>
+              <p id="backendDetail">http://127.0.0.1:8000</p>
+              <div class="button-row" data-mode-visible="local">
+                <button class="icon-button" type="button" data-action="startLocal">Iniciar</button>
+                <button class="icon-button icon-button-danger" type="button" data-action="stopLocal">Parar</button>
+              </div>
+              <div class="button-row" data-mode-visible="cloud">
+                <button class="icon-button" type="button" data-action="restartRemoteApp">Reiniciar app</button>
+                <button class="icon-button" type="button" data-log-target="backendOut">Ver logs</button>
+              </div>
+            </article>
+
+            <article class="service-card" data-service-card="database">
+              <div class="service-card-top">
+                <span>Base de datos</span>
+                <strong id="databaseStatus">-</strong>
+              </div>
+              <p id="databaseDetail">SQLite local</p>
+              <div class="button-row" data-mode-visible="local">
+                <button class="icon-button" type="button" data-action="prepare">Preparar</button>
+                <button class="icon-button" type="button" data-action="rebuild">Rebuild</button>
+              </div>
+              <div class="button-row" data-mode-visible="cloud">
+                <button class="icon-button" type="button" data-action="restartRemoteDb">Reiniciar DB</button>
+                <button class="icon-button" type="button" data-action="backupDatabase">Backup PG</button>
+              </div>
+            </article>
+
+            <article class="service-card" data-service-card="publicAccess">
+              <div class="service-card-top">
+                <span>Acceso externo</span>
+                <strong id="publicStatus">-</strong>
+              </div>
+              <p id="publicDetail">Cloudflare Tunnel</p>
+              <div class="mfa-control" data-mode-visible="local">
+                <span id="mfaStatus">MFA pendiente</span>
+                <div class="mfa-actions">
+                  <button class="icon-button" type="button" data-action="requestMfa">Enviar codigo</button>
+                  <input id="mfaCodeInput" type="text" inputmode="numeric" maxlength="12" placeholder="Codigo MFA" />
+                  <button class="icon-button" type="button" data-action="verifyMfa">Verificar</button>
+                </div>
+              </div>
+              <div class="button-row" data-mode-visible="local">
+                <button class="icon-button" type="button" data-action="startPublic">Activar</button>
+                <button class="icon-button icon-button-danger" type="button" data-action="stopPublic">Desactivar</button>
+              </div>
+              <div class="button-row" data-mode-visible="cloud">
+                <button class="icon-button" type="button" data-open="internal" data-mode="browser">Portal interno</button>
+                <button class="icon-button" type="button" data-open="publicExternal" data-mode="browser">Portal externo</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-band" id="operation">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Operacion</p>
+              <h3>Monitor integrado</h3>
+            </div>
+            <span class="task-pill" id="operationUpdated">Sin datos</span>
+          </div>
+
+          <div class="operation-grid">
+            <article class="operation-panel operation-panel-wide">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Servicios backend</span>
+                  <strong>Salud del entorno</strong>
+                </div>
+              </div>
+              <div class="monitor-service-list" id="monitorServices"></div>
+            </article>
+
+            <article class="operation-panel">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Metricas</span>
+                  <strong>Base de datos</strong>
+                </div>
+              </div>
+              <div class="monitor-metrics" id="monitorMetrics"></div>
+            </article>
+
+            <article class="operation-panel">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Incidencias</span>
+                  <strong id="incidentCount">0 detectadas</strong>
+                </div>
+              </div>
+              <div class="monitor-list" id="monitorIncidents"></div>
+            </article>
+
+            <article class="operation-panel">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Actividad</span>
+                  <strong>Eventos recientes</strong>
+                </div>
+              </div>
+              <div class="monitor-list" id="monitorActivity"></div>
+            </article>
+
+            <article class="operation-panel operation-panel-wide">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Calidad</span>
+                  <strong>Suites disponibles</strong>
+                </div>
+              </div>
+              <div class="monitor-tests" id="monitorTests"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-band" id="tools">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Herramientas</p>
+              <h3>Pruebas, logs y base de datos</h3>
+            </div>
+          </div>
+
+          <div class="tools-grid">
+            <article class="tool-panel tool-panel-wide">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Baterias</span>
+                  <strong>Ejecutar pruebas</strong>
+                </div>
+              </div>
+              <div class="button-row">
+                <button class="icon-button" type="button" data-test-suite="desktop-check">Desktop check</button>
+                <button class="icon-button" type="button" data-test-suite="backend-flow" data-mode-visible="local">Backend flujo</button>
+                <button class="icon-button" type="button" data-test-suite="frontend-unit" data-mode-visible="local">Frontend unit</button>
+                <button class="icon-button" type="button" data-test-suite="frontend-e2e" data-mode-visible="local">E2E navegador</button>
+              </div>
+              <pre class="tool-output" id="testResult">Sin ejecuciones recientes</pre>
+            </article>
+
+            <article class="tool-panel">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Logs</span>
+                  <strong>Abrir trazas</strong>
+                </div>
+              </div>
+              <div class="button-grid">
+                <button class="icon-button" type="button" data-log-target="backendOut">Backend out</button>
+                <button class="icon-button" type="button" data-log-target="backendErr">Backend err</button>
+                <button class="icon-button" type="button" data-log-target="symfonyLogs">Symfony logs</button>
+                <button class="icon-button" type="button" data-log-target="publicAccessLogs" data-mode-visible="local">URL externa</button>
+                <button class="icon-button" type="button" data-log-target="backups" data-mode-visible="local">Backups</button>
+                <button class="icon-button" type="button" data-log-target="database">Base de datos</button>
+              </div>
+            </article>
+
+            <article class="tool-panel">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Base de datos</span>
+                  <strong>Backup y restauracion</strong>
+                </div>
+              </div>
+              <div class="button-row">
+                <button class="icon-button" type="button" data-action="backupDatabase">Crear backup</button>
+                <button class="icon-button icon-button-danger" type="button" data-action="restoreDatabase" data-mode-visible="local">Restaurar</button>
+              </div>
+              <pre class="tool-output tool-output-compact" id="backupResult">Sin operaciones recientes</pre>
+            </article>
+
+            <article class="tool-panel tool-panel-wide">
+              <div class="operation-panel-top">
+                <div>
+                  <span>Entorno</span>
+                  <strong>Diagnostico de dependencias</strong>
+                </div>
+                <button class="button button-secondary" type="button" data-action="diagnoseDependencies">Diagnosticar</button>
+              </div>
+              <div class="dependency-list" id="dependencyDiagnostics"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-band" id="access">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Accesos</p>
+              <h3>Portales disponibles</h3>
+            </div>
+          </div>
+
+          <div class="access-grid">
+            <article class="access-item">
+              <span>Portal interno</span>
+              <code id="internalUrl">-</code>
+              <div class="button-row">
+                <button class="button button-primary" type="button" data-open="internal" data-mode="window">Abrir en app</button>
+                <button class="button button-secondary" type="button" data-open="internal" data-mode="browser">Navegador</button>
+              </div>
+            </article>
+
+            <article class="access-item">
+              <span>Monitor</span>
+              <code id="monitorUrl">-</code>
+              <div class="button-row" data-mode-visible="local">
+                <button class="button button-secondary" type="button" data-open="monitor" data-mode="window">Abrir monitor</button>
+              </div>
+            </article>
+
+            <article class="access-item" data-mode-visible="local">
+              <span>Portal externo local</span>
+              <code id="externalLocalUrl">-</code>
+              <div class="button-row">
+                <button class="button button-secondary" type="button" data-open="externalLocal" data-mode="window">Abrir local</button>
+              </div>
+            </article>
+
+            <article class="access-item">
+              <span>Portal externo</span>
+              <code id="publicExternalUrl">Pendiente</code>
+              <div class="button-row">
+                <button class="button button-secondary" type="button" data-open="publicExternal" data-mode="browser">Abrir en navegador</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section-band" id="workflow">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Diagnostico</p>
+              <h3>Pruebas de flujo</h3>
+            </div>
+            <button class="button button-primary" type="button" data-action="runWorkflowSmoke">Ejecutar prueba</button>
+          </div>
+
+          <div class="workflow-panel">
+            <div class="workflow-summary">
+              <div>
+                <span>Estado</span>
+                <strong id="workflowStatus">Sin ejecutar</strong>
+              </div>
+              <p id="workflowStatusDetail">Esperando prueba</p>
+            </div>
+            <ol class="workflow-list" id="workflowSteps"></ol>
+            <pre class="workflow-artifacts" id="workflowArtifacts">Sin ejecutar</pre>
+          </div>
+        </section>
+
+        <section class="section-band section-band-logs" id="logs">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Registro</p>
+              <h3>Actividad del escritorio</h3>
+            </div>
+            <button class="button button-secondary" type="button" data-action="clearLogs">Limpiar</button>
+          </div>
+          <ol class="log-list" id="logList"></ol>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
+

@@ -1,0 +1,6 @@
+node_modules/
+dist/
+release/
+.packaging/
+.tmp-electron-userdata.js
+*.log

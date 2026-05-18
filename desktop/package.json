@@ -1,0 +1,90 @@
+{
+  "name": "agora-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Agora Team",
+  "description": "Consola de escritorio para operar y supervisar Agora en local o en cloud.",
+  "main": "main.js",
+  "scripts": {
+    "start": "node scripts/run-electron.js",
+    "check": "node --check main.js && node --check preload.js && node --check renderer/app.js",
+    "generate:icon": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/generate-desktop-icon.ps1",
+    "smoke:workflow": "node scripts/run-electron.js --workflow-smoke",
+    "package:win": "node scripts/build-desktop.js",
+    "validate:packaged": "node scripts/validate-packaged-build.js",
+    "test:installer": "node scripts/test-installer.js"
+  },
+  "build": {
+    "appId": "es.agora.desktop",
+    "productName": "Agora Desktop",
+    "icon": "build/icon.ico",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "assets/**",
+          "bin/**",
+          "config/**",
+          "migrations/**",
+          "public/**",
+          "src/**",
+          "templates/**",
+          "translations/**",
+          "vendor/**",
+          ".env",
+          ".env.local.example",
+          ".env.prod",
+          "composer.json",
+          "composer.lock",
+          "importmap.php",
+          "router.php",
+          "symfony.lock",
+          "!public/app/**/*.map",
+          "!public/externo/**/*.map",
+          "!var/**",
+          "!tests/**",
+          "!*.log",
+          "!.env.local"
+        ]
+      },
+      {
+        "from": "../tools",
+        "to": "tools",
+        "filter": [
+          "cloudflared.exe"
+        ]
+      },
+      {
+        "from": ".packaging/php",
+        "to": "php"
+      }
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "dir"
+      ],
+      "forceCodeSigning": false,
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.7.5",
+    "electron-builder": "^26.0.12"
+  }
+}

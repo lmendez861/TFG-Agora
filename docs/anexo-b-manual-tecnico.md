@@ -78,7 +78,7 @@ Con las builds generadas, Symfony sirve:
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTP y resuelta con un hostname wildcard `nip.io`, por ejemplo `http://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/monitor/`.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/monitor/`.
 
 Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
 
@@ -97,7 +97,7 @@ El build deja dos artefactos principales en `desktop/dist/`:
 - `Agora Desktop Setup <version>.exe`: instalador Windows.
 - `win-unpacked/Agora Desktop.exe`: carpeta ejecutable para validacion directa.
 
-La build incluye `resources/backend`, `resources/tools/cloudflared.exe` y `resources/php/php.exe`. En tiempo de ejecucion la app controla migraciones, SQLite, acceso externo local, pruebas, logs, backups y restauracion desde su propia interfaz.
+La build incluye `resources/backend`, `resources/tools/cloudflared.exe` y `resources/php/php.exe`. En tiempo de ejecucion la app controla migraciones, SQLite, acceso externo local, pruebas, logs, backups y restauracion desde su propia interfaz. Ademas, el modo cloud permite consumir el monitor remoto, abrir portales desplegados, leer logs por SSH y ejecutar pruebas de smoke contra la instancia publica.
 
 Validacion headless del paquete:
 
@@ -139,10 +139,10 @@ Este chequeo usa exactamente los recursos empaquetados de `dist/win-unpacked/res
 
 - El backend protege `/api` mediante seguridad Symfony.
 - El portal interno usa `json_login` y sesion.
-- El backend mantiene `http_basic` como soporte operativo para pruebas y utilidades.
+- El backend mantiene `http_basic` como soporte operativo para pruebas y utilidades tecnicas controladas.
 - El portal externo usa un firewall separado con proveedor `EmpresaPortalCuenta`.
-- Existen rutas publicas para preregistro de cuenta, activacion legacy, login, solicitud de reseteo y restablecimiento de contrasena.
-- El monitor privado exige rol de monitorizacion y MFA para activar o detener el acceso publico.
+- Existen rutas publicas para preregistro de cuenta, login del portal externo, confirmacion de solicitud y solicitud de reseteo o restablecimiento de contrasena.
+- El monitor privado exige rol de monitorizacion y MFA para activar o detener el acceso publico local temporal.
 - La auditoria registra operaciones sensibles como aprobaciones, acceso publico, MFA, login de empresa y acciones de seguimiento.
 
 ### 5.1 Jerarquia de roles interna
@@ -174,7 +174,6 @@ Elementos relevantes:
 El proyecto queda preparado para correo transaccional mediante Brevo. Se usa para:
 
 - verificacion de solicitudes externas;
-- activacion de cuentas de empresa;
 - reseteo de contrasena;
 - MFA del monitor privado.
 
@@ -266,12 +265,14 @@ Archivos clave:
 Capacidades principales:
 
 - levantar y detener backend local;
-- activar y desactivar acceso externo con MFA;
-- abrir portal interno, externo y monitor;
-- ejecutar baterias de pruebas;
-- abrir logs, diagnosticar dependencias;
+- activar y desactivar acceso externo local con MFA;
+- abrir portal interno, externo y monitor en local;
+- guardar perfiles remotos cloud;
+- abrir portal interno y externo desplegados;
+- consultar monitor y logs remotos;
+- reiniciar contenedores remotos y generar backups PostgreSQL;
+- ejecutar baterias de pruebas y smoke workflows;
 - crear backups SQLite y restaurarlos;
-- ejecutar un smoke workflow extremo a extremo;
 - empaquetar la app con PHP portable.
 
 ## 13. Exportacion CSV
@@ -314,7 +315,7 @@ npm run build:backend
 
 ## 15. Riesgos tecnicos abiertos
 
-- el acceso publico depende de una maquina local y de un tunel temporal;
+- el acceso publico principal ya no depende del equipo local, pero el modo local con tunel temporal sigue existiendo como soporte tecnico;
 - la autenticacion corporativa no esta integrada con SSO institucional;
-- el almacenamiento documental sigue siendo local aunque el binario de nuevos documentos de empresa ya queda embebido en base de datos;
-- la optimizacion de rendimiento puede profundizarse con perfilado adicional en produccion real.
+- el almacenamiento documental sigue dependiendo de volumen local de la VM aunque el binario de nuevos documentos de empresa ya quede embebido en base de datos;
+- la optimizacion de rendimiento puede profundizarse con perfilado adicional, observabilidad y pruebas de carga en produccion real.

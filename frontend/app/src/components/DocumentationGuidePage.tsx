@@ -15,6 +15,7 @@ type RouteCard = {
   title: string;
   path: string;
   detail: string;
+  external?: boolean;
 };
 
 type ArchitectureLayer = {
@@ -67,16 +68,17 @@ const routeCards: RouteCard[] = [
     detail: 'Centro documental del proyecto, memoria, anexos, rutas y entregables.',
   },
   {
-    title: 'Monitor privado',
-    path: '/legacy/monitor',
-    detail: 'Shell legacy de supervision tecnica, acceso publico temporal, errores y validacion operativa.',
+    title: 'Agora Desktop',
+    path: 'Aplicacion de escritorio',
+    detail: 'Consola tecnica local/cloud para estado, pruebas, logs, reinicios y backups.',
+    external: true,
   },
 ];
 
 const architectureLayers: ArchitectureLayer[] = [
   {
     title: 'Backend Symfony',
-    detail: 'Concentra autenticacion, API REST, exportacion CSV, monitorizacion y logica de negocio.',
+    detail: 'Concentra autenticacion, API REST, exportacion CSV, telemetria interna y logica de negocio.',
   },
   {
     title: 'Portal interno',
@@ -208,7 +210,7 @@ function OverviewSection() {
               <div key={card.path} className="guide-file-list__item">
                 <strong>{card.title}</strong>
                 <span>{card.detail}</span>
-                <code>{origin}{card.path}</code>
+                <code>{card.external ? card.path : `${origin}${card.path}`}</code>
               </div>
             ))}
           </div>
@@ -413,10 +415,10 @@ export function DocumentationGuidePage() {
       <header className="guide-hero guide-hero--documentation">
         <div className="guide-hero__copy">
           <p className="guide-hero__eyebrow">Documentacion</p>
-          <h2>Centro documental del proyecto separado de la operacion y de la monitorizacion.</h2>
+          <h2>Centro documental del proyecto separado de la operacion y de la consola tecnica.</h2>
           <p className="guide-hero__description">
             Esta zona solo reune memoria, anexos, repositorio, arquitectura, flujo de trabajo y entregables. No mezcla
-            control de servicios, logs ni herramientas de monitor privado.
+            control de servicios, logs ni herramientas tecnicas de escritorio.
           </p>
           <div className="guide-hero__actions">
             <a href={repositoryUrl} target="_blank" rel="noreferrer" className="button button--primary button--sm">
@@ -435,7 +437,7 @@ export function DocumentationGuidePage() {
           <article className="guide-summary-card">
             <span>Ruta</span>
             <strong>/documentacion</strong>
-            <small>Centro documental independiente del monitor tecnico.</small>
+            <small>Centro documental independiente de Agora Desktop.</small>
           </article>
           <article className="guide-summary-card">
             <span>Repositorio</span>

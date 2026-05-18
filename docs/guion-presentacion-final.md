@@ -12,7 +12,7 @@ Explica que antes habia informacion dispersa, poca trazabilidad y dependencia de
 Resume cuatro objetivos: centralizar datos, abrir canal externo, dejar trazabilidad documental y construir algo defendible tecnicamente.
 
 ## 4. Arquitectura
-Defiende la separacion: Symfony concentra negocio y seguridad; React se divide en panel interno y portal externo; documentacion y monitor no contaminan el flujo operativo.
+Defiende la separacion: Symfony concentra negocio y seguridad; React se divide en panel interno y portal externo; documentacion y Agora Desktop no contaminan el flujo operativo.
 
 ## 5. Modelo y flujo
 Insiste en el orden de negocio: empresa activa, convenio operativo, asignacion, seguimiento y evaluacion. Esto demuestra que no son CRUD aislados.
@@ -48,7 +48,7 @@ Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que
 Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
 ## 16. Mejoras futuras
-Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y decidir si el escritorio absorbe por completo el monitor legacy.
+Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
 ## 17. Limitaciones
 No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
@@ -63,4 +63,4 @@ Cierra con una frase directa: el valor del TFG esta en convertir una necesidad r
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
 6. Portal externo en `https://agora.34.175.224.87.nip.io/externo/`.
-7. Agora Desktop en modo cloud o shell `/legacy/monitor` si queda tiempo.
+7. Agora Desktop en modo cloud si queda tiempo.

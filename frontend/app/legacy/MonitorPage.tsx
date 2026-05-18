@@ -12,7 +12,7 @@ import type {
   MonitorDocumentRecord,
   MonitorOverview,
   PublicAccessSnapshot,
-} from '../types';
+} from '../src/types';
 import {
   fetchMonitorOverview,
   fetchMfaStatus,
@@ -21,9 +21,9 @@ import {
   startPublicAccess,
   stopPublicAccess,
   verifyMfaCode,
-} from '../services/api';
-import { canPreviewDocument } from '../utils/documents';
-import { DocumentPreviewModal } from './DocumentPreviewModal';
+} from '../src/services/api';
+import { canPreviewDocument } from '../src/utils/documents';
+import { DocumentPreviewModal } from '../src/components/DocumentPreviewModal';
 
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
   dateStyle: 'medium',

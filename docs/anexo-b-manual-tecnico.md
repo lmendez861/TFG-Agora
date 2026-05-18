@@ -1,10 +1,10 @@
-# Anexo B. Manual Tecnico
+﻿# Anexo B. Manual Tecnico
 
 ## 1. Arquitectura general
 
 La solucion se compone de seis bloques:
 
-- `backend/`: API Symfony con Doctrine ORM, seguridad, correo, auditoria y monitorizacion.
+- `backend/`: API Symfony con Doctrine ORM, seguridad, correo, auditoria y telemetria interna.
 - `frontend/app/`: portal interno React 18 + TypeScript + Vite.
 - `frontend/company-portal/`: portal externo React 19 + TypeScript + Vite.
 - `desktop/`: app de escritorio Electron para operacion local, pruebas y empaquetado Windows.
@@ -74,11 +74,11 @@ Con las builds generadas, Symfony sirve:
 - `http://127.0.0.1:8000/app`
 - `http://127.0.0.1:8000/externo`
 - `http://127.0.0.1:8000/documentacion`
-- `http://127.0.0.1:8000/legacy/monitor`
+- supervision tecnica integrada en Agora Desktop
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/`, `URL/documentacion/` o `URL/legacy/monitor/`.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/` o `URL/documentacion/`. La supervision tecnica se realiza desde Agora Desktop.
 
 Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
 
@@ -97,7 +97,7 @@ El build deja dos artefactos principales en `desktop/dist/`:
 - `Agora Desktop Setup <version>.exe`: instalador Windows.
 - `win-unpacked/Agora Desktop.exe`: carpeta ejecutable para validacion directa.
 
-La build incluye `resources/backend`, `resources/tools/cloudflared.exe` y `resources/php/php.exe`. En tiempo de ejecucion la app controla migraciones, SQLite, acceso externo local, pruebas, logs, backups y restauracion desde su propia interfaz. Ademas, el modo cloud permite consumir el monitor remoto, abrir portales desplegados, leer logs por SSH y ejecutar pruebas de smoke contra la instancia publica.
+La build incluye `resources/backend`, `resources/tools/cloudflared.exe` y `resources/php/php.exe`. En tiempo de ejecucion la app controla migraciones, SQLite, acceso externo local, pruebas, logs, backups y restauracion desde su propia interfaz. Ademas, el modo cloud permite consumir la telemetria remota, abrir portales desplegados, leer logs por SSH y ejecutar pruebas de smoke contra la instancia publica.
 
 Validacion headless del paquete:
 
@@ -142,7 +142,7 @@ Este chequeo usa exactamente los recursos empaquetados de `dist/win-unpacked/res
 - El backend mantiene `http_basic` como soporte operativo para pruebas y utilidades tecnicas controladas.
 - El portal externo usa un firewall separado con proveedor `EmpresaPortalCuenta`.
 - Existen rutas publicas para preregistro de cuenta, login del portal externo, confirmacion de solicitud y solicitud de reseteo o restablecimiento de contrasena.
-- El monitor privado exige rol de monitorizacion y MFA para activar o detener el acceso publico local temporal.
+- Las operaciones de acceso publico temporal expuestas en Agora Desktop exigen rol de monitorizacion y MFA.
 - La auditoria registra operaciones sensibles como aprobaciones, acceso publico, MFA, login de empresa y acciones de seguimiento.
 
 ### 5.1 Jerarquia de roles interna
@@ -175,9 +175,9 @@ El proyecto queda preparado para correo transaccional mediante Brevo. Se usa par
 
 - verificacion de solicitudes externas;
 - reseteo de contrasena;
-- MFA del monitor privado.
+- MFA tecnico del modo local de Agora Desktop.
 
-El monitor refleja si el `MAILER_DSN` es real, de ejemplo o no funcional.
+La telemetria consumida por Agora Desktop refleja si el `MAILER_DSN` es real, de ejemplo o no funcional.
 
 ## 8. Control documental
 
@@ -222,7 +222,7 @@ Servicios relevantes:
 Archivos clave:
 
 - `frontend/app/src/App.tsx`
-- `frontend/app/src/components/MonitorPage.tsx`
+- `frontend/app/legacy/MonitorPage.tsx` (codigo archivado, fuera del bundle funcional)
 - `frontend/app/src/components/DocumentationGuidePage.tsx`
 - `frontend/app/src/components/MessageInboxPage.tsx`
 - `frontend/app/src/components/AsignacionForm.tsx`
@@ -319,3 +319,4 @@ npm run build:backend
 - la autenticacion corporativa no esta integrada con SSO institucional;
 - el almacenamiento documental sigue dependiendo de volumen local de la VM aunque el binario de nuevos documentos de empresa ya quede embebido en base de datos;
 - la optimizacion de rendimiento puede profundizarse con perfilado adicional, observabilidad y pruebas de carga en produccion real.
+

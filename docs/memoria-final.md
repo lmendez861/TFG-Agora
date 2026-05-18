@@ -1,4 +1,4 @@
----
+﻿---
 title: Gestion de Empresas Colaboradoras para FP Dual
 author: Luis Angel
 tutor: Elena
@@ -14,13 +14,13 @@ Quiero agradecer a mi tutora Elena el seguimiento continuo del trabajo, la revis
 
 ## Resumen (ES)
 
-Este proyecto desarrolla una plataforma para gestionar empresas colaboradoras, convenios, estudiantes, tutores, seguimientos y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro, una guia documental separada, una capa privada de supervision tecnica y una app de escritorio para operacion local. La aplicacion cubre el ciclo operativo completo: preregistro de cuentas de empresa, envio de solicitudes corporativas, verificacion por correo, revision interna, continuidad de acceso antes y despues de la aprobacion, gestion de convenios, asignacion de estudiantes, seguimiento con evidencias, evaluacion final, control documental versionado, exportacion CSV y control local de servicios con pruebas y backups. La entrega final prioriza mantenibilidad, separacion clara de responsabilidades, despliegue integrado y publicacion reproducible tanto en local como en una VM publica, y una base funcional suficientemente solida para su defensa academica.
+Este proyecto desarrolla una plataforma para gestionar empresas colaboradoras, convenios, estudiantes, tutores, seguimientos y solicitudes externas en un entorno de FP Dual. La solucion se compone de una API en Symfony, un portal interno en React y TypeScript, un portal externo orientado a empresas interesadas en colaborar con el centro, una guia documental separada y Agora Desktop como consola tecnica para operacion local o cloud. La aplicacion cubre el ciclo operativo completo: preregistro de cuentas de empresa, envio de solicitudes corporativas, verificacion por correo, revision interna, continuidad de acceso antes y despues de la aprobacion, gestion de convenios, asignacion de estudiantes, seguimiento con evidencias, evaluacion final, control documental versionado, exportacion CSV y supervision tecnica con pruebas, logs y backups desde escritorio. La entrega final prioriza mantenibilidad, separacion clara de responsabilidades, despliegue integrado y publicacion reproducible tanto en local como en una VM publica, y una base funcional suficientemente solida para su defensa academica.
 
 Palabras clave: FP Dual, empresas colaboradoras, convenios, seguimiento, Symfony, React, gestion academica.
 
 ## Summary (EN)
 
-This project delivers a platform to manage partner companies, agreements, students, mentors, follow-up records, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, an external company portal, a separated documentation guide, a private monitoring layer, and a desktop application for local operations. The platform covers the full operational workflow: company registration, email verification, internal review, persistent company account activation, agreement management, student assignment, follow-up evidence, final evaluation, versioned document control, CSV export, and local service control with testing and backups. The final delivery prioritizes maintainability, clear separation of responsibilities, an integrated single-URL deployment, and a functional baseline suitable for academic defense.
+This project delivers a platform to manage partner companies, agreements, students, mentors, follow-up records, and external registration requests for dual training. The solution combines a Symfony API, an internal React and TypeScript portal, an external company portal, a separated documentation guide, and a desktop technical console for local or cloud operations. The platform covers the full operational workflow: company registration, email verification, internal review, persistent company account activation, agreement management, student assignment, follow-up evidence, final evaluation, versioned document control, CSV export, and technical supervision with testing, logs, and backups from the desktop client. The final delivery prioritizes maintainability, clear separation of responsibilities, an integrated single-URL deployment, and a functional baseline suitable for academic defense.
 
 Keywords: dual training, partner companies, agreements, follow-up, Symfony, React, academic management.
 
@@ -28,7 +28,7 @@ Keywords: dual training, partner companies, agreements, follow-up, Symfony, Reac
 
 La gestion de empresas colaboradoras y practicas formativas suele apoyarse en hojas de calculo, correos electronicos y documentos repartidos entre distintas carpetas. Ese enfoque genera duplicidades, dificulta la trazabilidad y complica la supervision del estado real de cada solicitud, convenio o asignacion. El proyecto parte de esa necesidad y reorganiza el antiguo contexto tecnico de Agora para resolver un problema concreto del centro educativo: controlar el alta de empresas, formalizar convenios y gestionar practicas desde una unica plataforma coherente.
 
-El resultado ya no se plantea como un prototipo aislado. La aplicacion separa claramente el acceso interno, el acceso externo, la documentacion, la monitorizacion y la operacion de escritorio, y refuerza su base con autenticacion, control documental, seguimiento operativo, automatizacion de pruebas y verificacion tecnica. Esta aproximacion permite explicar el sistema de forma comprensible durante la defensa y, al mismo tiempo, dejar una estructura realista para evolucion posterior.
+El resultado ya no se plantea como un prototipo aislado. La aplicacion separa claramente el acceso interno, el acceso externo, la documentacion y la operacion tecnica de escritorio, y refuerza su base con autenticacion, control documental, seguimiento operativo, automatizacion de pruebas y verificacion tecnica. Esta aproximacion permite explicar el sistema de forma comprensible durante la defensa y, al mismo tiempo, dejar una estructura realista para evolucion posterior.
 
 # Objetivos y alcance
 
@@ -45,11 +45,11 @@ Disenar e implantar una aplicacion web que centralice la gestion de empresas col
 5. Gestionar seguimientos, evidencias y evaluacion final dentro de la ficha de asignacion.
 6. Implantar control documental con versionado, retirada controlada y restauracion.
 7. Permitir la exportacion CSV de la informacion operativa relevante.
-8. Mantener una arquitectura separada y mantenible entre API, portal interno, portal externo, documentacion, monitor privado y app de escritorio operativa.
+8. Mantener una arquitectura separada y mantenible entre API, portal interno, portal externo, documentacion y app de escritorio operativa.
 
 ## Alcance
 
-Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, una app de escritorio para operacion tecnica en local o en cloud, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose, PostgreSQL, proxy HTTPS y correo transaccional operativo. Se mantiene ademas un monitor privado y el flujo local con MFA para acceso publico temporal, pero ya no forman parte del recorrido principal de la demo cloud. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el almacenamiento documental en nube gestionada, un cliente de escritorio completo para toda la operativa funcional del negocio y una instrumentacion avanzada de produccion con alta disponibilidad.
+Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, una app de escritorio para operacion tecnica en local o en cloud, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose, PostgreSQL, proxy HTTPS y correo transaccional operativo. El flujo local con MFA para acceso publico temporal sigue existiendo dentro de Agora Desktop, pero ya no hay una pagina web de monitorizacion separada en el recorrido funcional. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el almacenamiento documental en nube gestionada, un cliente de escritorio completo para toda la operativa funcional del negocio y una instrumentacion avanzada de produccion con alta disponibilidad.
 
 # Analisis de requisitos
 
@@ -76,7 +76,7 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 - Registrar seguimientos, adjuntar evidencias, cerrar hitos y emitir una evaluacion final.
 - Gestionar documentos con versionado, retirada controlada y restauracion.
 - Exportar informacion en CSV desde dashboard y modulos principales.
-- Supervisar estado tecnico, logs, documentos y acceso publico desde un monitor privado.
+- Supervisar estado tecnico, logs, documentos y acceso publico temporal desde Agora Desktop.
 
 ## Requisitos no funcionales
 
@@ -90,9 +90,9 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 
 ## Arquitectura general
 
-La solucion se estructura en seis bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el preregistro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es una capa de supervision tecnica formada por un monitor web de respaldo y por una consola de escritorio. El sexto es Agora Desktop, una app Electron para operacion tecnica local o remota, automatizacion de pruebas, diagnostico, logs, reinicios y empaquetado Windows.
+La solucion se estructura en cinco bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el preregistro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es Agora Desktop, una app Electron para operacion tecnica local o remota, automatizacion de pruebas, diagnostico, logs, reinicios y empaquetado Windows.
 
-El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion`, el monitor web de respaldo bajo `/legacy/monitor` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre esas mismas rutas, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
+El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre la misma raiz publica y sobre la API de monitorizacion, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
 
 ![Figura 1. Arquitectura operativa y de despliegue del sistema.](capturas/01-bloques-funcionalidad.png)
 
@@ -104,14 +104,14 @@ Si se expresa la solucion en capas tecnologicas, la arquitectura puede resumirse
 2. **Capa de presentacion externa**: SPA independiente en React y TypeScript servida bajo `/externo`, destinada a empresas colaboradoras antes y despues de su aprobacion.
 3. **Capa de negocio**: backend Symfony 7 que centraliza autenticacion, roles, validacion, reglas de negocio, auditoria, MFA y exposicion de API REST.
 4. **Capa de persistencia**: Doctrine ORM sobre SQLite en desarrollo y sobre un motor de servidor como PostgreSQL o MariaDB en despliegue permanente.
-5. **Capa documental y operativa**: documentacion publica, monitor web de respaldo y app de escritorio para soporte tecnico, pruebas y empaquetado.
+5. **Capa documental y operativa**: documentacion publica y app de escritorio para soporte tecnico, pruebas y empaquetado.
 6. **Capa de infraestructura**: VM publica en Google Cloud Compute Engine o entorno local empaquetado, contenedores Docker, proxy HTTPS, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por DNS wildcard.
 
 Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud. La Figura 1 resume precisamente esa topologia final: dos clientes web, una consola tecnica, un borde HTTPS y un backend contenedorizado sobre infraestructura persistente.
 
 ### Esquema detallado de arquitectura
 
-En la defensa resulta mas claro bajar un nivel adicional y expresar la arquitectura como un recorrido tecnico de extremo a extremo. El esquema visual de la Figura 1 se complementa con este recorrido textual para justificar que la misma raiz publica sirve los dos portales, la documentacion y la shell legacy, mientras la consola de escritorio opera por API y SSH:
+En la defensa resulta mas claro bajar un nivel adicional y expresar la arquitectura como un recorrido tecnico de extremo a extremo. El esquema visual de la Figura 1 se complementa con este recorrido textual para justificar que la misma raiz publica sirve los dos portales y la documentacion, mientras la consola de escritorio opera por API y SSH:
 
 ```text
 Navegador empresa
@@ -139,8 +139,8 @@ Ambos recorridos
 
 Servicios auxiliares
   -> /documentacion como shell publica separada
-  -> /legacy/monitor como area tecnica de respaldo
-  -> Agora Desktop como capa local de soporte, pruebas y empaquetado
+  -> /api/monitor como telemetria interna consumida por Agora Desktop
+  -> Agora Desktop como capa local de soporte, pruebas, logs y empaquetado
 ```
 
 Este esquema deja claro un punto importante para la defensa: el portal externo no es una pagina estatica conectada de forma superficial a la API, sino un cliente autenticado con su propio firewall, su propio proveedor de usuarios y un flujo separado del panel interno, aunque ambos compartan el mismo nucleo de negocio.
@@ -171,7 +171,7 @@ Este segundo nivel ayuda a defender que la solucion ya no depende del portatil d
 
 ## Justificacion tecnica de la separacion
 
-El portal interno y el portal externo se desarrollan como SPA independientes. Esta separacion permite evolucionar cada interfaz segun su contexto sin mezclar dependencias, ciclos de despliegue ni decisiones de UX. El backend se mantiene como pieza central de negocio y seguridad, mientras que documentacion y monitor se sirven como shells diferenciadas para no contaminar el flujo funcional del producto.
+El portal interno y el portal externo se desarrollan como SPA independientes. Esta separacion permite evolucionar cada interfaz segun su contexto sin mezclar dependencias, ciclos de despliegue ni decisiones de UX. El backend se mantiene como pieza central de negocio y seguridad, mientras que la documentacion se sirve como shell diferenciada y la supervision tecnica se desplaza a Agora Desktop para no contaminar el flujo funcional del producto.
 
 No se trata de dos programas distintos que resuelvan el mismo problema, sino de dos accesos diferenciados a una misma plataforma. El portal interno responde a necesidades de coordinacion, validacion y administracion del centro, mientras que el portal externo responde a la experiencia de empresa antes y despues de su aprobacion. Mantener ambos recorridos en aplicaciones separadas reduce complejidad visual, evita exponer logica interna al usuario externo y permite aplicar reglas de seguridad, navegacion y despliegue diferentes sin duplicar la logica de negocio, que sigue concentrada en la API Symfony.
 
@@ -298,7 +298,7 @@ Con esta lectura por estados se entiende mejor por que el refresco automatico de
 
 ## Diseno de interfaz
 
-El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, bandeja unificada, perfil y monitor privado. La interfaz combina tablas, tarjetas, paneles de detalle, formularios modales, workflows, documentos versionados y exportaciones CSV. El portal externo se organiza en un recorrido coherente entre inicio, registro, correo, estado, acceso empresa, recursos y panel privado. La documentacion, el monitor y la app de escritorio se mantienen separados del flujo principal para distinguir claramente uso funcional, supervision tecnica y operacion local.
+El portal interno se estructura por modulos: dashboard, empresas, convenios, estudiantes, asignaciones, tutores, solicitudes, bandeja unificada y perfil. La interfaz combina tablas, tarjetas, paneles de detalle, formularios modales, workflows, documentos versionados y exportaciones CSV. El portal externo se organiza en un recorrido coherente entre inicio, registro, correo, estado, acceso empresa, recursos y panel privado. La documentacion y la app de escritorio se mantienen separadas del flujo principal para distinguir claramente uso funcional, supervision tecnica y operacion local.
 
 Dentro del portal interno, los KPI del dashboard no se usan como un recurso estetico, sino como un mecanismo de supervision rapida. Su objetivo es ofrecer al personal del centro una lectura inmediata del estado operativo: volumen de empresas, convenios, estudiantes, asignaciones y actividad pendiente. Esta capa resumida reduce navegacion innecesaria, ayuda a detectar incidencias o cuellos de botella y sirve como punto de entrada a los modulos con mayor carga de gestion. En otras palabras, el dashboard no sustituye a los listados detallados, pero si actua como cuadro de mando para priorizar acciones.
 
@@ -310,7 +310,7 @@ Dentro del portal interno, los KPI del dashboard no se usan como un recurso este
 
 ![Figura 6. Guia funcional de la plataforma.](capturas/06-documentacion-guia.png)
 
-![Figura 7. Monitor operativo privado con MFA y control de acceso.](capturas/07-monitor-operativo.png)
+![Figura 7. Agora Desktop como consola tecnica local y cloud.](capturas/07-agora-desktop-operativo.png)
 
 # Implementacion
 
@@ -320,7 +320,7 @@ El backend concentra controladores REST para empresas, convenios, estudiantes, a
 
 ## Portal interno
 
-El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional, una bandeja unificada de mensajeria para conversaciones empresa-centro y un monitor privado separado del resto del uso operativo. En la version final, la sincronizacion del portal funcional es automatica y silenciosa: se refresca de forma periodica y tambien cuando el navegador recupera el foco, sin mostrar la URL tecnica de la API ni un boton manual de sincronizacion durante la demo. Para reforzar la coherencia del proceso, la campana superior concentra tanto las solicitudes pendientes como el acceso a la bandeja, mientras que los formularios filtran y validan las entidades operativas antes de permitir convenios o asignaciones. Ademas, los detalles de convenios, asignaciones, pipeline visual, bandeja y exportaciones CSV se han estabilizado en la revision final tras una pasada de regresion funcional.
+El portal interno funciona como shell de gestion academica y administrativa. Desde ahi se consultan KPI, se gestionan entidades principales, se revisan solicitudes, se accede a fichas 360 de empresas y convenios, se trabaja con seguimientos y se lanzan exportaciones CSV. El panel incorpora una pagina de acceso profesional y una bandeja unificada de mensajeria para conversaciones empresa-centro. En la version final, la sincronizacion del portal funcional es automatica y silenciosa: se refresca de forma periodica y tambien cuando el navegador recupera el foco, sin mostrar la URL tecnica de la API ni un boton manual de sincronizacion durante la demo. Para reforzar la coherencia del proceso, la campana superior concentra tanto las solicitudes pendientes como el acceso a la bandeja, mientras que los formularios filtran y validan las entidades operativas antes de permitir convenios o asignaciones. Ademas, los detalles de convenios, asignaciones, pipeline visual, bandeja y exportaciones CSV se han estabilizado en la revision final tras una pasada de regresion funcional.
 
 ## Portal externo
 
@@ -348,7 +348,7 @@ En la practica, la autenticacion interna combina configuracion de frontend y bac
 
 ## Publicacion integrada
 
-La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo, `/documentacion` para la guia funcional y `/legacy/monitor` como shell tecnica de respaldo. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
+La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo y `/documentacion` para la guia funcional. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
 
 Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo.
 
@@ -359,7 +359,7 @@ Para que la profesora pueda probar la aplicacion no es necesario que instale PHP
 - `URL/app` para el panel interno;
 - `URL/externo` para el portal de empresa;
 - `URL/documentacion` para la guia funcional;
-- `URL/legacy/monitor` como fallback tecnico protegido, aunque la supervision ordinaria se realiza ya desde Agora Desktop.
+- Agora Desktop como consola tecnica unica para estado, pruebas, logs, reinicios y backups.
 
 Como alternativa existe la app de escritorio empaquetada en Windows, que incorpora el runtime PHP y automatiza la preparacion del entorno local. En ese caso la persona evaluadora solo tendria que abrir la aplicacion, levantar el entorno y acceder a las rutas locales desde la propia interfaz. Aun asi, para una revision remota real la via recomendada ya no es el tunel temporal, sino la URL publica de la VM.
 
@@ -379,7 +379,7 @@ La validacion del proyecto combina compilacion de ambos frontends, pruebas autom
 
 ## Resultados observados
 
-La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo, la documentacion y el monitor privado quedan accesibles tanto en la URL local integrada como en el despliegue remoto de Google Cloud. El flujo de empresa cubre preregistro de cuenta, solicitud corporativa, verificacion, revision interna, continuidad de acceso y operativa posterior. La revision final ha confirmado tambien la correccion de exportaciones CSV, validacion de contrasenas del portal externo, detalle de convenios, detalle de asignaciones, edicion de tutores, relacion entre tutores profesionales y empresa, contador de tutores en tarjetas, almacenamiento documental privado de empresa, refresco automatico de mensajeria, notificacion de rechazo por correo y operativa de la app de escritorio.
+La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo y la documentacion quedan accesibles tanto en la URL local integrada como en el despliegue remoto de Google Cloud. El flujo de empresa cubre preregistro de cuenta, solicitud corporativa, verificacion, revision interna, continuidad de acceso y operativa posterior. La revision final ha confirmado tambien la correccion de exportaciones CSV, validacion de contrasenas del portal externo, detalle de convenios, detalle de asignaciones, edicion de tutores, relacion entre tutores profesionales y empresa, contador de tutores en tarjetas, almacenamiento documental privado de empresa, refresco automatico de mensajeria, notificacion de rechazo por correo y operativa de la app de escritorio.
 
 De cara a la entrega, los artefactos de apoyo a la defensa, como el video demostrativo y la muestra CSV/Excel utilizada para explicar la exportacion, se han regenerado con datos anonimizados. Esto permite apoyar la exposicion con evidencias reales del sistema sin exponer direcciones de correo u otros datos personales innecesarios.
 
@@ -426,7 +426,7 @@ En la revision final se han ejecutado, como minimo, estas comprobaciones:
 - `npm run build:backend` en `frontend/app`;
 - `npm run build:backend` en `frontend/company-portal`;
 - `npm run check`, `npm run smoke:workflow`, `npm run package:win` y `npm run validate:packaged` en `desktop`;
-- comprobaciones HTTP de `/app`, `/externo`, `/documentacion`, `/legacy/monitor`, `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`.
+- comprobaciones HTTP de `/app`, `/externo`, `/documentacion`, `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`.
 
 En la ultima validacion completa, el backend ha quedado en 101 tests y 567 aserciones correctas, el frontend interno en 14 tests unitarios, Playwright en 6 pruebas E2E superadas y Agora Desktop en smoke de flujo, instalador Windows y validacion del runtime empaquetado con PHP embebido, SQLite y rutas integradas respondiendo correctamente.
 
@@ -449,7 +449,7 @@ El proyecto cumple el objetivo principal de centralizar la gestion de empresas c
 
 Las siguientes iteraciones deberian priorizar mejoras secundarias o de evolucion, no bloqueantes para la entrega actual:
 
-1. consolidar Agora Desktop como cliente tecnico principal y decidir si la shell web `/legacy/monitor` debe retirarse por completo cuando ya no aporte valor operativo;
+1. ampliar Agora Desktop como cliente tecnico principal sin mezclarlo con operativa funcional de negocio;
 2. decidir si el escritorio debe seguir siendo solo consola tecnica o si debe incorporar bandeja, aprobaciones y mensajeria del negocio;
 3. integrar identidad corporativa o SSO institucional para evitar cuentas aisladas del centro;
 4. mover almacenamiento documental y copias de seguridad a servicios gestionados con politicas de retencion;
@@ -459,7 +459,7 @@ Las siguientes iteraciones deberian priorizar mejoras secundarias o de evolucion
 
 # Conclusiones
 
-La aplicacion desarrollada aporta una respuesta coherente a un problema real de gestion academica y administrativa. La separacion entre backend, portal interno, portal externo, documentacion, monitor tecnico y app de escritorio mejora claridad, mantenibilidad y capacidad de evolucion. Desde el punto de vista academico, el proyecto demuestra no solo implementacion funcional, sino tambien una preocupacion real por arquitectura, validacion, operacion, seguridad, empaquetado y presentacion final del producto.
+La aplicacion desarrollada aporta una respuesta coherente a un problema real de gestion academica y administrativa. La separacion entre backend, portal interno, portal externo, documentacion y app de escritorio mejora claridad, mantenibilidad y capacidad de evolucion. Desde el punto de vista academico, el proyecto demuestra no solo implementacion funcional, sino tambien una preocupacion real por arquitectura, validacion, operacion, seguridad, empaquetado y presentacion final del producto.
 
 # Referencias
 
@@ -494,3 +494,4 @@ Referencias principales:
 - `docs/anexo-d-codigo-relevante.md`
 - `docs/domain-model.md`
 - `docs/refactor-plan.md`
+

@@ -29,7 +29,6 @@ const ROOT_PUBLIC_OUT_LOG = path.join(ROOT_DIR, 'cloudflared.out.log');
 const ROOT_PUBLIC_ERR_LOG = path.join(ROOT_DIR, 'cloudflared.err.log');
 const INTERNAL_URL = `http://127.0.0.1:${PORT}/app`;
 const EXTERNAL_URL = `http://127.0.0.1:${PORT}/externo`;
-const MONITOR_URL = `http://127.0.0.1:${PORT}/legacy/monitor`;
 const API_HEALTH_URL = `http://127.0.0.1:${PORT}/api/empresas`;
 const PUBLIC_TARGET_URL = `http://127.0.0.1:${PORT}`;
 const CLOUDFLARED_URL = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe';
@@ -549,7 +548,7 @@ function buildRuntimeUrls(config = getDesktopConfig()) {
     return {
       internal: INTERNAL_URL,
       externalLocal: EXTERNAL_URL,
-      monitor: MONITOR_URL,
+      monitor: null,
       publicExternal: null,
       publicInternal: null,
     };
@@ -2198,7 +2197,7 @@ async function getStatus() {
   });
   const dbPath = parseSqlitePath();
   const publicState = await getPublicState();
-  const monitorResponse = await requestUrl(MONITOR_URL, 'GET');
+  const monitorResponse = await requestInternalApi('/api/monitor', { timeoutMs: 6000 });
   const mfaStatus = backendResponse.ok ? await getMfaStatus() : null;
   const localUrls = {
     ...urls,
@@ -2232,6 +2231,7 @@ async function getStatus() {
       },
       monitor: {
         status: monitorResponse.ok ? 'running' : 'stopped',
+        label: monitorResponse.ok ? 'Integrado' : 'Sin respuesta',
       },
       publicAccess: publicState,
       mfa: mfaStatus,

@@ -1,4 +1,4 @@
-# Anexo A. Manual de Usuario
+﻿# Anexo A. Manual de Usuario
 
 ## 1. Objetivo
 
@@ -6,10 +6,10 @@ Este anexo describe el uso funcional de la plataforma "Gestion de Empresas Colab
 
 ## 2. Perfiles de uso
 
-- `ROLE_ADMIN`: administracion general, monitor privado, auditoria y control completo del panel.
+- `ROLE_ADMIN`: administracion general, auditoria, operacion tecnica y control completo del panel.
 - `ROLE_COORDINATOR`: gestion de empresas, convenios, estudiantes, asignaciones, seguimientos y solicitudes.
 - `ROLE_DOCUMENT_MANAGER`: control documental, versionado y restauracion de evidencias.
-- `ROLE_MONITOR`: supervision tecnica, logs y acceso publico temporal.
+- `ROLE_MONITOR`: supervision tecnica, logs y acceso publico temporal desde Agora Desktop.
 - `ROLE_AUDITOR`: consulta de trazas y actividad sensible.
 - Empresa externa: uso del portal publico para crear cuenta, registrar su interes, verificar el correo y comunicarse con el centro.
 
@@ -17,12 +17,12 @@ Este anexo describe el uso funcional de la plataforma "Gestion de Empresas Colab
 
 ### 3.0 Acceso externo para evaluacion
 
-Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como `http://agora.34.175.224.87.nip.io/`, y sobre esa misma direccion abrir:
+Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como `https://agora.34.175.224.87.nip.io/`, y sobre esa misma direccion abrir:
 
 - `/app` para el panel interno;
 - `/externo` para el portal de empresa;
 - `/documentacion` para la guia funcional;
-- `/monitor` para el monitor privado.
+- Agora Desktop como consola tecnica local o cloud.
 
 Este acceso remoto depende de que la VM publica y el stack Docker sigan levantados. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.
 
@@ -40,10 +40,11 @@ Este acceso remoto depende de que la VM publica y el stack Docker sigan levantad
 - URL: `http://127.0.0.1:8000/documentacion`
 - No requiere autenticacion.
 
-### 3.3 Monitor privado
+### 3.3 Supervision tecnica con Agora Desktop
 
-- URL: `http://127.0.0.1:8000/monitor`
-- Requiere credenciales internas y MFA para operaciones sensibles.
+- App Windows para revisar estado, pruebas, logs, reinicios y backups.
+- En modo local controla el backend y el acceso publico temporal con MFA.
+- En modo cloud consume la telemetria remota y ejecuta operaciones tecnicas sobre la VM.
 
 ### 3.4 Portal externo
 
@@ -55,7 +56,7 @@ Este acceso remoto depende de que la VM publica y el stack Docker sigan levantad
 
 - App Windows para levantar el entorno local sin abrir consola manualmente.
 - Permite arrancar backend, abrir portales, ejecutar pruebas, revisar logs, crear backups SQLite y restaurarlos.
-- Incluye control MFA para activar la URL externa temporal.
+- Tambien funciona en modo cloud para consumir estado remoto, lanzar smoke y operar la VM por API y SSH.
 
 ## 4. Navegacion principal del panel interno
 
@@ -80,7 +81,7 @@ Desde el dashboard se puede:
 - abrir accesos rapidos a las areas operativas;
 - exportar un CSV de resumen con indicadores y analitica.
 
-La sincronizacion del panel interno se realiza de forma automatica en segundo plano. En la version final no se muestra la URL tecnica de la API ni un boton de sincronizacion en el dashboard o en la barra superior; el control manual queda reservado al monitor privado, donde se usa como herramienta de supervision durante la demo tecnica.
+La sincronizacion del panel interno se realiza de forma automatica en segundo plano. En la version final no se muestra la URL tecnica de la API ni un boton de sincronizacion en el dashboard o en la barra superior; el control manual queda reservado a Agora Desktop, donde se usa como herramienta de supervision durante la demo tecnica.
 
 ## 6. Gestion de empresas
 
@@ -160,27 +161,17 @@ En `Bandeja` el usuario puede:
 - responder desde el panel interno;
 - abrir la solicitud relacionada cuando sea necesario.
 
-## 12. Monitor privado
-
-Desde el monitor privado el usuario puede:
-
-- revisar servicios y metricas de entorno;
-- consultar logs, incidencias y documentos previsualizables;
-- revisar el estado del correo saliente;
-- solicitar y validar un codigo MFA;
-- levantar o detener el acceso publico temporal;
-- copiar la URL externa cuando el tunel este activo.
-
-## 12 bis. Agora Desktop
+## 12. Agora Desktop
 
 Desde la app de escritorio el usuario tecnico puede:
 
 - preparar el entorno local;
-- levantar o detener backend y acceso externo;
-- abrir portal interno, monitor y portal externo;
-- ejecutar pruebas de escritorio, backend, frontend y E2E;
-- abrir logs y diagnosticos;
+- levantar o detener backend y acceso externo temporal;
+- abrir portal interno y portal externo;
+- ejecutar pruebas de escritorio, backend, frontend, E2E y smoke cloud;
+- abrir logs y diagnosticos locales o remotos;
 - crear y restaurar backups SQLite;
+- reiniciar contenedores remotos y descargar backups PostgreSQL;
 - lanzar una prueba completa de flujo entre portales.
 
 ## 13. Portal externo
@@ -201,7 +192,7 @@ El flujo del portal externo es:
 - Si faltan credenciales o son incorrectas, la API devolvera error de autenticacion.
 - Si un formulario contiene datos invalidos, el modal mostrara el mensaje correspondiente.
 - Si se solicita un nuevo codigo MFA, el anterior deja de ser valido automaticamente.
-- Si el correo saliente no esta bien configurado, el monitor lo reflejara como aviso.
+- Si el correo saliente no esta bien configurado, Agora Desktop y la API tecnica lo reflejaran como aviso.
 
 ## 15. Recomendaciones de uso
 
@@ -209,3 +200,4 @@ El flujo del portal externo es:
 - Revisar el estado documental del convenio antes de avanzar workflow.
 - Utilizar la bandeja unificada para no perder contexto de conversaciones.
 - Exportar CSV como apoyo para revision, seguimiento y defensa del TFG.
+

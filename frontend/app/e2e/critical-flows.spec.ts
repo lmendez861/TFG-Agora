@@ -45,15 +45,12 @@ test('internal portal login and dashboard load', async ({ page }) => {
   await expect(page.getByText('Convenios').first()).toBeVisible();
 });
 
-test('private monitor shell renders sections', async ({ page }) => {
-  const readyLocator = page.getByText(/Supervision operativa separada del portal funcional/i);
+test('legacy monitor routes are retired and redirect into the internal portal shell', async ({ page }) => {
+  const readyLocator = page.getByRole('button', { name: /salir/i });
   await page.goto('/legacy/monitor');
+  await page.waitForURL(/\/app$/);
   await ensureInternalLogin(page, readyLocator);
-  await page.waitForURL(/\/legacy\/monitor(\/sistemas)?/);
-
-  await expect(page.getByText(/Supervision operativa separada del portal funcional/i)).toBeVisible();
-  await expect(page.getByText(/Estado de componentes/i)).toBeVisible();
-  await expect(page.getByText(/Respuesta y datos cargados/i)).toBeVisible();
+  await expect(page.getByText('Empresas').first()).toBeVisible();
 });
 
 test('external account-first flow reaches mail step', async ({ page }) => {

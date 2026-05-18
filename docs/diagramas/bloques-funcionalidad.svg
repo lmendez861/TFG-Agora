@@ -53,7 +53,7 @@
   <text class="small-dark" x="82" y="784">Operacion tecnica</text>
   <text class="head-dark" x="82" y="820">Agora Desktop</text>
   <text class="text-dark" x="82" y="858">- modo local y modo cloud</text>
-  <text class="text-dark" x="82" y="888">- monitor, logs, reinicios y backups</text>
+  <text class="text-dark" x="82" y="888">- telemetria, logs, reinicios y backups</text>
 
   <rect class="card-soft" x="500" y="118" width="250" height="90"/>
   <text class="small" x="530" y="150">Borde publico</text>
@@ -66,8 +66,8 @@
   <rect class="card" x="465" y="338" width="340" height="132"/>
   <text class="small" x="492" y="370">Frontend servido por Symfony</text>
   <text class="head" x="492" y="404">Shell integrada</text>
-  <text class="text" x="492" y="438">/app, /externo, /documentacion</text>
-  <text class="text" x="492" y="464">/legacy/monitor como respaldo tecnico</text>
+  <text class="text" x="492" y="438">/app, /externo y /documentacion</text>
+  <text class="text" x="492" y="464">Sin pagina de monitor publicada</text>
 
   <rect class="card" x="465" y="498" width="340" height="220"/>
   <text class="small" x="492" y="532">Backend de negocio</text>
@@ -116,7 +116,7 @@
   <text class="small" x="1320" y="617">Resultado defendible</text>
   <text class="head" x="1320" y="651">Un proyecto cerrado</text>
   <text class="text" x="1320" y="685">Portales, despliegue, correo</text>
-  <text class="text" x="1320" y="715">desktop y shell legacy coherentes.</text>
+  <text class="text" x="1320" y="715">desktop y despliegue cloud coherentes.</text>
 
   <path class="line" d="M380 240 H490"/>
   <path class="line" d="M380 455 H490"/>
@@ -132,5 +132,5 @@
   <path class="line-soft" d="M1210 690 H1280"/>
   <path class="line-soft" d="M1210 330 H1280"/>
 
-  <text class="footer" x="60" y="948">La misma base publica por HTTPS sirve panel interno, portal externo, documentacion y monitor legacy; Agora Desktop opera en local o en cloud sobre esa misma topologia.</text>
+  <text class="footer" x="60" y="948">La misma base publica por HTTPS sirve panel interno, portal externo y documentacion; Agora Desktop opera en local o en cloud sobre esa misma topologia.</text>
 </svg>

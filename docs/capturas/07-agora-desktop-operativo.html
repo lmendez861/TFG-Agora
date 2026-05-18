@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel interno - dashboard</title>
+  <title>Agora Desktop operativo</title>
   <style>
     :root {
       --bg: #eef3f8;
@@ -197,33 +197,147 @@
   <div class="frame">
     <div class="topbar clearfix">
       <div class="brand">
-        <strong>Agora</strong>
-        <span class="badge">Panel interno</span>
+        <strong>Agora Desktop</strong>
+        <span class="badge">Modo cloud</span>
       </div>
       <div class="topbar__meta">
-        <span>Panel de practicas</span>
-        <span class="pill">Sesion admin</span>
+        <span>Consola tecnica</span>
+        <span class="pill">Acceso publico temporal local detenido</span>
       </div>
     </div>
     <div class="page">
       <section class="hero">
-        <p class="hero__eyebrow">Dashboard principal</p>
-        <h1>Gestion integral de practicas, empresas y convenios</h1>
-        <p>Vista general del panel interno con KPI, accesos rapidos y exportacion CSV del resumen operativo.</p>
-        <div class="cta-row">
-          <div class="cta cta--primary">Exportar CSV</div>
-          <div class="cta cta--secondary">Actualizacion automatica</div>
-        </div>
+        <p class="hero__eyebrow">Supervision integrada</p>
+        <h1>Estado, pruebas y operaciones desde una sola app</h1>
+        <p>Agora Desktop sustituye la antigua shell web de monitorizacion y concentra telemetria, pruebas, logs y operaciones remotas sobre la misma instancia cloud.</p>
       </section>
       <section class="section">
-        <p class="section__eyebrow">Indicadores</p>
-        <table class="grid">
+        <p class="section__eyebrow">Resumen</p>
+        <table class="meta-grid">
           <tr>
-            <td><article class="stat"><div class="stat__label">Empresas</div><div class="stat__value">14</div></article></td>
-            <td><article class="stat"><div class="stat__label">Convenios</div><div class="stat__value">13</div></article></td>
-            <td><article class="stat"><div class="stat__label">Estudiantes</div><div class="stat__value">13</div></article></td>
-            <td><article class="stat"><div class="stat__label">Asignaciones</div><div class="stat__value">13</div></article></td>
+            <td class="meta-card">
+              <h3>Telemetria</h3>
+              <p>APP_ENV: prod</p>
+              <p>API interna: https://agora.34.175.224.87.nip.io/api</p>
+              <p>PHP: 8.2.31</p>
+              <p>Zona horaria: Europe/Madrid</p>
+            </td>
+            <td class="meta-card">
+              <h3>Operacion</h3>
+              <p>Logs, reinicios, backups y smoke cloud quedan centralizados en la app.</p>
+              <p class="muted">El acceso externo esta detenido.</p>
+            </td>
+            <td class="meta-card">
+              <h3>Generado</h3>
+              <p>2026-05-18T23:57:14+02:00</p>
+              <p class="muted">Snapshot tecnico para memoria, defensa y manual de escritorio.</p>
+            </td>
           </tr>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Servicios</p>
+        <h2>Componentes supervisados</h2>
+        <table>
+          <thead><tr><th>Servicio</th><th>Estado</th><th>Detalle</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>API Symfony</td>
+        <td>healthy</td>
+        <td>Endpoint autenticado y operativo para supervision interna.</td>
+      </tr>
+      <tr>
+        <td>Panel interno React</td>
+        <td>healthy</td>
+        <td>Build del panel disponible bajo /app.</td>
+      </tr>
+      <tr>
+        <td>Portal externo</td>
+        <td>healthy</td>
+        <td>Build del portal disponible bajo /externo.</td>
+      </tr>
+      <tr>
+        <td>Correo saliente</td>
+        <td>healthy</td>
+        <td>Correo saliente preparado con Brevo.</td>
+      </tr>
+      <tr>
+        <td>MFA interno</td>
+        <td>healthy</td>
+        <td>Segundo factor listo para operaciones sensibles del monitor.</td>
+      </tr>
+      <tr>
+        <td>Acceso externo</td>
+        <td>warning</td>
+        <td>El acceso externo esta detenido.</td>
+      </tr>
+      <tr>
+        <td>Supervision automatizada</td>
+        <td>warning</td>
+        <td>Falta cobertura frontal completa o pruebas E2E de navegador.</td>
+      </tr>
+      <tr>
+        <td>Almacenamiento documental</td>
+        <td>healthy</td>
+        <td>Repositorio externo de ficheros en /data/document-storage.</td>
+      </tr></tbody>
+        </table>
+      </section>
+      <section class="table-card">
+        <p class="section__eyebrow">Metricas y pruebas</p>
+        <h2>Indicadores operativos y baterias</h2>
+        <table>
+          <thead><tr><th>Metrica</th><th>Valor</th><th>Detalle</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>Empresas</td>
+        <td>14</td>
+        <td>Empresas colaboradoras disponibles en la base de datos.</td>
+      </tr>
+      <tr>
+        <td>Convenios</td>
+        <td>13</td>
+        <td>Convenios con workflow y documentos asociados.</td>
+      </tr>
+      <tr>
+        <td>Estudiantes</td>
+        <td>13</td>
+        <td>Estudiantes listados en el panel.</td>
+      </tr>
+      <tr>
+        <td>Asignaciones</td>
+        <td>13</td>
+        <td>Asignaciones de practicas registradas.</td>
+      </tr>
+      <tr>
+        <td>Solicitudes activas</td>
+        <td>8</td>
+        <td>Solicitudes de empresa pendientes o verificadas por email.</td>
+      </tr>
+      <tr>
+        <td>Documentos</td>
+        <td>0</td>
+        <td>Adjuntos empresariales y de convenio almacenados.</td>
+      </tr></tbody>
+        </table>
+        <table style="margin-top:20px">
+          <thead><tr><th>Suite</th><th>Estado</th><th>Comando</th></tr></thead>
+          <tbody>
+      <tr>
+        <td>PHPUnit backend</td>
+        <td>healthy</td>
+        <td>php bin/phpunit</td>
+      </tr>
+      <tr>
+        <td>Node test frontend</td>
+        <td>warning</td>
+        <td>npm test</td>
+      </tr>
+      <tr>
+        <td>Playwright E2E</td>
+        <td>warning</td>
+        <td>npm run test:e2e</td>
+      </tr></tbody>
         </table>
       </section>
     </div>

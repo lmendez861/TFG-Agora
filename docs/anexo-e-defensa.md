@@ -1,4 +1,4 @@
-# Anexo E. Defensa del Proyecto
+﻿# Anexo E. Defensa del Proyecto
 
 ## 1. Objetivo del anexo
 Este anexo recoge material de apoyo para la exposicion oral del Trabajo Final de Grado. El enfoque no es solo explicar el proyecto, sino justificar el trabajo realizado, las decisiones tomadas y el recorte de alcance aplicado al cierre.
@@ -46,7 +46,7 @@ Analisis, arquitectura, implementacion, despliegue cloud, validacion y documenta
 Mantener el equilibrio entre alcance realista, coherencia tecnica y tiempo disponible. El cierre del proyecto ha exigido priorizar las funcionalidades nucleares y dejar como mejoras futuras las ampliaciones secundarias.
 
 ### 4.4 Que mejorarias con una iteracion adicional?
-Retirar el monitor web del uso diario en favor de la app de escritorio, decidir si el escritorio debe incorporar operativa funcional de negocio, integrar SSO institucional, mover documentos y backups a servicios gestionados y reforzar observabilidad y rendimiento.
+Consolidar Agora Desktop como consola tecnica, decidir si debe incorporar mas operativa funcional de negocio, integrar SSO institucional, mover documentos y backups a servicios gestionados y reforzar observabilidad y rendimiento.
 
 ### 4.5 Que gestor de correos usa el proyecto?
 Brevo. Se usa para verificacion de solicitudes, recuperacion de contrasena, MFA tecnico local y avisos de rechazo.
@@ -73,3 +73,4 @@ Se dejan `profesora / Abrete01` y `profesor / Abrete01`, ambos con permisos de c
 
 ## 6. Mensaje de cierre recomendado
 El valor del TFG esta en haber convertido una necesidad real en una solucion completa, trazable y defendible, sin esconder el recorte de alcance: lo importante ha sido cerrar bien el nucleo del producto y dejar identificadas con claridad las mejoras futuras.
+

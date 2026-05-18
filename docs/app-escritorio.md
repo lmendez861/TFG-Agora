@@ -1,4 +1,4 @@
-# Agora Desktop
+﻿# Agora Desktop
 
 App de escritorio para Windows basada en Electron. No sustituye al backend Symfony ni a los portales React: actua como consola tecnica para operar Agora en dos modos distintos.
 
@@ -16,7 +16,7 @@ Pensado para demo offline, desarrollo y soporte en el propio equipo. Permite:
 - abrir logs y carpetas de soporte;
 - crear backups SQLite y restaurar una copia seleccionada;
 - diagnosticar dependencias locales como PHP, npm, Composer o builds;
-- abrir el portal interno, el portal externo y el monitor local;
+- abrir el portal interno y el portal externo;
 - usar el acceso publico temporal con Cloudflare Tunnel y MFA tecnico.
 
 ### 2. Modo cloud
@@ -25,7 +25,7 @@ Pensado para operar la instancia desplegada en Google Cloud. Permite:
 
 - guardar un perfil remoto persistente con URL base, credenciales API y datos SSH;
 - validar la conectividad remota contra `https://...`;
-- consumir el monitor remoto desde la propia app;
+- consumir la telemetria remota desde la propia app;
 - abrir el portal interno y el portal externo desplegados en la VM;
 - consultar logs remotos de app, Symfony y base de datos por SSH;
 - reiniciar contenedores remotos de aplicacion y PostgreSQL;
@@ -43,7 +43,7 @@ Agora Desktop consume `/api/monitor` y concentra en una sola interfaz:
 - actividad reciente e incidencias detectadas;
 - suites de prueba disponibles para backend, frontend y E2E.
 
-La ruta web `/legacy/monitor` se mantiene solo como fallback tecnico. El uso diario recomendado pasa por la propia app de escritorio.
+La supervision tecnica ya no se expone como pagina web separada. El uso recomendado pasa por la propia app de escritorio.
 
 ## Herramientas operativas
 
@@ -85,7 +85,7 @@ En modo cloud, el smoke se lanza contra la URL publica configurada en el perfil 
 ### Local
 
 - Portal interno local: `http://127.0.0.1:8000/app`
-- Monitor local: `http://127.0.0.1:8000/legacy/monitor`
+- Supervision local: integrada en Agora Desktop
 - Portal externo local: `http://127.0.0.1:8000/externo`
 
 ### Cloud
@@ -123,3 +123,4 @@ npm run validate:packaged
 ```
 
 Este chequeo arranca el backend empaquetado desde `dist/win-unpacked/resources`, crea SQLite si hace falta y comprueba `/app`, `/externo`, `/api/monitor` y la exportacion CSV sin depender del entorno de desarrollo.
+

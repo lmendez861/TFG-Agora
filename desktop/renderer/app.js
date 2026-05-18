@@ -190,7 +190,7 @@ function renderStatus(status) {
   renderMfaStatus(status.services.mfa);
 
   setText(selectors.internalUrl, status.urls.internal || 'No disponible');
-  setText(selectors.monitorUrl, status.urls.monitor || 'Integrado en la app');
+  setText(selectors.monitorUrl, 'Integrado en Agora Desktop');
   setText(selectors.externalLocalUrl, status.urls.externalLocal || 'No disponible');
   setText(selectors.publicExternalUrl, status.urls.publicExternal || 'Pendiente');
 
@@ -311,9 +311,9 @@ function renderMonitorOverview(overview) {
     setText(selectors.operationUpdated, 'Sin datos');
     const monitorPlaceholder = isCloudMode()
       ? (state.status?.services?.monitor?.label === 'Sin permisos'
-        ? 'La cuenta cloud autentica, pero no puede leer el monitor. Usa admin/admin123 o un rol de monitor.'
-        : 'Configura credenciales remotas validas para leer el monitor cloud.')
-      : 'Levanta el backend para leer el monitor integrado.';
+        ? 'La cuenta cloud autentica, pero no puede leer la telemetria tecnica. Usa admin/admin123 o un rol de monitor.'
+        : 'Configura credenciales remotas validas para leer la telemetria cloud.')
+      : 'Levanta el backend para leer la telemetria integrada.';
     selectors.monitorServices.innerHTML = `<p class="placeholder-text">${monitorPlaceholder}</p>`;
     selectors.monitorMetrics.innerHTML = '';
     selectors.monitorIncidents.innerHTML = '';
@@ -662,7 +662,7 @@ async function refresh() {
       renderMonitorOverview(overview || fallbackOverview);
     } catch (error) {
       appendLog({
-        message: `Monitor integrado: ${error.message}`,
+        message: `Supervision integrada: ${error.message}`,
         at: new Date().toISOString(),
       });
       renderMonitorOverview(fallbackOverview);
@@ -722,7 +722,7 @@ async function saveConfig() {
       }
 
       if (status?.services.api?.status === 'running' && status?.services.monitor?.status !== 'running') {
-        setConnectionFeedback('success', 'Configuracion cloud guardada. El estado basico ya se puede supervisar; para el monitor completo usa un usuario con ROLE_MONITOR o ROLE_ADMIN.');
+        setConnectionFeedback('success', 'Configuracion cloud guardada. El estado basico ya se puede supervisar; para la telemetria completa usa un usuario con ROLE_MONITOR o ROLE_ADMIN.');
         return;
       }
 

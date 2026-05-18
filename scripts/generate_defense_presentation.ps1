@@ -408,11 +408,11 @@ try {
 
     # 13. Operacion local y app de escritorio
     $slide = Add-Slide $presentation
-    Add-Header $slide '12 / Agora Desktop' 'Consola tecnica local y cloud' 'La parte tecnica ya no depende de varios terminales sueltos: queda centralizada en una sola app.'
-    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-monitor-operativo.png') -Left 50 -Top 150 -MaxWidth 430 -MaxHeight 305 | Out-Null
+    Add-Header $slide '12 / Agora Desktop' 'Consola tecnica local y cloud' 'La parte tecnica ya no depende de varios terminales sueltos ni de una pagina web separada: queda centralizada en una sola app.'
+    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-agora-desktop-operativo.png') -Left 50 -Top 150 -MaxWidth 430 -MaxHeight 305 | Out-Null
     Add-BulletList $slide 540 162 320 210 @(
         'Modo local para backend, SQLite y demo offline.',
-        'Modo cloud para monitor, smoke, logs y reinicios remotos.',
+        'Modo cloud para estado, smoke, logs y reinicios remotos.',
         'MFA en operaciones sensibles del flujo local.',
         'Diagnostico, logs y backups desde una sola interfaz.',
         'Empaquetado Windows listo para la defensa.'
@@ -427,7 +427,7 @@ try {
     Add-Metric $slide 736 162 '6/6' 'E2E Playwright' $colors.green
     Add-BulletList $slide 94 314 740 110 @(
         'Build integrada de /app y /externo publicada en Symfony.',
-        'Verificados correo, rechazo, URLs publicas, chat, monitor legacy y app de escritorio.',
+        'Verificados correo, rechazo, URLs publicas, chat y consola tecnica de escritorio.',
         'Tambien se ha validado el empaquetado Windows con PHP embebido y SQLite.'
     ) 18 | Out-Null
     Add-Text -Slide $slide -Left 94 -Top 438 -Width 730 -Height 32 -Text 'Queda una deprecacion tecnica de PHPUnit, no bloqueante para la demo ni para la funcionalidad.' -Size 14 -Rgb $colors.muted | Out-Null
@@ -437,7 +437,7 @@ try {
     Add-Header $slide '14 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
     Add-Box -Slide $slide -Left 68 -Top 158 -Width 824 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
     Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text 'https://agora.34.175.224.87.nip.io/app   |   https://agora.34.175.224.87.nip.io/externo' -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
-    Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo, documentacion y la shell legacy.' -Size 14 -Rgb $colors.darkInk | Out-Null
+    Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo y documentacion; la operacion tecnica se hace desde Agora Desktop.' -Size 14 -Rgb $colors.darkInk | Out-Null
     Add-Box -Slide $slide -Left 86 -Top 302 -Width 320 -Height 118 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 118 -Top 328 -Width 250 -Height 22 -Text 'Usuario de prueba' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 118 -Top 362 -Width 250 -Height 22 -Text 'profesora / Abrete01' -Size 18 -Rgb $colors.ink -Bold $true -Font 'Consolas' | Out-Null
@@ -454,7 +454,7 @@ try {
     $deployOptions = @(
         @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar politicas TLS.', $colors.green),
         @('Servicios gestionados', 'Mover documentos, backups y observabilidad a piezas gestionadas.', $colors.cyan),
-        @('Cliente tecnico', 'Decidir si Agora Desktop absorbe por completo la shell web legacy.', $colors.amber)
+        @('Cliente tecnico', 'Ampliar Agora Desktop con mas automatizacion y soporte operativo sin mezclarlo con negocio.', $colors.amber)
     )
     for ($i = 0; $i -lt $deployOptions.Count; $i++) {
         $x = 56 + ($i * 298)
@@ -517,7 +517,7 @@ Explica que antes habia informacion dispersa, poca trazabilidad y dependencia de
 Resume cuatro objetivos: centralizar datos, abrir canal externo, dejar trazabilidad documental y construir algo defendible tecnicamente.
 
 ## 4. Arquitectura
-Defiende la separacion: Symfony concentra negocio y seguridad; React se divide en panel interno y portal externo; documentacion y monitor no contaminan el flujo operativo.
+Defiende la separacion: Symfony concentra negocio y seguridad; React se divide en panel interno y portal externo; documentacion y Agora Desktop no contaminan el flujo operativo.
 
 ## 5. Modelo y flujo
 Insiste en el orden de negocio: empresa activa, convenio operativo, asignacion, seguimiento y evaluacion. Esto demuestra que no son CRUD aislados.
@@ -553,7 +553,7 @@ Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que
 Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
 ## 16. Mejoras futuras
-Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y decidir si el escritorio absorbe por completo el monitor legacy.
+Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
 ## 17. Limitaciones
 No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
@@ -568,7 +568,7 @@ Cierra con una frase directa: el valor del TFG esta en convertir una necesidad r
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
 6. Portal externo en `https://agora.34.175.224.87.nip.io/externo/`.
-7. Agora Desktop en modo cloud o shell `/legacy/monitor` si queda tiempo.
+7. Agora Desktop en modo cloud si queda tiempo.
 '@
 
 Set-Content -Path $notesPath -Value $notes -Encoding UTF8

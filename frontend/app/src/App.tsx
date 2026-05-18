@@ -17,7 +17,6 @@ import { DashboardHomePage } from './components/DashboardHomePage';
 import { DocumentPreviewModal } from './components/DocumentPreviewModal';
 import { MessageInboxPage } from './components/MessageInboxPage';
 import { Modal } from './components/Modal';
-import { MonitorPage } from './components/MonitorPage';
 import { ToastStack, type ToastMessage } from './components/ToastStack';
 import {
   advanceConvenioWorkflow,
@@ -1063,10 +1062,6 @@ export default function App() {
     || rawPathname.startsWith('/documentacion/')
     || rawPathname === '/app/documentacion'
     || rawPathname.startsWith('/app/documentacion/');
-  const isMonitorRoute = rawPathname === '/legacy/monitor'
-    || rawPathname.startsWith('/legacy/monitor/')
-    || rawPathname === '/app/legacy/monitor'
-    || rawPathname.startsWith('/app/legacy/monitor/');
   const isEmpresasRoute = rawPathname === '/empresas'
     || rawPathname.startsWith('/empresas/')
     || rawPathname === '/app/empresas'
@@ -1820,7 +1815,7 @@ export default function App() {
   }, [isDocumentationRoute, loadReferenceData, loadingReferenceData, me, referenceData]);
 
   useEffect(() => {
-    if (!me || isDocumentationRoute || isMonitorRoute) {
+    if (!me || isDocumentationRoute) {
       return undefined;
     }
 
@@ -1860,7 +1855,7 @@ export default function App() {
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isDocumentationRoute, isMonitorRoute, loadData, me]);
+  }, [isDocumentationRoute, loadData, me]);
 
   useEffect(() => {
     if (!me || !isBandejaRoute) {
@@ -6245,18 +6240,6 @@ const selectedConvenio = useMemo(() => {
     }
   }, [navigate]);
 
-  const monitorElement = (
-    <MonitorPage
-      collections={collections}
-      pendingSolicitudes={empresaSolicitudes.length}
-      currentUser={me}
-      lastUpdated={lastUpdated}
-      syncInProgress={loading}
-      onSync={handleSyncPanel}
-      apiBaseUrl={API_BASE_URL}
-    />
-  );
-
   const profileElement = (
     <section className="module-page">
       <header className="module-page__header">
@@ -6369,15 +6352,6 @@ const selectedConvenio = useMemo(() => {
           <Route path="/login" element={<LoginPage onLogin={handleLoginSuccess} authError={authError} />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </div>
-    );
-  }
-
-  if (isMonitorRoute) {
-    return (
-      <div className="monitor-app">
-        <ToastStack toasts={toasts} onDismiss={dismissToast} />
-        {monitorElement}
       </div>
     );
   }
@@ -6622,8 +6596,8 @@ const selectedConvenio = useMemo(() => {
         />
         <Route path="/solicitudes" element={solicitudesElement} />
         <Route path="/perfil" element={profileElement} />
-        <Route path="/control" element={<Navigate to="/legacy/monitor" replace />} />
-        <Route path="/monitor" element={<Navigate to="/legacy/monitor" replace />} />
+        <Route path="/control" element={<Navigate to="/" replace />} />
+        <Route path="/monitor" element={<Navigate to="/" replace />} />
         <Route path="/legacy/monitor" element={<Navigate to="/" replace />} />
       </Routes>
 
@@ -6727,4 +6701,3 @@ const selectedConvenio = useMemo(() => {
     </div>
   );
 }
-

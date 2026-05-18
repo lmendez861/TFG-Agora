@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Script auxiliar de documentacion/demo: automatiza generacion de entregables del TFG.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 const fs = require('fs');
 const path = require('path');
 
@@ -9,6 +14,10 @@ const API_USER = process.env.MEMORY_API_USER || 'admin';
 const API_PASS = process.env.MEMORY_API_PASS || 'admin123';
 const authHeader = `Basic ${Buffer.from(`${API_USER}:${API_PASS}`).toString('base64')}`;
 
+/**
+ * Resume la responsabilidad de apiGet dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function apiGet(endpoint) {
   const response = await fetch(`${API_BASE}${endpoint}`, {
     headers: {
@@ -24,6 +33,10 @@ async function apiGet(endpoint) {
   return response.json();
 }
 
+/**
+ * Resume la responsabilidad de baseTemplate dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function baseTemplate(title, body) {
   return `<!doctype html>
 <html lang="es">
@@ -225,10 +238,18 @@ function baseTemplate(title, body) {
 </html>`;
 }
 
+/**
+ * Resume la responsabilidad de writeFile dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function writeFile(name, html) {
   fs.writeFileSync(path.join(outputDir, name), html, 'utf8');
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function buildDashboardSnapshot() {
   const [empresas, convenios, estudiantes, asignaciones] = await Promise.all([
     apiGet('/empresas'),
@@ -276,6 +297,10 @@ async function buildDashboardSnapshot() {
   writeFile('03-panel-interno-dashboard.html', baseTemplate('Panel interno - dashboard', body));
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function buildSolicitudesSnapshot() {
   const response = await apiGet('/empresa-solicitudes?page=1&perPage=10');
   const rows = response.items
@@ -324,6 +349,10 @@ async function buildSolicitudesSnapshot() {
   writeFile('04-panel-interno-solicitudes.html', baseTemplate('Panel interno - solicitudes', body));
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function buildDocumentationGuideSnapshot() {
   const body = `
   <div class="frame">
@@ -358,9 +387,9 @@ async function buildDocumentationGuideSnapshot() {
               <p class="muted">Ruta integrada: /externo</p>
             </td>
             <td class="meta-card">
-              <h3>Monitor privado</h3>
-              <p>Supervision de servicios, pruebas y estado del acceso externo temporal.</p>
-              <p class="muted">Ruta integrada: /monitor</p>
+              <h3>Agora Desktop</h3>
+              <p>Consola tecnica para salud, pruebas, logs, reinicios y backups en local o cloud.</p>
+              <p class="muted">Supervision fuera del flujo web funcional</p>
             </td>
           </tr>
         </table>
@@ -372,7 +401,7 @@ async function buildDocumentationGuideSnapshot() {
           <li>Entrar en solicitudes y ensenar el flujo de revision del portal externo.</li>
           <li>Ejecutar la exportacion CSV desde dashboard o desde un listado operativo.</li>
           <li>Pasar al portal externo para ensenar alta y seguimiento.</li>
-          <li>Cerrar con monitor y documentacion como apoyo tecnico.</li>
+          <li>Cerrar con Agora Desktop y documentacion como apoyo tecnico.</li>
         </ol>
       </section>
     </div>
@@ -381,7 +410,11 @@ async function buildDocumentationGuideSnapshot() {
   writeFile('06-documentacion-guia.html', baseTemplate('Documentacion - guia', body));
 }
 
-async function buildMonitorSnapshot() {
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
+async function buildDesktopSnapshot() {
   const [monitor, publicAccess] = await Promise.all([apiGet('/monitor'), apiGet('/public-access')]);
 
   const serviceRows = monitor.services
@@ -422,40 +455,40 @@ async function buildMonitorSnapshot() {
   <div class="frame">
     <div class="topbar clearfix">
       <div class="brand">
-        <strong>Agora</strong>
-        <span class="badge">Monitor privado</span>
+        <strong>Agora Desktop</strong>
+        <span class="badge">Modo cloud</span>
       </div>
       <div class="topbar__meta">
-        <span>Supervision tecnica</span>
-        <span class="pill">${publicAccess.status === 'active' ? 'Acceso externo activo' : 'Acceso externo detenido'}</span>
+        <span>Consola tecnica</span>
+        <span class="pill">${publicAccess.status === 'active' ? 'Acceso publico temporal local activo' : 'Acceso publico temporal local detenido'}</span>
       </div>
     </div>
     <div class="page">
       <section class="hero">
-        <p class="hero__eyebrow">Estado operativo</p>
-        <h1>Control de servicios, metricas y pruebas</h1>
-        <p>Centro tecnico para comprobar salud de la API, paneles, acceso externo y resultados de validacion.</p>
+        <p class="hero__eyebrow">Supervision integrada</p>
+        <h1>Estado, pruebas y operaciones desde una sola app</h1>
+        <p>Agora Desktop sustituye la antigua shell web de monitorizacion y concentra telemetria, pruebas, logs y operaciones remotas sobre la misma instancia cloud.</p>
       </section>
       <section class="section">
         <p class="section__eyebrow">Resumen</p>
         <table class="meta-grid">
           <tr>
             <td class="meta-card">
-              <h3>Entorno</h3>
+              <h3>Telemetria</h3>
               <p>APP_ENV: ${monitor.environment.appEnv}</p>
               <p>API interna: ${API_BASE}</p>
               <p>PHP: ${monitor.environment.phpVersion}</p>
               <p>Zona horaria: ${monitor.environment.timezone}</p>
             </td>
             <td class="meta-card">
-              <h3>Acceso externo</h3>
-              <p>${publicAccess.detail}</p>
-              <p class="muted">Objetivo local: ${publicAccess.targetUrl ?? 'n/d'}</p>
+              <h3>Operacion</h3>
+              <p>Logs, reinicios, backups y smoke cloud quedan centralizados en la app.</p>
+              <p class="muted">${publicAccess.detail}</p>
             </td>
             <td class="meta-card">
               <h3>Generado</h3>
               <p>${monitor.generatedAt}</p>
-              <p class="muted">Snapshot tecnico para la memoria y la defensa.</p>
+              <p class="muted">Snapshot tecnico para memoria, defensa y manual de escritorio.</p>
             </td>
           </tr>
         </table>
@@ -470,7 +503,7 @@ async function buildMonitorSnapshot() {
       </section>
       <section class="table-card">
         <p class="section__eyebrow">Metricas y pruebas</p>
-        <h2>Indicadores operativos</h2>
+        <h2>Indicadores operativos y baterias</h2>
         <table>
           <thead><tr><th>Metrica</th><th>Valor</th><th>Detalle</th></tr></thead>
           <tbody>${metricRows}</tbody>
@@ -483,15 +516,19 @@ async function buildMonitorSnapshot() {
     </div>
   </div>`;
 
-  writeFile('07-monitor-operativo.html', baseTemplate('Monitor privado', body));
+  writeFile('07-agora-desktop-operativo.html', baseTemplate('Agora Desktop operativo', body));
 }
 
+/**
+ * Resume la responsabilidad de main dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   await buildDashboardSnapshot();
   await buildSolicitudesSnapshot();
   await buildDocumentationGuideSnapshot();
-  await buildMonitorSnapshot();
+  await buildDesktopSnapshot();
 }
 
 main().catch((error) => {

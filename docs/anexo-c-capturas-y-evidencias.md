@@ -1,4 +1,4 @@
-# Anexo C. Capturas y evidencias
+﻿# Anexo C. Capturas y evidencias
 
 ## Indice de capturas
 
@@ -8,7 +8,7 @@
 4. Figura 4. Bandeja unificada de mensajes con empresas en el portal interno.
 5. Figura 5. Portal externo con acceso de empresa y flujo de colaboracion.
 6. Figura 6. Guia funcional de la plataforma.
-7. Figura 7. Monitor operativo privado con MFA y control de acceso.
+7. Figura 7. Agora Desktop como consola tecnica local y cloud.
 
 ## Inventario de archivos incluidos
 
@@ -18,7 +18,7 @@
 - `docs/capturas/04-panel-interno-bandeja.png`
 - `docs/capturas/05-portal-externo.png`
 - `docs/capturas/06-documentacion-guia.png`
-- `docs/capturas/07-monitor-operativo.png`
+- `docs/capturas/07-agora-desktop-operativo.png`
 
 ## Evidencias tecnicas asociadas
 
@@ -26,11 +26,11 @@ Las evidencias tecnicas que acompanan a la memoria y a la defensa se apoyan en e
 
 - compilacion del portal interno con `npm run build:backend`;
 - compilacion del portal externo con `npm run build:backend`;
-- validacion de rutas integradas bajo `/app`, `/externo`, `/documentacion` y `/legacy/monitor`;
+- validacion de rutas integradas bajo `/app`, `/externo` y `/documentacion`;
 - comprobacion funcional de exportacion CSV desde dashboard y modulos principales;
 - regeneracion del video de demo y de la muestra CSV/Excel con datos anonimizados para la entrega;
 - verificacion del flujo de registro, verificacion, activacion y acceso de empresa;
-- comprobacion del control MFA y del acceso publico temporal desde el monitor privado;
+- comprobacion del control MFA y del acceso publico temporal desde Agora Desktop;
 - revisiones visuales de las capturas utilizadas en PDF y DOCX.
 
 ## Criterios de captura final
@@ -42,3 +42,4 @@ Para que las capturas sean validas dentro de la memoria y de la presentacion fin
 - conservar una composicion estable y limpia en todas las vistas;
 - mostrar rutas y modulos distintos cuando el objetivo sea justificar separacion funcional;
 - revisar siempre que la captura incrustada coincida con la version final de la interfaz.
+

@@ -12,11 +12,7 @@ import './index.css';
 const container = document.getElementById('root');
 const defaultBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 const pathname = typeof window === 'undefined' ? defaultBase : window.location.pathname;
-const routerBase = pathname === '/legacy/monitor' || pathname.startsWith('/legacy/monitor/')
-  ? '/legacy/monitor'
-  : pathname === '/monitor' || pathname.startsWith('/monitor/')
-    ? '/monitor'
-  : pathname === '/documentacion' || pathname.startsWith('/documentacion/')
+const routerBase = pathname === '/documentacion' || pathname.startsWith('/documentacion/')
     ? '/documentacion'
   : defaultBase;
 

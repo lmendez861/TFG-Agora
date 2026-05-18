@@ -120,10 +120,7 @@ async function captureScreenshots(page) {
   await sleep(1000);
   await page.screenshot({ path: path.join(docsCapturasDir, '06-documentacion-guia.png') });
 
-  console.log('[capture-demo-assets] screenshot monitor');
-  await page.goto(`${baseURL}/monitor/acceso`, { waitUntil: 'domcontentloaded' });
-  await page.getByText(/Exposicion publica y URLs/i).waitFor({ state: 'visible', timeout: 15000 });
-  await page.screenshot({ path: path.join(docsCapturasDir, '07-monitor-operativo.png') });
+  console.log('[capture-demo-assets] desktop capture is generated from documentation snapshot tooling');
 
   console.log('[capture-demo-assets] screenshot portal externo');
   await page.goto(`${baseURL}/externo`, { waitUntil: 'domcontentloaded' });

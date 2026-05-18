@@ -29,7 +29,7 @@ final class FrontendController extends AbstractController
     #[Route('/', name: 'frontend_root', methods: ['GET'])]
     public function root(): RedirectResponse
     {
-        return $this->redirect('/app/');
+        return new RedirectResponse('/app/');
     }
 
     /**
@@ -64,7 +64,7 @@ final class FrontendController extends AbstractController
     #[Route('/legacy/monitor/{path}', name: 'frontend_monitor_legacy_path', requirements: ['path' => '.*'], methods: ['GET'])]
     public function monitor(): RedirectResponse
     {
-        return $this->redirect('/app/');
+        return new RedirectResponse('/app/');
     }
 
     /**
@@ -75,7 +75,7 @@ final class FrontendController extends AbstractController
     #[Route('/control/{path}', name: 'frontend_control_path_redirect', requirements: ['path' => '.*'], methods: ['GET'])]
     public function control(): RedirectResponse
     {
-        return $this->redirect('/app/');
+        return new RedirectResponse('/app/');
     }
 
     /**

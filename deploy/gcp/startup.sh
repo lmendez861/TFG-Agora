@@ -17,6 +17,31 @@ require_file() {
     fi
 }
 
+normalize_env_value() {
+    local value="$1"
+    if [[ "${value}" == \"*\" && "${value}" == *\" ]]; then
+        value="${value:1:-1}"
+    elif [[ "${value}" == \'*\' && "${value}" == *\' ]]; then
+        value="${value:1:-1}"
+    fi
+    printf '%s' "${value}"
+}
+
+load_env_file() {
+    while IFS= read -r line || [ -n "${line}" ]; do
+        case "${line}" in
+            ''|'#'*)
+                continue
+                ;;
+        esac
+
+        local key="${line%%=*}"
+        local value="${line#*=}"
+        value="$(normalize_env_value "${value}")"
+        export "${key}=${value}"
+    done < "${ENV_FILE}"
+}
+
 upsert_env_var() {
     local key="$1"
     local value="$2"
@@ -64,9 +89,7 @@ refresh_public_host_if_needed() {
 require_file "${ENV_FILE}"
 require_file "${COMPOSE_FILE}"
 
-set -a
-. "${ENV_FILE}"
-set +a
+load_env_file
 
 refresh_public_host_if_needed
 

@@ -5,14 +5,37 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 COMPOSE_FILE="${SCRIPT_DIR}/docker-compose.yml"
 ENV_FILE="${SCRIPT_DIR}/.env.gcp"
 
+normalize_env_value() {
+    local value="$1"
+    if [[ "${value}" == \"*\" && "${value}" == *\" ]]; then
+        value="${value:1:-1}"
+    elif [[ "${value}" == \'*\' && "${value}" == *\' ]]; then
+        value="${value:1:-1}"
+    fi
+    printf '%s' "${value}"
+}
+
+load_env_file() {
+    while IFS= read -r line || [ -n "${line}" ]; do
+        case "${line}" in
+            ''|'#'*)
+                continue
+                ;;
+        esac
+
+        local key="${line%%=*}"
+        local value="${line#*=}"
+        value="$(normalize_env_value "${value}")"
+        export "${key}=${value}"
+    done < "${ENV_FILE}"
+}
+
 if [ ! -f "${ENV_FILE}" ]; then
     echo "Falta ${ENV_FILE}. Copia .env.gcp.example a .env.gcp y completa los valores."
     exit 1
 fi
 
-set -a
-. "${ENV_FILE}"
-set +a
+load_env_file
 
 for required_var in APP_SECRET POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD APP_EXTERNAL_BASE_URL MAILER_DSN APP_MAIL_FROM APP_INTERNAL_MFA_EMAIL; do
     if [ -z "${!required_var:-}" ]; then

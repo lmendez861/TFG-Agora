@@ -9,9 +9,32 @@ if [ ! -f "${ENV_FILE}" ]; then
     exit 1
 fi
 
-set -a
-. "${ENV_FILE}"
-set +a
+normalize_env_value() {
+    local value="$1"
+    if [[ "${value}" == \"*\" && "${value}" == *\" ]]; then
+        value="${value:1:-1}"
+    elif [[ "${value}" == \'*\' && "${value}" == *\' ]]; then
+        value="${value:1:-1}"
+    fi
+    printf '%s' "${value}"
+}
+
+load_env_file() {
+    while IFS= read -r line || [ -n "${line}" ]; do
+        case "${line}" in
+            ''|'#'*)
+                continue
+                ;;
+        esac
+
+        local key="${line%%=*}"
+        local value="${line#*=}"
+        value="$(normalize_env_value "${value}")"
+        export "${key}=${value}"
+    done < "${ENV_FILE}"
+}
+
+load_env_file
 
 BASE_URL="${APP_EXTERNAL_BASE_URL:-http://127.0.0.1:${APP_HTTP_PORT:-80}}"
 

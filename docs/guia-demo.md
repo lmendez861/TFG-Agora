@@ -1,6 +1,6 @@
 # Guia operativa (TFG Agora)
 
-## Servicios verificados el 18/05/2026
+## Servicios verificados el 19/05/2026
 
 - Backend API Symfony en VM publica de Google Cloud.
 - Panel interno integrado: `https://agora.34.175.224.87.nip.io/app/`
@@ -61,6 +61,7 @@ npm run build:backend
 - El alumno comparte `https://agora.34.175.224.87.nip.io/`.
 - Con esa URL se abren `URL/app/`, `URL/externo/` y `URL/documentacion/`.
 - La supervision tecnica del despliegue se realiza desde `Agora Desktop`, no desde una pagina web adicional.
+- Agora Desktop muestra la URL cloud efectiva y el estado de `agora.service`, util si la IP publica cambia tras reiniciar la VM.
 - Para el panel interno se recomienda usar `profesora / Abrete01` o `profesor / Abrete01` como acceso de prueba.
 - La URL funciona mientras siga activa la VM publica.
 - Si se quiere reproducir todo desde cero en otro ordenador, entonces si hacen falta PHP, Composer, Node.js, npm y los `.env.local`.
@@ -108,6 +109,7 @@ npm run build:backend
 10. Mostrar que el chat externo se actualiza automaticamente sin recarga manual.
 11. Abrir `https://agora.34.175.224.87.nip.io/documentacion/flujo`.
 12. Si hace falta justificar despliegue, abrir `Agora Desktop` en modo `cloud` y ensenar estado, logs, smoke y servicios remotos de la VM.
+13. Si la VM se ha reiniciado, ensenar desde Agora Desktop la URL efectiva actual y, si hiciera falta, el reinicio de `agora.service`.
 
 ## Verificaciones tecnicas recomendadas
 
@@ -120,6 +122,6 @@ npm run build:backend
 ## Contingencias
 
 - Si no da tiempo a toda la demo, priorizar dashboard, bandeja, convenios y portal externo.
-- Si falla el acceso publico, seguir la demo completa en local o reiniciar el stack Docker de la VM.
+- Si falla el acceso publico, revisar primero en Agora Desktop la URL efectiva actual de la VM y el estado de `agora.service`; si sigue mal, seguir la demo completa en local.
 - Si el correo MFA tarda en llegar, solicitar uno nuevo y usar solo el ultimo codigo recibido.
 - Si un flujo puntual falla, apoyar la explicacion con la memoria final, el manual tecnico y las pruebas ejecutadas.

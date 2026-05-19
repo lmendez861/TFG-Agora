@@ -11,7 +11,7 @@ Pensado para demo offline, desarrollo y soporte en el propio equipo. Permite:
 - preparar variables locales, dependencias, migraciones y base SQLite;
 - levantar o parar el backend local;
 - regenerar las builds integradas en `backend/public/app` y `backend/public/externo`;
-- revisar servicios, metricas, actividad e incidencias desde el monitor integrado;
+- revisar estado, metricas, actividad e incidencias desde la propia app;
 - ejecutar pruebas de escritorio, backend, frontend y E2E;
 - abrir logs y carpetas de soporte;
 - crear backups SQLite y restaurar una copia seleccionada;
@@ -26,6 +26,9 @@ Pensado para operar la instancia desplegada en Google Cloud. Permite:
 - guardar un perfil remoto persistente con URL base, credenciales API y datos SSH;
 - validar la conectividad remota contra `https://...`;
 - consumir la telemetria remota desde la propia app;
+- leer la URL cloud efectiva, la IP publica actual y si el autoajuste `nip.io` esta activo;
+- consultar si `agora.service` esta `enabled` y `active`;
+- iniciar o reiniciar `agora.service` desde el propio escritorio;
 - abrir el portal interno y el portal externo desplegados en la VM;
 - consultar logs remotos de app, Symfony y base de datos por SSH;
 - reiniciar contenedores remotos de aplicacion y PostgreSQL;
@@ -34,13 +37,14 @@ Pensado para operar la instancia desplegada en Google Cloud. Permite:
 
 La app de escritorio en modo cloud se plantea como consola de soporte tecnico. La operativa funcional principal de negocio sigue en el portal interno web.
 
-## Monitor integrado
+## Consola tecnica integrada
 
-Agora Desktop consume `/api/monitor` y concentra en una sola interfaz:
+Agora Desktop combina `/api/monitor` con operaciones remotas por SSH y concentra en una sola interfaz:
 
 - salud de API, builds, correo, almacenamiento y servicios;
 - metricas de empresas, convenios, estudiantes, asignaciones, solicitudes y auditoria;
 - actividad reciente e incidencias detectadas;
+- URL cloud efectiva derivada de la VM y estado de `agora.service`;
 - suites de prueba disponibles para backend, frontend y E2E.
 
 La supervision tecnica ya no se expone como pagina web separada. El uso recomendado pasa por la propia app de escritorio.
@@ -57,6 +61,8 @@ La seccion `Herramientas` expone operaciones distintas segun el modo activo:
 - `Restaurar`: recupera un backup SQLite local con parada y rearanque controlados.
 - `Smoke cloud`: ejecuta el flujo extremo a extremo contra la URL publica.
 - `Logs remotos`: abre por SSH los logs principales del despliegue cloud.
+- `Iniciar servicio`: arranca `agora.service` en la VM.
+- `Reiniciar servicio`: reinicia `agora.service` y espera a que la URL publica vuelva a responder.
 - `Restart remoto`: reinicia los contenedores `app` o `db` de la VM.
 
 ## Pruebas de flujo
@@ -92,6 +98,7 @@ En modo cloud, el smoke se lanza contra la URL publica configurada en el perfil 
 
 - Portal interno cloud: `https://agora.34.175.224.87.nip.io/app/`
 - Portal externo cloud: `https://agora.34.175.224.87.nip.io/externo/`
+- URL tecnica efectiva: visible desde Agora Desktop, junto con IP publica y estado de `agora.service`
 
 ## Empaquetado Windows
 

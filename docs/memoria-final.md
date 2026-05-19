@@ -92,7 +92,7 @@ El centro necesita una herramienta que reduzca la fragmentacion de informacion, 
 
 La solucion se estructura en cinco bloques principales. El primero es una API REST construida con Symfony, responsable de seguridad, logica de negocio, persistencia, auditoria y exposicion de endpoints. El segundo es un portal interno desarrollado con React, TypeScript y Vite, orientado a coordinacion academica y gestion operativa. El tercero es un portal externo, tambien basado en React y TypeScript, que cubre tanto el preregistro inicial como el area posterior de empresa aprobada. El cuarto es una guia documental publica separada del uso operativo. El quinto es Agora Desktop, una app Electron para operacion tecnica local o remota, automatizacion de pruebas, diagnostico, logs, reinicios y empaquetado Windows.
 
-El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre la misma raiz publica y sobre la API de monitorizacion, pero no replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs y ciertas operaciones de infraestructura local o remota.
+El backend publica rutas protegidas bajo `/api`, rutas publicas acotadas para preregistro y verificacion externa, rutas de autenticacion para cuentas de empresa y una shell integrada para servir los dos frontends. En la entrega integrada, el panel interno se sirve bajo `/app`, la documentacion bajo `/documentacion` y el portal externo bajo `/externo`. La app de escritorio trabaja sobre la misma raiz publica, consume `/api/monitor` y complementa esa telemetria con operaciones remotas por SSH sobre la VM. No replica la logica funcional del portal interno: se limita deliberadamente a la supervision tecnica, la ejecucion de pruebas, la lectura de logs, la deteccion de la URL cloud efectiva y ciertas operaciones de infraestructura local o remota, como el control de `agora.service`.
 
 ![Figura 1. Arquitectura operativa y de despliegue del sistema.](capturas/01-bloques-funcionalidad.png)
 
@@ -140,7 +140,7 @@ Ambos recorridos
 Servicios auxiliares
   -> /documentacion como shell publica separada
   -> /api/monitor como telemetria interna consumida por Agora Desktop
-  -> Agora Desktop como capa local de soporte, pruebas, logs y empaquetado
+  -> Agora Desktop como capa local de soporte, pruebas, logs, lectura de URL cloud y operaciones SSH
 ```
 
 Este esquema deja claro un punto importante para la defensa: el portal externo no es una pagina estatica conectada de forma superficial a la API, sino un cliente autenticado con su propio firewall, su propio proveedor de usuarios y un flujo separado del panel interno, aunque ambos compartan el mismo nucleo de negocio.
@@ -149,9 +149,10 @@ Si se quiere explicar tambien el despliegue remoto con mas precision, conviene p
 
 ```text
 Internet
-  -> DNS wildcard nip.io / dominio publico
+  -> DNS wildcard nip.io / dominio publico efectivo
      -> VM publica Google Cloud Compute Engine
         -> reglas firewall 80/443 + SSH administrado
+        -> servicio systemd agora.service para arranque automatico
         -> Docker network "agora"
            -> contenedor app
               -> Apache 2.4
@@ -350,7 +351,7 @@ En la practica, la autenticacion interna combina configuracion de frontend y bac
 
 La entrega se mantiene integrada bajo una unica raiz: `/app` para el portal interno, `/externo` para el portal externo y `/documentacion` para la guia funcional. En la revision final esa integracion ya no se limita al equipo local: se ha publicado en una VM Ubuntu de Google Cloud Compute Engine con Docker Compose, PostgreSQL, volumen persistente para documentos y un proxy HTTPS delante de la aplicacion. De este modo los dos portales quedan accesibles desde el exterior sin depender del portatil del alumno. En paralelo, Agora Desktop sigue existiendo como alternativa local autocontenida para diagnostico, empaquetado y demostracion offline, y como consola tecnica remota para la VM.
 
-Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo.
+Durante la revision final se ha corregido ademas un aspecto importante de acceso externo: los enlaces de verificacion y recuperacion ya no quedan ligados a `127.0.0.1` ni a una IP local cuando el flujo se prueba desde fuera. Si se define `APP_EXTERNAL_BASE_URL`, el backend genera esas URLs con el origen publico correcto. En el despliegue actual se ha usado un hostname gratuito basado en `nip.io`, con formato `agora.<IP_PUBLICA>.nip.io`, para evitar comprar dominio solo con fines de validacion academica y mantener un nombre estable para la demo. Para evitar dependencia manual tras reinicios, la VM arranca Agora mediante `agora.service` y recalcula la URL efectiva si la IP publica cambia; esa URL queda visible en Agora Desktop junto con el estado del servicio.
 
 ## Acceso para evaluacion externa
 
@@ -375,7 +376,7 @@ Como mejora posterior seguiria siendo recomendable sustituir el hostname wildcar
 
 ## Validaciones ejecutadas
 
-La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas, smoke tests del launcher de escritorio y revisiones funcionales de correo, monitorizacion, documentacion, mensajeria, exportacion CSV, convenios, asignaciones, tutores y documentos privados de empresa.
+La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas, smoke tests del launcher de escritorio y revisiones funcionales de correo, monitorizacion tecnica, documentacion, mensajeria, exportacion CSV, convenios, asignaciones, tutores, documentos privados de empresa y recuperacion tras reinicio de la VM.
 
 ## Resultados observados
 

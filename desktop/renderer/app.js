@@ -50,6 +50,9 @@ const selectors = {
   monitorUrl: document.querySelector('#monitorUrl'),
   externalLocalUrl: document.querySelector('#externalLocalUrl'),
   publicExternalUrl: document.querySelector('#publicExternalUrl'),
+  cloudBaseUrl: document.querySelector('#cloudBaseUrl'),
+  cloudIpInfo: document.querySelector('#cloudIpInfo'),
+  cloudServiceStatus: document.querySelector('#cloudServiceStatus'),
   modeInput: document.querySelector('#modeInput'),
   remoteBaseUrlInput: document.querySelector('#remoteBaseUrlInput'),
   remoteApiUsernameInput: document.querySelector('#remoteApiUsernameInput'),
@@ -193,6 +196,23 @@ function renderStatus(status) {
   setText(selectors.monitorUrl, 'Integrado en Agora Desktop');
   setText(selectors.externalLocalUrl, status.urls.externalLocal || 'No disponible');
   setText(selectors.publicExternalUrl, status.urls.publicExternal || 'Pendiente');
+  setText(selectors.cloudBaseUrl, status.services.publicAccess.publicUrl || status.configuredBaseUrl || 'Pendiente');
+  setText(
+    selectors.cloudIpInfo,
+    status.mode === 'cloud'
+      ? (
+        status.services.publicAccess.externalIp
+          ? `IP actual: ${status.services.publicAccess.externalIp}${status.services.publicAccess.autoNipIo ? ' | nip.io autoajustado' : ''}`
+          : 'Sin lectura de IP remota'
+      )
+      : '-',
+  );
+  setText(
+    selectors.cloudServiceStatus,
+    status.mode === 'cloud'
+      ? `${status.services.publicAccess.serviceName || 'agora.service'}: ${status.services.publicAccess.serviceEnabled || 'unknown'} / ${status.services.publicAccess.serviceActive || 'unknown'}`
+      : 'agora.service: no aplica',
+  );
 
   updateServiceCard('backend', status.services.backend.status);
   updateServiceCard('database', status.services.database.status);
@@ -509,6 +529,8 @@ function syncButtons() {
     'restoreDatabase',
   ]);
   const cloudOnlyActions = new Set([
+    'startRemoteService',
+    'restartRemoteService',
     'restartRemoteApp',
     'restartRemoteDb',
   ]);
@@ -745,6 +767,8 @@ async function runAction(action) {
     prepare: () => api.prepare({ skipInstall: false }),
     startLocal: () => api.startLocal(),
     stopLocal: () => api.stopLocal(),
+    startRemoteService: () => api.startRemoteService(),
+    restartRemoteService: () => api.restartRemoteService(),
     restartRemoteApp: () => api.restartRemoteApp(),
     restartRemoteDb: () => api.restartRemoteDb(),
     rebuild: () => api.rebuild(),

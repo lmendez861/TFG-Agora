@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('agoraDesktop', {
   prepare: (options) => ipcRenderer.invoke('desktop:prepare', options),
   startLocal: () => ipcRenderer.invoke('desktop:start-local'),
   stopLocal: () => ipcRenderer.invoke('desktop:stop-local'),
+  startRemoteService: () => ipcRenderer.invoke('desktop:start-remote-service'),
+  restartRemoteService: () => ipcRenderer.invoke('desktop:restart-remote-service'),
   restartRemoteApp: () => ipcRenderer.invoke('desktop:restart-remote-app'),
   restartRemoteDb: () => ipcRenderer.invoke('desktop:restart-remote-db'),
   rebuild: () => ipcRenderer.invoke('desktop:rebuild'),

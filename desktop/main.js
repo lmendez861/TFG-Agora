@@ -33,8 +33,15 @@ const API_HEALTH_URL = `http://127.0.0.1:${PORT}/api/empresas`;
 const PUBLIC_TARGET_URL = `http://127.0.0.1:${PORT}`;
 const CLOUDFLARED_URL = 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe';
 const DESKTOP_CONFIG_FILENAME = 'agora-desktop.config.json';
+const REMOTE_SYSTEMD_SERVICE = 'agora.service';
+const CLOUD_RUNTIME_CACHE_TTL_MS = 15000;
 
 let desktopConfigCache = null;
+let cloudRuntimeCache = {
+  key: null,
+  fetchedAt: 0,
+  value: null,
+};
 
 let mainWindow = null;
 let backendProcess = null;
@@ -281,6 +288,63 @@ function saveDesktopConfig(partial = {}) {
 
 function isCloudMode(config = getDesktopConfig()) {
   return config.mode === 'cloud';
+}
+
+function getCloudRuntimeCacheKey(config = getDesktopConfig()) {
+  return JSON.stringify({
+    baseUrl: normalizeBaseUrl(config.remote?.baseUrl),
+    sshTarget: config.remote?.sshTarget || '',
+    sshKeyPath: config.remote?.sshKeyPath || '',
+  });
+}
+
+function parseSshTarget(target = '') {
+  const normalized = String(target || '').trim();
+  const separator = normalized.indexOf('@');
+  if (separator === -1) {
+    return { user: '', host: normalized };
+  }
+
+  return {
+    user: normalized.slice(0, separator),
+    host: normalized.slice(separator + 1),
+  };
+}
+
+function updateRemoteConfigFromRuntime(config, runtimeInfo) {
+  if (!runtimeInfo?.effectiveBaseUrl && !runtimeInfo?.externalIp) {
+    return false;
+  }
+
+  const nextRemote = { ...config.remote };
+  let changed = false;
+
+  const normalizedRuntimeUrl = normalizeBaseUrl(runtimeInfo.effectiveBaseUrl || '');
+  if (normalizedRuntimeUrl && normalizedRuntimeUrl !== normalizeBaseUrl(config.remote.baseUrl)) {
+    nextRemote.baseUrl = normalizedRuntimeUrl;
+    changed = true;
+  }
+
+  const sshParts = parseSshTarget(config.remote.sshTarget);
+  if (runtimeInfo.externalIp && sshParts.user && /^\d{1,3}(?:\.\d{1,3}){3}$/.test(sshParts.host) && sshParts.host !== runtimeInfo.externalIp) {
+    nextRemote.sshTarget = `${sshParts.user}@${runtimeInfo.externalIp}`;
+    changed = true;
+  }
+
+  if (!changed) {
+    return false;
+  }
+
+  const updated = normalizeDesktopConfig({
+    ...config,
+    remote: nextRemote,
+  }, {
+    apiPassword: config.remote.apiPassword,
+    apiPasswordStored: config.remote.apiPasswordStored,
+  });
+  writeDesktopConfigFile(updated);
+  desktopConfigCache = updated;
+  return true;
 }
 
 function sendEvent(channel, payload) {
@@ -543,7 +607,7 @@ function getConfiguredCredentials(config = getDesktopConfig()) {
   };
 }
 
-function buildRuntimeUrls(config = getDesktopConfig()) {
+function buildRuntimeUrls(config = getDesktopConfig(), runtimeInfo = null) {
   if (!isCloudMode(config)) {
     return {
       internal: INTERNAL_URL,
@@ -554,9 +618,11 @@ function buildRuntimeUrls(config = getDesktopConfig()) {
     };
   }
 
-  let baseUrl = null;
+  let baseUrl = normalizeBaseUrl(runtimeInfo?.effectiveBaseUrl || '');
   try {
-    baseUrl = assertSecureCloudBaseUrl(config);
+    if (!baseUrl) {
+      baseUrl = assertSecureCloudBaseUrl(config);
+    }
   } catch {
     baseUrl = null;
   }
@@ -823,6 +889,85 @@ function runProcess(filePath, args, cwd, label) {
       reject(new Error(`${label} termino con codigo ${code}. ${stderr || stdout}`.trim()));
     });
   });
+}
+
+async function getCloudRuntimeInfo(config = getDesktopConfig(), { force = false } = {}) {
+  if (!isCloudMode(config)) {
+    return null;
+  }
+
+  const cacheKey = getCloudRuntimeCacheKey(config);
+  if (!force && cloudRuntimeCache.key === cacheKey && (Date.now() - cloudRuntimeCache.fetchedAt) < CLOUD_RUNTIME_CACHE_TTL_MS) {
+    return cloudRuntimeCache.value;
+  }
+
+  if (!config.remote.sshTarget || !config.remote.sshKeyPath || !fs.existsSync(config.remote.sshKeyPath) || !getSshPath()) {
+    return cloudRuntimeCache.key === cacheKey ? cloudRuntimeCache.value : null;
+  }
+
+  const command = [
+    'cd ~/TFG-Agora',
+    "python3 - <<'PY'",
+    'from pathlib import Path',
+    'import json, subprocess, urllib.request',
+    "env_path = Path('deploy/gcp/.env.gcp')",
+    'env = {}',
+    'if env_path.exists():',
+    "    for raw_line in env_path.read_text().splitlines():",
+    '        line = raw_line.strip()',
+    "        if not line or line.startswith('#') or '=' not in line:",
+    '            continue',
+    "        key, value = line.split('=', 1)",
+    "        if len(value) >= 2 and ((value[0] == '\"' and value[-1] == '\"') or (value[0] == \"'\" and value[-1] == \"'\")):",
+    '            value = value[1:-1]',
+    '        env[key] = value',
+    'def capture(command):',
+    '    completed = subprocess.run(command, capture_output=True, text=True)',
+    "    output = (completed.stdout or completed.stderr or '').strip()",
+    "    return output or ('ok' if completed.returncode == 0 else 'unknown')",
+    'external_ip = ""',
+    'try:',
+    "    request = urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip', headers={'Metadata-Flavor': 'Google'})",
+    '    with urllib.request.urlopen(request, timeout=3) as response:',
+    "        external_ip = response.read().decode().strip()",
+    'except Exception:',
+    '    external_ip = ""',
+    "host = env.get('APP_PUBLIC_HOST', '')",
+    "base_url = env.get('APP_EXTERNAL_BASE_URL', '')",
+    "default_uri = env.get('DEFAULT_URI', '')",
+    "auto_nip = env.get('APP_PUBLIC_HOST_AUTO_NIP_IO', '0') == '1'",
+    "prefix = env.get('APP_PUBLIC_HOST_NIP_IO_PREFIX', 'agora')",
+    'result = {',
+    "    'serviceName': 'agora.service',",
+    "    'serviceEnabled': capture(['systemctl', 'is-enabled', 'agora.service']),",
+    "    'serviceActive': capture(['systemctl', 'is-active', 'agora.service']),",
+    "    'publicHost': host,",
+    "    'effectiveBaseUrl': base_url,",
+    "    'defaultUri': default_uri,",
+    "    'externalIp': external_ip,",
+    "    'autoNipIo': auto_nip,",
+    "    'nipIoPrefix': prefix,",
+    '}',
+    'print(json.dumps(result))',
+    'PY',
+  ].join('\n');
+
+  try {
+    const output = await runSshCommand(command, config, 'Leyendo estado cloud real...');
+    const parsed = JSON.parse((output.stdout || '').trim());
+    cloudRuntimeCache = {
+      key: cacheKey,
+      fetchedAt: Date.now(),
+      value: parsed,
+    };
+    updateRemoteConfigFromRuntime(config, parsed);
+    return parsed;
+  } catch (error) {
+    if (!force && cloudRuntimeCache.key === cacheKey) {
+      return cloudRuntimeCache.value;
+    }
+    throw error;
+  }
 }
 
 function spawnLongRunning(filePath, args, cwd, outLog, errLog) {
@@ -1833,6 +1978,50 @@ async function controlRemoteContainer(kind, operation = 'restart') {
   };
 }
 
+async function controlRemoteService(operation = 'restart') {
+  const config = getDesktopConfig();
+  if (!isCloudMode(config)) {
+    throw new Error('La operacion remota solo esta disponible en modo cloud.');
+  }
+
+  const normalizedOperation = operation === 'start' || operation === 'stop' ? operation : 'restart';
+  const output = await runSshCommand(
+    `sudo systemctl ${normalizedOperation} ${REMOTE_SYSTEMD_SERVICE} && sudo systemctl is-active ${REMOTE_SYSTEMD_SERVICE}`,
+    config,
+    `Ejecutando ${normalizedOperation} remoto sobre ${REMOTE_SYSTEMD_SERVICE}...`,
+  );
+
+  cloudRuntimeCache = { key: null, fetchedAt: 0, value: null };
+  const runtimeInfo = await getCloudRuntimeInfo(config, { force: true }).catch(() => null);
+
+  if (normalizedOperation !== 'stop') {
+    const runtimeBaseUrl = normalizeBaseUrl(runtimeInfo?.effectiveBaseUrl || '');
+    if (runtimeBaseUrl) {
+      const refreshedConfig = getDesktopConfig();
+      const previousBaseUrl = refreshedConfig.remote.baseUrl;
+      try {
+        refreshedConfig.remote.baseUrl = runtimeBaseUrl;
+        await waitForRemoteApplicationReady(refreshedConfig);
+      } finally {
+        refreshedConfig.remote.baseUrl = previousBaseUrl;
+      }
+    } else {
+      await waitForRemoteApplicationReady(config);
+    }
+  }
+
+  sendLog(`Operacion remota completada sobre ${REMOTE_SYSTEMD_SERVICE}.`);
+
+  return {
+    service: REMOTE_SYSTEMD_SERVICE,
+    operation: normalizedOperation,
+    stdout: output.stdout.trim(),
+    stderr: output.stderr.trim(),
+    runtimeInfo,
+    executedAt: new Date().toISOString(),
+  };
+}
+
 async function backupDatabase() {
   const config = getDesktopConfig();
   if (isCloudMode(config)) {
@@ -1933,6 +2122,12 @@ async function restoreDatabaseBackup() {
 async function diagnoseDependencies() {
   const config = getDesktopConfig();
   if (isCloudMode(config)) {
+    let runtimeInfo = null;
+    try {
+      runtimeInfo = await getCloudRuntimeInfo(config);
+    } catch {
+      runtimeInfo = null;
+    }
     const baseUrl = normalizeBaseUrl(config.remote.baseUrl);
     const cloudUrlError = validateCloudBaseUrl(baseUrl);
     const sshPath = getSshPath();
@@ -1967,6 +2162,20 @@ async function diagnoseDependencies() {
           label: 'Portal interno remoto',
           status: portalResponse.ok ? 'ok' : 'warning',
           detail: portalResponse.ok ? `${baseUrl}/app/ responde` : 'No se ha podido validar la URL remota.',
+        },
+        {
+          id: 'cloud-runtime-url',
+          label: 'URL cloud actual',
+          status: runtimeInfo?.effectiveBaseUrl ? 'ok' : 'warning',
+          detail: runtimeInfo?.effectiveBaseUrl || 'No se pudo leer la URL efectiva desde la VM.',
+        },
+        {
+          id: 'cloud-systemd-service',
+          label: 'Servicio systemd',
+          status: runtimeInfo?.serviceActive === 'active' ? 'ok' : 'warning',
+          detail: runtimeInfo
+            ? `${runtimeInfo.serviceName}: ${runtimeInfo.serviceEnabled}/${runtimeInfo.serviceActive}`
+            : `No se pudo leer ${REMOTE_SYSTEMD_SERVICE} por SSH.`,
         },
         {
           id: 'cloud-api',
@@ -2109,11 +2318,22 @@ async function diagnoseDependencies() {
 
 async function getStatus() {
   const config = getDesktopConfig();
-  const urls = buildRuntimeUrls(config);
+  let runtimeInfo = null;
 
   if (isCloudMode(config)) {
-    const credentials = getConfiguredCredentials(config);
-    const baseUrl = normalizeBaseUrl(config.remote.baseUrl);
+    try {
+      runtimeInfo = await getCloudRuntimeInfo(config);
+    } catch {
+      runtimeInfo = null;
+    }
+  }
+
+  const statusConfig = isCloudMode(config) ? getDesktopConfig() : config;
+  const urls = buildRuntimeUrls(statusConfig, runtimeInfo);
+
+  if (isCloudMode(statusConfig)) {
+    const credentials = getConfiguredCredentials(statusConfig);
+    const baseUrl = normalizeBaseUrl(urls.internal ? urls.internal.replace(/\/app\/$/, '') : statusConfig.remote.baseUrl);
     const cloudUrlError = validateCloudBaseUrl(baseUrl);
     const backendResponse = !cloudUrlError && urls.internal ? await requestUrl(urls.internal, 'GET') : { ok: false, statusCode: null };
     const externalResponse = !cloudUrlError && urls.externalLocal ? await requestUrl(urls.externalLocal, 'GET') : { ok: false, statusCode: null };
@@ -2131,6 +2351,7 @@ async function getStatus() {
     return {
       mode: 'cloud',
       port: PORT,
+      configuredBaseUrl: normalizeBaseUrl(statusConfig.remote.baseUrl),
       urls,
       services: {
         backend: {
@@ -2138,9 +2359,9 @@ async function getStatus() {
           label: cloudUrlError ? 'URL insegura' : portalReachable ? 'Publicado' : 'Sin respuesta',
         },
         database: {
-          status: config.remote.sshTarget ? 'ready' : 'missing',
+          status: statusConfig.remote.sshTarget ? 'ready' : 'missing',
           label: 'PostgreSQL remoto',
-          path: config.remote.sshTarget || 'Configura SSH para operar contra la VM.',
+          path: statusConfig.remote.sshTarget || 'Configura SSH para operar contra la VM.',
         },
         builds: {
           status: portalReachable && externalReachable ? 'ready' : 'missing',
@@ -2173,11 +2394,18 @@ async function getStatus() {
         },
         publicAccess: {
           status: cloudUrlError ? 'error' : baseUrl ? 'active' : 'inactive',
-          detail: cloudUrlError || (baseUrl ? `Despliegue publico gestionado desde ${baseUrl}.` : 'Configura la URL base del despliegue cloud.'),
+          detail: cloudUrlError || (runtimeInfo
+            ? `${runtimeInfo.serviceName}: ${runtimeInfo.serviceEnabled}/${runtimeInfo.serviceActive}`
+            : baseUrl ? `Despliegue publico gestionado desde ${baseUrl}.` : 'Configura la URL base del despliegue cloud.'),
           publicUrl: cloudUrlError ? null : baseUrl || null,
           targetUrl: cloudUrlError ? null : baseUrl || null,
           startedAt: null,
           processId: null,
+          serviceName: runtimeInfo?.serviceName || REMOTE_SYSTEMD_SERVICE,
+          serviceEnabled: runtimeInfo?.serviceEnabled || null,
+          serviceActive: runtimeInfo?.serviceActive || null,
+          externalIp: runtimeInfo?.externalIp || null,
+          autoNipIo: Boolean(runtimeInfo?.autoNipIo),
         },
         mfa: await getMfaStatus(),
       },
@@ -2208,6 +2436,7 @@ async function getStatus() {
   return {
     mode: 'local',
     port: PORT,
+    configuredBaseUrl: null,
     urls: localUrls,
     services: {
       backend: {
@@ -2295,6 +2524,8 @@ ipcMain.handle('desktop:start-local', async () => runTask('start-local', async (
   await startBackend();
 }));
 ipcMain.handle('desktop:stop-local', async () => runTask('stop-local', stopBackend));
+ipcMain.handle('desktop:start-remote-service', async () => runTask('start-remote-service', () => controlRemoteService('start')));
+ipcMain.handle('desktop:restart-remote-service', async () => runTask('restart-remote-service', () => controlRemoteService('restart')));
 ipcMain.handle('desktop:restart-remote-app', async () => runTask('restart-remote-app', () => controlRemoteContainer('app', 'restart')));
 ipcMain.handle('desktop:restart-remote-db', async () => runTask('restart-remote-db', () => controlRemoteContainer('db', 'restart')));
 ipcMain.handle('desktop:rebuild', async () => runTask('rebuild', () => prepareProject({ forceBuild: true })));

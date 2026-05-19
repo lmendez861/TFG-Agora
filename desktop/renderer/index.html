@@ -194,6 +194,10 @@
                 <button class="icon-button icon-button-danger" type="button" data-action="stopPublic">Desactivar</button>
               </div>
               <div class="button-row" data-mode-visible="cloud">
+                <button class="icon-button" type="button" data-action="startRemoteService">Iniciar servicio</button>
+                <button class="icon-button" type="button" data-action="restartRemoteService">Reiniciar servicio</button>
+              </div>
+              <div class="button-row" data-mode-visible="cloud">
                 <button class="icon-button" type="button" data-open="internal" data-mode="browser">Portal interno</button>
                 <button class="icon-button" type="button" data-open="publicExternal" data-mode="browser">Portal externo</button>
               </div>
@@ -373,6 +377,23 @@
               <code id="publicExternalUrl">Pendiente</code>
               <div class="button-row">
                 <button class="button button-secondary" type="button" data-open="publicExternal" data-mode="browser">Abrir en navegador</button>
+              </div>
+            </article>
+
+            <article class="access-item" data-mode-visible="cloud">
+              <span>URL cloud actual</span>
+              <code id="cloudBaseUrl">Pendiente</code>
+              <div class="button-row">
+                <small id="cloudIpInfo">Esperando lectura remota</small>
+              </div>
+            </article>
+
+            <article class="access-item" data-mode-visible="cloud">
+              <span>Servicio cloud</span>
+              <code id="cloudServiceStatus">agora.service: pendiente</code>
+              <div class="button-row">
+                <button class="button button-secondary" type="button" data-action="startRemoteService">Iniciar</button>
+                <button class="button button-secondary" type="button" data-action="restartRemoteService">Reiniciar</button>
               </div>
             </article>
           </div>

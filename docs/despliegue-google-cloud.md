@@ -14,6 +14,8 @@ Se deja preparado un despliegue orientado a **Google Cloud Compute Engine** sobr
 - `deploy/gcp/docker-compose.yml`
 - `deploy/gcp/.env.gcp.example`
 - `deploy/gcp/install-docker-ubuntu.sh`
+- `deploy/gcp/startup.sh`
+- `deploy/gcp/install-agora-service.sh`
 - `deploy/gcp/deploy.sh`
 - `deploy/gcp/smoke-test.sh`
 
@@ -29,7 +31,7 @@ La aplicacion se publica en un contenedor Docker y usa:
 2. Docker Engine + Docker Compose plugin.
 3. Contenedor `db` con PostgreSQL 16.
 4. Contenedor `app` con Symfony, portal interno y portal externo.
-5. Acceso publico por `http://IP_PUBLICA`, por hostname wildcard `nip.io` o por dominio si despues se configura.
+5. Acceso publico por `https://HOST_PUBLICO`, resuelto con `nip.io` o con dominio propio.
 
 ## Recomendacion de VM
 
@@ -46,6 +48,7 @@ Si buscas una demo mas barata o mas contenida, puedes bajar a `e2-medium`, pero 
 - Proyecto de Google Cloud creado.
 - Compute Engine API habilitada.
 - VM con IP publica.
+- IP publica preferiblemente estatica si vas a usar `nip.io` o una URL compartida durante varios dias.
 - Reglas de entrada para `80` y `443`.
 - Repositorio del proyecto disponible en la VM.
 - Credenciales reales de Brevo.
@@ -131,6 +134,15 @@ chmod +x deploy/gcp/install-docker-ubuntu.sh
 
 La instalacion de Docker sigue el repositorio oficial de Docker para Ubuntu.
 
+### Recomendacion importante sobre IP publica
+
+Si usas una IP externa efimera, Google Cloud puede cambiarla al parar y volver a arrancar la VM. Si la URL de demo usa `agora.<IP>.nip.io`, ese cambio rompe el acceso externo aunque los contenedores sigan levantando bien.
+
+Para evitarlo tienes dos opciones:
+
+1. **Reservar una IP estatica** y usar siempre el mismo host.
+2. Mantener `nip.io`, pero activar `APP_PUBLIC_HOST_AUTO_NIP_IO=1` y arrancar Agora mediante el servicio `systemd` que se describe mas abajo, para recalcular el host automaticamente en cada boot.
+
 ## Configuracion
 
 1. Copia el ejemplo:
@@ -152,16 +164,25 @@ cp deploy/gcp/.env.gcp.example deploy/gcp/.env.gcp
 Si no hay dominio, usa la IP publica:
 
 ```bash
-APP_EXTERNAL_BASE_URL=http://IP_PUBLICA
-DEFAULT_URI=http://IP_PUBLICA
+APP_EXTERNAL_BASE_URL=https://IP_PUBLICA
+DEFAULT_URI=https://IP_PUBLICA
 ```
 
 Si quieres evitar una IP desnuda sin pagar un dominio, puedes usar un hostname wildcard gratuito basado en la IP publica. `nip.io` documenta que resuelve hostnames del tipo `algo.<IP>.nip.io` a la IP embebida. Ejemplo:
 
 ```bash
-APP_EXTERNAL_BASE_URL=http://agora.IP_PUBLICA.nip.io
-DEFAULT_URI=http://agora.IP_PUBLICA.nip.io
+APP_EXTERNAL_BASE_URL=https://agora.IP_PUBLICA.nip.io
+DEFAULT_URI=https://agora.IP_PUBLICA.nip.io
 ```
+
+Si vas a parar y arrancar la VM con frecuencia, es mejor dejar estas variables con `https://...` y activar:
+
+```bash
+APP_PUBLIC_HOST_AUTO_NIP_IO=1
+APP_PUBLIC_HOST_NIP_IO_PREFIX=agora
+```
+
+asi el servicio de arranque podra recalcularlas desde la IP real de la VM.
 
 En el despliegue de revision externa se ha validado este formato contra la VM publicada.
 
@@ -184,6 +205,32 @@ El script:
 - ejecuta migraciones;
 - crea o actualiza `profesora` y `profesor`.
 
+## Arranque automatico tras reinicio de la VM
+
+Los `restart: unless-stopped` de Docker ayudan, pero no son la capa adecuada para garantizar toda la aplicacion tras un reboot. Lo correcto es instalar un servicio `systemd` propio de Agora.
+
+En la VM:
+
+```bash
+chmod +x deploy/gcp/startup.sh deploy/gcp/install-agora-service.sh
+./deploy/gcp/install-agora-service.sh
+```
+
+Ese instalador crea `agora.service`, lo habilita al arranque y lo reinicia en el momento. A partir de ahi, despues de reiniciar la VM:
+
+- Docker arranca por `systemd`
+- `agora.service` ejecuta `deploy/gcp/startup.sh`
+- si `APP_PUBLIC_HOST_AUTO_NIP_IO=1`, recalcula la URL `nip.io`
+- levanta el stack con `docker compose up -d --remove-orphans`
+
+Comandos utiles:
+
+```bash
+sudo systemctl status agora.service
+sudo systemctl restart agora.service
+sudo journalctl -u agora.service -n 100 --no-pager
+```
+
 ## Validacion funcional
 
 Tras el despliegue:
@@ -202,7 +249,7 @@ El smoke test comprueba:
 Ademas, el repositorio incluye un smoke publico orientado a la URL externa:
 
 ```bash
-node scripts/smoke-public-workflow.mjs --base-url http://agora.IP_PUBLICA.nip.io
+node scripts/smoke-public-workflow.mjs --base-url https://agora.IP_PUBLICA.nip.io
 ```
 
 Ese script valida desde fuera el flujo completo:
@@ -232,6 +279,7 @@ Cuando cambies codigo en la VM:
 ```bash
 git pull
 ./deploy/gcp/deploy.sh
+sudo systemctl restart agora.service
 ```
 
 ## Comandos utiles

@@ -27,3 +27,7 @@ docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" ps
 
 echo "Despliegue completado."
 echo "Prueba recomendada: ${SCRIPT_DIR}/smoke-test.sh"
+if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files | grep -q '^agora\.service'; then
+    echo "Servicio detectado: agora.service"
+    echo "Recomendacion tras actualizar codigo: sudo systemctl restart agora.service"
+fi

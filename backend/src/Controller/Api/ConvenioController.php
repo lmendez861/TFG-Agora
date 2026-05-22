@@ -74,6 +74,17 @@ final class ConvenioController extends AbstractController
 
     private const ELIGIBLE_COMPANY_STATES = ['activa'];
 
+    private function denyUnlessCanManageDocuments(): void
+    {
+        if (
+            !$this->isGranted('ROLE_DOCUMENT_MANAGER')
+            && !$this->isGranted('ROLE_COORDINATOR')
+            && !$this->isGranted('ROLE_ADMIN')
+        ) {
+            throw $this->createAccessDeniedException('No tienes permisos para gestionar documentos de convenio.');
+        }
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
@@ -537,7 +548,6 @@ final class ConvenioController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documents', name: 'add_support_document', methods: ['POST'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocument(
         ?Convenio $convenio,
         Request $request,
@@ -547,6 +557,8 @@ final class ConvenioController extends AbstractController
         BootstrapSnapshotProvider $snapshotProvider,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
         }
@@ -703,7 +715,6 @@ final class ConvenioController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}', name: 'delete_support_document', methods: ['DELETE'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function deleteDocument(
         ?Convenio $convenio,
         int $documentId,
@@ -712,6 +723,8 @@ final class ConvenioController extends AbstractController
         BootstrapSnapshotProvider $snapshotProvider,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
         }
@@ -738,7 +751,6 @@ final class ConvenioController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}/restore', name: 'restore_support_document', methods: ['POST'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function restoreDocument(
         ?Convenio $convenio,
         int $documentId,
@@ -747,6 +759,8 @@ final class ConvenioController extends AbstractController
         BootstrapSnapshotProvider $snapshotProvider,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$convenio) {
             return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
         }

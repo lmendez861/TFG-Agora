@@ -49,6 +49,17 @@ final class EmpresaColaboradoraController extends AbstractController
     {
     }
 
+    private function denyUnlessCanManageDocuments(): void
+    {
+        if (
+            !$this->isGranted('ROLE_DOCUMENT_MANAGER')
+            && !$this->isGranted('ROLE_COORDINATOR')
+            && !$this->isGranted('ROLE_ADMIN')
+        ) {
+            throw $this->createAccessDeniedException('No tienes permisos para gestionar documentos de empresa.');
+        }
+    }
+
     private const ESTADOS_COLABORACION = [
         'activa',
         'en_negociacion',
@@ -435,7 +446,6 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documentos', name: 'add_document', methods: ['POST'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function addDocumento(
         ?EmpresaColaboradora $empresa,
         Request $request,
@@ -444,6 +454,8 @@ final class EmpresaColaboradoraController extends AbstractController
         DocumentStorageManager $documentStorage,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
         }
@@ -611,7 +623,6 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}', name: 'delete_document', methods: ['DELETE'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function deleteDocumento(
         ?EmpresaColaboradora $empresa,
         int $documentId,
@@ -619,6 +630,8 @@ final class EmpresaColaboradoraController extends AbstractController
         EntityManagerInterface $entityManager,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
         }
@@ -644,7 +657,6 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/restore', name: 'restore_document', methods: ['POST'])]
-    #[IsGranted('ROLE_DOCUMENT_MANAGER')]
     public function restoreDocumento(
         ?EmpresaColaboradora $empresa,
         int $documentId,
@@ -652,6 +664,8 @@ final class EmpresaColaboradoraController extends AbstractController
         EntityManagerInterface $entityManager,
         AuditLogger $auditLogger,
     ): JsonResponse {
+        $this->denyUnlessCanManageDocuments();
+
         if (!$empresa) {
             return $this->json(['message' => 'Empresa no encontrada.'], Response::HTTP_NOT_FOUND);
         }

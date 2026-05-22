@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 final class BootstrapSnapshotProvider
 {
-    private const CACHE_KEY = 'api_bootstrap_snapshot_v1';
+    private const CACHE_KEY = 'api_bootstrap_snapshot_v2';
     private const CACHE_TTL_SECONDS = 3600;
 
     /**
@@ -82,12 +82,12 @@ final class BootstrapSnapshotProvider
                 e.nombre,
                 e.sector,
                 e.ciudad,
-                e.estado_colaboracion AS estadoColaboracion,
-                COALESCE(convenios.total, 0) AS conveniosActivos,
-                COALESCE(tutores.total, 0) AS tutoresProfesionales,
+                e.estado_colaboracion AS estado_colaboracion,
+                COALESCE(convenios.total, 0) AS convenios_activos,
+                COALESCE(tutores.total, 0) AS tutores_profesionales,
                 COALESCE(contactos.total, 0) AS contactos,
-                COALESCE(asignaciones.total, 0) AS asignacionesTotal,
-                COALESCE(asignaciones.enCurso, 0) AS asignacionesEnCurso
+                COALESCE(asignaciones.total, 0) AS asignaciones_total,
+                COALESCE(asignaciones.en_curso, 0) AS asignaciones_en_curso
             FROM empresa_colaboradora e
             LEFT JOIN (
                 SELECT empresa_id, COUNT(*) AS total
@@ -108,7 +108,7 @@ final class BootstrapSnapshotProvider
                 SELECT
                     empresa_id,
                     COUNT(*) AS total,
-                    SUM(CASE WHEN estado = 'en_curso' THEN 1 ELSE 0 END) AS enCurso
+                    SUM(CASE WHEN estado = 'en_curso' THEN 1 ELSE 0 END) AS en_curso
                 FROM asignacion_practica
                 GROUP BY empresa_id
             ) asignaciones ON asignaciones.empresa_id = e.id
@@ -120,13 +120,13 @@ final class BootstrapSnapshotProvider
             'nombre' => $row['nombre'],
             'sector' => $row['sector'],
             'ciudad' => $row['ciudad'],
-            'estadoColaboracion' => $row['estadoColaboracion'],
-            'conveniosActivos' => (int) $row['conveniosActivos'],
-            'tutoresProfesionales' => (int) $row['tutoresProfesionales'],
+            'estadoColaboracion' => $row['estado_colaboracion'],
+            'conveniosActivos' => (int) $row['convenios_activos'],
+            'tutoresProfesionales' => (int) $row['tutores_profesionales'],
             'contactos' => (int) $row['contactos'],
             'asignaciones' => [
-                'total' => (int) $row['asignacionesTotal'],
-                'enCurso' => (int) $row['asignacionesEnCurso'],
+                'total' => (int) $row['asignaciones_total'],
+                'enCurso' => (int) $row['asignaciones_en_curso'],
             ],
         ], $rows);
     }
@@ -146,14 +146,14 @@ final class BootstrapSnapshotProvider
                 e.grado,
                 e.curso,
                 e.estado,
-                COALESCE(asignaciones.total, 0) AS asignacionesTotal,
-                COALESCE(asignaciones.enCurso, 0) AS asignacionesEnCurso
+                COALESCE(asignaciones.total, 0) AS asignaciones_total,
+                COALESCE(asignaciones.en_curso, 0) AS asignaciones_en_curso
             FROM estudiante e
             LEFT JOIN (
                 SELECT
                     estudiante_id,
                     COUNT(*) AS total,
-                    SUM(CASE WHEN estado = 'en_curso' THEN 1 ELSE 0 END) AS enCurso
+                    SUM(CASE WHEN estado = 'en_curso' THEN 1 ELSE 0 END) AS en_curso
                 FROM asignacion_practica
                 GROUP BY estudiante_id
             ) asignaciones ON asignaciones.estudiante_id = e.id
@@ -170,8 +170,8 @@ final class BootstrapSnapshotProvider
             'curso' => $row['curso'],
             'estado' => $row['estado'],
             'asignaciones' => [
-                'total' => (int) $row['asignacionesTotal'],
-                'enCurso' => (int) $row['asignacionesEnCurso'],
+                'total' => (int) $row['asignaciones_total'],
+                'enCurso' => (int) $row['asignaciones_en_curso'],
             ],
         ], $rows);
     }
@@ -187,11 +187,11 @@ final class BootstrapSnapshotProvider
                 c.titulo,
                 c.tipo,
                 c.estado,
-                c.fecha_inicio AS fechaInicio,
-                c.fecha_fin AS fechaFin,
-                e.id AS empresaId,
-                e.nombre AS empresaNombre,
-                COALESCE(asignaciones.total, 0) AS asignacionesAsociadas
+                c.fecha_inicio AS fecha_inicio,
+                c.fecha_fin AS fecha_fin,
+                e.id AS empresa_id,
+                e.nombre AS empresa_nombre,
+                COALESCE(asignaciones.total, 0) AS asignaciones_asociadas
             FROM convenio c
             INNER JOIN empresa_colaboradora e
                 ON e.id = c.empresa_id
@@ -207,14 +207,14 @@ final class BootstrapSnapshotProvider
             'id' => (int) $row['id'],
             'titulo' => $row['titulo'],
             'empresa' => [
-                'id' => (int) $row['empresaId'],
-                'nombre' => $row['empresaNombre'],
+                'id' => (int) $row['empresa_id'],
+                'nombre' => $row['empresa_nombre'],
             ],
             'tipo' => $row['tipo'],
             'estado' => $row['estado'],
-            'fechaInicio' => $row['fechaInicio'],
-            'fechaFin' => $row['fechaFin'],
-            'asignacionesAsociadas' => (int) $row['asignacionesAsociadas'],
+            'fechaInicio' => $row['fecha_inicio'],
+            'fechaFin' => $row['fecha_fin'],
+            'asignacionesAsociadas' => (int) $row['asignaciones_asociadas'],
         ], $rows);
     }
 
@@ -228,14 +228,14 @@ final class BootstrapSnapshotProvider
                 a.id,
                 a.estado,
                 a.modalidad,
-                a.horas_totales AS horasTotales,
-                a.fecha_inicio AS fechaInicio,
-                a.fecha_fin AS fechaFin,
-                e.id AS empresaId,
-                e.nombre AS empresaNombre,
-                es.id AS estudianteId,
-                es.nombre AS estudianteNombre,
-                es.apellido AS estudianteApellido
+                a.horas_totales AS horas_totales,
+                a.fecha_inicio AS fecha_inicio,
+                a.fecha_fin AS fecha_fin,
+                e.id AS empresa_id,
+                e.nombre AS empresa_nombre,
+                es.id AS estudiante_id,
+                es.nombre AS estudiante_nombre,
+                es.apellido AS estudiante_apellido
             FROM asignacion_practica a
             INNER JOIN empresa_colaboradora e
                 ON e.id = a.empresa_id
@@ -248,17 +248,17 @@ final class BootstrapSnapshotProvider
             'id' => (int) $row['id'],
             'estado' => $row['estado'],
             'modalidad' => $row['modalidad'],
-            'horasTotales' => $row['horasTotales'] !== null ? (int) $row['horasTotales'] : null,
-            'fechaInicio' => $row['fechaInicio'],
-            'fechaFin' => $row['fechaFin'],
+            'horasTotales' => $row['horas_totales'] !== null ? (int) $row['horas_totales'] : null,
+            'fechaInicio' => $row['fecha_inicio'],
+            'fechaFin' => $row['fecha_fin'],
             'empresa' => [
-                'id' => (int) $row['empresaId'],
-                'nombre' => $row['empresaNombre'],
+                'id' => (int) $row['empresa_id'],
+                'nombre' => $row['empresa_nombre'],
             ],
             'estudiante' => [
-                'id' => (int) $row['estudianteId'],
-                'nombre' => $row['estudianteNombre'],
-                'apellido' => $row['estudianteApellido'],
+                'id' => (int) $row['estudiante_id'],
+                'nombre' => $row['estudiante_nombre'],
+                'apellido' => $row['estudiante_apellido'],
             ],
         ], $rows);
     }

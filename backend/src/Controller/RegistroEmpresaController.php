@@ -93,6 +93,10 @@ final class RegistroEmpresaController extends AbstractController
                 'contactoNombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
                 'contactoEmail' => [new Assert\NotBlank(), new Assert\Email()],
                 'contactoTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'tutorProfesionalNombre' => new Assert\Optional([new Assert\Length(max: 150)]),
+                'tutorProfesionalEmail' => new Assert\Optional([new Assert\Email(), new Assert\Length(max: 150)]),
+                'tutorProfesionalTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'tutorProfesionalCargo' => new Assert\Optional([new Assert\Length(max: 120)]),
             ],
             allowExtraFields: false
         );
@@ -111,7 +115,11 @@ final class RegistroEmpresaController extends AbstractController
             ->setDescripcion($payload['descripcion'] ?? null)
             ->setContactoNombre($payload['contactoNombre'])
             ->setContactoEmail($payload['contactoEmail'])
-            ->setContactoTelefono($payload['contactoTelefono'] ?? null);
+            ->setContactoTelefono($payload['contactoTelefono'] ?? null)
+            ->setTutorProfesionalNombre($payload['tutorProfesionalNombre'] ?? null)
+            ->setTutorProfesionalEmail($payload['tutorProfesionalEmail'] ?? null)
+            ->setTutorProfesionalTelefono($payload['tutorProfesionalTelefono'] ?? null)
+            ->setTutorProfesionalCargo($payload['tutorProfesionalCargo'] ?? null);
 
         $this->entityManager->persist($solicitud);
         $this->entityManager->flush();

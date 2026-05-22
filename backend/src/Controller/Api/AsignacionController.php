@@ -54,6 +54,7 @@ final class AsignacionController extends AbstractController
     private const EVALUACION_ESTADOS = ['borrador', 'cerrada'];
     private const ELIGIBLE_COMPANY_STATES = ['activa'];
     private const ELIGIBLE_CONVENIO_STATES = ['firmado', 'vigente', 'renovacion'];
+    private const ACTIVE_ASSIGNMENT_STATES = ['planificada', 'en_curso', 'en_revision'];
     private const DOCUMENT_TYPE_EXTENSIONS = [
         'PDF' => ['pdf'],
         'WORD' => ['doc', 'docx'],
@@ -121,6 +122,7 @@ final class AsignacionController extends AbstractController
         ConvenioRepository $convenioRepository,
         TutorAcademicoRepository $tutorAcademicoRepository,
         TutorProfesionalRepository $tutorProfesionalRepository,
+        AsignacionPracticaRepository $asignacionRepository,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         BootstrapSnapshotProvider $snapshotProvider,
@@ -152,7 +154,16 @@ final class AsignacionController extends AbstractController
             return $this->validationErrorResponse($violations);
         }
 
-        $result = $this->hydrateAssignment($payload, null, $estudianteRepository, $empresaRepository, $convenioRepository, $tutorAcademicoRepository, $tutorProfesionalRepository);
+        $result = $this->hydrateAssignment(
+            $payload,
+            null,
+            $estudianteRepository,
+            $empresaRepository,
+            $convenioRepository,
+            $tutorAcademicoRepository,
+            $tutorProfesionalRepository,
+            $asignacionRepository,
+        );
         if ($result instanceof JsonResponse) {
             return $result;
         }
@@ -194,6 +205,7 @@ final class AsignacionController extends AbstractController
         ConvenioRepository $convenioRepository,
         TutorAcademicoRepository $tutorAcademicoRepository,
         TutorProfesionalRepository $tutorProfesionalRepository,
+        AsignacionPracticaRepository $asignacionRepository,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         BootstrapSnapshotProvider $snapshotProvider,
@@ -230,7 +242,16 @@ final class AsignacionController extends AbstractController
             return $this->validationErrorResponse($violations);
         }
 
-        $result = $this->hydrateAssignment($payload, $asignacion, $estudianteRepository, $empresaRepository, $convenioRepository, $tutorAcademicoRepository, $tutorProfesionalRepository);
+        $result = $this->hydrateAssignment(
+            $payload,
+            $asignacion,
+            $estudianteRepository,
+            $empresaRepository,
+            $convenioRepository,
+            $tutorAcademicoRepository,
+            $tutorProfesionalRepository,
+            $asignacionRepository,
+        );
         if ($result instanceof JsonResponse) {
             return $result;
         }
@@ -794,6 +815,7 @@ final class AsignacionController extends AbstractController
         ConvenioRepository $convenioRepository,
         TutorAcademicoRepository $tutorAcademicoRepository,
         TutorProfesionalRepository $tutorProfesionalRepository,
+        AsignacionPracticaRepository $asignacionRepository,
     ): array|JsonResponse {
         $asignacion ??= new AsignacionPractica();
         $empresa = $asignacion->getEmpresa();
@@ -845,6 +867,9 @@ final class AsignacionController extends AbstractController
             if (!$tutorAcademico) {
                 return $this->json(['message' => 'El tutor academico indicado no existe.'], Response::HTTP_NOT_FOUND);
             }
+            if (!$tutorAcademico->isActivo()) {
+                return $this->json(['message' => 'El tutor academico seleccionado ya no esta activo.'], Response::HTTP_BAD_REQUEST);
+            }
             $asignacion->setTutorAcademico($tutorAcademico);
         }
 
@@ -858,6 +883,9 @@ final class AsignacionController extends AbstractController
                 $tutorProfesional = $tutorProfesionalRepository->find($payload['tutorProfesionalId']);
                 if (!$tutorProfesional) {
                     return $this->json(['message' => 'El tutor profesional indicado no existe.'], Response::HTTP_NOT_FOUND);
+                }
+                if (!$tutorProfesional->isActivo()) {
+                    return $this->json(['message' => 'El tutor profesional seleccionado ya no esta activo.'], Response::HTTP_BAD_REQUEST);
                 }
                 if ($empresa && $tutorProfesional->getEmpresa()?->getId() !== $empresa->getId()) {
                     return $this->json(['message' => 'El tutor profesional no esta vinculado a la empresa indicada.'], Response::HTTP_BAD_REQUEST);
@@ -922,6 +950,28 @@ final class AsignacionController extends AbstractController
         }
         if ($convenioFechaFin && $asignacion->getFechaFin() && $asignacion->getFechaFin() > $convenioFechaFin) {
             return $this->json(['message' => 'La fecha de fin de la asignacion no puede superar la fecha de fin del convenio.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (\in_array($asignacion->getEstado(), self::ACTIVE_ASSIGNMENT_STATES, true)) {
+            $conflictingAssignments = $asignacionRepository->findOverlappingActiveAssignmentsForStudent(
+                $asignacion->getEstudiante()->getId(),
+                $asignacion->getFechaInicio(),
+                $asignacion->getFechaFin(),
+                $asignacion->getId(),
+            );
+
+            if ($conflictingAssignments !== []) {
+                $conflict = $conflictingAssignments[0];
+
+                return $this->json([
+                    'message' => sprintf(
+                        'El estudiante ya tiene otra practica activa o planificada con %s entre %s y %s. Cierra o reprograma la asignacion existente antes de crear una nueva.',
+                        $conflict->getEmpresa()?->getNombre() ?? 'otra empresa',
+                        $conflict->getFechaInicio()->format('d/m/Y'),
+                        $conflict->getFechaFin()?->format('d/m/Y') ?? 'sin fecha de fin'
+                    ),
+                ], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         return [$asignacion, [

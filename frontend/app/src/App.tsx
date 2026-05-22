@@ -35,6 +35,7 @@ import {
   deleteConvenioDocument,
   deleteEmpresaDocument,
   dismissConvenioAlert,
+  downloadAuthenticatedDocument,
   downloadCsvExport,
   fetchCollections,
   fetchEmpresaSolicitudes,
@@ -48,6 +49,7 @@ import {
   getConvenioDetail,
   getConvenioExtras,
   getEmpresaDetail,
+  isApiHttpError,
   getEstudianteDetail,
   toggleConvenioChecklist,
   updateTutorAcademico,
@@ -65,6 +67,7 @@ import {
   reopenSeguimiento,
   restoreConvenioDocument,
   restoreEmpresaDocument,
+  prepareAuthenticatedDocumentPreview,
   type CsvExportScope,
   upsertEvaluacionFinal,
   updateSeguimiento,
@@ -78,7 +81,6 @@ import {
 import {
   canPreviewDocument,
   inferUploadDocumentType,
-  resolveDocumentUrl,
   UPLOAD_DOCUMENT_ACCEPT,
   UPLOAD_DOCUMENT_TYPE_OPTIONS,
 } from './utils/documents';
@@ -922,6 +924,7 @@ type ConvenioAlert = {
 type DocumentPreviewState = {
   title: string;
   url: string | null;
+  revokeOnClose: boolean;
 };
 
 const CONVENIO_STEP_FLOW = ['borrador', 'revisado', 'firmado', 'vigente', 'renovacion', 'finalizado'];
@@ -1122,12 +1125,25 @@ export default function App() {
   const [loadingTutorProfesionales, setLoadingTutorProfesionales] = useState(false);
   const [loadingReferenceData, setLoadingReferenceData] = useState(false);
   const [documentPreview, setDocumentPreview] = useState<DocumentPreviewState | null>(null);
+  const [convenioDocumentDraft, setConvenioDocumentDraft] = useState<{
+    name: string;
+    type: string;
+    file: File | null;
+  }>({
+    name: '',
+    type: '',
+    file: null,
+  });
   const [authError, setAuthError] = useState<string | null>(null);
   const [authResolved, setAuthResolved] = useState(false);
   const skipInitialTutorFilterLoad = useRef(false);
 
 
   const [savingConvenioDocument, setSavingConvenioDocument] = useState(false);
+
+  useEffect(() => {
+    setConvenioDocumentDraft({ name: '', type: '', file: null });
+  }, [selectedConvenioId]);
 
   const openCreateStudent = useCallback(() => {
     setStudentFormError(null);
@@ -1216,9 +1232,51 @@ export default function App() {
     }
   }, [pushToast]);
 
-  const openDocumentPreview = useCallback((title: string, url: string | null) => {
-    setDocumentPreview({ title, url });
+  const openDocumentPreview = useCallback(async (
+    title: string,
+    url: string | null,
+    options?: { fallbackFilename?: string; storageProvider?: string },
+  ) => {
+    if (!url) {
+      pushToast('error', 'El documento no dispone de una URL valida para su previsualizacion.');
+      return;
+    }
+
+    try {
+      const preview = await prepareAuthenticatedDocumentPreview(url, options);
+      setDocumentPreview({ title, url: preview.url, revokeOnClose: preview.revokeOnClose });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo abrir la vista previa del documento.';
+      pushToast('error', message);
+    }
+  }, [pushToast]);
+
+  const closeDocumentPreview = useCallback(() => {
+    setDocumentPreview((current) => {
+      if (current?.revokeOnClose && current.url) {
+        URL.revokeObjectURL(current.url);
+      }
+
+      return null;
+    });
   }, []);
+
+  const handleDownloadDocument = useCallback(async (
+    url: string | null,
+    options?: { fallbackFilename?: string; storageProvider?: string },
+  ) => {
+    if (!url) {
+      pushToast('error', 'El documento no dispone de una URL valida para su descarga.');
+      return;
+    }
+
+    try {
+      await downloadAuthenticatedDocument(url, options);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo descargar el documento.';
+      pushToast('error', message);
+    }
+  }, [pushToast]);
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -1770,7 +1828,7 @@ export default function App() {
         }
 
       const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
-        if (message.startsWith('Error 401')) {
+        if (isApiHttpError(err, 401)) {
           setMe(null);
           setAuthError(null);
           setCollections(null);
@@ -2420,7 +2478,15 @@ export default function App() {
     handleEditEmpresa: (empresa: EmpresaSummary) => void;
     openCreateConvenio: (empresaId?: number) => void;
     openCreateAsignacion: (defaults?: Partial<AsignacionFormValues>) => void;
-    openDocumentPreview: (title: string, url: string | null) => void;
+    openDocumentPreview: (
+      title: string,
+      url: string | null,
+      options?: { fallbackFilename?: string; storageProvider?: string },
+    ) => Promise<void>;
+    downloadDocument: (
+      url: string | null,
+      options?: { fallbackFilename?: string; storageProvider?: string },
+    ) => Promise<void>;
     handleToggleEmpresaDocument: (empresaId: number, documentId: number, restore?: boolean) => Promise<void>;
     handleAddEmpresaDocument: (
       empresaId: number,
@@ -2439,6 +2505,7 @@ export default function App() {
     openCreateConvenio,
     openCreateAsignacion,
     openDocumentPreview,
+    downloadDocument: handleDownloadDocument,
     handleToggleEmpresaDocument,
     handleAddEmpresaDocument,
     savingConvenioDocument,
@@ -3463,6 +3530,7 @@ const selectedConvenio = useMemo(() => {
     const startConvenioFlow = shared?.openCreateConvenio;
     const startAsignacionFlow = shared?.openCreateAsignacion;
     const previewDocument = shared?.openDocumentPreview;
+    const downloadDocument = shared?.downloadDocument;
     const toggleEmpresaDocument = shared?.handleToggleEmpresaDocument;
     const addEmpresaDocument = shared?.handleAddEmpresaDocument;
     const savingConvenioDocument = shared?.savingConvenioDocument ?? false;
@@ -3646,19 +3714,24 @@ const selectedConvenio = useMemo(() => {
                           <button
                             type="button"
                             className="button button--ghost button--sm"
-                            onClick={() => previewDocument?.(doc.name, doc.url)}
+                            onClick={() => void previewDocument?.(doc.name, doc.url, {
+                              fallbackFilename: doc.originalFilename ?? doc.name,
+                              storageProvider: doc.storageProvider,
+                            })}
                           >
                             Vista previa PDF
                           </button>
                         )}
-                        <a
+                        <button
+                          type="button"
                           className="button button--link"
-                          href={resolveDocumentUrl(doc.url, API_BASE_URL) ?? undefined}
-                          target="_blank"
-                          rel="noopener"
+                          onClick={() => void downloadDocument?.(doc.url, {
+                            fallbackFilename: doc.originalFilename ?? doc.name,
+                            storageProvider: doc.storageProvider,
+                          })}
                         >
-                          Abrir
-                        </a>
+                          Descargar
+                        </button>
                         <button
                           type="button"
                           className="button button--ghost button--sm"
@@ -4511,20 +4584,23 @@ const selectedConvenio = useMemo(() => {
                         <button
                           type="button"
                           className="button button--ghost button--sm"
-                          onClick={() => openDocumentPreview(seguimiento.evidenciaNombre ?? 'Evidencia', seguimiento.evidenciaUrl)}
+                          onClick={() => void openDocumentPreview(seguimiento.evidenciaNombre ?? 'Evidencia', seguimiento.evidenciaUrl, {
+                            fallbackFilename: seguimiento.evidenciaNombre ?? 'evidencia.pdf',
+                          })}
                         >
                           Vista previa
                         </button>
                       )}
                       {seguimiento.evidenciaUrl && (
-                        <a
+                        <button
+                          type="button"
                           className="button button--link"
-                          href={resolveDocumentUrl(seguimiento.evidenciaUrl, API_BASE_URL) ?? undefined}
-                          target="_blank"
-                          rel="noreferrer"
+                          onClick={() => void handleDownloadDocument(seguimiento.evidenciaUrl, {
+                            fallbackFilename: seguimiento.evidenciaNombre ?? 'evidencia.pdf',
+                          })}
                         >
                           Descargar
-                        </a>
+                        </button>
                       )}
                       <button type="button" className="button button--ghost button--sm" onClick={() => handleEditSeguimiento(seguimiento)}>
                         Editar
@@ -4991,13 +5067,13 @@ const selectedConvenio = useMemo(() => {
    * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
    */
   const ConveniosOverviewPage = () => {
-    const [documentName, setDocumentName] = useState('');
-    const [documentType, setDocumentType] = useState('');
-    const [documentFile, setDocumentFile] = useState<File | null>(null);
-
     if (!collections) {
       return <ModulePageFallback title="Convenios" />;
     }
+
+    const documentName = convenioDocumentDraft.name;
+    const documentType = convenioDocumentDraft.type;
+    const documentFile = convenioDocumentDraft.file;
 
     const totalConvenios = collections.convenios.length;
     const conveniosVigentes = collections.convenios.filter(
@@ -5052,9 +5128,7 @@ const selectedConvenio = useMemo(() => {
         documentFile ?? undefined,
       );
       if (saved) {
-        setDocumentName('');
-        setDocumentType('');
-        setDocumentFile(null);
+        setConvenioDocumentDraft({ name: '', type: '', file: null });
       }
     };
 
@@ -5295,19 +5369,24 @@ const selectedConvenio = useMemo(() => {
                                   <button
                                     type="button"
                                     className="button button--ghost button--sm"
-                                    onClick={() => openDocumentPreview(doc.name, doc.url)}
+                                    onClick={() => void openDocumentPreview(doc.name, doc.url, {
+                                      fallbackFilename: doc.originalFilename ?? doc.name,
+                                      storageProvider: doc.storageProvider,
+                                    })}
                                   >
                                     Vista previa PDF
                                   </button>
                                 )}
-                                <a
+                                <button
+                                  type="button"
                                   className="button button--link"
-                                  href={resolveDocumentUrl(doc.url, API_BASE_URL) ?? undefined}
-                                  target="_blank"
-                                  rel="noreferrer"
+                                  onClick={() => void handleDownloadDocument(doc.url, {
+                                    fallbackFilename: doc.originalFilename ?? doc.name,
+                                    storageProvider: doc.storageProvider,
+                                  })}
                                 >
                                   Descargar
-                                </a>
+                                </button>
                                 <button
                                   type="button"
                                   className="button button--ghost button--sm"
@@ -5341,7 +5420,10 @@ const selectedConvenio = useMemo(() => {
                         <span>Nombre</span>
                         <input
                           value={documentName}
-                          onChange={(event) => setDocumentName(event.target.value)}
+                          onChange={(event) => setConvenioDocumentDraft((current) => ({
+                            ...current,
+                            name: event.target.value,
+                          }))}
                           placeholder="Acta renovacion"
                           maxLength={120}
                           required
@@ -5351,7 +5433,10 @@ const selectedConvenio = useMemo(() => {
                         <span>Tipo</span>
                         <select
                           value={documentType}
-                          onChange={(event) => setDocumentType(event.target.value)}
+                          onChange={(event) => setConvenioDocumentDraft((current) => ({
+                            ...current,
+                            type: event.target.value,
+                          }))}
                           required
                         >
                           <option value="">Selecciona el tipo</option>
@@ -5369,11 +5454,14 @@ const selectedConvenio = useMemo(() => {
                           accept={UPLOAD_DOCUMENT_ACCEPT}
                           onChange={(event) => {
                             const nextFile = event.target.files?.[0] ?? null;
-                            setDocumentFile(nextFile);
-                            setDocumentType(inferUploadDocumentType(nextFile));
-                            if (nextFile && !documentName.trim()) {
-                              setDocumentName(nextFile.name.replace(/\.[^.]+$/, ''));
-                            }
+                            setConvenioDocumentDraft((current) => ({
+                              ...current,
+                              file: nextFile,
+                              type: inferUploadDocumentType(nextFile),
+                              name: nextFile && !current.name.trim()
+                                ? nextFile.name.replace(/\.[^.]+$/, '')
+                                : current.name,
+                            }));
                           }}
                           required
                         />
@@ -6180,6 +6268,12 @@ const selectedConvenio = useMemo(() => {
                   <strong>{solicitud.contacto.nombre}</strong>
                   <span>{solicitud.contacto.email}</span>
                   {solicitud.contacto.telefono && <span>{solicitud.contacto.telefono}</span>}
+                  {solicitud.tutorProfesional.nombre && (
+                    <span>
+                      Tutor profesional: {solicitud.tutorProfesional.nombre}
+                      {solicitud.tutorProfesional.cargo ? ` (${solicitud.tutorProfesional.cargo})` : ''}
+                    </span>
+                  )}
                 </div>
               <div className="solicitud-card__actions">
                 <button
@@ -6600,6 +6694,15 @@ const selectedConvenio = useMemo(() => {
         <Route path="/monitor" element={<Navigate to="/" replace />} />
         <Route path="/legacy/monitor" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {documentPreview && (
+        <DocumentPreviewModal
+          title={documentPreview.title}
+          documentUrl={documentPreview.url}
+          apiBaseUrl={API_BASE_URL}
+          onClose={closeDocumentPreview}
+        />
+      )}
 
       {studentModal && (
         <Modal

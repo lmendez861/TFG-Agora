@@ -130,7 +130,7 @@ final class AsignacionControllerTest extends WebTestCase
     {
         $estudiante = $this->entityManager
             ->getRepository(Estudiante::class)
-            ->findOneBy(['nombre' => 'Luis']);
+            ->findOneBy(['nombre' => 'Ana']);
         $empresa = $this->entityManager
             ->getRepository(EmpresaColaboradora::class)
             ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
@@ -438,6 +438,105 @@ final class AsignacionControllerTest extends WebTestCase
         );
 
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function testCrearAsignacionRechazaTutorProfesionalInactivo(): void
+    {
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Luis']);
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['empresa' => $empresa]);
+        $tutorAcademico = $this->entityManager
+            ->getRepository(TutorAcademico::class)
+            ->findOneBy(['nombre' => 'Miguel']);
+        $tutorProfesional = $this->entityManager
+            ->getRepository(TutorProfesional::class)
+            ->findOneBy(['nombre' => 'Elena Ruiz']);
+
+        self::assertNotNull($estudiante);
+        self::assertNotNull($empresa);
+        self::assertNotNull($convenio);
+        self::assertNotNull($tutorAcademico);
+        self::assertNotNull($tutorProfesional);
+
+        $tutorProfesional->setActivo(false);
+        $this->entityManager->flush();
+
+        $this->client->request(
+            'POST',
+            '/api/asignaciones',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'estudianteId' => $estudiante->getId(),
+                'empresaId' => $empresa->getId(),
+                'convenioId' => $convenio->getId(),
+                'tutorAcademicoId' => $tutorAcademico->getId(),
+                'tutorProfesionalId' => $tutorProfesional->getId(),
+                'fechaInicio' => '2025-03-01',
+                'modalidad' => 'remota',
+                'estado' => 'planificada',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        self::assertStringContainsString('ya no esta activo', $this->client->getResponse()->getContent() ?: '');
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function testCrearAsignacionRechazaSolapamientoDePracticasActivas(): void
+    {
+        $estudiante = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Ana']);
+        $empresa = $this->entityManager
+            ->getRepository(EmpresaColaboradora::class)
+            ->findOneBy(['nombre' => 'Salud Conectada S.L.']);
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['empresa' => $empresa]);
+        $tutorAcademico = $this->entityManager
+            ->getRepository(TutorAcademico::class)
+            ->findOneBy(['nombre' => 'Miguel']);
+        $tutorProfesional = $this->entityManager
+            ->getRepository(TutorProfesional::class)
+            ->findOneBy(['nombre' => 'Elena Ruiz']);
+
+        self::assertNotNull($estudiante);
+        self::assertNotNull($empresa);
+        self::assertNotNull($convenio);
+        self::assertNotNull($tutorAcademico);
+        self::assertNotNull($tutorProfesional);
+
+        $this->client->request(
+            'POST',
+            '/api/asignaciones',
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode([
+                'estudianteId' => $estudiante->getId(),
+                'empresaId' => $empresa->getId(),
+                'convenioId' => $convenio->getId(),
+                'tutorAcademicoId' => $tutorAcademico->getId(),
+                'tutorProfesionalId' => $tutorProfesional->getId(),
+                'fechaInicio' => '2024-11-15',
+                'modalidad' => 'remota',
+                'estado' => 'planificada',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        self::assertStringContainsString('ya tiene otra practica activa o planificada', $this->client->getResponse()->getContent() ?: '');
     }
 
     /**

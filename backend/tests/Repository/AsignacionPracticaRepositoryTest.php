@@ -90,4 +90,31 @@ final class AsignacionPracticaRepositoryTest extends KernelTestCase
         self::assertCount(0, $asignacionPlanificada->getSeguimientos());
         self::assertNull($asignacionPlanificada->getEvaluacionFinal());
     }
+
+    /**
+     * Caso de prueba que fija el comportamiento esperado de esta funcionalidad.
+     * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
+     */
+    public function testDetectaAsignacionesActivasSolapadasParaUnEstudiante(): void
+    {
+        $repo = $this->entityManager->getRepository(AsignacionPractica::class);
+        self::assertInstanceOf(\App\Repository\AsignacionPracticaRepository::class, $repo);
+
+        $estudianteAna = $this->entityManager
+            ->getRepository(Estudiante::class)
+            ->findOneBy(['nombre' => 'Ana']);
+        self::assertNotNull($estudianteAna);
+
+        $asignacionAna = $repo->findOneBy(['estudiante' => $estudianteAna]);
+        self::assertNotNull($asignacionAna);
+
+        $solapadas = $repo->findOverlappingActiveAssignmentsForStudent(
+            $estudianteAna->getId(),
+            $asignacionAna->getFechaInicio(),
+            $asignacionAna->getFechaFin(),
+        );
+
+        self::assertNotEmpty($solapadas);
+        self::assertSame($asignacionAna->getId(), $solapadas[0]->getId());
+    }
 }

@@ -12,6 +12,7 @@ use App\Entity\EmpresaMensaje;
 use App\Entity\ContactoEmpresa;
 use App\Entity\EmpresaColaboradora;
 use App\Entity\EmpresaSolicitud;
+use App\Entity\TutorProfesional;
 use App\Repository\EmpresaSolicitudRepository;
 use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
@@ -74,6 +75,10 @@ final class EmpresaSolicitudController extends AbstractController
                 'contactoNombre' => new Assert\Optional([new Assert\Length(max: 150)]),
                 'contactoEmail' => new Assert\Optional([new Assert\Email()]),
                 'contactoTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'tutorProfesionalNombre' => new Assert\Optional([new Assert\Length(max: 150)]),
+                'tutorProfesionalEmail' => new Assert\Optional([new Assert\Email(), new Assert\Length(max: 150)]),
+                'tutorProfesionalTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                'tutorProfesionalCargo' => new Assert\Optional([new Assert\Length(max: 120)]),
             ],
             allowExtraFields: true
         );
@@ -86,6 +91,10 @@ final class EmpresaSolicitudController extends AbstractController
         $contactoNombre = $payload['contactoNombre'] ?? ($payload['contacto']['nombre'] ?? null);
         $contactoEmail = $payload['contactoEmail'] ?? ($payload['contacto']['email'] ?? null);
         $contactoTelefono = $payload['contactoTelefono'] ?? ($payload['contacto']['telefono'] ?? null);
+        $tutorProfesionalNombre = $payload['tutorProfesionalNombre'] ?? ($payload['tutorProfesional']['nombre'] ?? null);
+        $tutorProfesionalEmail = $payload['tutorProfesionalEmail'] ?? ($payload['tutorProfesional']['email'] ?? null);
+        $tutorProfesionalTelefono = $payload['tutorProfesionalTelefono'] ?? ($payload['tutorProfesional']['telefono'] ?? null);
+        $tutorProfesionalCargo = $payload['tutorProfesionalCargo'] ?? ($payload['tutorProfesional']['cargo'] ?? null);
 
         $solicitud = (new EmpresaSolicitud())
             ->setNombreEmpresa($payload['nombreEmpresa'])
@@ -96,7 +105,11 @@ final class EmpresaSolicitudController extends AbstractController
             ->setDescripcion($payload['descripcion'] ?? null)
             ->setContactoNombre($contactoNombre ?? 'Contacto no indicado')
             ->setContactoEmail($contactoEmail ?? 'sin-email@pendiente.test')
-            ->setContactoTelefono($contactoTelefono);
+            ->setContactoTelefono($contactoTelefono)
+            ->setTutorProfesionalNombre($tutorProfesionalNombre)
+            ->setTutorProfesionalEmail($tutorProfesionalEmail)
+            ->setTutorProfesionalTelefono($tutorProfesionalTelefono)
+            ->setTutorProfesionalCargo($tutorProfesionalCargo);
 
         $this->entityManager->persist($solicitud);
         $this->entityManager->flush();
@@ -204,6 +217,28 @@ final class EmpresaSolicitudController extends AbstractController
 
         $empresa->addContacto($contacto);
 
+        if ($solicitud->getTutorProfesionalNombre()) {
+            $tutorProfesional = (new TutorProfesional())
+                ->setEmpresa($empresa)
+                ->setNombre($solicitud->getTutorProfesionalNombre())
+                ->setEmail($solicitud->getTutorProfesionalEmail())
+                ->setTelefono($solicitud->getTutorProfesionalTelefono())
+                ->setCargo($solicitud->getTutorProfesionalCargo())
+                ->setActivo(true);
+
+            $empresa->addTutorProfesional($tutorProfesional);
+
+            $contactoTutor = (new ContactoEmpresa())
+                ->setEmpresa($empresa)
+                ->setNombre($solicitud->getTutorProfesionalNombre())
+                ->setEmail($solicitud->getTutorProfesionalEmail())
+                ->setTelefono($solicitud->getTutorProfesionalTelefono())
+                ->setCargo($solicitud->getTutorProfesionalCargo() ?: 'Tutor profesional')
+                ->setEsTutorProfesional(true);
+
+            $empresa->addContacto($contactoTutor);
+        }
+
         $this->entityManager->persist($empresa);
         $solicitud->markApproved();
         $account = $this->portalCompanyAccountManager->provisionApprovedAccount($solicitud, $empresa);
@@ -291,6 +326,12 @@ final class EmpresaSolicitudController extends AbstractController
                 'nombre' => $solicitud->getContactoNombre(),
                 'email' => $solicitud->getContactoEmail(),
                 'telefono' => $solicitud->getContactoTelefono(),
+            ],
+            'tutorProfesional' => [
+                'nombre' => $solicitud->getTutorProfesionalNombre(),
+                'email' => $solicitud->getTutorProfesionalEmail(),
+                'telefono' => $solicitud->getTutorProfesionalTelefono(),
+                'cargo' => $solicitud->getTutorProfesionalCargo(),
             ],
             'estado' => $solicitud->getEstado(),
             'creadaEn' => $solicitud->getCreatedAt()->format(\DateTimeInterface::ATOM),

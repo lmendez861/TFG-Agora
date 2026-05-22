@@ -376,6 +376,12 @@ export interface EmpresaSolicitudSummary {
     email: string;
     telefono: string | null;
   };
+  tutorProfesional: {
+    nombre: string | null;
+    email: string | null;
+    telefono: string | null;
+    cargo: string | null;
+  };
   estado: EmpresaSolicitudEstado;
   creadaEn: string;
   emailVerificadoEn: string | null;

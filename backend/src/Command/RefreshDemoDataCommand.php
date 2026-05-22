@@ -601,7 +601,11 @@ final class RefreshDemoDataCommand extends Command
             'Empresa interesada en dashboards de ocupacion y prediccion de demanda para destinos urbanos.',
             'Marta Ibanez',
             'marta.ibanez@hostelink.example.org',
-            '952770880'
+            '952770880',
+            'Diego Camarena',
+            'diego.camarena@hostelink.example.org',
+            '952770881',
+            'Responsable de analitica hotelera'
         );
         $pending->markEmailVerified();
         $pending->addMensaje($this->createMensaje('empresa', 'Ya tenemos definido el calendario de acogida y el equipo de supervision.'));
@@ -626,7 +630,11 @@ final class RefreshDemoDataCommand extends Command
             'Solicitud rechazada por falta de detalle en la tutorizacion y documentacion preventiva.',
             'Alberto Navarro',
             'alberto.navarro@ecopack.example.org',
-            '944880990'
+            '944880990',
+            'Nuria Vela',
+            'nuria.vela@ecopack.example.org',
+            '944880991',
+            'Responsable de operaciones circulares'
         );
         $rejected->markEmailVerified();
         $rejected->addMensaje($this->createMensaje('empresa', 'Podemos asumir una alumna de administracion y finanzas a partir de junio.'));
@@ -655,7 +663,11 @@ final class RefreshDemoDataCommand extends Command
             $scenario['solicitud']['descripcion'],
             $scenario['solicitud']['contactoNombre'],
             $scenario['solicitud']['contactoEmail'],
-            $scenario['solicitud']['contactoTelefono']
+            $scenario['solicitud']['contactoTelefono'],
+            $scenario['empresa']['tutorProfesional']['nombre'] ?? null,
+            $scenario['empresa']['tutorProfesional']['email'] ?? null,
+            $scenario['empresa']['tutorProfesional']['telefono'] ?? null,
+            $scenario['empresa']['tutorProfesional']['cargo'] ?? null
         );
         $solicitud->markEmailVerified();
         foreach ($scenario['solicitud']['mensajes'] as $mensaje) {
@@ -865,7 +877,11 @@ final class RefreshDemoDataCommand extends Command
         ?string $descripcion,
         string $contactoNombre,
         string $contactoEmail,
-        ?string $contactoTelefono
+        ?string $contactoTelefono,
+        ?string $tutorProfesionalNombre = null,
+        ?string $tutorProfesionalEmail = null,
+        ?string $tutorProfesionalTelefono = null,
+        ?string $tutorProfesionalCargo = null
     ): EmpresaSolicitud {
         return (new EmpresaSolicitud())
             ->setNombreEmpresa($nombreEmpresa)
@@ -876,7 +892,11 @@ final class RefreshDemoDataCommand extends Command
             ->setDescripcion($descripcion)
             ->setContactoNombre($contactoNombre)
             ->setContactoEmail($contactoEmail)
-            ->setContactoTelefono($contactoTelefono);
+            ->setContactoTelefono($contactoTelefono)
+            ->setTutorProfesionalNombre($tutorProfesionalNombre)
+            ->setTutorProfesionalEmail($tutorProfesionalEmail)
+            ->setTutorProfesionalTelefono($tutorProfesionalTelefono)
+            ->setTutorProfesionalCargo($tutorProfesionalCargo);
     }
 
     private function createMensaje(string $autor, string $texto): EmpresaMensaje

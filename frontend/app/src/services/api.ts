@@ -39,6 +39,7 @@ import type {
   EvaluacionFinalRecord,
 } from '../types';
 import { downloadBlobFile } from '../utils/download.ts';
+import { resolveDocumentUrl } from '../utils/documents.ts';
 
 type EmpresaDocumentApi = {
   id: number;
@@ -103,6 +104,18 @@ const API_REQUEST_TIMEOUT_MS = 20000;
 let activeUsername = '';
 let activePassword = '';
 
+export class ApiHttpError extends Error {
+  status: number;
+  payloadMessage?: string;
+
+  constructor(status: number, message: string, payloadMessage?: string) {
+    super(message);
+    this.name = 'ApiHttpError';
+    this.status = status;
+    this.payloadMessage = payloadMessage;
+  }
+}
+
 async function fetchWithTimeout(input: string, init: RequestInit = {}, timeoutMs = API_REQUEST_TIMEOUT_MS): Promise<Response> {
   const timeoutController = new AbortController();
   const timeoutId = setTimeout(() => timeoutController.abort(), timeoutMs);
@@ -117,6 +130,63 @@ async function fetchWithTimeout(input: string, init: RequestInit = {}, timeoutMs
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+function buildFriendlyHttpMessage(status: number, payloadMessage?: string, contextPath?: string): string {
+  if (status === 401) {
+    if (contextPath === '/login') {
+      return 'No se ha podido iniciar sesion con esas credenciales. Revisa el usuario y la contrasena.';
+    }
+
+    return 'Debes iniciar sesion para continuar.';
+  }
+
+  if (status === 403) {
+    return 'No tienes permisos suficientes para realizar esta operacion.';
+  }
+
+  if (status === 404) {
+    return payloadMessage || 'No se ha encontrado el recurso solicitado.';
+  }
+
+  if (status === 408) {
+    return 'La solicitud ha tardado demasiado en responder. Intentalo de nuevo.';
+  }
+
+  if (status === 409 || status === 422) {
+    return payloadMessage || 'Los datos enviados no son validos o entran en conflicto con el estado actual.';
+  }
+
+  if (status === 429) {
+    return 'Se han realizado demasiadas solicitudes en poco tiempo. Espera unos minutos antes de reintentar.';
+  }
+
+  if (status >= 500) {
+    return 'El servidor no ha podido completar la operacion. Intentalo de nuevo en unos minutos.';
+  }
+
+  return payloadMessage || 'No se ha podido completar la operacion solicitada.';
+}
+
+async function extractPayloadMessage(response: Response): Promise<string | undefined> {
+  try {
+    const payload = await response.json();
+    return typeof payload?.message === 'string' && payload.message.trim() !== '' ? payload.message.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function buildApiHttpError(status: number, payloadMessage?: string, contextPath?: string): ApiHttpError {
+  return new ApiHttpError(status, buildFriendlyHttpMessage(status, payloadMessage, contextPath), payloadMessage);
+}
+
+export function isApiHttpError(error: unknown, status?: number): error is ApiHttpError {
+  if (!(error instanceof ApiHttpError)) {
+    return false;
+  }
+
+  return typeof status === 'number' ? error.status === status : true;
 }
 
 /**
@@ -206,6 +276,110 @@ function buildQueryString(params?: Record<string, CsvExportParamValue>): string 
   return query ? `?${query}` : '';
 }
 
+function resolveAbsoluteDocumentUrl(documentUrl: string): string {
+  const resolved = resolveDocumentUrl(documentUrl, API_BASE_URL);
+  if (!resolved) {
+    throw new Error('El documento no dispone de una URL valida.');
+  }
+
+  return resolved;
+}
+
+function isCrossOriginDocumentUrl(absoluteUrl: string): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    return new URL(absoluteUrl, window.location.origin).origin !== window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+function extractFilenameFromContentDisposition(headerValue: string | null, fallbackFilename: string): string {
+  if (!headerValue) {
+    return fallbackFilename;
+  }
+
+  const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    try {
+      return decodeURIComponent(utf8Match[1]);
+    } catch {
+      return utf8Match[1];
+    }
+  }
+
+  const quotedMatch = headerValue.match(/filename=\"([^\"]+)\"/i);
+  if (quotedMatch?.[1]) {
+    return quotedMatch[1];
+  }
+
+  const simpleMatch = headerValue.match(/filename=([^;]+)/i);
+  if (simpleMatch?.[1]) {
+    return simpleMatch[1].trim();
+  }
+
+  return fallbackFilename;
+}
+
+function inferFallbackFilename(documentUrl: string, explicitFilename?: string): string {
+  if (explicitFilename && explicitFilename.trim() !== '') {
+    return explicitFilename.trim();
+  }
+
+  try {
+    const url = new URL(documentUrl, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    const lastSegment = url.pathname.split('/').filter(Boolean).pop();
+    if (lastSegment) {
+      return decodeURIComponent(lastSegment);
+    }
+  } catch {
+    // ignored
+  }
+
+  return 'documento';
+}
+
+function openDirectDownload(documentUrl: string): void {
+  const link = document.createElement('a');
+  link.href = documentUrl;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+async function fetchDocumentBlob(
+  documentUrl: string,
+  fallbackFilename?: string,
+): Promise<{ blob: Blob; filename: string }> {
+  const authorizationHeader = getAuthorizationHeader();
+  const response = await fetchWithTimeout(documentUrl, {
+    headers: {
+      ...(authorizationHeader ? { Authorization: authorizationHeader } : {}),
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response));
+  }
+
+  const filename = extractFilenameFromContentDisposition(
+    response.headers.get('content-disposition'),
+    inferFallbackFilename(documentUrl, fallbackFilename),
+  );
+
+  return {
+    blob: await response.blob(),
+    filename,
+  };
+}
+
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
 
@@ -228,22 +402,7 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-
-    try {
-      const payload = await response.json();
-      if (payload?.message) {
-        message = `${message}: ${payload.message}`;
-      }
-    } catch {
-      if (response.status === 401) {
-        message = 'Error 401: la sesion no es valida o las credenciales no se han enviado correctamente.';
-      } else if (response.status >= 500) {
-        message = `Error ${response.status}: el servidor no ha podido completar la operacion.`;
-      }
-    }
-
-    throw new Error(message);
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response), path);
   }
 
   if (response.status === 204) {
@@ -324,21 +483,40 @@ export async function downloadCsvExport(
   }
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-
-    try {
-      const payload = await response.json();
-      if (payload?.message) {
-        message = `${message}: ${payload.message}`;
-      }
-    } catch {
-      // Ignored: fallback to default message when the body is not JSON.
-    }
-
-    throw new Error(message);
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response), preferredPath);
   }
 
   downloadBlobFile(filename, await response.blob());
+}
+
+export async function downloadAuthenticatedDocument(
+  documentUrl: string,
+  options?: { fallbackFilename?: string; storageProvider?: string },
+): Promise<void> {
+  const resolvedUrl = resolveAbsoluteDocumentUrl(documentUrl);
+  if (options?.storageProvider === 'remote_url' || isCrossOriginDocumentUrl(resolvedUrl)) {
+    openDirectDownload(resolvedUrl);
+    return;
+  }
+
+  const { blob, filename } = await fetchDocumentBlob(resolvedUrl, options?.fallbackFilename);
+  downloadBlobFile(filename, blob);
+}
+
+export async function prepareAuthenticatedDocumentPreview(
+  documentUrl: string,
+  options?: { fallbackFilename?: string; storageProvider?: string },
+): Promise<{ url: string; revokeOnClose: boolean }> {
+  const resolvedUrl = resolveAbsoluteDocumentUrl(documentUrl);
+  if (options?.storageProvider === 'remote_url' || isCrossOriginDocumentUrl(resolvedUrl)) {
+    return { url: resolvedUrl, revokeOnClose: false };
+  }
+
+  const { blob } = await fetchDocumentBlob(resolvedUrl, options?.fallbackFilename);
+  return {
+    url: URL.createObjectURL(blob),
+    revokeOnClose: true,
+  };
 }
 
 /**
@@ -528,16 +706,7 @@ export async function addConvenioDocument(
     });
 
     if (!response.ok) {
-      let message = `Error ${response.status}`;
-      try {
-        const payload = await response.json();
-        if (payload?.message) {
-          message = `${message}: ${payload.message}`;
-        }
-      } catch {
-        // ignore
-      }
-      throw new Error(message);
+      throw buildApiHttpError(response.status, await extractPayloadMessage(response), `/convenios/${convenioId}/documents`);
     }
 
     return (await response.json()) as ConvenioDocumentRecord;
@@ -599,16 +768,7 @@ export async function addEmpresaDocument(
       credentials: 'include',
     });
     if (!response.ok) {
-      let message = `Error ${response.status}`;
-      try {
-        const payload = await response.json();
-        if (payload?.message) {
-          message = `${message}: ${payload.message}`;
-        }
-      } catch {
-        // ignore
-      }
-      throw new Error(message);
+      throw buildApiHttpError(response.status, await extractPayloadMessage(response), `/empresas/${empresaId}/documentos`);
     }
     return mapEmpresaDocument((await response.json()) as EmpresaDocumentApi);
   }
@@ -709,16 +869,7 @@ export async function createSeguimiento(
   });
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-    try {
-      const apiPayload = await response.json();
-      if (apiPayload?.message) {
-        message = `${message}: ${apiPayload.message}`;
-      }
-    } catch {
-      // ignored
-    }
-    throw new Error(message);
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response), `/asignaciones/${asignacionId}/seguimientos`);
   }
 
   return (await response.json()) as SeguimientoRecord;
@@ -759,16 +910,7 @@ export async function updateSeguimiento(
   });
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-    try {
-      const apiPayload = await response.json();
-      if (apiPayload?.message) {
-        message = `${message}: ${apiPayload.message}`;
-      }
-    } catch {
-      // ignored
-    }
-    throw new Error(message);
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response), `/asignaciones/${asignacionId}/seguimientos/${seguimientoId}`);
   }
 
   return (await response.json()) as SeguimientoRecord;
@@ -948,18 +1090,7 @@ export async function login(username: string, password: string): Promise<void> {
   });
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-
-    try {
-      const payload = await response.json();
-      if (payload?.message) {
-        message = `${message}: ${payload.message}`;
-      }
-    } catch {
-      // Ignored: fallback to default message when the body is not JSON.
-    }
-
-    throw new Error(message);
+    throw buildApiHttpError(response.status, await extractPayloadMessage(response), '/login');
   }
 
   setActiveCredentials(username, password);

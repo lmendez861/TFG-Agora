@@ -105,15 +105,41 @@ export function AsignacionForm({
     return [...eligibleConvenios, ...(selectedConvenio ? [selectedConvenio] : [])];
   }, [convenios, values.convenioId, values.empresaId]);
 
-  const tutoresProfesionalesDisponibles = useMemo(
-    () => tutoresProfesionales.filter((tutor) => String(tutor.empresa.id) === values.empresaId),
-    [tutoresProfesionales, values.empresaId],
-  );
+  const tutoresProfesionalesDisponibles = useMemo(() => {
+    const activeTutores = tutoresProfesionales.filter(
+      (tutor) => tutor.activo && String(tutor.empresa.id) === values.empresaId,
+    );
+    const selectedTutor =
+      values.tutorProfesionalId && !activeTutores.some((tutor) => String(tutor.id) === values.tutorProfesionalId)
+        ? tutoresProfesionales.find((tutor) => String(tutor.id) === values.tutorProfesionalId) ?? null
+        : null;
+
+    return [...activeTutores, ...(selectedTutor ? [selectedTutor] : [])].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [tutoresProfesionales, values.empresaId, values.tutorProfesionalId]);
 
   const convenioSeleccionado = useMemo(
     () => convenios.find((convenio) => String(convenio.id) === values.convenioId) ?? null,
     [convenios, values.convenioId],
   );
+  const estudianteSeleccionado = useMemo(
+    () => estudiantes.find((estudiante) => String(estudiante.id) === values.estudianteId) ?? null,
+    [estudiantes, values.estudianteId],
+  );
+  const estudiantePracticasHint =
+    mode === 'create' && (estudianteSeleccionado?.asignaciones.enCurso ?? 0) > 0
+      ? 'Este estudiante ya figura con practicas en curso. Si intentas solapar otra asignacion activa, el sistema la bloqueara.'
+      : null;
+  const tutorProfesionalHint = useMemo(() => {
+    if (!values.empresaId) {
+      return 'Selecciona antes una empresa para cargar sus tutores profesionales.';
+    }
+
+    if (tutoresProfesionalesDisponibles.length === 0) {
+      return 'No hay tutores profesionales activos dados de alta para esta empresa.';
+    }
+
+    return 'Se muestran solo los tutores profesionales activos vinculados a la empresa seleccionada.';
+  }, [tutoresProfesionalesDisponibles.length, values.empresaId]);
 
   useEffect(() => {
     setValues((prev) => {
@@ -222,6 +248,7 @@ export function AsignacionForm({
               </option>
             ))}
           </select>
+          {estudiantePracticasHint ? <small className="form__hint">{estudiantePracticasHint}</small> : null}
         </label>
 
         <label className="form__field">
@@ -276,14 +303,20 @@ export function AsignacionForm({
 
         <label className="form__field">
           <span>Tutor profesional</span>
-          <select name="tutorProfesionalId" value={values.tutorProfesionalId} onChange={handleChange}>
+          <select
+            name="tutorProfesionalId"
+            value={values.tutorProfesionalId}
+            onChange={handleChange}
+            disabled={!values.empresaId || tutoresProfesionalesDisponibles.length === 0}
+          >
             <option value="">Sin asignar</option>
             {tutoresProfesionalesDisponibles.map((tutor) => (
               <option key={tutor.id} value={tutor.id}>
-                {tutor.nombre}
+                {tutor.nombre} {tutor.activo ? '' : '(inactivo)'}
               </option>
             ))}
           </select>
+          <small className="form__hint">{tutorProfesionalHint}</small>
         </label>
 
         <label className="form__field">

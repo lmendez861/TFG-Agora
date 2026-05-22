@@ -131,6 +131,10 @@ final class PortalCompanyControllerTest extends WebTestCase
                 'descripcion' => 'Solicitud creada desde cuenta previa.',
                 'contactoNombre' => 'Portal Preregistro',
                 'contactoTelefono' => '600555444',
+                'tutorProfesionalNombre' => 'Claudia Tutor',
+                'tutorProfesionalEmail' => 'claudia.tutor@empresa-portal.example',
+                'tutorProfesionalTelefono' => '600555445',
+                'tutorProfesionalCargo' => 'Responsable de operaciones',
             ], JSON_THROW_ON_ERROR)
         );
 
@@ -147,6 +151,7 @@ final class PortalCompanyControllerTest extends WebTestCase
         self::assertInstanceOf(EmpresaSolicitud::class, $refreshed->getSolicitud());
         self::assertSame('empresa-portal@example.com', $refreshed->getSolicitud()?->getContactoEmail());
         self::assertSame('Empresa Portal Previa', $refreshed->getSolicitud()?->getNombreEmpresa());
+        self::assertSame('Claudia Tutor', $refreshed->getSolicitud()?->getTutorProfesionalNombre());
     }
 
     public function testCuentaPrerregistradaPuedeReenviarLaVerificacionDesdeElPortal(): void
@@ -165,6 +170,7 @@ final class PortalCompanyControllerTest extends WebTestCase
                 'descripcion' => 'Solicitud para probar el reenvio autenticado.',
                 'contactoNombre' => 'Portal Preregistro',
                 'contactoTelefono' => '600555444',
+                'tutorProfesionalNombre' => 'Claudia Tutor',
             ], JSON_THROW_ON_ERROR)
         );
         self::assertResponseStatusCodeSame(Response::HTTP_CREATED);

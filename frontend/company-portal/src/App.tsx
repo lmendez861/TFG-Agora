@@ -23,6 +23,10 @@ type CompanyRequestPayload = {
   descripcion?: string;
   contactoNombre: string;
   contactoTelefono?: string;
+  tutorProfesionalNombre: string;
+  tutorProfesionalEmail?: string;
+  tutorProfesionalTelefono?: string;
+  tutorProfesionalCargo?: string;
 };
 
 type RegistroResponse = {
@@ -56,6 +60,15 @@ type PortalStatusSnapshot = {
   sector: string | null;
   ciudad: string | null;
   web: string | null;
+  contactoNombre?: string;
+  contactoEmail?: string;
+  contactoTelefono?: string | null;
+  tutorProfesional?: {
+    nombre: string | null;
+    email: string | null;
+    telefono: string | null;
+    cargo: string | null;
+  } | null;
   creadaEn: string;
   emailVerificadoEn: string | null;
   aprobadoEn: string | null;
@@ -174,6 +187,12 @@ type CompanyPortalOverview = {
     contactoNombre: string;
     contactoEmail: string;
     contactoTelefono: string | null;
+    tutorProfesional: {
+      nombre: string | null;
+      email: string | null;
+      telefono: string | null;
+      cargo: string | null;
+    };
     creadaEn: string;
     emailVerificadoEn: string | null;
     aprobadoEn: string | null;
@@ -407,6 +426,10 @@ function mapOverviewToStatusSnapshot(overview: CompanyPortalOverview): PortalSta
     sector: overview.solicitud.sector,
     ciudad: overview.solicitud.ciudad,
     web: overview.solicitud.web,
+    contactoNombre: overview.solicitud.contactoNombre,
+    contactoEmail: overview.solicitud.contactoEmail,
+    contactoTelefono: overview.solicitud.contactoTelefono,
+    tutorProfesional: overview.solicitud.tutorProfesional,
     creadaEn: overview.solicitud.creadaEn,
     emailVerificadoEn: overview.solicitud.emailVerificadoEn,
     aprobadoEn: overview.solicitud.aprobadoEn,
@@ -427,6 +450,67 @@ function useQuery() {
   return useMemo(() => new URLSearchParams(search), [search]);
 }
 
+class PortalHttpError extends Error {
+  status: number;
+  payloadMessage?: string;
+
+  constructor(status: number, message: string, payloadMessage?: string) {
+    super(message);
+    this.name = 'PortalHttpError';
+    this.status = status;
+    this.payloadMessage = payloadMessage;
+  }
+}
+
+function buildPortalHttpMessage(status: number, payloadMessage?: string, contextPath?: string): string {
+  if (status === 401) {
+    if (contextPath === '/portal-auth/login') {
+      return 'No se ha podido iniciar sesion con ese correo y contrasena. Revisa las credenciales o activa antes la cuenta si sigue pendiente.';
+    }
+
+    return 'Debes iniciar sesion con una cuenta de empresa valida para continuar.';
+  }
+
+  if (status === 403) {
+    return 'Tu cuenta no tiene permisos suficientes para realizar esta operacion.';
+  }
+
+  if (status === 404) {
+    return payloadMessage || 'No se ha encontrado la solicitud o el recurso solicitado.';
+  }
+
+  if (status === 408) {
+    return 'La solicitud ha tardado demasiado en responder. Intentalo de nuevo.';
+  }
+
+  if (status === 409 || status === 422) {
+    return payloadMessage || 'Los datos enviados no son validos o no encajan con el estado actual de la solicitud.';
+  }
+
+  if (status === 429) {
+    return 'Se han realizado demasiadas solicitudes en poco tiempo. Espera un momento antes de reintentar.';
+  }
+
+  if (status >= 500) {
+    return 'El servidor no ha podido completar la operacion. Intentalo de nuevo en unos minutos.';
+  }
+
+  return payloadMessage || 'No se ha podido completar la operacion solicitada.';
+}
+
+async function extractPortalPayloadMessage(response: Response): Promise<string | undefined> {
+  try {
+    const payload = await response.json();
+    return typeof payload?.message === 'string' && payload.message.trim() !== '' ? payload.message.trim() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function buildPortalHttpError(status: number, payloadMessage?: string, contextPath?: string): PortalHttpError {
+  return new PortalHttpError(status, buildPortalHttpMessage(status, payloadMessage, contextPath), payloadMessage);
+}
+
 async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE.replace(/\/$/, '')}${path}`, {
     ...init,
@@ -438,20 +522,7 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
   });
 
   if (!response.ok) {
-    let message = `Error ${response.status}`;
-    try {
-      const payload = await response.json();
-      if (payload?.message) {
-        message = `${message}: ${payload.message}`;
-      }
-    } catch {
-      if (response.status === 401) {
-        message = 'Error 401: debes iniciar sesion con una cuenta de empresa valida para continuar.';
-      } else if (response.status >= 500) {
-        message = `Error ${response.status}: el servidor no ha podido completar la operacion.`;
-      }
-    }
-    throw new Error(message);
+    throw buildPortalHttpError(response.status, await extractPortalPayloadMessage(response), path);
   }
 
   if (response.status === 204) {
@@ -462,7 +533,7 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
 }
 
 function isPortalUnauthorizedError(error: unknown): boolean {
-  return error instanceof Error && error.message.startsWith('Error 401');
+  return error instanceof PortalHttpError && error.status === 401;
 }
 
 /**
@@ -863,7 +934,7 @@ function StatusPage() {
           const response = await fetch(`${PORTAL_BASE}/${encodeURIComponent(activeToken)}`);
           const data = (await response.json().catch(() => null)) as PortalStatusSnapshot | { message?: string } | null;
           if (!response.ok) {
-            throw new Error((data as { message?: string } | null)?.message || `Error ${response.status}`);
+            throw buildPortalHttpError(response.status, (data as { message?: string } | null)?.message, `${PORTAL_BASE}/${encodeURIComponent(activeToken)}`);
           }
 
           if (!cancelled) {
@@ -996,6 +1067,12 @@ function StatusPage() {
             <p className="eyebrow">Estado actual</p>
             <h3>{visibleStatus ? visibleStatus.nombreEmpresa : 'Sin solicitud cargada'}</h3>
             <p>{visibleStatus ? `Situacion: ${getStatusLabel(visibleStatus.estado)}` : 'Carga un token o utiliza la sesion guardada para ver el detalle.'}</p>
+            {visibleStatus?.tutorProfesional?.nombre && (
+              <small>
+                Tutor profesional previsto: {visibleStatus.tutorProfesional.nombre}
+                {visibleStatus.tutorProfesional.cargo ? `  |  ${visibleStatus.tutorProfesional.cargo}` : ''}
+              </small>
+            )}
             {error && <div className="alert alert--error">{error}</div>}
             {loading && <p className="detail-placeholder">Cargando estado...</p>}
           </article>
@@ -1069,7 +1146,7 @@ function VerifyPage() {
       .then(async (res) => {
         const payload = await res.json().catch(() => null);
         if (!res.ok) {
-          throw new Error(payload?.message || `Error ${res.status}`);
+          throw buildPortalHttpError(res.status, payload?.message, '/registro-empresa/confirmar');
         }
         if (!cancelled) {
           setVerification({
@@ -1606,6 +1683,10 @@ function CompanyAreaPage() {
     descripcion: '',
     contactoNombre: '',
     contactoTelefono: '',
+    tutorProfesionalNombre: '',
+    tutorProfesionalEmail: '',
+    tutorProfesionalTelefono: '',
+    tutorProfesionalCargo: '',
   });
 
   /**
@@ -1626,6 +1707,7 @@ function CompanyAreaPage() {
       setRequestPayload((current) => ({
         ...current,
         contactoNombre: current.contactoNombre || meResponse.displayName || '',
+        tutorProfesionalNombre: current.tutorProfesionalNombre || current.contactoNombre || meResponse.displayName || '',
       }));
       if (!options?.silent) {
         setStatus(null);
@@ -1720,6 +1802,10 @@ function CompanyAreaPage() {
           descripcion: requestPayload.descripcion || undefined,
           contactoNombre: requestPayload.contactoNombre,
           contactoTelefono: requestPayload.contactoTelefono || undefined,
+          tutorProfesionalNombre: requestPayload.tutorProfesionalNombre,
+          tutorProfesionalEmail: requestPayload.tutorProfesionalEmail || undefined,
+          tutorProfesionalTelefono: requestPayload.tutorProfesionalTelefono || undefined,
+          tutorProfesionalCargo: requestPayload.tutorProfesionalCargo || undefined,
         }),
       });
 
@@ -1887,6 +1973,22 @@ function CompanyAreaPage() {
                   <input required value={requestPayload.contactoNombre} onChange={(event) => setRequestPayload((current) => ({ ...current, contactoNombre: event.target.value }))} />
                 </label>
                 <label className="full-row">
+                  <span>Tutor profesional propuesto*</span>
+                  <input required value={requestPayload.tutorProfesionalNombre} onChange={(event) => setRequestPayload((current) => ({ ...current, tutorProfesionalNombre: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Email del tutor profesional</span>
+                  <input type="email" value={requestPayload.tutorProfesionalEmail} onChange={(event) => setRequestPayload((current) => ({ ...current, tutorProfesionalEmail: event.target.value }))} />
+                </label>
+                <label>
+                  <span>Telefono del tutor profesional</span>
+                  <input value={requestPayload.tutorProfesionalTelefono} onChange={(event) => setRequestPayload((current) => ({ ...current, tutorProfesionalTelefono: event.target.value }))} />
+                </label>
+                <label className="full-row">
+                  <span>Cargo del tutor profesional</span>
+                  <input value={requestPayload.tutorProfesionalCargo} onChange={(event) => setRequestPayload((current) => ({ ...current, tutorProfesionalCargo: event.target.value }))} />
+                </label>
+                <label className="full-row">
                   <span>Descripcion</span>
                   <textarea rows={4} value={requestPayload.descripcion} onChange={(event) => setRequestPayload((current) => ({ ...current, descripcion: event.target.value }))} placeholder="Perfiles, duracion, objetivos y alcance de la colaboracion." />
                 </label>
@@ -1910,7 +2012,7 @@ function CompanyAreaPage() {
                 <li>Se registra la solicitud vinculada a esta cuenta.</li>
                 <li>Recibiras un correo de verificacion en el mismo email del portal.</li>
                 <li>El centro revisara la propuesta desde el panel interno.</li>
-                <li>El mismo acceso servira despues para chat, documentos y operativa.</li>
+                <li>Si se aprueba, el tutor profesional propuesto quedara dado de alta directamente en la empresa.</li>
               </ul>
             </article>
           </section>
@@ -1925,6 +2027,12 @@ function CompanyAreaPage() {
               <h3>{overview.solicitud.nombreEmpresa}</h3>
               <p>{requestStateLabel}</p>
               <small>{overview.solicitud.contactoEmail}  |  {overview.solicitud.contactoTelefono ?? 'sin telefono'}</small>
+              {overview.solicitud.tutorProfesional.nombre && (
+                <small>
+                  Tutor profesional: {overview.solicitud.tutorProfesional.nombre}
+                  {overview.solicitud.tutorProfesional.cargo ? `  |  ${overview.solicitud.tutorProfesional.cargo}` : ''}
+                </small>
+              )}
             </article>
             <article className="surface-card">
               <p className="eyebrow">Estado</p>

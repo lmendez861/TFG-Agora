@@ -60,6 +60,18 @@ class EmpresaSolicitud
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $contactoTelefono = null;
 
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $tutorProfesionalNombre = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $tutorProfesionalEmail = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $tutorProfesionalTelefono = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    private ?string $tutorProfesionalCargo = null;
+
     #[ORM\Column(length: 64, unique: true)]
     private string $token;
 
@@ -224,6 +236,54 @@ class EmpresaSolicitud
     public function setContactoTelefono(?string $contactoTelefono): self
     {
         $this->contactoTelefono = $contactoTelefono;
+
+        return $this;
+    }
+
+    public function getTutorProfesionalNombre(): ?string
+    {
+        return $this->tutorProfesionalNombre;
+    }
+
+    public function setTutorProfesionalNombre(?string $tutorProfesionalNombre): self
+    {
+        $this->tutorProfesionalNombre = $tutorProfesionalNombre !== null ? trim($tutorProfesionalNombre) : null;
+
+        return $this;
+    }
+
+    public function getTutorProfesionalEmail(): ?string
+    {
+        return $this->tutorProfesionalEmail;
+    }
+
+    public function setTutorProfesionalEmail(?string $tutorProfesionalEmail): self
+    {
+        $this->tutorProfesionalEmail = $tutorProfesionalEmail !== null ? mb_strtolower(trim($tutorProfesionalEmail)) : null;
+
+        return $this;
+    }
+
+    public function getTutorProfesionalTelefono(): ?string
+    {
+        return $this->tutorProfesionalTelefono;
+    }
+
+    public function setTutorProfesionalTelefono(?string $tutorProfesionalTelefono): self
+    {
+        $this->tutorProfesionalTelefono = $tutorProfesionalTelefono !== null ? trim($tutorProfesionalTelefono) : null;
+
+        return $this;
+    }
+
+    public function getTutorProfesionalCargo(): ?string
+    {
+        return $this->tutorProfesionalCargo;
+    }
+
+    public function setTutorProfesionalCargo(?string $tutorProfesionalCargo): self
+    {
+        $this->tutorProfesionalCargo = $tutorProfesionalCargo !== null ? trim($tutorProfesionalCargo) : null;
 
         return $this;
     }

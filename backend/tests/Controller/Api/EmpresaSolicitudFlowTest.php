@@ -13,6 +13,7 @@ namespace App\Tests\Controller\Api;
 use App\Entity\EmpresaSolicitud;
 use App\Repository\EmpresaColaboradoraRepository;
 use App\Repository\EmpresaSolicitudRepository;
+use App\Repository\TutorProfesionalRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Tests\Support\DemoFixtureLoaderTrait;
 
@@ -48,6 +49,10 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
             'descripcion' => 'Empresa demo para pruebas E2E de solicitudes',
             'contactoNombre' => 'Ana Flow',
             'contactoTelefono' => '600123123',
+            'tutorProfesionalNombre' => 'Diego Flow',
+            'tutorProfesionalEmail' => 'diego.flow@flowtest.co',
+            'tutorProfesionalTelefono' => '600321321',
+            'tutorProfesionalCargo' => 'Responsable de proyectos',
         ];
 
         $client->request(
@@ -82,6 +87,7 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         self::assertInstanceOf(EmpresaSolicitud::class, $solicitud);
         self::assertSame(EmpresaSolicitud::ESTADO_PENDIENTE, $solicitud->getEstado());
         self::assertNotEmpty($solicitud->getToken());
+        self::assertSame('Diego Flow', $solicitud->getTutorProfesionalNombre());
 
         // Confirmar correo
         $client->request('GET', '/registro-empresa/confirmar', ['token' => $solicitud->getToken()]);
@@ -112,5 +118,11 @@ final class EmpresaSolicitudFlowTest extends WebTestCase
         $empresa = $empresaRepo->findOneBy(['nombre' => 'FlowTestCo']);
         self::assertNotNull($empresa, 'La empresa debe crearse al aprobar la solicitud');
         self::assertSame('activa', $empresa->getEstadoColaboracion());
+
+        $tutorRepo = static::getContainer()->get(TutorProfesionalRepository::class);
+        $tutor = $tutorRepo->findOneBy(['empresa' => $empresa]);
+        self::assertNotNull($tutor, 'La aprobacion debe crear el tutor profesional propuesto.');
+        self::assertSame('Diego Flow', $tutor->getNombre());
+        self::assertSame('diego.flow@flowtest.co', $tutor->getEmail());
     }
 }

@@ -150,6 +150,12 @@ final class PortalCompanyController extends AbstractController
                 'contactoNombre' => $solicitud->getContactoNombre(),
                 'contactoEmail' => $solicitud->getContactoEmail(),
                 'contactoTelefono' => $solicitud->getContactoTelefono(),
+                'tutorProfesional' => [
+                    'nombre' => $solicitud->getTutorProfesionalNombre(),
+                    'email' => $solicitud->getTutorProfesionalEmail(),
+                    'telefono' => $solicitud->getTutorProfesionalTelefono(),
+                    'cargo' => $solicitud->getTutorProfesionalCargo(),
+                ],
                 'creadaEn' => $solicitud->getCreatedAt()->format(\DateTimeInterface::ATOM),
                 'emailVerificadoEn' => $solicitud->getEmailVerificadoEn()?->format(\DateTimeInterface::ATOM),
                 'aprobadoEn' => $solicitud->getAprobadoEn()?->format(\DateTimeInterface::ATOM),
@@ -203,6 +209,10 @@ final class PortalCompanyController extends AbstractController
                     'descripcion' => new Assert\Optional(),
                     'contactoNombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
                     'contactoTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                    'tutorProfesionalNombre' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
+                    'tutorProfesionalEmail' => new Assert\Optional([new Assert\Email(), new Assert\Length(max: 150)]),
+                    'tutorProfesionalTelefono' => new Assert\Optional([new Assert\Length(max: 50)]),
+                    'tutorProfesionalCargo' => new Assert\Optional([new Assert\Length(max: 120)]),
                 ],
                 allowExtraFields: false
             )
@@ -221,7 +231,11 @@ final class PortalCompanyController extends AbstractController
             ->setDescripcion($payload['descripcion'] ?? null)
             ->setContactoNombre($payload['contactoNombre'])
             ->setContactoEmail($account->getEmail())
-            ->setContactoTelefono($payload['contactoTelefono'] ?? null);
+            ->setContactoTelefono($payload['contactoTelefono'] ?? null)
+            ->setTutorProfesionalNombre($payload['tutorProfesionalNombre'])
+            ->setTutorProfesionalEmail($payload['tutorProfesionalEmail'] ?? null)
+            ->setTutorProfesionalTelefono($payload['tutorProfesionalTelefono'] ?? null)
+            ->setTutorProfesionalCargo($payload['tutorProfesionalCargo'] ?? null);
 
         $account
             ->setDisplayName($payload['contactoNombre'])

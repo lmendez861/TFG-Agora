@@ -589,6 +589,7 @@ final class RefreshDemoDataCommand extends Command
             'Cristina Merino',
             'EmpresaDemo00!'
         );
+        $preRegistered->markActivated();
         $this->entityManager->persist($preRegistered);
 
         $pending = $this->createSolicitud(

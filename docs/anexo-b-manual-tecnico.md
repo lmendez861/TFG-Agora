@@ -78,7 +78,7 @@ Con las builds generadas, Symfony sirve:
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.224.87.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/` o `URL/documentacion/`. La supervision tecnica se realiza desde Agora Desktop.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.225.98.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/` o `URL/documentacion/`. La supervision tecnica se realiza desde Agora Desktop.
 
 Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
 
@@ -266,10 +266,10 @@ Capacidades principales:
 
 - levantar y detener backend local;
 - activar y desactivar acceso externo local con MFA;
-- abrir portal interno, externo y monitor en local;
+- abrir portal interno y externo en local;
 - guardar perfiles remotos cloud;
 - abrir portal interno y externo desplegados;
-- consultar monitor y logs remotos;
+- consultar estado tecnico, URL efectiva y logs remotos;
 - reiniciar contenedores remotos y generar backups PostgreSQL;
 - ejecutar baterias de pruebas y smoke workflows;
 - crear backups SQLite y restaurarlos;

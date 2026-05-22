@@ -8,6 +8,8 @@
 - OK `docs/memoria-final-export.pdf` generado.
 - OK anexos A, B y C revisados y alineados con la version final.
 - OK capturas principales del sistema regeneradas con la interfaz actual.
+- OK esquema relacional, esquema de arquitectura y separacion entre alcance cerrado y mejoras futuras incorporados a la memoria.
+- OK bloques de `Definiciones` y `Notaciones y siglas` presentes para alinearse con la plantilla del TFG.
 
 ## 2. Arquitectura y modulos requeridos
 
@@ -38,6 +40,7 @@
 - OK `npm run build:backend` en `frontend/company-portal`
 - OK comprobaciones HTTP de `/app`, `/externo` y `/documentacion`
 - OK comprobaciones autenticadas de `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`
+- OK ultima pasada cerrada con `110 tests / 628 assertions` en backend, `14/14` tests unitarios de frontend y `6/6` E2E Playwright en cloud
 
 ## 5. Material de defensa
 
@@ -53,3 +56,9 @@
 - No existe integracion con SSO institucional.
 - El almacenamiento documental sigue siendo local.
 - El despliegue permanente en infraestructura dedicada queda fuera del alcance de esta entrega.
+- La consola tecnica principal es Agora Desktop; la antigua pagina web de monitorizacion ya no forma parte del flujo funcional defendido.
+
+## 7. Lectura defendible del alcance
+
+- Lo entregado como nucleo cerrado es: portales `/app` y `/externo`, documentacion publica, correo real, mensajeria, documentos, despliegue cloud por HTTPS y Agora Desktop como consola tecnica.
+- Lo que queda como mejora futura no bloqueante es: dominio propio, SSO, servicios gestionados, observabilidad avanzada y ampliacion funcional de Agora Desktop.

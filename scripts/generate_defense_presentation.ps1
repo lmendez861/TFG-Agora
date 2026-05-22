@@ -11,6 +11,7 @@ $captures = Join-Path $docs 'capturas'
 $outputPptx = Join-Path $docs 'presentacion-defensa-final.pptx'
 $outputPdf = Join-Path $docs 'presentacion-defensa-final.pdf'
 $notesPath = Join-Path $docs 'guion-presentacion-final.md'
+$publicBaseUrl = 'https://agora.34.175.225.98.nip.io'
 
 function Color {
     param([int] $Red, [int] $Green, [int] $Blue)
@@ -281,14 +282,14 @@ try {
 
     # 4. Arquitectura
     $slide = Add-Slide $presentation
-    Add-Header $slide '03 / Arquitectura' 'Topologia operativa y de despliegue' 'La misma URL publica sirve los dos portales, la documentacion y el monitor legacy, mientras el escritorio opera por API y SSH.'
-    Add-FittedImage -Slide $slide -Path (Join-Path $captures '01-bloques-funcionalidad.png') -Left 62 -Top 158 -MaxWidth 510 -MaxHeight 310 | Out-Null
+    Add-Header $slide '03 / Arquitectura' 'Topologia operativa y de despliegue' 'La URL publica termina en una VM con HTTPS, persistencia real y una consola tecnica de escritorio separada del flujo funcional.'
+    Add-FittedImage -Slide $slide -Path (Join-Path $captures '10-arquitectura-detallada.png') -Left 24 -Top 146 -MaxWidth 600 -MaxHeight 330 | Out-Null
     Add-BulletList $slide 625 174 260 205 @(
         'Caddy expone HTTPS y enruta a la aplicacion.',
         'Symfony concentra seguridad, negocio y APIs.',
         'PostgreSQL y documentos persisten fuera del contenedor.',
         'Agora Desktop trabaja en local o en cloud.',
-        'La shell web de monitor queda en legacy.'
+        'La operacion tecnica queda fuera del flujo web principal.'
     ) 18 | Out-Null
 
     # 5. Modelo y flujo
@@ -385,7 +386,7 @@ try {
     Add-Text -Slide $slide -Left 426 -Top 246 -Width 90 -Height 24 -Text 'Caddy' -Size 14 -Rgb $colors.darkInk -Font 'Consolas' | Out-Null
     Add-Box -Slide $slide -Left 650 -Top 194 -Width 242 -Height 92 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 674 -Top 214 -Width 180 -Height 22 -Text 'URL publica' -Size 18 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175...' -Size 10 -Rgb $colors.ink -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175.225.98...' -Size 9 -Rgb $colors.ink -Font 'Consolas' | Out-Null
     Add-BulletList $slide 92 332 760 104 @(
         'El portal externo y los correos usan ya el origen publico correcto de la VM.',
         'APP_EXTERNAL_BASE_URL fija la URL canonica para enlaces y notificaciones.',
@@ -409,7 +410,7 @@ try {
     # 13. Operacion local y app de escritorio
     $slide = Add-Slide $presentation
     Add-Header $slide '12 / Agora Desktop' 'Consola tecnica local y cloud' 'La parte tecnica ya no depende de varios terminales sueltos ni de una pagina web separada: queda centralizada en una sola app.'
-    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-agora-desktop-operativo.png') -Left 50 -Top 150 -MaxWidth 430 -MaxHeight 305 | Out-Null
+    Add-FittedImage -Slide $slide -Path (Join-Path $captures '07-agora-desktop-operativo.png') -Left 42 -Top 148 -MaxWidth 448 -MaxHeight 318 | Out-Null
     Add-BulletList $slide 540 162 320 210 @(
         'Modo local para backend, SQLite y demo offline.',
         'Modo cloud para estado, smoke, logs y reinicios remotos.',
@@ -421,8 +422,8 @@ try {
     # 14. Validacion
     $slide = Add-Slide $presentation
     Add-Header $slide '13 / Validacion' 'Comprobaciones ejecutadas antes de la revision final'
-    Add-Metric $slide 70 162 '101' 'tests backend' $colors.green
-    Add-Metric $slide 292 162 '567' 'aserciones' $colors.cyan
+    Add-Metric $slide 70 162 '110' 'tests backend' $colors.green
+    Add-Metric $slide 292 162 '628' 'aserciones' $colors.cyan
     Add-Metric $slide 514 162 '14/14' 'tests frontend' $colors.green
     Add-Metric $slide 736 162 '6/6' 'E2E Playwright' $colors.green
     Add-BulletList $slide 94 314 740 110 @(
@@ -436,7 +437,7 @@ try {
     $slide = Add-Slide $presentation
     Add-Header $slide '14 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
     Add-Box -Slide $slide -Left 68 -Top 158 -Width 824 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
-    Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text 'https://agora.34.175.224.87.nip.io/app   |   https://agora.34.175.224.87.nip.io/externo' -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text \"$publicBaseUrl/app   |   $publicBaseUrl/externo\" -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
     Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo y documentacion; la operacion tecnica se hace desde Agora Desktop.' -Size 14 -Rgb $colors.darkInk | Out-Null
     Add-Box -Slide $slide -Left 86 -Top 302 -Width 320 -Height 118 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 118 -Top 328 -Width 250 -Height 22 -Text 'Usuario de prueba' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
@@ -448,23 +449,32 @@ try {
         'El acceso remoto depende de que la VM siga activa.'
     ) 17 | Out-Null
 
-    # 16. Despliegue futuro
+    # 16. Alcance cerrado y mejoras futuras
     $slide = Add-Slide $presentation
-    Add-Header $slide '15 / Mejoras futuras' 'Que endureceria despues de esta entrega' 'El nucleo ya esta cerrado; lo siguiente ya no es supervivencia de la demo, sino evolucion del producto.'
+    Add-Header $slide '15 / Alcance y futuro' 'Que queda cerrado y que se deja para despues' 'El nucleo funcional y tecnico ya esta entregado; las mejoras futuras endurecen o amplian, pero no bloquean la defensa.'
+    Add-Box -Slide $slide -Left 56 -Top 170 -Width 270 -Height 214 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 80 -Top 192 -Width 210 -Height 28 -Text 'Cerrado en esta entrega' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-BulletList $slide 82 232 212 132 @(
+        'Portales /app y /externo bajo HTTPS.',
+        'Correo real, documentos, chat y exportacion.',
+        'Agora Desktop local/cloud como consola tecnica.',
+        'VM publica con arranque automatico y URL efectiva visible.'
+    ) 14 $colors.ink | Out-Null
     $deployOptions = @(
-        @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar politicas TLS.', $colors.green),
+        @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar TLS.', $colors.green),
         @('Servicios gestionados', 'Mover documentos, backups y observabilidad a piezas gestionadas.', $colors.cyan),
-        @('Cliente tecnico', 'Ampliar Agora Desktop con mas automatizacion y soporte operativo sin mezclarlo con negocio.', $colors.amber)
+        @('Cliente tecnico', 'Ampliar Agora Desktop sin mezclar soporte con negocio.', $colors.amber)
     )
     for ($i = 0; $i -lt $deployOptions.Count; $i++) {
-        $x = 56 + ($i * 298)
-        Add-Box -Slide $slide -Left $x -Top 176 -Width 252 -Height 176 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
-        Add-Text -Slide $slide -Left ($x + 20) -Top 196 -Width 190 -Height 26 -Text $deployOptions[$i][0] -Size 21 -Rgb $deployOptions[$i][2] -Bold $true | Out-Null
-        Add-Text -Slide $slide -Left ($x + 20) -Top 236 -Width 210 -Height 76 -Text $deployOptions[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
+        $x = 356 + (($i % 2) * 272)
+        $y = 176 + ([Math]::Floor($i / 2) * 118)
+        Add-Box -Slide $slide -Left $x -Top $y -Width 244 -Height 96 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 14) -Width 188 -Height 22 -Text $deployOptions[$i][0] -Size 18 -Rgb $deployOptions[$i][2] -Bold $true | Out-Null
+        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 42) -Width 200 -Height 42 -Text $deployOptions[$i][1] -Size 13 -Rgb $colors.darkInk | Out-Null
     }
-    Add-BulletList $slide 88 392 760 78 @(
-        'Mantendria PostgreSQL en servidor y endureceria automatizacion, dominio y observabilidad.',
-        'No meteria nuevas funciones secundarias sin cerrar antes seguridad, pruebas y operacion.'
+    Add-BulletList $slide 80 414 760 60 @(
+        'La prioridad futura no es anadir modulos sin control, sino endurecer despliegue, seguridad y soporte.',
+        'Las funciones secundarias quedan identificadas para justificar con claridad el recorte de alcance.'
     ) 18 | Out-Null
 
     # 17. Limitaciones
@@ -498,8 +508,12 @@ try {
     $presentation.SaveAs($outputPdf, 32)
 }
 finally {
-    $presentation.Close()
-    $powerPoint.Quit()
+    if ($null -ne $presentation) {
+        try { $presentation.Close() } catch { }
+    }
+    if ($null -ne $powerPoint) {
+        try { $powerPoint.Quit() } catch { }
+    }
 }
 
 $notes = @'
@@ -552,22 +566,25 @@ Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que
 ## 15. Acceso de evaluacion
 Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
-## 16. Mejoras futuras
+## 16. Alcance cerrado
+Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
+
+## 17. Mejoras futuras
 Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
-## 17. Limitaciones
+## 18. Limitaciones
 No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
 
-## 18. Cierre
+## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
-1. Abrir `https://agora.34.175.224.87.nip.io/app/`.
+1. Abrir `https://agora.34.175.225.98.nip.io/app/`.
 2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
-6. Portal externo en `https://agora.34.175.224.87.nip.io/externo/`.
+6. Portal externo en `https://agora.34.175.225.98.nip.io/externo/`.
 7. Agora Desktop en modo cloud si queda tiempo.
 '@
 

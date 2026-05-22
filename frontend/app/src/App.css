@@ -3512,8 +3512,8 @@
 }
 
 .inbox-thread__top {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.6rem;
   align-items: baseline;
   min-width: 0;
@@ -3538,9 +3538,10 @@
 .inbox-thread__top strong,
 .inbox-thread__meta {
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.4;
 }
 
 .inbox-thread__snippet {
@@ -3574,6 +3575,10 @@
 .inbox-panel__identity {
   justify-content: flex-start;
   align-items: center;
+  min-width: 0;
+}
+
+.inbox-panel__identity > div {
   min-width: 0;
 }
 
@@ -5514,4 +5519,3 @@
     overflow-wrap: anywhere;
   }
 }
-

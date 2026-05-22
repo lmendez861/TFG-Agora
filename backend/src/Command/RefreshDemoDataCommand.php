@@ -107,6 +107,7 @@ final class RefreshDemoDataCommand extends Command
 
         $io->section('Cuentas demo del portal externo');
         $io->listing([
+            'cristina.merino@prealta.example.org / EmpresaDemo00!',
             'laura.marquez@novaform.example.org / EmpresaDemo01!',
             'sergio.pastor@biosync.example.org / EmpresaDemo02!',
             'ines.romero@movitrack.example.org / EmpresaDemo03!',
@@ -583,6 +584,13 @@ final class RefreshDemoDataCommand extends Command
 
     private function seedPendingAndRejectedRequests(): void
     {
+        $preRegistered = $this->createPortalAccount(
+            'cristina.merino@prealta.example.org',
+            'Cristina Merino',
+            'EmpresaDemo00!'
+        );
+        $this->entityManager->persist($preRegistered);
+
         $pending = $this->createSolicitud(
             'HosteLink Datos Turisticos, S.L.',
             'B70211458',

@@ -446,7 +446,7 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
       }
     } catch {
       if (response.status === 401) {
-        message = 'Error 401: la sesion de empresa no es valida o ha caducado.';
+        message = 'Error 401: debes iniciar sesion con una cuenta de empresa valida para continuar.';
       } else if (response.status >= 500) {
         message = `Error ${response.status}: el servidor no ha podido completar la operacion.`;
       }
@@ -459,6 +459,10 @@ async function portalFetch<T>(path: string, init: RequestInit = {}): Promise<T> 
   }
 
   return (await response.json()) as T;
+}
+
+function isPortalUnauthorizedError(error: unknown): boolean {
+  return error instanceof Error && error.message.startsWith('Error 401');
 }
 
 /**
@@ -876,7 +880,11 @@ function StatusPage() {
       } catch (err) {
         if (!cancelled) {
           setStatus(null);
-          setError(err instanceof Error ? err.message : 'No se pudo cargar el estado de la solicitud.');
+          if (!activeToken && isPortalUnauthorizedError(err)) {
+            setError(null);
+          } else {
+            setError(err instanceof Error ? err.message : 'No se pudo cargar el estado de la solicitud.');
+          }
         }
       } finally {
         if (!cancelled) {
@@ -1623,7 +1631,7 @@ function CompanyAreaPage() {
         setStatus(null);
       }
     } catch (err) {
-      if (!options?.silent) {
+      if (!options?.silent && !isPortalUnauthorizedError(err)) {
         setStatus(err instanceof Error ? err.message : 'No se pudo cargar el panel privado.');
       }
       if (!options?.background) {
@@ -1749,9 +1757,13 @@ function CompanyAreaPage() {
       <div className="page">
         <section className="panel">
           {status && <div className="alert alert--error">{status}</div>}
-          <p>La sesion de empresa no esta activa o la cuenta aun no se ha aprobado.</p>
+          <p>
+            Inicia sesion con tu cuenta de empresa para acceder al panel privado. Si la cuenta todavia no tiene una
+            solicitud asociada, desde este panel podras crearla sin necesidad de una empresa aprobada previa.
+          </p>
           <div className="hero__actions">
             <Link className="btn btn--primary" to="/acceso">Ir a acceso</Link>
+            <Link className="btn btn--ghost" to="/estado">Ver estado</Link>
           </div>
         </section>
       </div>

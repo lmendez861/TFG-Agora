@@ -4340,6 +4340,12 @@ const selectedConvenio = useMemo(() => {
         return;
       }
 
+      const resolvedEvidenceType = seguimientoDraft.evidenciaTipo || inferUploadDocumentType(seguimientoDraft.evidenciaFile) || undefined;
+      if (seguimientoDraft.evidenciaFile && !resolvedEvidenceType) {
+        setSeguimientoError('No se ha podido identificar el tipo del archivo de evidencia. Usa PDF, Word o Excel.');
+        return;
+      }
+
       setSavingSeguimiento(true);
       setSeguimientoError(null);
 
@@ -4349,7 +4355,7 @@ const selectedConvenio = useMemo(() => {
           tipo: seguimientoDraft.tipo,
           descripcion: seguimientoDraft.descripcion.trim() || undefined,
           accionRequerida: seguimientoDraft.accionRequerida.trim() || undefined,
-          evidenciaTipo: seguimientoDraft.evidenciaTipo || inferUploadDocumentType(seguimientoDraft.evidenciaFile) || undefined,
+          evidenciaTipo: resolvedEvidenceType,
           evidenciaFile: seguimientoDraft.evidenciaFile,
         };
 
@@ -4682,10 +4688,15 @@ const selectedConvenio = useMemo(() => {
                     setSeguimientoDraft((current) => ({
                       ...current,
                       evidenciaFile: nextFile,
-                      evidenciaTipo: inferUploadDocumentType(nextFile) ?? current.evidenciaTipo,
+                      evidenciaTipo: inferUploadDocumentType(nextFile),
                     }));
                   }}
                 />
+                <small className="document-form__file-name">
+                  {seguimientoDraft.evidenciaFile
+                    ? `Archivo seleccionado: ${seguimientoDraft.evidenciaFile.name}`
+                    : 'No hay archivo seleccionado todavia.'}
+                </small>
               </label>
               <div className="document-actions">
                 <button type="submit" className="button button--primary button--sm" disabled={savingSeguimiento}>

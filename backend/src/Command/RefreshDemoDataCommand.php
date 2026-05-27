@@ -37,6 +37,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
@@ -45,6 +46,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 )]
 final class RefreshDemoDataCommand extends Command
 {
+    private const DEMO_PDF_BYTES = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 220 220]>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
@@ -206,6 +209,112 @@ final class RefreshDemoDataCommand extends Command
         }
 
         @rmdir($path);
+    }
+
+    private function documentStorageRoot(): string
+    {
+        $storageDir = (string) ($_SERVER['APP_DOCUMENT_STORAGE_DIR'] ?? getenv('APP_DOCUMENT_STORAGE_DIR') ?: 'var/document_storage');
+        if (preg_match('/^(?:[A-Za-z]:)?[\/\\\\]/', $storageDir)) {
+            return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $storageDir);
+        }
+
+        return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $storageDir);
+    }
+
+    private function writeStoredDemoDocument(string $relativePath, string $contents): string
+    {
+        $absolutePath = $this->documentStorageRoot() . DIRECTORY_SEPARATOR . str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath);
+        $filesystem = new Filesystem();
+        $filesystem->mkdir(dirname($absolutePath), 0775);
+        file_put_contents($absolutePath, $contents);
+
+        return $relativePath;
+    }
+
+    private function guessDemoDocumentExtension(?string $type): string
+    {
+        return match (strtoupper((string) $type)) {
+            'PDF' => 'pdf',
+            'WORD', 'DOC', 'DOCX' => 'docx',
+            'EXCEL', 'XLS', 'XLSX' => 'xlsx',
+            default => 'bin',
+        };
+    }
+
+    private function guessDemoMimeType(?string $type): string
+    {
+        return match (strtoupper((string) $type)) {
+            'PDF' => 'application/pdf',
+            'WORD', 'DOC', 'DOCX' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'EXCEL', 'XLS', 'XLSX' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            default => 'application/octet-stream',
+        };
+    }
+
+    private function buildDemoDocumentBytes(string $nombre, ?string $type): string
+    {
+        return match (strtoupper((string) $type)) {
+            'PDF' => self::DEMO_PDF_BYTES,
+            'EXCEL', 'XLS', 'XLSX' => file_get_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'docs' . DIRECTORY_SEPARATOR . 'video' . DIRECTORY_SEPARATOR . 'agora-solicitudes-demo.xlsx') ?: 'demo',
+            'WORD', 'DOC', 'DOCX' => file_get_contents(dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'docs' . DIRECTORY_SEPARATOR . 'memoria-final.docx') ?: $nombre,
+            default => $nombre,
+        };
+    }
+
+    private function slugifyForStorage(string $value): string
+    {
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', trim($value)) ?? 'demo-documento';
+        $normalized = trim($normalized, '-');
+
+        return $normalized !== '' ? strtolower($normalized) : 'demo-documento';
+    }
+
+    private function buildConvenioDocumentoUrl(?string $documentoUrl): ?string
+    {
+        if ($documentoUrl === null) {
+            return null;
+        }
+
+        return preg_match('/example\.(org|com|local)|docs\.example\.com/i', $documentoUrl) === 1
+            ? null
+            : $documentoUrl;
+    }
+
+    private function createDemoEmpresaDocumento(EmpresaColaboradora $empresa, array $documentoData): EmpresaDocumento
+    {
+        $type = strtoupper((string) ($documentoData['tipo'] ?? 'PDF'));
+        $extension = $this->guessDemoDocumentExtension($type);
+        $bytes = $this->buildDemoDocumentBytes((string) $documentoData['nombre'], $type);
+
+        return (new EmpresaDocumento())
+            ->setEmpresa($empresa)
+            ->setNombre((string) $documentoData['nombre'])
+            ->setTipo($type)
+            ->setOriginalFilename($this->slugifyForStorage((string) $documentoData['nombre']) . '.' . $extension)
+            ->setMimeType($this->guessDemoMimeType($type))
+            ->setFileSizeBytes(strlen($bytes))
+            ->setFileContentBase64(base64_encode($bytes))
+            ->setStorageProvider('embedded_db')
+            ->setUrl(null);
+    }
+
+    private function createDemoConvenioDocumento(Convenio $convenio, array $documentoData, string $empresaSlug): ConvenioDocumento
+    {
+        $type = strtoupper((string) ($documentoData['tipo'] ?? 'PDF'));
+        $extension = $this->guessDemoDocumentExtension($type);
+        $filename = $this->slugifyForStorage((string) $documentoData['nombre']) . '.' . $extension;
+        $relativePath = sprintf('seed/%s/convenios/%s', $empresaSlug, $filename);
+        $bytes = $this->buildDemoDocumentBytes((string) $documentoData['nombre'], $type);
+        $this->writeStoredDemoDocument($relativePath, $bytes);
+
+        return (new ConvenioDocumento())
+            ->setConvenio($convenio)
+            ->setNombre((string) $documentoData['nombre'])
+            ->setTipo($type)
+            ->setStoragePath($relativePath)
+            ->setOriginalFilename($filename)
+            ->setStorageProvider('external_fs')
+            ->setUrl(null);
     }
 
     private function seedApiUsers(): void
@@ -654,6 +763,7 @@ final class RefreshDemoDataCommand extends Command
 
     private function seedApprovedCompanyScenario(array $scenario): EmpresaColaboradora
     {
+        $empresaSlug = $this->slugifyForStorage($scenario['solicitud']['nombreEmpresa']);
         $solicitud = $this->createSolicitud(
             $scenario['solicitud']['nombreEmpresa'],
             $scenario['solicitud']['cif'],
@@ -719,11 +829,7 @@ final class RefreshDemoDataCommand extends Command
                 ->setContenido($scenario['empresa']['notaContenido'])
         );
         $empresa->addDocumento(
-            (new EmpresaDocumento())
-                ->setEmpresa($empresa)
-                ->setNombre($scenario['empresa']['documento']['nombre'])
-                ->setTipo($scenario['empresa']['documento']['tipo'])
-                ->setUrl($scenario['empresa']['documento']['url'])
+            $this->createDemoEmpresaDocumento($empresa, $scenario['empresa']['documento'])
         );
 
         foreach ($scenario['convenios'] as $convenioData) {
@@ -734,7 +840,7 @@ final class RefreshDemoDataCommand extends Command
                 ->setFechaFin(isset($convenioData['fechaFin']) ? new \DateTimeImmutable($convenioData['fechaFin']) : null)
                 ->setTipo($convenioData['tipo'])
                 ->setEstado($convenioData['estado'])
-                ->setDocumentoUrl($convenioData['documentoUrl'] ?? null)
+                ->setDocumentoUrl($this->buildConvenioDocumentoUrl($convenioData['documentoUrl'] ?? null))
                 ->setObservaciones($convenioData['observaciones'] ?? null)
                 ->setEmpresa($empresa);
             $empresa->addConvenio($convenio);
@@ -750,11 +856,7 @@ final class RefreshDemoDataCommand extends Command
 
             foreach ($convenioData['documentos'] as $documentoData) {
                 $this->entityManager->persist(
-                    (new ConvenioDocumento())
-                        ->setConvenio($convenio)
-                        ->setNombre($documentoData['nombre'])
-                        ->setTipo($documentoData['tipo'] ?? null)
-                        ->setUrl($documentoData['url'] ?? null)
+                    $this->createDemoConvenioDocumento($convenio, $documentoData, $empresaSlug)
                 );
             }
 

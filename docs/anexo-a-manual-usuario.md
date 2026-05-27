@@ -17,7 +17,7 @@ Este anexo describe el uso funcional de la plataforma "Gestion de Empresas Colab
 
 ### 3.0 Acceso externo para evaluacion
 
-Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como `https://agora.34.175.224.87.nip.io/`, y sobre esa misma direccion abrir:
+Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como `https://agora.34.175.225.98.nip.io/`, y sobre esa misma direccion abrir:
 
 - `/app` para el panel interno;
 - `/externo` para el portal de empresa;
@@ -28,7 +28,8 @@ Este acceso remoto depende de que la VM publica y el stack Docker sigan levantad
 
 ### 3.1 Panel interno integrado
 
-- URL: `http://127.0.0.1:8000/app`
+- URL cloud principal: `https://agora.34.175.225.98.nip.io/app/`
+- URL local de respaldo: `http://127.0.0.1:8000/app`
 - Credenciales demo:
   - `profesora / Abrete01`
   - `profesor / Abrete01`
@@ -37,7 +38,8 @@ Este acceso remoto depende de que la VM publica y el stack Docker sigan levantad
 
 ### 3.2 Documentacion publica
 
-- URL: `http://127.0.0.1:8000/documentacion`
+- URL cloud principal: `https://agora.34.175.225.98.nip.io/documentacion`
+- URL local de respaldo: `http://127.0.0.1:8000/documentacion`
 - No requiere autenticacion.
 
 ### 3.3 Supervision tecnica con Agora Desktop
@@ -48,7 +50,8 @@ Este acceso remoto depende de que la VM publica y el stack Docker sigan levantad
 
 ### 3.4 Portal externo
 
-- URL: `http://127.0.0.1:8000/externo`
+- URL cloud principal: `https://agora.34.175.225.98.nip.io/externo/`
+- URL local de respaldo: `http://127.0.0.1:8000/externo`
 - La cuenta inicial de empresa se crea desde el portal publico.
 - La solicitud corporativa se completa despues, ya dentro del panel privado de empresa.
 

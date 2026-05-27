@@ -177,10 +177,10 @@ function generateDni(seed) {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const baseUrl = normalizeBaseUrl(options['base-url'] || process.env.BASE_URL || 'http://agora.34.175.224.87.nip.io');
+  const baseUrl = normalizeBaseUrl(options['base-url'] || process.env.BASE_URL || 'https://agora.34.175.225.98.nip.io');
   const adminUser = options['admin-user'] || process.env.ADMIN_USER || 'profesor';
   const adminPassword = options['admin-password'] || process.env.ADMIN_PASSWORD || 'Abrete01';
-  const sshTarget = options['ssh-target'] || process.env.SSH_TARGET || 'lmendezgsd@34.175.224.87';
+  const sshTarget = options['ssh-target'] || process.env.SSH_TARGET || 'lmendezgsd@34.175.225.98';
   const sshKeyPath = options['ssh-key'] || process.env.SSH_KEY_PATH || defaultSshKeyPath();
   const dbContainer = options['db-container'] || process.env.DB_CONTAINER || 'agora-db-1';
   const seed = Date.now();
@@ -318,6 +318,10 @@ async function main() {
         descripcion: 'Solicitud de validacion publica automatizada.',
         contactoNombre: 'Responsable Publico',
         contactoTelefono: '600123123',
+        tutorProfesionalNombre: 'Claudia Public',
+        tutorProfesionalEmail: `tutor.pro.${suffix}@example.com`,
+        tutorProfesionalTelefono: '600123124',
+        tutorProfesionalCargo: 'Responsable de practicas',
       },
     }), 201, 'Registro privado de solicitud');
 
@@ -616,6 +620,10 @@ async function main() {
         ciudad: 'Sevilla',
         contactoNombre: 'Responsable Rechazo',
         contactoTelefono: '600999888',
+        tutorProfesionalNombre: 'Tutor Rechazo',
+        tutorProfesionalEmail: `tutor.reject.${suffix}@example.com`,
+        tutorProfesionalTelefono: '600999889',
+        tutorProfesionalCargo: 'Coordinacion de practicas',
       },
     }), 201, 'Registro solicitud rechazo');
 

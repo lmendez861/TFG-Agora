@@ -40,6 +40,7 @@
 - OK `npm run build:backend` en `frontend/company-portal`
 - OK comprobaciones HTTP de `/app`, `/externo` y `/documentacion`
 - OK comprobaciones autenticadas de `/api/bootstrap`, `/api/monitor` y `/api/empresa-solicitudes/bandeja`
+- OK comprobaciones autenticadas de carga, vista previa y descarga documental en portal interno y portal externo
 - OK ultima pasada cerrada con `110 tests / 628 assertions` en backend, `14/14` tests unitarios de frontend y `6/6` E2E Playwright en cloud
 
 ## 5. Material de defensa

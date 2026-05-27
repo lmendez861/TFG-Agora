@@ -2,7 +2,7 @@
 title: Gestion de Empresas Colaboradoras para FP Dual
 author: Luis Angel
 tutor: Elena
-reviewDate: 19/05/2026
+reviewDate: 27/05/2026
 repository: https://github.com/lmendez861/TFG-Agora
 ---
 
@@ -128,6 +128,20 @@ Si se expresa la solucion en capas tecnologicas, la arquitectura puede resumirse
 6. **Capa de infraestructura**: VM publica en Google Cloud Compute Engine o entorno local empaquetado, contenedores Docker, proxy HTTPS, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por DNS wildcard.
 
 Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud. La Figura 1 resume precisamente esa topologia final: dos clientes web, una consola tecnica, un borde HTTPS y un backend contenedorizado sobre infraestructura persistente.
+
+### Tecnologias utilizadas y justificacion
+
+De cara a la defensa conviene justificar no solo que tecnologias se han usado, sino por que encajan con el problema real y con el tiempo disponible de la entrega:
+
+- **Symfony 7 + PHP 8.2** en el backend porque ofrecen una base madura para seguridad, validacion, controladores REST, Doctrine, sesiones y correo sin tener que reinventar infraestructura transversal.
+- **Doctrine ORM** porque permite modelar entidades como empresa, solicitud, convenio, asignacion y mensaje con relaciones expresivas, migraciones y repositorios mantenibles.
+- **React + TypeScript + Vite** en los dos portales porque separan bien experiencia interna y experiencia externa, agilizan la construccion de formularios y tablas reactivas y reducen errores de integracion gracias al tipado.
+- **PostgreSQL 16** en cloud porque da persistencia relacional robusta para un despliegue publico real, mientras que **SQLite** sigue siendo util como respaldo local o para la demo offline desde Agora Desktop.
+- **Docker Compose** porque simplifica una publicacion reproducible del backend, la base de datos y el proxy, y facilita recuperar el entorno tras reinicios de la VM.
+- **Caddy** como proxy HTTPS porque automatiza certificados de Let's Encrypt, cabeceras de seguridad y redireccion HTTP a HTTPS con muy poca configuracion operativa.
+- **Brevo** como proveedor de correo porque permite cubrir verificacion, rechazo, recuperacion de cuenta y avisos transaccionales desde un servicio externo especializado.
+- **Electron** en Agora Desktop porque resuelve una necesidad distinta del negocio: operar el entorno, leer logs, reiniciar servicios, ejecutar pruebas y disponer de un modo local de contingencia si la VM cloud falla.
+- **PHPUnit, Vitest y Playwright** porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.
 
 ### Esquema detallado de arquitectura
 
@@ -357,6 +371,8 @@ Como mejora posterior seguiria siendo recomendable sustituir el hostname wildcar
 ## Validaciones ejecutadas
 
 La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas, smoke tests de Agora Desktop y revisiones funcionales de correo, monitorizacion tecnica, documentacion, mensajeria, exportacion CSV, convenios, asignaciones, tutores, documentos privados de empresa y recuperacion tras reinicio de la VM.
+
+En la ultima pasada completa, realizada el 27/05/2026, se han rehecho ademas comprobaciones especificas que eran sensibles para la defensa: carga de documentos PDF y Excel, descarga autenticada desde el portal interno, descarga autenticada desde el portal externo, refresco automatico de la bandeja y del chat, flujo completo de correo de verificacion y recuperacion tras reinicio de la VM publica con `agora.service`.
 
 ## Resultados observados
 

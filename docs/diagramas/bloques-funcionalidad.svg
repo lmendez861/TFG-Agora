@@ -1,136 +1,144 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120">
   <defs>
     <style>
       .bg { fill: #f5f7fb; }
-      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #17314c; }
-      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #4a6179; }
-      .card { fill: #ffffff; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
-      .card-soft { fill: #eef4fb; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
-      .card-warm { fill: #fff4de; stroke: #9f6b17; stroke-width: 2; rx: 22; ry: 22; }
-      .card-dark { fill: #142a44; stroke: #193352; stroke-width: 2; rx: 22; ry: 22; }
-      .head { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #183153; }
-      .head-dark { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
-      .text { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #22374b; }
-      .text-dark { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #dce7f5; }
-      .small { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #567089; letter-spacing: 0.04em; text-transform: uppercase; }
-      .small-dark { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #f2c46d; letter-spacing: 0.04em; text-transform: uppercase; }
-      .line { stroke: #345e88; stroke-width: 4; fill: none; marker-end: url(#arrow); }
-      .line-soft { stroke: #6d8fb2; stroke-width: 3; fill: none; marker-end: url(#arrowSoft); }
-      .footer { font: 600 15px 'Segoe UI', Arial, sans-serif; fill: #365472; }
+      .title { font: 700 36px 'Segoe UI', Arial, sans-serif; fill: #17314c; }
+      .subtitle { font: 500 19px 'Segoe UI', Arial, sans-serif; fill: #4d647b; }
+      .card { fill: #ffffff; stroke: #1b3655; stroke-width: 2.2; rx: 24; ry: 24; }
+      .card-soft { fill: #eef4fb; stroke: #1b3655; stroke-width: 2.2; rx: 24; ry: 24; }
+      .card-warm { fill: #fff3db; stroke: #a36d1d; stroke-width: 2.2; rx: 24; ry: 24; }
+      .card-dark { fill: #142a44; stroke: #142a44; stroke-width: 2.2; rx: 24; ry: 24; }
+      .eyebrow { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #567089; letter-spacing: 0.16em; text-transform: uppercase; }
+      .eyebrow-dark { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #f1c36c; letter-spacing: 0.16em; text-transform: uppercase; }
+      .heading { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #1a3554; }
+      .heading-dark { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .body { font: 400 15px 'Segoe UI', Arial, sans-serif; fill: #263b4f; }
+      .body-dark { font: 400 15px 'Segoe UI', Arial, sans-serif; fill: #dbe6f3; }
+      .foot { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #3a5774; }
+      .line-main { stroke: #3a628f; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .line-soft { stroke: #6b8eb3; stroke-width: 3; fill: none; marker-end: url(#arrowSoft); }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#345e88"/>
+      <path d="M0,0 L12,6 L0,12 z" fill="#3a628f"/>
     </marker>
     <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#6d8fb2"/>
+      <path d="M0,0 L12,6 L0,12 z" fill="#6b8eb3"/>
     </marker>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1600" height="980"/>
-  <text class="title" x="58" y="70">Arquitectura operativa y de despliegue de Agora</text>
-  <text class="subtitle" x="58" y="104">Una sola URL publica, dos portales separados, backend Symfony y consola de escritorio local/cloud.</text>
+  <rect class="bg" x="0" y="0" width="1800" height="1120"/>
+  <text class="title" x="58" y="72">Arquitectura operativa y de despliegue de Agora</text>
+  <text class="subtitle" x="58" y="108">Una sola URL publica, dos portales separados, backend Symfony y una consola tecnica de escritorio como soporte local o cloud.</text>
 
-  <rect class="card-warm" x="55" y="150" width="325" height="180"/>
-  <text class="small" x="82" y="184">Acceso centro</text>
-  <text class="head" x="82" y="220">Panel interno /app</text>
-  <text class="text" x="82" y="258">- dashboard, CRUD y bandeja</text>
-  <text class="text" x="82" y="288">- convenios, asignaciones y CSV</text>
-  <text class="text" x="82" y="318">- mensajeria y revision de solicitudes</text>
+  <rect class="card-warm" x="60" y="170" width="350" height="185"/>
+  <text class="eyebrow" x="90" y="206">Acceso centro</text>
+  <text class="heading" x="90" y="244">Portal interno /app</text>
+  <text class="body" x="90" y="286">- dashboard, entidades y</text>
+  <text class="body" x="90" y="316">exportacion CSV</text>
+  <text class="body" x="90" y="346">- solicitudes, revision y bandeja</text>
+  <text class="body" x="90" y="376">- seguimiento academico y documental</text>
 
-  <rect class="card-warm" x="55" y="365" width="325" height="180"/>
-  <text class="small" x="82" y="399">Acceso empresa</text>
-  <text class="head" x="82" y="435">Portal externo /externo</text>
-  <text class="text" x="82" y="473">- preregistro y cuenta persistente</text>
-  <text class="text" x="82" y="503">- solicitud, estado y verificacion</text>
-  <text class="text" x="82" y="533">- chat y seguimiento posterior</text>
+  <rect class="card-warm" x="60" y="390" width="350" height="185"/>
+  <text class="eyebrow" x="90" y="426">Acceso empresa</text>
+  <text class="heading" x="90" y="464">Portal externo /externo</text>
+  <text class="body" x="90" y="506">- alta de cuenta y verificacion</text>
+  <text class="body" x="90" y="536">- solicitud, estado y acceso</text>
+  <text class="body" x="90" y="566">persistente</text>
+  <text class="body" x="90" y="596">- chat y continuidad tras aprobacion</text>
 
-  <rect class="card" x="55" y="580" width="325" height="135"/>
-  <text class="small" x="82" y="614">Acceso publico</text>
-  <text class="head" x="82" y="650">Guia publica /documentacion</text>
-  <text class="text" x="82" y="685">Guia funcional y apoyo a la defensa.</text>
+  <rect class="card" x="60" y="610" width="350" height="150"/>
+  <text class="eyebrow" x="90" y="646">Acceso publico</text>
+  <text class="heading" x="90" y="684">Guia /documentacion</text>
+  <text class="body" x="90" y="718">Memoria, capturas, anexos y</text>
+  <text class="body" x="90" y="746">guion de defensa.</text>
 
-  <rect class="card-dark" x="55" y="750" width="325" height="165"/>
-  <text class="small-dark" x="82" y="784">Operacion tecnica</text>
-  <text class="head-dark" x="82" y="820">Agora Desktop</text>
-  <text class="text-dark" x="82" y="858">- modo local y modo cloud</text>
-  <text class="text-dark" x="82" y="888">- telemetria, logs, reinicios y backups</text>
+  <rect class="card-dark" x="60" y="785" width="350" height="210"/>
+  <text class="eyebrow-dark" x="90" y="821">Operacion tecnica</text>
+  <text class="heading-dark" x="90" y="860">Agora Desktop</text>
+  <text class="body-dark" x="90" y="902">- modo local de respaldo</text>
+  <text class="body-dark" x="90" y="932">- modo cloud por HTTPS y SSH</text>
+  <text class="body-dark" x="90" y="962">- logs, servicio, pruebas</text>
+  <text class="body-dark" x="90" y="992">y URL efectiva</text>
 
-  <rect class="card-soft" x="500" y="118" width="250" height="90"/>
-  <text class="small" x="530" y="150">Borde publico</text>
-  <text class="head" x="530" y="185">DNS nip.io + HTTPS</text>
+  <rect class="card-soft" x="560" y="120" width="290" height="96"/>
+  <text class="eyebrow" x="594" y="157">Borde publico</text>
+  <text class="heading" x="594" y="195">DNS nip.io + HTTPS</text>
 
-  <rect class="card-soft" x="430" y="235" width="410" height="525"/>
-  <text class="small" x="462" y="270">VM Google Cloud + Docker network</text>
-  <text class="head" x="462" y="305">Proxy Caddy + contenedor app</text>
+  <rect class="card-soft" x="470" y="250" width="460" height="660"/>
+  <text class="eyebrow" x="505" y="288">VM Google Cloud Compute Engine</text>
+  <text class="heading" x="505" y="326">Caddy + app + Docker Compose</text>
 
-  <rect class="card" x="465" y="338" width="340" height="132"/>
-  <text class="small" x="492" y="370">Frontend servido por Symfony</text>
-  <text class="head" x="492" y="404">Shell integrada</text>
-  <text class="text" x="492" y="438">/app, /externo y /documentacion</text>
-  <text class="text" x="492" y="464">Sin pagina de monitor publicada</text>
+  <rect class="card" x="505" y="360" width="390" height="150"/>
+  <text class="eyebrow" x="535" y="396">Shell publica integrada</text>
+  <text class="heading" x="535" y="432">Una sola raiz web</text>
+  <text class="body" x="535" y="466">/app, /externo y</text>
+  <text class="body" x="535" y="494">/documentacion</text>
 
-  <rect class="card" x="465" y="498" width="340" height="220"/>
-  <text class="small" x="492" y="532">Backend de negocio</text>
-  <text class="head" x="492" y="567">Symfony 7 + Apache/PHP</text>
-  <text class="text" x="492" y="603">- seguridad, roles, sesiones y rate limit</text>
-  <text class="text" x="492" y="633">- solicitudes, cuentas portal y mensajeria</text>
-  <text class="text" x="492" y="663">- convenios, estudiantes y asignaciones</text>
-  <text class="text" x="492" y="693">- auditoria, correo y pruebas tecnicas</text>
+  <rect class="card" x="505" y="530" width="390" height="235"/>
+  <text class="eyebrow" x="535" y="556">Backend de negocio</text>
+  <text class="heading" x="535" y="592">Symfony 7 + Apache/PHP</text>
+  <text class="body" x="535" y="628">- autenticacion, roles, sesiones</text>
+  <text class="body" x="535" y="656">y rate limit</text>
+  <text class="body" x="535" y="684">- empresas, convenios, estudiantes</text>
+  <text class="body" x="535" y="712">y asignaciones</text>
+  <text class="body" x="535" y="740">- correo, documentos, auditoria y pruebas</text>
 
-  <rect class="card-soft" x="930" y="120" width="280" height="115"/>
-  <text class="small" x="960" y="152">Persistencia</text>
-  <text class="head" x="960" y="186">PostgreSQL 16</text>
-  <text class="text" x="960" y="220">Motor permanente de la VM cloud.</text>
+  <rect class="card-soft" x="1010" y="140" width="300" height="115"/>
+  <text class="eyebrow" x="1044" y="176">Persistencia</text>
+  <text class="heading" x="1044" y="214">PostgreSQL 16</text>
+  <text class="body" x="1044" y="248">Base de datos permanente</text>
+  <text class="body" x="1044" y="276">de la VM.</text>
 
-  <rect class="card-soft" x="930" y="270" width="280" height="150"/>
-  <text class="small" x="960" y="302">Datos binarios</text>
-  <text class="head" x="960" y="336">Volumenes persistentes</text>
-  <text class="text" x="960" y="370">- documentos privados</text>
-  <text class="text" x="960" y="400">- datos PostgreSQL</text>
+  <rect class="card-soft" x="1010" y="285" width="300" height="170"/>
+  <text class="eyebrow" x="1044" y="321">Documentos y datos</text>
+  <text class="heading" x="1044" y="359">Volumenes persistentes</text>
+  <text class="body" x="1044" y="393">- documentos privados</text>
+  <text class="body" x="1044" y="423">- datos PostgreSQL y cache</text>
+  <text class="body" x="1044" y="451">de servicio</text>
 
-  <rect class="card-soft" x="930" y="455" width="280" height="130"/>
-  <text class="small" x="960" y="487">Correo transaccional</text>
-  <text class="head" x="960" y="522">Brevo</text>
-  <text class="text" x="960" y="556">Verificacion, rechazo, reset y MFA local.</text>
+  <rect class="card-soft" x="1010" y="455" width="300" height="145"/>
+  <text class="eyebrow" x="1044" y="491">Correo transaccional</text>
+  <text class="heading" x="1044" y="529">Brevo</text>
+  <text class="body" x="1044" y="563">Verificacion, rechazo, reset</text>
+  <text class="body" x="1044" y="591">y MFA local.</text>
 
-  <rect class="card-soft" x="930" y="620" width="280" height="165"/>
-  <text class="small" x="960" y="652">Operacion remota</text>
-  <text class="head" x="960" y="686">SSH + Docker Compose</text>
-  <text class="text" x="960" y="720">- logs y reinicios desde desktop</text>
-  <text class="text" x="960" y="750">- smoke cloud y backup PostgreSQL</text>
-  <text class="text" x="960" y="780">- build/deploy de la instancia</text>
+  <rect class="card-soft" x="1010" y="610" width="300" height="190"/>
+  <text class="eyebrow" x="1044" y="646">Operacion remota</text>
+  <text class="heading" x="1044" y="684">SSH + agora.service</text>
+  <text class="body" x="1044" y="718">- arranque automatico y reinicios</text>
+  <text class="body" x="1044" y="748">- logs, smoke cloud y</text>
+  <text class="body" x="1044" y="778">backup PostgreSQL</text>
 
-  <rect class="card" x="1290" y="228" width="250" height="120"/>
-  <text class="small" x="1320" y="260">Flujo local</text>
-  <text class="head" x="1320" y="294">Desktop + localhost</text>
-  <text class="text" x="1320" y="328">SQLite para demo local</text>
-  <text class="text" x="1320" y="356">y MFA del acceso temporal.</text>
+  <rect class="card" x="1360" y="250" width="350" height="155"/>
+  <text class="eyebrow" x="1394" y="286">Modo local</text>
+  <text class="heading" x="1394" y="324">Desktop + localhost</text>
+  <text class="body" x="1394" y="358">SQLite y runtime empaquetado</text>
+  <text class="body" x="1394" y="386">para demo si la VM cloud</text>
+  <text class="body" x="1394" y="414">no esta disponible.</text>
 
-  <rect class="card" x="1290" y="392" width="250" height="150"/>
-  <text class="small" x="1320" y="424">Flujo cloud</text>
-  <text class="head" x="1320" y="458">Desktop + URL publica</text>
-  <text class="text" x="1320" y="492">API HTTPS para estado y pruebas</text>
-  <text class="text" x="1320" y="522">+ SSH para logs y servicios</text>
+  <rect class="card" x="1360" y="430" width="350" height="165"/>
+  <text class="eyebrow" x="1394" y="466">Modo principal</text>
+  <text class="heading" x="1394" y="504">Desktop + URL cloud</text>
+  <text class="body" x="1394" y="538">Estado por API HTTPS y</text>
+  <text class="body" x="1394" y="566">operacion tecnica por SSH</text>
+  <text class="body" x="1394" y="594">sobre la misma instancia.</text>
 
-  <rect class="card" x="1290" y="585" width="250" height="155"/>
-  <text class="small" x="1320" y="617">Resultado defendible</text>
-  <text class="head" x="1320" y="651">Un proyecto cerrado</text>
-  <text class="text" x="1320" y="685">Portales, despliegue, correo</text>
-  <text class="text" x="1320" y="715">desktop y despliegue cloud coherentes.</text>
+  <rect class="card" x="1360" y="620" width="350" height="175"/>
+  <text class="eyebrow" x="1394" y="656">Resultado defendible</text>
+  <text class="heading" x="1394" y="694">Flujo cerrado</text>
+  <text class="body" x="1394" y="728">Portal interno, portal externo,</text>
+  <text class="body" x="1394" y="756">documentacion, correo real,</text>
+  <text class="body" x="1394" y="784">despliegue cloud y consola tecnica.</text>
 
-  <path class="line" d="M380 240 H490"/>
-  <path class="line" d="M380 455 H490"/>
-  <path class="line" d="M380 645 H490"/>
-  <path class="line" d="M380 832 H490"/>
+  <path class="line-main" d="M410 260 H458"/>
+  <path class="line-main" d="M410 482 H458"/>
+  <path class="line-main" d="M410 678 H458"/>
+  <path class="line-main" d="M410 875 H458"/>
+  <path class="line-main" d="M705 216 V244"/>
 
-  <path class="line" d="M625 208 V225"/>
-  <path class="line" d="M840 500 H920"/>
-  <path class="line" d="M840 565 H920"/>
-  <path class="line" d="M840 645 H920"/>
+  <path class="line-main" d="M930 420 H998"/>
+  <path class="line-main" d="M930 560 H998"/>
+  <path class="line-main" d="M930 650 H998"/>
 
-  <path class="line-soft" d="M1210 500 H1280"/>
-  <path class="line-soft" d="M1210 690 H1280"/>
-  <path class="line-soft" d="M1210 330 H1280"/>
-
-  <text class="footer" x="60" y="948">La misma base publica por HTTPS sirve panel interno, portal externo y documentacion; Agora Desktop opera en local o en cloud sobre esa misma topologia.</text>
+  <text class="foot" x="62" y="1058">La misma URL publica sirve panel interno, portal externo y documentacion; Agora Desktop separa la operacion tecnica del flujo funcional y puede trabajar en local o en cloud.</text>
 </svg>

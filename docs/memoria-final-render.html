@@ -212,7 +212,7 @@
     <div class="cover__meta">
       <p><strong>Autor:</strong> Luis Angel</p>
       <p><strong>Tutora:</strong> Elena</p>
-      <p><strong>Fecha:</strong> 19/05/2026</p>
+      <p><strong>Fecha:</strong> 27/05/2026</p>
       <p><strong>Repositorio:</strong> https://github.com/lmendez861/TFG-Agora</p>
     </div>
   </section>
@@ -422,6 +422,19 @@
 <li><strong>Capa de infraestructura</strong>: VM publica en Google Cloud Compute Engine o entorno local empaquetado, contenedores Docker, proxy HTTPS, almacenamiento persistente para documentos, servicio de correo transaccional y resolucion publica por DNS wildcard.</li>
 </ol>
 <p>Esta explicacion es especialmente util para la defensa, porque permite exponer la aplicacion mediante esquemas y responsabilidades en lugar de entrar en codigo fuente. Tambien deja claro que el sistema ya no depende conceptualmente de una unica maquina local, sino de componentes desacoplados que pueden redistribuirse en un servidor o cloud. La Figura 1 resume precisamente esa topologia final: dos clientes web, una consola tecnica, un borde HTTPS y un backend contenedorizado sobre infraestructura persistente.</p>
+<h3 id="memoria-final-tecnologias-utilizadas-y-justificacion">Tecnologias utilizadas y justificacion</h3>
+<p>De cara a la defensa conviene justificar no solo que tecnologias se han usado, sino por que encajan con el problema real y con el tiempo disponible de la entrega:</p>
+<ul>
+<li><strong>Symfony 7 + PHP 8.2</strong> en el backend porque ofrecen una base madura para seguridad, validacion, controladores REST, Doctrine, sesiones y correo sin tener que reinventar infraestructura transversal.</li>
+<li><strong>Doctrine ORM</strong> porque permite modelar entidades como empresa, solicitud, convenio, asignacion y mensaje con relaciones expresivas, migraciones y repositorios mantenibles.</li>
+<li><strong>React + TypeScript + Vite</strong> en los dos portales porque separan bien experiencia interna y experiencia externa, agilizan la construccion de formularios y tablas reactivas y reducen errores de integracion gracias al tipado.</li>
+<li><strong>PostgreSQL 16</strong> en cloud porque da persistencia relacional robusta para un despliegue publico real, mientras que <strong>SQLite</strong> sigue siendo util como respaldo local o para la demo offline desde Agora Desktop.</li>
+<li><strong>Docker Compose</strong> porque simplifica una publicacion reproducible del backend, la base de datos y el proxy, y facilita recuperar el entorno tras reinicios de la VM.</li>
+<li><strong>Caddy</strong> como proxy HTTPS porque automatiza certificados de Let's Encrypt, cabeceras de seguridad y redireccion HTTP a HTTPS con muy poca configuracion operativa.</li>
+<li><strong>Brevo</strong> como proveedor de correo porque permite cubrir verificacion, rechazo, recuperacion de cuenta y avisos transaccionales desde un servicio externo especializado.</li>
+<li><strong>Electron</strong> en Agora Desktop porque resuelve una necesidad distinta del negocio: operar el entorno, leer logs, reiniciar servicios, ejecutar pruebas y disponer de un modo local de contingencia si la VM cloud falla.</li>
+<li><strong>PHPUnit, Vitest y Playwright</strong> porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.</li>
+</ul>
 <h3 id="memoria-final-esquema-detallado-de-arquitectura">Esquema detallado de arquitectura</h3>
 <p>En la defensa resulta mas claro bajar un nivel adicional y mostrar el recorrido tecnico real desde la URL publica hasta la consola de soporte. Por eso, en vez de dejar un arbol textual largo, se incorpora un segundo esquema visual centrado en el despliegue efectivo y en la separacion entre flujo funcional y operacion tecnica.</p>
 <figure id="memoria-final-figure-figura-2-arquitectura-detallada-del-despliegue-cloud-y-del-soporte-local"><img src="capturas/10-arquitectura-detallada.png" alt="Figura 2. Arquitectura detallada del despliegue cloud y del soporte local."><figcaption>Figura 2. Arquitectura detallada del despliegue cloud y del soporte local.</figcaption></figure>
@@ -577,6 +590,7 @@ Estado 5: rechazada
 <h1 id="memoria-final-pruebas-y-validacion">Pruebas y validacion</h1>
 <h2 id="memoria-final-validaciones-ejecutadas">Validaciones ejecutadas</h2>
 <p>La validacion del proyecto combina compilacion de ambos frontends, pruebas automatizadas de backend, pruebas unitarias del frontend interno, pruebas E2E de flujos criticos con Playwright, comprobaciones HTTP sobre las rutas integradas, smoke tests de Agora Desktop y revisiones funcionales de correo, monitorizacion tecnica, documentacion, mensajeria, exportacion CSV, convenios, asignaciones, tutores, documentos privados de empresa y recuperacion tras reinicio de la VM.</p>
+<p>En la ultima pasada completa, realizada el 27/05/2026, se han rehecho ademas comprobaciones especificas que eran sensibles para la defensa: carga de documentos PDF y Excel, descarga autenticada desde el portal interno, descarga autenticada desde el portal externo, refresco automatico de la bandeja y del chat, flujo completo de correo de verificacion y recuperacion tras reinicio de la VM publica con <code>agora.service</code>.</p>
 <h2 id="memoria-final-resultados-observados">Resultados observados</h2>
 <p>La build integrada de los dos frontends se genera correctamente y se publica en las rutas del backend. El panel interno, el portal externo y la documentacion quedan accesibles tanto en la URL local integrada como en el despliegue remoto de Google Cloud. El flujo de empresa cubre preregistro de cuenta, solicitud corporativa, verificacion, revision interna, continuidad de acceso y operativa posterior. La revision final ha confirmado tambien la correccion de exportaciones CSV, validacion de contrasenas del portal externo, detalle de convenios, detalle de asignaciones, edicion de tutores, relacion entre tutores profesionales y empresa, contador de tutores en tarjetas, almacenamiento documental privado de empresa, refresco automatico de mensajeria, notificacion de rechazo por correo y operativa de la app de escritorio.</p>
 <p>De cara a la entrega, los artefactos de apoyo a la defensa, como el video demostrativo y la muestra CSV/Excel utilizada para explicar la exportacion, se han regenerado con datos anonimizados. Esto permite apoyar la exposicion con evidencias reales del sistema sin exponer direcciones de correo u otros datos personales innecesarios.</p>
@@ -711,13 +725,15 @@ Estado 5: rechazada
 <p>Este acceso remoto depende de que la VM publica y el stack Docker sigan levantados. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.</p>
 <h3 id="anexo-a-manual-usuario-3-1-panel-interno-integrado">3.1 Panel interno integrado</h3>
 <ul>
-<li>URL: <code>http://127.0.0.1:8000/app</code></li>
+<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/app/</code></li>
+<li>URL local de respaldo: <code>http://127.0.0.1:8000/app</code></li>
 <li>Credenciales demo:</li>
 <p>- <code>profesora / Abrete01</code> - <code>profesor / Abrete01</code> - <code>admin / admin123</code> - <code>coordinador / coordinador123</code></p>
 </ul>
 <h3 id="anexo-a-manual-usuario-3-2-documentacion-publica">3.2 Documentacion publica</h3>
 <ul>
-<li>URL: <code>http://127.0.0.1:8000/documentacion</code></li>
+<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/documentacion</code></li>
+<li>URL local de respaldo: <code>http://127.0.0.1:8000/documentacion</code></li>
 <li>No requiere autenticacion.</li>
 </ul>
 <h3 id="anexo-a-manual-usuario-3-3-supervision-tecnica-con-agora-desktop">3.3 Supervision tecnica con Agora Desktop</h3>
@@ -728,7 +744,8 @@ Estado 5: rechazada
 </ul>
 <h3 id="anexo-a-manual-usuario-3-4-portal-externo">3.4 Portal externo</h3>
 <ul>
-<li>URL: <code>http://127.0.0.1:8000/externo</code></li>
+<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/externo/</code></li>
+<li>URL local de respaldo: <code>http://127.0.0.1:8000/externo</code></li>
 <li>La cuenta inicial de empresa se crea desde el portal publico.</li>
 <li>La solicitud corporativa se completa despues, ya dentro del panel privado de empresa.</li>
 </ul>
@@ -1169,6 +1186,7 @@ npm run build:backend</code></pre>
 <li>comprobacion funcional de exportacion CSV desde dashboard y modulos principales;</li>
 <li>regeneracion del video de demo y de la muestra CSV/Excel con datos anonimizados para la entrega;</li>
 <li>verificacion del flujo de registro, verificacion, activacion y acceso de empresa;</li>
+<li>comprobacion de carga, vista previa y descarga autenticada de documentos en los dos portales;</li>
 <li>comprobacion del control MFA y del acceso publico temporal desde Agora Desktop;</li>
 <li>revisiones visuales de las capturas utilizadas en PDF y DOCX.</li>
 </ul>

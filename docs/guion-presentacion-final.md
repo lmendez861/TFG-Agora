@@ -42,29 +42,21 @@ Senala que la bandeja y el chat ya se refrescan solos. Esto mejora la demo y evi
 Muestra que ya no dependes de varios terminales: la app de escritorio centraliza modo local, modo cloud, logs, smoke, reinicios y backups.
 
 ## 14. Validacion
-Da cifras exactas porque ya estan regeneradas: backend `110 tests / 628 assertions`, frontend `14/14` y Playwright `6/6`. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
+Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
-## 15. Tecnologias por bloque
-- API y negocio: Symfony 7, PHP 8.2 y Doctrine ORM.
-- Base de datos: PostgreSQL 16 en cloud y SQLite como respaldo local.
-- Portal interno: React, TypeScript y Vite.
-- Portal externo: React, TypeScript y Vite con autenticacion propia.
-- Escritorio tecnico: Electron.
-- Despliegue: Docker Compose, Caddy, Google Cloud Compute Engine y Brevo.
-
-## 16. Acceso de evaluacion
+## 15. Acceso de evaluacion
 Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
 
-## 17. Alcance cerrado
+## 16. Alcance cerrado
 Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
 
-## 18. Mejoras futuras
+## 17. Mejoras futuras
 Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
-## 19. Limitaciones
+## 18. Limitaciones
 No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
 
-## 20. Cierre
+## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo

@@ -1,277 +1,199 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1260" viewBox="0 0 1800 1260">
   <defs>
     <style>
       .bg { fill: #f6f8fb; }
-      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #16314b; }
-      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #4d647b; }
-      .table { fill: #ffffff; stroke: #1d3654; stroke-width: 2; rx: 18; ry: 18; }
-      .table-soft { fill: #eef4fb; stroke: #1d3654; stroke-width: 2; rx: 18; ry: 18; }
+      .title { font: 700 36px 'Segoe UI', Arial, sans-serif; fill: #17314c; }
+      .subtitle { font: 500 19px 'Segoe UI', Arial, sans-serif; fill: #4d647b; }
+      .caption { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #557089; letter-spacing: 0.16em; text-transform: uppercase; }
+      .box { fill: #ffffff; stroke: #1b3655; stroke-width: 2.2; rx: 22; ry: 22; }
+      .box-soft { fill: #eef4fb; stroke: #1b3655; stroke-width: 2.2; rx: 22; ry: 22; }
       .head { fill: #183153; }
-      .name { font: 700 20px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
-      .field { font: 400 15px 'Consolas', monospace; fill: #21384c; }
-      .caption { font: 600 14px 'Segoe UI', Arial, sans-serif; fill: #4f6a84; letter-spacing: 0.04em; text-transform: uppercase; }
-      .rel { stroke: #3d6389; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-      .label { font: 600 13px 'Segoe UI', Arial, sans-serif; fill: #35577a; }
+      .name { font: 700 22px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .field { font: 400 16px 'Consolas', monospace; fill: #21384c; }
+      .note { font: 600 15px 'Segoe UI', Arial, sans-serif; fill: #405f7d; }
+      .rel { stroke: #3b628f; stroke-width: 3.4; fill: none; marker-end: url(#arrow); }
+      .label { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #3b628f; }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-      <path d="M0,0 L12,6 L0,12 z" fill="#3d6389"/>
+      <path d="M0,0 L12,6 L0,12 z" fill="#3b628f"/>
     </marker>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1800" height="1120"/>
-  <text class="title" x="52" y="70">Esquema relacional del nucleo empresa-centro y operativa academica</text>
-  <text class="subtitle" x="52" y="104">El diagrama se centra en la continuidad entre preregistro, cuenta portal, empresa aprobada, mensajes, convenios y asignaciones.</text>
+  <rect class="bg" x="0" y="0" width="1800" height="1260"/>
+  <text class="title" x="54" y="74">Esquema relacional del flujo empresa-centro y operativa academica</text>
+  <text class="subtitle" x="54" y="110">Se prioriza el hilo principal cuenta-solicitud-mensajeria y su continuidad hacia empresa aprobada, convenios y asignaciones.</text>
 
-  <text class="caption" x="58" y="150">Onboarding y relacion externa</text>
-  <text class="caption" x="760" y="150">Empresa aprobada y operativa</text>
-  <text class="caption" x="1340" y="150">Ciclo academico</text>
+  <text class="caption" x="60" y="162">Portal externo y preregistro</text>
+  <text class="caption" x="780" y="162">Empresa aprobada y nucleo interno</text>
+  <text class="caption" x="78" y="776">Ciclo academico y seguimiento</text>
 
-  <g transform="translate(50,170)">
-    <rect class="table-soft" width="330" height="250"/>
-    <rect class="head" width="330" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaSolicitud</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">estado</text>
-    <text class="field" x="18" y="122">token</text>
-    <text class="field" x="18" y="147">portal_token</text>
-    <text class="field" x="18" y="172">contacto_email</text>
-    <text class="field" x="18" y="197">email_verificado_en</text>
-    <text class="field" x="18" y="222">aprobado_en / rejection_reason</text>
+  <g transform="translate(60,190)">
+    <rect class="box-soft" width="300" height="210"/>
+    <rect class="head" width="300" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EmpresaPortalCuenta</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">email</text>
+    <text class="field" x="20" y="134">password_hash</text>
+    <text class="field" x="20" y="162">activated_at / last_login_at</text>
+    <text class="field" x="20" y="190">setup_token / reset_token</text>
   </g>
 
-  <g transform="translate(430,160)">
-    <rect class="table-soft" width="340" height="280"/>
-    <rect class="head" width="340" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaPortalCuenta</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">email</text>
-    <text class="field" x="18" y="122">password</text>
-    <text class="field" x="18" y="147">active</text>
-    <text class="field" x="18" y="172">setup_token</text>
-    <text class="field" x="18" y="197">password_reset_token</text>
-    <text class="field" x="18" y="222">activated_at</text>
-    <text class="field" x="18" y="247">last_login_at</text>
+  <g transform="translate(430,185)">
+    <rect class="box-soft" width="330" height="264"/>
+    <rect class="head" width="330" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EmpresaSolicitud</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">estado / token / portal_token</text>
+    <text class="field" x="20" y="134">contacto_email / telefono</text>
+    <text class="field" x="20" y="162">email_verificado_en</text>
+    <text class="field" x="20" y="190">aprobado_en / rejection_reason</text>
+    <text class="field" x="20" y="218">datos corporativos de alta</text>
+    <text class="field" x="20" y="246">tutor_profesional_* propuesto</text>
   </g>
 
-  <g transform="translate(50,470)">
-    <rect class="table-soft" width="310" height="170"/>
-    <rect class="head" width="310" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaMensaje</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK solicitud_id</text>
-    <text class="field" x="18" y="122">autor</text>
-    <text class="field" x="18" y="147">texto / created_at</text>
+  <g transform="translate(430,498)">
+    <rect class="box-soft" width="300" height="165"/>
+    <rect class="head" width="300" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EmpresaMensaje</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">FK solicitud_id</text>
+    <text class="field" x="20" y="134">autor / texto / created_at</text>
   </g>
 
-  <g transform="translate(820,160)">
-    <rect class="table" width="360" height="310"/>
-    <rect class="head" width="360" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaColaboradora</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">nombre</text>
-    <text class="field" x="18" y="122">sector / ciudad / provincia / pais</text>
-    <text class="field" x="18" y="147">telefono / email / web</text>
-    <text class="field" x="18" y="172">estado_colaboracion</text>
-    <text class="field" x="18" y="197">fecha_alta</text>
-    <text class="field" x="18" y="222">observaciones</text>
-    <text class="field" x="18" y="247">1 portal_cuenta, N convenios</text>
-    <text class="field" x="18" y="272">N tutores, contactos y documentos</text>
+  <g transform="translate(840,170)">
+    <rect class="box" width="360" height="250"/>
+    <rect class="head" width="360" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EmpresaColaboradora</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">nombre / sector / ciudad / pais</text>
+    <text class="field" x="20" y="134">telefono / email / web</text>
+    <text class="field" x="20" y="162">estado_colaboracion / fecha_alta</text>
+    <text class="field" x="20" y="190">observaciones / metadata interna</text>
+    <text class="field" x="20" y="218">1 cuenta portal, N convenios</text>
   </g>
 
-  <g transform="translate(1220,170)">
-    <rect class="table" width="250" height="170"/>
-    <rect class="head" width="250" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">ContactoEmpresa</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">nombre / email</text>
-    <text class="field" x="18" y="147">telefono / cargo</text>
+  <g transform="translate(1270,170)">
+    <rect class="box" width="270" height="155"/>
+    <rect class="head" width="270" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">ContactoEmpresa</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">FK empresa_id</text>
+    <text class="field" x="20" y="134">nombre / email / telefono / cargo</text>
   </g>
 
-  <g transform="translate(1220,370)">
-    <rect class="table" width="310" height="200"/>
-    <rect class="head" width="310" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaDocumento</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">nombre / mime_type</text>
-    <text class="field" x="18" y="147">file_content_base64</text>
-    <text class="field" x="18" y="172">version / active / uploaded_at</text>
+  <g transform="translate(1270,360)">
+    <rect class="box" width="300" height="185"/>
+    <rect class="head" width="300" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EmpresaDocumento</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">FK empresa_id</text>
+    <text class="field" x="20" y="134">nombre / mime_type / version</text>
+    <text class="field" x="20" y="162">file_content_base64 / active</text>
   </g>
 
-  <g transform="translate(1220,605)">
-    <rect class="table" width="240" height="140"/>
-    <rect class="head" width="240" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaEtiqueta</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">nombre</text>
+  <g transform="translate(840,470)">
+    <rect class="box" width="300" height="170"/>
+    <rect class="head" width="300" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">TutorProfesional</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">FK empresa_id</text>
+    <text class="field" x="20" y="134">nombre / email / telefono / cargo</text>
   </g>
 
-  <g transform="translate(1490,605)">
-    <rect class="table" width="240" height="140"/>
-    <rect class="head" width="240" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EmpresaNota</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">texto / created_at</text>
+  <g transform="translate(840,700)">
+    <rect class="box" width="350" height="195"/>
+    <rect class="head" width="350" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">Convenio</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">FK empresa_id</text>
+    <text class="field" x="20" y="134">titulo / descripcion / estado</text>
+    <text class="field" x="20" y="162">fecha_inicio / fecha_fin</text>
+    <text class="field" x="20" y="190">base del flujo academico posterior</text>
   </g>
 
-  <g transform="translate(780,520)">
-    <rect class="table" width="330" height="240"/>
-    <rect class="head" width="330" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">Convenio</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">titulo / descripcion</text>
-    <text class="field" x="18" y="147">fecha_inicio / fecha_fin</text>
-    <text class="field" x="18" y="172">estado</text>
-    <text class="field" x="18" y="197">documentos / checklist / workflow</text>
-    <text class="field" x="18" y="222">alertas y asignaciones</text>
+  <g transform="translate(80,835)">
+    <rect class="box-soft" width="290" height="155"/>
+    <rect class="head" width="290" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">Estudiante</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">nombre / email / dni / estado</text>
+    <text class="field" x="20" y="134">N asignaciones</text>
   </g>
 
-  <g transform="translate(1150,790)">
-    <rect class="table" width="260" height="130"/>
-    <rect class="head" width="260" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">ConvenioChecklistItem</text>
-    <text class="field" x="18" y="72">PK id / FK convenio_id</text>
-    <text class="field" x="18" y="97">label / checked</text>
+  <g transform="translate(420,835)">
+    <rect class="box-soft" width="310" height="155"/>
+    <rect class="head" width="310" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">TutorAcademico</text>
+    <text class="field" x="20" y="78">PK id</text>
+    <text class="field" x="20" y="106">nombre / email / departamento</text>
+    <text class="field" x="20" y="134">N asignaciones</text>
   </g>
 
-  <g transform="translate(1430,790)">
-    <rect class="table" width="250" height="130"/>
-    <rect class="head" width="250" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">ConvenioDocumento</text>
-    <text class="field" x="18" y="72">PK id / FK convenio_id</text>
-    <text class="field" x="18" y="97">nombre / path / mime_type</text>
+  <g transform="translate(450,1040)">
+    <rect class="box" width="620" height="128"/>
+    <rect class="head" width="620" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">AsignacionPractica</text>
+    <text class="field" x="20" y="78">FK estudiante_id / convenio_id</text>
+    <text class="field" x="20" y="106">FK tutor_academico_id / tutor_profesional_id</text>
   </g>
 
-  <g transform="translate(1150,945)">
-    <rect class="table" width="260" height="145"/>
-    <rect class="head" width="260" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">ConvenioWorkflowEvento</text>
-    <text class="field" x="18" y="72">PK id / FK convenio_id</text>
-    <text class="field" x="18" y="97">origen / destino</text>
-    <text class="field" x="18" y="122">actor / created_at</text>
+  <g transform="translate(1140,1045)">
+    <rect class="box" width="250" height="128"/>
+    <rect class="head" width="250" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">Seguimiento</text>
+    <text class="field" x="20" y="78">FK asignacion_id / fecha / tipo</text>
+    <text class="field" x="20" y="106">evidencias y control de avance</text>
   </g>
 
-  <g transform="translate(1430,945)">
-    <rect class="table" width="250" height="130"/>
-    <rect class="head" width="250" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">ConvenioAlerta</text>
-    <text class="field" x="18" y="72">PK id / FK convenio_id</text>
-    <text class="field" x="18" y="97">tipo / fecha / atendida</text>
+  <g transform="translate(1445,1045)">
+    <rect class="box" width="270" height="128"/>
+    <rect class="head" width="270" height="46" rx="22" ry="22"/>
+    <text class="name" x="20" y="30">EvaluacionFinal</text>
+    <text class="field" x="20" y="78">FK asignacion_id / fecha</text>
+    <text class="field" x="20" y="106">conclusiones y cierre academico</text>
   </g>
 
-  <g transform="translate(150,820)">
-    <rect class="table-soft" width="290" height="165"/>
-    <rect class="head" width="290" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">Estudiante</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">nombre / email / dni</text>
-    <text class="field" x="18" y="122">telefono / estado</text>
-    <text class="field" x="18" y="147">N asignaciones</text>
-  </g>
+  <path class="rel" d="M360 295 H420"/>
+  <text class="label" x="378" y="278">1:1</text>
 
-  <g transform="translate(470,820)">
-    <rect class="table-soft" width="290" height="165"/>
-    <rect class="head" width="290" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">TutorAcademico</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">nombre / email</text>
-    <text class="field" x="18" y="122">telefono / departamento</text>
-    <text class="field" x="18" y="147">N asignaciones</text>
-  </g>
+  <path class="rel" d="M595 449 V486"/>
+  <text class="label" x="608" y="472">1:N</text>
 
-  <g transform="translate(460,520)">
-    <rect class="table-soft" width="280" height="190"/>
-    <rect class="head" width="280" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">TutorProfesional</text>
-    <text class="field" x="18" y="72">PK id</text>
-    <text class="field" x="18" y="97">FK empresa_id</text>
-    <text class="field" x="18" y="122">nombre / email</text>
-    <text class="field" x="18" y="147">telefono / cargo</text>
-    <text class="field" x="18" y="172">N asignaciones</text>
-  </g>
+  <path class="rel" d="M760 300 H828"/>
+  <text class="label" x="780" y="282">0..1:1</text>
 
-  <g transform="translate(480,1020)">
-    <rect class="table" width="390" height="80"/>
-    <rect class="head" width="390" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">AsignacionPractica</text>
-    <text class="field" x="18" y="72">FK estudiante_id / convenio_id / empresa_id / tutor_academico_id / tutor_profesional_id</text>
-  </g>
+  <path class="rel" d="M1200 250 H1260"/>
+  <text class="label" x="1216" y="234">1:N</text>
 
-  <g transform="translate(910,1015)">
-    <rect class="table" width="250" height="95"/>
-    <rect class="head" width="250" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">Seguimiento</text>
-    <text class="field" x="18" y="72">FK asignacion_id / fecha / tipo</text>
-  </g>
+  <path class="rel" d="M1200 430 H1260"/>
+  <text class="label" x="1216" y="414">1:N</text>
 
-  <g transform="translate(1195,1015)">
-    <rect class="table" width="250" height="95"/>
-    <rect class="head" width="250" height="42" rx="18" ry="18"/>
-    <text class="name" x="18" y="28">EvaluacionFinal</text>
-    <text class="field" x="18" y="72">FK asignacion_id / fecha / conclusiones</text>
-  </g>
+  <path class="rel" d="M1010 420 V458"/>
+  <text class="label" x="1022" y="442">1:N</text>
 
-  <path class="rel" d="M380 295 H420"/>
-  <text class="label" x="388" y="278">1:1</text>
+  <path class="rel" d="M1015 640 V688"/>
+  <text class="label" x="1042" y="682">1:N</text>
 
-  <path class="rel" d="M200 420 V460"/>
-  <text class="label" x="212" y="445">1:N</text>
+  <path class="rel" d="M1120 780 C1240 780 1285 900 1285 1036"/>
+  <text class="label" x="1212" y="826">1:N</text>
 
-  <path class="rel" d="M770 300 H810"/>
-  <text class="label" x="780" y="283">0..1:1</text>
+  <path class="rel" d="M1040 895 V985"/>
+  <text class="label" x="1052" y="946">1:N</text>
 
-  <path class="rel" d="M1180 245 H1210"/>
-  <text class="label" x="1185" y="228">1:N</text>
+  <path class="rel" d="M370 915 C370 1080 438 1080 438 1090"/>
+  <text class="label" x="388" y="1000">1:N</text>
 
-  <path class="rel" d="M1180 380 H1210"/>
-  <text class="label" x="1185" y="363">1:N</text>
+  <path class="rel" d="M730 915 C730 1080 730 1080 730 1090"/>
+  <text class="label" x="742" y="1000">1:N</text>
 
-  <path class="rel" d="M1180 635 H1210"/>
-  <text class="label" x="1185" y="618">1:N</text>
+  <path class="rel" d="M995 640 V700 H780 V1040"/>
+  <text class="label" x="1008" y="684">1:N</text>
 
-  <path class="rel" d="M1180 655 H1480"/>
-  <text class="label" x="1320" y="640">1:N</text>
+  <path class="rel" d="M1070 1100 H1128"/>
+  <text class="label" x="1088" y="1082">1:N</text>
 
-  <path class="rel" d="M1000 470 V510"/>
-  <text class="label" x="1012" y="492">1:N</text>
+  <path class="rel" d="M1390 1105 H1433"/>
+  <text class="label" x="1400" y="1088">1:1</text>
 
-  <path class="rel" d="M820 600 H750"/>
-  <text class="label" x="776" y="582">1:N</text>
-
-  <path class="rel" d="M948 760 V1010"/>
-  <text class="label" x="960" y="920">1:N</text>
-
-  <path class="rel" d="M600 710 V1010"/>
-  <text class="label" x="612" y="865">1:N</text>
-
-  <path class="rel" d="M295 985 C295 1035 470 1035 470 1060"/>
-  <text class="label" x="325" y="1018">1:N</text>
-
-  <path class="rel" d="M615 985 V1010"/>
-  <text class="label" x="627" y="998">1:N</text>
-
-  <path class="rel" d="M1110 1060 H900"/>
-  <text class="label" x="988" y="1042">1:N</text>
-
-  <path class="rel" d="M1445 1060 H1165"/>
-  <text class="label" x="1295" y="1042">1:1</text>
-
-  <path class="rel" d="M1110 825 H1140"/>
-  <text class="label" x="1114" y="808">1:N</text>
-
-  <path class="rel" d="M1110 650 C1130 650 1130 845 1140 845"/>
-  <text class="label" x="1120" y="742">1:N</text>
-
-  <path class="rel" d="M1110 675 C1290 675 1290 845 1430 845"/>
-  <text class="label" x="1288" y="742">1:N</text>
-
-  <path class="rel" d="M1110 705 C1270 705 1270 980 1430 980"/>
-  <text class="label" x="1285" y="880">1:N</text>
-
-  <path class="rel" d="M930 470 C930 430 625 430 625 440"/>
-  <text class="label" x="735" y="414">1:N</text>
+  <text class="note" x="60" y="1222">Se omiten etiquetas, notas y satelites de checklist/workflow para mantener legible el hilo principal: cuenta, solicitud, mensajeria, aprobacion, convenio y asignacion.</text>
 </svg>

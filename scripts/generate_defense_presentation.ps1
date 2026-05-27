@@ -308,8 +308,8 @@ try {
     $slide = Add-Slide $presentation
     Add-Header $slide '05 / Panel interno' 'Gestion diaria del centro' 'Dashboard, CRUD operativo, solicitudes, bandeja, documentos, seguimientos y exportacion.'
     Add-FittedImage -Slide $slide -Path (Join-Path $captures '03-panel-interno-dashboard.png') -Left 52 -Top 150 -MaxWidth 560 -MaxHeight 315 | Out-Null
-    Add-Metric $slide 662 165 '20' 'empresas demo' $colors.green
-    Add-Metric $slide 662 278 '4' 'convenios demo' $colors.amber
+    Add-Metric $slide 662 165 '3' 'empresas demo' $colors.green
+    Add-Metric $slide 662 278 '3' 'convenios demo' $colors.amber
     Add-Metric $slide 662 391 'CSV' 'exportacion operativa' $colors.cyan
 
     # 7. Solicitudes y comunicacion

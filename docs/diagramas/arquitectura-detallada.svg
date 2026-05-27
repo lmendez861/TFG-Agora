@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1220" viewBox="0 0 1800 1220">
+  <defs>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .title { font: 700 36px 'Segoe UI', Arial, sans-serif; fill: #17314c; }
+      .subtitle { font: 500 19px 'Segoe UI', Arial, sans-serif; fill: #4d647b; }
+      .band { fill: #ffffff; stroke: #1b3655; stroke-width: 2.2; rx: 26; ry: 26; }
+      .band-soft { fill: #eef4fb; stroke: #1b3655; stroke-width: 2.2; rx: 26; ry: 26; }
+      .band-dark { fill: #142a44; stroke: #142a44; stroke-width: 2.2; rx: 26; ry: 26; }
+      .mini { fill: #ffffff; stroke: #8aa2bc; stroke-width: 1.5; rx: 18; ry: 18; }
+      .eyebrow { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #567089; letter-spacing: 0.16em; text-transform: uppercase; }
+      .eyebrow-dark { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #f1c36c; letter-spacing: 0.16em; text-transform: uppercase; }
+      .heading { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #1a3554; }
+      .heading-dark { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #ffffff; }
+      .body { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #263b4f; }
+      .body-dark { font: 400 17px 'Segoe UI', Arial, sans-serif; fill: #dbe6f3; }
+      .small { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #3f5c78; }
+      .line { stroke: #3b628f; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .line-soft { stroke: #6b8eb3; stroke-width: 3; fill: none; marker-end: url(#arrowSoft); }
+      .foot { font: 600 16px 'Segoe UI', Arial, sans-serif; fill: #3a5774; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#3b628f"/>
+    </marker>
+    <marker id="arrowSoft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#6b8eb3"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1800" height="1220"/>
+  <text class="title" x="56" y="74">Arquitectura detallada del despliegue cloud y del soporte local</text>
+  <text class="subtitle" x="56" y="110">El objetivo de este segundo esquema es mostrar el recorrido tecnico real desde la URL publica hasta la operacion por escritorio.</text>
+
+  <rect class="band-soft" x="300" y="150" width="1200" height="95"/>
+  <text class="eyebrow" x="338" y="186">Entrada publica</text>
+  <text class="heading" x="338" y="224">Internet - DNS nip.io - HTTPS gestionado por Caddy</text>
+
+  <rect class="band-soft" x="300" y="290" width="1200" height="120"/>
+  <text class="eyebrow" x="338" y="326">Infraestructura base</text>
+  <text class="heading" x="338" y="364">VM Google Cloud + firewall 80/443 + SSH + service systemd agora.service</text>
+  <text class="body" x="338" y="398">La instancia arranca sola, recalcula la URL nip.io si cambia la IP y lanza Docker Compose sin intervencion manual.</text>
+
+  <rect class="band" x="300" y="455" width="760" height="380"/>
+  <text class="eyebrow" x="338" y="491">Plano de aplicacion</text>
+  <text class="heading" x="338" y="529">Docker network agora</text>
+
+  <rect class="mini" x="338" y="560" width="320" height="110"/>
+  <text class="small" x="366" y="596">Proxy Caddy</text>
+  <text class="body" x="366" y="626">TLS, cabeceras seguras y</text>
+  <text class="body" x="366" y="654">redireccion HTTP - HTTPS.</text>
+
+  <rect class="mini" x="338" y="700" width="320" height="112"/>
+  <text class="small" x="366" y="736">Contenedor app</text>
+  <text class="body" x="366" y="764">Apache 2.4 + PHP 8.2 + build</text>
+  <text class="body" x="366" y="792">integrada de /app y /externo;</text>
+  <text class="body" x="366" y="820">/documentacion servida por Symfony.</text>
+
+  <rect class="mini" x="706" y="560" width="320" height="110"/>
+  <text class="small" x="734" y="596">Backend Symfony 7</text>
+  <text class="body" x="734" y="626">API REST, autenticacion, roles,</text>
+  <text class="body" x="734" y="654">rate limit, correo, mensajeria</text>
+  <text class="body" x="734" y="682">documentos, auditoria y pruebas.</text>
+
+  <rect class="mini" x="706" y="700" width="320" height="112"/>
+  <text class="small" x="734" y="736">Rutas publicadas</text>
+  <text class="body" x="734" y="764">/app, /externo, /documentacion</text>
+  <text class="body" x="734" y="792">/api/monitor, /portal-auth y</text>
+  <text class="body" x="734" y="820">endpoints de negocio protegidos.</text>
+
+  <rect class="band-soft" x="1085" y="455" width="415" height="180"/>
+  <text class="eyebrow" x="1148" y="491">Persistencia y correo</text>
+  <text class="heading" x="1148" y="529">PostgreSQL + Brevo</text>
+  <text class="body" x="1148" y="560">Base de datos y binarios documentales</text>
+  <text class="body" x="1148" y="588">persistentes; correo transaccional</text>
+  <text class="body" x="1148" y="616">fuera del contenedor principal.</text>
+
+  <rect class="band-soft" x="1085" y="665" width="415" height="175"/>
+  <text class="eyebrow" x="1148" y="701">Estado y soporte</text>
+  <text class="heading" x="1148" y="739">Agora Desktop</text>
+  <text class="body" x="1148" y="770">Modo cloud por API HTTPS y SSH</text>
+  <text class="body" x="1148" y="798">para logs, servicio, smoke tests,</text>
+  <text class="body" x="1148" y="826">URL efectiva, reinicios y backup.</text>
+
+  <rect class="band-dark" x="300" y="890" width="1200" height="180"/>
+  <text class="eyebrow-dark" x="338" y="926">Contingencia local</text>
+  <text class="heading-dark" x="338" y="964">La misma app de escritorio puede levantar un entorno local de respaldo</text>
+  <text class="body-dark" x="338" y="998">Si la VM cloud falla, Agora Desktop sigue pudiendo trabajar en local con runtime empaquetado, SQLite y flujo temporal de acceso publico.</text>
+  <text class="body-dark" x="338" y="1032">Ese modo no sustituye al despliegue principal, pero permite demostrar continuidad tecnica y operativa durante la defensa.</text>
+
+  <path class="line" d="M900 245 V278"/>
+  <path class="line" d="M900 410 V442"/>
+  <path class="line-soft" d="M658 615 H694"/>
+  <path class="line-soft" d="M658 754 H694"/>
+  <path class="line-soft" d="M1060 615 H1098"/>
+  <path class="line-soft" d="M1060 754 H1098"/>
+  <path class="line" d="M900 835 V876"/>
+
+  <text class="foot" x="58" y="1154">Este diagrama sustituye al bloque textual de nodos y deja mas clara la separacion entre borde HTTPS, servicios de la VM, backend, persistencia y consola tecnica.</text>
+</svg>

@@ -467,6 +467,9 @@ final class EmpresaColaboradoraController extends AbstractController
             if (!$file instanceof UploadedFile) {
                 return $this->json(['message' => 'Archivo no proporcionado.'], Response::HTTP_BAD_REQUEST);
             }
+            if ($file->getError() !== \UPLOAD_ERR_OK) {
+                return $this->json(['message' => $this->resolveUploadErrorMessage($file->getError())], Response::HTTP_BAD_REQUEST);
+            }
             $documentMetadata = $this->resolveUploadedDocumentMetadata($file, $request->request->get('tipo'));
             if ($documentMetadata instanceof JsonResponse) {
                 return $documentMetadata;
@@ -913,6 +916,16 @@ final class EmpresaColaboradoraController extends AbstractController
             'xls' => 'application/vnd.ms-excel',
             'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             default => 'application/octet-stream',
+        };
+    }
+
+    private function resolveUploadErrorMessage(int $errorCode): string
+    {
+        return match ($errorCode) {
+            \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => 'El archivo supera el tamano maximo permitido para la subida.',
+            \UPLOAD_ERR_PARTIAL => 'La subida del archivo no se ha completado correctamente. Reintentalo.',
+            \UPLOAD_ERR_NO_FILE => 'No se ha recibido ningun archivo para adjuntar.',
+            default => 'No se ha podido procesar el archivo subido.',
         };
     }
 

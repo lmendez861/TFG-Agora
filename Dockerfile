@@ -50,6 +50,8 @@ RUN apt-get update \
     && a2enmod rewrite headers expires \
     && rm -rf /var/lib/apt/lists/*
 
+RUN printf "upload_max_filesize=10M\npost_max_size=12M\nmax_file_uploads=20\n" > /usr/local/etc/php/conf.d/agora-uploads.ini
+
 COPY deploy/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY backend/ /var/www/html/backend/
 COPY --from=vendor /app/backend/vendor /var/www/html/backend/vendor

@@ -3764,7 +3764,15 @@ const selectedConvenio = useMemo(() => {
               className="empresa-document-form"
               onSubmit={async (event) => {
                 event.preventDefault();
+                if (!empresaDocFile) {
+                  pushToast('error', 'Debes seleccionar un archivo local antes de anadir el documento.');
+                  return;
+                }
                 const resolvedType = empresaDocType || inferUploadDocumentType(empresaDocFile);
+                if (!resolvedType) {
+                  pushToast('error', 'No se ha podido identificar el tipo del archivo. Usa PDF, Word o Excel.');
+                  return;
+                }
                 const saved = await addEmpresaDocument?.(
                   empresa.id,
                   empresaDocName,
@@ -3816,8 +3824,10 @@ const selectedConvenio = useMemo(() => {
                       setEmpresaDocName(nextFile.name.replace(/\.[^.]+$/, ''));
                     }
                   }}
-                  required
                 />
+                <small className="document-form__file-name">
+                  {empresaDocFile ? `Archivo seleccionado: ${empresaDocFile.name}` : 'No hay archivo seleccionado todavia.'}
+                </small>
               </label>
               <button
                 type="submit"
@@ -5119,8 +5129,16 @@ const selectedConvenio = useMemo(() => {
       if (!selectedConvenio) {
         return;
       }
+      if (!documentFile) {
+        pushToast('error', 'Debes seleccionar un archivo local antes de anadir el documento.');
+        return;
+      }
 
       const resolvedType = documentType || inferUploadDocumentType(documentFile);
+      if (!resolvedType) {
+        pushToast('error', 'No se ha podido identificar el tipo del archivo. Usa PDF, Word o Excel.');
+        return;
+      }
       const saved = await handleAddConvenioDocument(
         selectedConvenio.id,
         documentName,
@@ -5463,8 +5481,10 @@ const selectedConvenio = useMemo(() => {
                                 : current.name,
                             }));
                           }}
-                          required
                         />
+                        <small className="document-form__file-name">
+                          {documentFile ? `Archivo seleccionado: ${documentFile.name}` : 'No hay archivo seleccionado todavia.'}
+                        </small>
                       </label>
                       <button
                         type="submit"

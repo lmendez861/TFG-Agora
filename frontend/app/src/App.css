@@ -3770,6 +3770,13 @@
   min-width: 0;
 }
 
+.document-form__file-name {
+  display: block;
+  min-height: 1rem;
+  color: rgba(245, 242, 255, 0.72);
+  line-height: 1.35;
+}
+
 .empresa-doc,
 .empresa-document,
 .convenio-document {

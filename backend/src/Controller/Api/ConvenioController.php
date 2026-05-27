@@ -22,6 +22,7 @@ use App\Repository\EmpresaColaboradoraRepository;
 use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
 use App\Service\DocumentStorageManager;
+use App\Service\UploadedDocumentInspector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -554,6 +555,7 @@ final class ConvenioController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         DocumentStorageManager $documentStorage,
+        UploadedDocumentInspector $documentInspector,
         BootstrapSnapshotProvider $snapshotProvider,
         AuditLogger $auditLogger,
     ): JsonResponse {
@@ -575,6 +577,10 @@ final class ConvenioController extends AbstractController
             $documentMetadata = $this->resolveUploadedDocumentMetadata($file, $request->request->get('tipo'));
             if ($documentMetadata instanceof JsonResponse) {
                 return $documentMetadata;
+            }
+            $documentValidationError = $documentInspector->validate($file, $documentMetadata['type'], $documentMetadata['extension']);
+            if ($documentValidationError !== null) {
+                return $this->json(['message' => $documentValidationError], Response::HTTP_BAD_REQUEST);
             }
 
             $originalName = $file->getClientOriginalName();

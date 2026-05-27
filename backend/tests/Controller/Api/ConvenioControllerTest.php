@@ -369,6 +369,80 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
     }
 
+    public function testDocumentoWordCorruptoMuestraMensajeDetallado(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-convenio-docx-bad');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, 'contenido word corrupto');
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'acta-corrupta.docx',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            parameters: [
+                'nombre' => 'Acta corrupta',
+                'tipo' => 'WORD',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('El documento Word subido parece estar danado o no tiene una estructura valida.', $payload['message']);
+    }
+
+    public function testDocumentoExcelCorruptoMuestraMensajeDetallado(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-convenio-xlsx-bad');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, 'contenido excel corrupto');
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'seguimiento-corrupto.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            parameters: [
+                'nombre' => 'Seguimiento corrupto',
+                'tipo' => 'EXCEL',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('La hoja Excel subida parece estar danada o no tiene una estructura valida.', $payload['message']);
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.

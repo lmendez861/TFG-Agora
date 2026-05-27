@@ -144,11 +144,12 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
 
         $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
         self::assertArrayHasKey('url', $payload);
-        self::assertSame('database_blob', $payload['storageProvider']);
+        self::assertSame('external_fs', $payload['storageProvider']);
 
         $documento = $this->entityManager->getRepository(EmpresaDocumento::class)->find($payload['id']);
         self::assertInstanceOf(EmpresaDocumento::class, $documento);
-        self::assertTrue($documento->hasEmbeddedContent());
+        self::assertFalse($documento->hasEmbeddedContent());
+        self::assertNotNull($documento->getStoragePath());
         self::assertSame('application/pdf', $documento->getMimeType());
 
         $this->client->request('GET', parse_url($payload['url'], PHP_URL_PATH) ?: $payload['url']);
@@ -162,6 +163,74 @@ final class EmpresaDocumentosControllerTest extends WebTestCase
             'inline',
             $this->client->getResponse()->headers->get('content-disposition', '')
         );
+    }
+
+    public function testDocumentoPdfCorruptoMuestraMensajeDetallado(): void
+    {
+        $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
+        self::assertNotNull($empresa);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-pdf-bad');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, 'esto no es un pdf real');
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'corrupto.pdf',
+            'application/pdf',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/empresas/%d/documentos', $empresa->getId()),
+            parameters: [
+                'nombre' => 'PDF corrupto',
+                'tipo' => 'PDF',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('El PDF subido parece estar danado o no tiene una estructura valida.', $payload['message']);
+    }
+
+    public function testDocumentoConErrorDeTamanoMuestraMensajeDetallado(): void
+    {
+        $empresa = $this->entityManager->getRepository(EmpresaColaboradora::class)->findOneBy([]);
+        self::assertNotNull($empresa);
+
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-pdf-size');
+        self::assertNotFalse($tmpFile);
+        file_put_contents($tmpFile, "%PDF-1.4\n%%EOF");
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'grande.pdf',
+            'application/pdf',
+            \UPLOAD_ERR_INI_SIZE,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/empresas/%d/documentos', $empresa->getId()),
+            parameters: [
+                'nombre' => 'PDF grande',
+                'tipo' => 'PDF',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_BAD_REQUEST);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('El archivo supera el tamano maximo permitido para la subida.', $payload['message']);
     }
 
     /**

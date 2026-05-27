@@ -18,6 +18,7 @@ use App\Repository\EmpresaEtiquetaRepository;
 use App\Service\AuditLogger;
 use App\Service\BootstrapSnapshotProvider;
 use App\Service\DocumentStorageManager;
+use App\Service\UploadedDocumentInspector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -452,6 +453,7 @@ final class EmpresaColaboradoraController extends AbstractController
         ValidatorInterface $validator,
         EntityManagerInterface $entityManager,
         DocumentStorageManager $documentStorage,
+        UploadedDocumentInspector $documentInspector,
         AuditLogger $auditLogger,
     ): JsonResponse {
         $this->denyUnlessCanManageDocuments();
@@ -473,6 +475,10 @@ final class EmpresaColaboradoraController extends AbstractController
             $documentMetadata = $this->resolveUploadedDocumentMetadata($file, $request->request->get('tipo'));
             if ($documentMetadata instanceof JsonResponse) {
                 return $documentMetadata;
+            }
+            $documentValidationError = $documentInspector->validate($file, $documentMetadata['type'], $documentMetadata['extension']);
+            if ($documentValidationError !== null) {
+                return $this->json(['message' => $documentValidationError], Response::HTTP_BAD_REQUEST);
             }
             $originalName = $file->getClientOriginalName();
             $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));

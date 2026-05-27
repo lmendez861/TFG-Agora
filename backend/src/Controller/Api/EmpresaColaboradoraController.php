@@ -472,24 +472,31 @@ final class EmpresaColaboradoraController extends AbstractController
                 return $documentMetadata;
             }
             $originalName = $file->getClientOriginalName();
+            $safeName = $this->sanitizeDocumentBaseName(pathinfo($originalName, PATHINFO_FILENAME));
             $nombre = $request->request->get('nombre') ?: $originalName;
             $tipo = $documentMetadata['type'];
             $version = $this->resolveNextEmpresaDocumentVersion($empresa, $nombre);
-            $binaryContent = file_get_contents($file->getPathname());
-            if ($binaryContent === false) {
-                return $this->json(['message' => 'No se pudo leer el archivo subido.'], Response::HTTP_BAD_REQUEST);
-            }
+            $relativePath = sprintf(
+                'empresas/%d/%s_v%d_%s.%s',
+                $empresa->getId(),
+                $safeName,
+                $version,
+                uniqid('', true),
+                $documentMetadata['extension']
+            );
 
             $documento = (new EmpresaDocumento())
                 ->setEmpresa($empresa)
                 ->setNombre($nombre)
                 ->setTipo($tipo)
                 ->setVersion($version)
+                ->setStoragePath($relativePath)
                 ->setOriginalFilename($originalName)
-                ->setFileContentBase64(base64_encode($binaryContent))
                 ->setMimeType($file->getMimeType() ?: 'application/octet-stream')
-                ->setFileSizeBytes($file->getSize() ?: strlen($binaryContent))
-                ->setStorageProvider('database_blob');
+                ->setFileSizeBytes($file->getSize() ?: null)
+                ->setStorageProvider('external_fs');
+
+            $documentStorage->storeUploadedFile($file, $relativePath);
         } else {
             $payload = $this->decodePayload($request);
             if ($payload instanceof JsonResponse) {

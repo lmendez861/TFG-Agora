@@ -73,6 +73,28 @@ El backend es el nucleo del sistema. Lo que tengo que saber explicar es:
 - genera correo de verificacion, recuperacion y rechazo;
 - sirve los frontends integrados bajo `/app`, `/externo` y `/documentacion`.
 
+## 4.1 Que archivos del codigo respaldan cada bloque
+
+Si me piden bajar a codigo, estas son las referencias mas utiles:
+
+- **Seguridad interna y externa**: `backend/config/packages/security.yaml`
+- **Login interno y sesion del portal**: `backend/src/Controller/Api/AuthController.php`
+- **Login y sesion de empresa**: `backend/src/Controller/PortalAuthController.php`
+- **Empresas y documentacion privada**: `backend/src/Controller/Api/EmpresaColaboradoraController.php`
+- **Convenios y sus documentos**: `backend/src/Controller/Api/ConvenioController.php`
+- **Estudiantes**: `backend/src/Controller/Api/EstudianteController.php`
+- **Asignaciones, seguimientos y evaluacion final**: `backend/src/Controller/Api/AsignacionController.php`
+- **Solicitudes de empresa**: `backend/src/Controller/Api/EmpresaSolicitudController.php`
+- **Mensajeria empresa-centro**: `backend/src/Controller/Api/EmpresaMensajeController.php`
+- **Portal externo autenticado**: `backend/src/Controller/Api/PortalCompanyController.php`
+- **Creacion y ciclo de vida de cuentas de empresa**: `backend/src/Service/PortalCompanyAccountManager.php`
+- **Almacenamiento y validacion documental**: `backend/src/Service/DocumentStorageManager.php` y `backend/src/Service/UploadedDocumentInspector.php`
+- **Snapshot de datos del panel interno**: `backend/src/Service/BootstrapSnapshotProvider.php`
+- **Auditoria**: `backend/src/Service/AuditLogger.php`
+- **Operativa local/cloud de escritorio**: `desktop/main.js`, `desktop/preload.js` y `desktop/renderer/app.js`
+
+La idea importante es que el negocio real no esta en React ni en Electron. Esta en Symfony. Los frontends consumen API y el escritorio se limita a operacion tecnica.
+
 ## 5. Flujos funcionales que tengo que tener claros
 
 ### Flujo externo
@@ -152,6 +174,21 @@ La VM arranca sola por `agora.service`. Si hay que revisarla:
 sudo systemctl status agora.service
 sudo systemctl restart agora.service
 sudo journalctl -u agora.service -n 100 --no-pager
+```
+
+Si quiero reconstruir la app cloud tras un cambio:
+
+```bash
+cd ~/TFG-Agora
+git pull origin gcp-deploy-20260517
+sudo docker compose --env-file deploy/gcp/.env.gcp -f deploy/gcp/docker-compose.yml up -d --build
+```
+
+Si necesito resetear los datos demo:
+
+```bash
+cd ~/TFG-Agora
+sudo docker exec agora-app-1 sh -lc 'cd /var/www/html/backend && php bin/console app:demo:refresh --force'
 ```
 
 ## 7. Accesos que debo tener a mano

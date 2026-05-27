@@ -1244,6 +1244,10 @@ export default function App() {
 
     try {
       const preview = await prepareAuthenticatedDocumentPreview(url, options);
+      const previewWindow = window.open(preview.url, '_blank', 'noopener,noreferrer');
+      if (previewWindow) {
+        return;
+      }
       setDocumentPreview({ title, url: preview.url, revokeOnClose: preview.revokeOnClose });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'No se pudo abrir la vista previa del documento.';

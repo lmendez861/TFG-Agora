@@ -508,14 +508,9 @@ export async function prepareAuthenticatedDocumentPreview(
   options?: { fallbackFilename?: string; storageProvider?: string },
 ): Promise<{ url: string; revokeOnClose: boolean }> {
   const resolvedUrl = resolveAbsoluteDocumentUrl(documentUrl);
-  if (options?.storageProvider === 'remote_url' || isCrossOriginDocumentUrl(resolvedUrl)) {
-    return { url: resolvedUrl, revokeOnClose: false };
-  }
-
-  const { blob } = await fetchDocumentBlob(resolvedUrl, options?.fallbackFilename);
   return {
-    url: URL.createObjectURL(blob),
-    revokeOnClose: true,
+    url: resolvedUrl,
+    revokeOnClose: false,
   };
 }
 

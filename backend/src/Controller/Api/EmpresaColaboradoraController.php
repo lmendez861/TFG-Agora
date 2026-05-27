@@ -492,7 +492,7 @@ final class EmpresaColaboradoraController extends AbstractController
                 ->setVersion($version)
                 ->setStoragePath($relativePath)
                 ->setOriginalFilename($originalName)
-                ->setMimeType($file->getMimeType() ?: 'application/octet-stream')
+                ->setMimeType($file->getClientMimeType() ?: $this->resolveMimeTypeByExtension($documentMetadata['extension']))
                 ->setFileSizeBytes($file->getSize() ?: null)
                 ->setStorageProvider('external_fs');
 
@@ -902,6 +902,18 @@ final class EmpresaColaboradoraController extends AbstractController
         }
 
         return null;
+    }
+
+    private function resolveMimeTypeByExtension(string $extension): string
+    {
+        return match (strtolower($extension)) {
+            'pdf' => 'application/pdf',
+            'doc' => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls' => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            default => 'application/octet-stream',
+        };
     }
 
     /**

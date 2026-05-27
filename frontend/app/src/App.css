@@ -2025,6 +2025,25 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.modal--document {
+  width: min(1100px, 96vw);
+  max-height: 92vh;
+}
+
+.document-preview {
+  padding: 0;
+  min-height: 70vh;
+  background: #0f172a;
+}
+
+.document-preview__frame {
+  display: block;
+  width: 100%;
+  min-height: 70vh;
+  border: 0;
+  background: #ffffff;
+}
+
 .form {
   display: flex;
   flex-direction: column;

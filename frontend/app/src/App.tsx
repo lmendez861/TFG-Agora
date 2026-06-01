@@ -6468,7 +6468,11 @@ const selectedConvenio = useMemo(() => {
     return (
       <div className="app app--dark app--auth auth-viewport">
         <ToastStack toasts={toasts} onDismiss={dismissToast} />
-        {loading && <div className="app__alert app__alert--info">Validando acceso...</div>}
+        {loading && (
+          <div className="app__boot" aria-label="Cargando portal interno">
+            <div className="app__boot-spinner" />
+          </div>
+        )}
       </div>
     );
   }

@@ -34,7 +34,7 @@
 ## 4. Validacion tecnica
 
 - OK `php bin/phpunit`
-- OK `npm test -- --run` en `frontend/app`
+- OK `npm test` en `frontend/app`
 - OK `npm run test:e2e` en `frontend/app`
 - OK `npm run build:backend` en `frontend/app`
 - OK `npm run build:backend` en `frontend/company-portal`
@@ -46,7 +46,7 @@
 ## 5. Material de defensa
 
 - OK guia operativa en `docs/guia-demo.md`
-- OK video de demo en `docs/video/demo-portales-interno-externo.mp4`
+- OK video de demo en `docs/video/demo-portales-directo-5min.webm`
 - OK muestra CSV en `docs/video/agora-solicitudes-demo.csv`
 - OK muestra Excel en `docs/video/agora-solicitudes-demo.xlsx`
 - OK artefactos de demo anonimizados para no exponer datos personales reales

@@ -18,11 +18,11 @@ Frase recomendada:
 
 ## 2. Acceso cloud
 
-Mostrar en navegador:
+Mostrar en navegador la URL cloud efectiva del momento, por ejemplo:
 
-- `https://agora.34.175.225.98.nip.io/app/`
-- `https://agora.34.175.225.98.nip.io/externo/`
-- `https://agora.34.175.225.98.nip.io/documentacion`
+- `URL/app/`
+- `URL/externo/`
+- `URL/documentacion`
 
 Explicar en una frase:
 
@@ -62,7 +62,7 @@ Idea que debes decir:
 
 ## 5. Flujo de correo
 
-No hace falta enseñar toda la bandeja de correo. Basta con mostrar:
+No hace falta ensenar toda la bandeja de correo. Basta con mostrar:
 
 - la pantalla que indica verificacion;
 - o una captura/correo ya recibido;
@@ -86,7 +86,7 @@ Explica:
 
 ## 7. Agora Desktop
 
-Abrir `Agora Desktop` en modo `cloud` y enseñar:
+Abrir `Agora Desktop` en modo `cloud` y ensenar:
 
 - URL cloud efectiva;
 - IP publica actual;

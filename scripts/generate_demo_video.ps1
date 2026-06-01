@@ -1,3 +1,8 @@
+<#
+ Comentario de mantenimiento Agora.
+ Proposito: Script auxiliar de documentacion/demo: automatiza generacion de entregables del TFG.
+ Relaciones: script auxiliar invocado manualmente durante documentacion, capturas o defensa.
+#>
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot

@@ -55,7 +55,7 @@ Brevo. Se usa para verificacion de solicitudes, recuperacion de contrasena, MFA 
 Llega por correo y, ademas, el estado queda visible en el portal externo autenticado para que la empresa no dependa de una llamada manual del centro. Si el centro quiere ampliar el contexto, puede hacerlo por mensajeria dentro de la propia solicitud.
 
 ### 4.7 Como esta desplegado fuera del entorno local?
-En una VM Linux de Google Cloud Compute Engine con Docker Compose, PostgreSQL y proxy HTTPS. La URL de demo accesible desde fuera es `https://agora.34.175.225.98.nip.io/`.
+En una VM Linux de Google Cloud Compute Engine con Docker Compose, PostgreSQL y proxy HTTPS. La URL de demo accesible desde fuera depende de la IP publica vigente y se consulta desde Agora Desktop. En la ultima revision valida fue `https://agora.34.175.225.98.nip.io/`.
 
 ### 4.8 Que usuarios de prueba quedan preparados para acceso externo?
 Se dejan `profesora / Abrete01` y `profesor / Abrete01`, ambos con permisos de coordinacion para revisar el portal interno desde la URL publica.
@@ -81,7 +81,7 @@ Se dejan `profesora / Abrete01` y `profesor / Abrete01`, ambos con permisos de c
 - **Correo transaccional**: Brevo para verificacion, recuperacion, rechazo y MFA del modo local.
 - **Escritorio tecnico**: Electron para Agora Desktop, con integracion API + SSH.
 - **Despliegue cloud**: Docker Compose, Caddy como proxy HTTPS y Google Cloud Compute Engine.
-- **Pruebas**: PHPUnit, Vitest, Playwright y smoke tests del escritorio.
+- **Pruebas**: PHPUnit, runner nativo `node:test` en el frontend interno, Playwright y smoke tests del escritorio.
 
 ## 7. Alcance cerrado frente a mejoras futuras
 

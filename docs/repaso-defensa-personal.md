@@ -53,7 +53,7 @@ La idea clave que tengo que repetir es esta: **un solo nucleo de negocio, varias
 ### Pruebas
 
 - **PHPUnit** para backend.
-- **Vitest** para pruebas unitarias del frontend.
+- **node:test** para pruebas unitarias del frontend interno.
 - **Playwright** para flujos E2E.
 - **Smoke tests** para el flujo completo y para Agora Desktop.
 
@@ -133,7 +133,7 @@ La idea importante es que el negocio real no esta en React ni en Electron. Esta 
 cd backend
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
-symfony server:start --no-tls -d --port=8000
+start-server.bat
 ```
 
 ```bash
@@ -157,7 +157,7 @@ php vendor/bin/phpunit
 
 ```bash
 cd frontend/app
-npm test -- --run
+npm test
 npm run test:e2e
 ```
 
@@ -193,7 +193,7 @@ sudo docker exec agora-app-1 sh -lc 'cd /var/www/html/backend && php bin/console
 
 ## 7. Accesos que debo tener a mano
 
-- URL base: `https://agora.34.175.225.98.nip.io/`
+- URL base: la URL cloud efectiva que muestre Agora Desktop. En la ultima revision valida fue `https://agora.34.175.225.98.nip.io/`.
 - Portal interno: `/app/`
 - Portal externo: `/externo/`
 - Documentacion: `/documentacion`

@@ -15,6 +15,7 @@
 - OK `docs/anexo-c-capturas-y-evidencias.md` alineado con capturas finales.
 - OK presentacion final en `docs/presentacion-defensa-final.pptx` y PDF.
 - OK guion de apoyo en `docs/guion-presentacion-final.md`.
+- OK revision comparativa con plataformas actuales incorporada a memoria y presentacion.
 
 ## 3. Validacion funcional
 
@@ -22,16 +23,17 @@
 - OK portal interno disponible en `/app`.
 - OK portal externo disponible en `/externo`.
 - OK documentacion disponible en `/documentacion`.
-- OK monitor privado disponible en `/monitor`.
-- OK `php vendor/bin/phpunit`.
+- OK Agora Desktop operativo como consola tecnica principal.
+- OK `php bin/phpunit`: validacion final actualizada antes de la entrega.
 - OK `npm run build` en `frontend/app`.
 - OK `npm run build` en `frontend/company-portal`.
-- OK `npm test -- --run` en `frontend/app`.
+- OK `npm test` en `frontend/app`.
 - OK `npm run test:e2e` en `frontend/app`.
+- OK 20 pasadas de revision final: seguridad, rutas, documentos, tokens, reglas de negocio, UX, pruebas y defensa.
 
 ## 4. Preparacion de demo
 
 - Compartir URL temporal de `cloudflared` solo si el backend y el tunel estan activos.
-- Entrar a `/app`, `/externo`, `/documentacion` y `/monitor` desde la misma URL base.
+- Entrar a `/app`, `/externo` y `/documentacion` desde la misma URL base.
 - Tener a mano credenciales demo del panel interno.
-- Mostrar que el portal funcional se actualiza automaticamente; la sincronizacion manual queda solo en el monitor.
+- Mostrar que el portal funcional se actualiza automaticamente; la supervision tecnica se concentra en Agora Desktop.

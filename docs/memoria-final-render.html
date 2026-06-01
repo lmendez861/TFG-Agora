@@ -353,7 +353,7 @@
 <li>Mantener una arquitectura separada y mantenible entre API, portal interno, portal externo, documentacion y app de escritorio operativa.</li>
 </ol>
 <h2 id="memoria-final-alcance">Alcance</h2>
-<p>Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, una app de escritorio para operacion tecnica en local o en cloud, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose, PostgreSQL, proxy HTTPS y correo transaccional operativo. El flujo local con MFA para acceso publico temporal sigue existiendo dentro de Agora Desktop, pero ya no hay una pagina web de monitorizacion separada en el recorrido funcional. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, el almacenamiento documental en nube gestionada, un cliente de escritorio completo para toda la operativa funcional del negocio y una instrumentacion avanzada de produccion con alta disponibilidad.</p>
+<p>Dentro del alcance actual se incluyen el portal interno, el portal externo, la API REST, la persistencia relacional, la autenticacion interna, el preregistro externo de cuentas de empresa, la verificacion por correo, la aprobacion interna, la mensajeria empresa-centro, la bandeja unificada, el seguimiento con evidencias, la evaluacion final, el control documental versionado, la exportacion CSV, una app de escritorio para operacion tecnica en local o en cloud, y un despliegue funcional en Google Cloud Compute Engine con Docker Compose, PostgreSQL, proxy HTTPS, volumen persistente para documentos y correo transaccional operativo. El flujo local con MFA para acceso publico temporal sigue existiendo dentro de Agora Desktop, pero ya no hay una pagina web de monitorizacion separada en el recorrido funcional. Quedan fuera de alcance, en esta entrega, la firma electronica avanzada, las integraciones corporativas con ERP o directorios institucionales, la migracion del almacenamiento documental a un servicio cloud gestionado independiente de la propia VM, un cliente de escritorio completo para toda la operativa funcional del negocio y una instrumentacion avanzada de produccion con alta disponibilidad.</p>
 <h1 id="memoria-final-definiciones">Definiciones</h1>
 <ul>
 <li><strong>Empresa colaboradora</strong>: entidad externa aprobada por el centro para participar en practicas o colaboraciones formativas.</li>
@@ -433,7 +433,7 @@
 <li><strong>Caddy</strong> como proxy HTTPS porque automatiza certificados de Let's Encrypt, cabeceras de seguridad y redireccion HTTP a HTTPS con muy poca configuracion operativa.</li>
 <li><strong>Brevo</strong> como proveedor de correo porque permite cubrir verificacion, rechazo, recuperacion de cuenta y avisos transaccionales desde un servicio externo especializado.</li>
 <li><strong>Electron</strong> en Agora Desktop porque resuelve una necesidad distinta del negocio: operar el entorno, leer logs, reiniciar servicios, ejecutar pruebas y disponer de un modo local de contingencia si la VM cloud falla.</li>
-<li><strong>PHPUnit, Vitest y Playwright</strong> porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.</li>
+<li><strong>PHPUnit, el runner nativo <code>node:test</code> y Playwright</strong> porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.</li>
 </ul>
 <h3 id="memoria-final-esquema-detallado-de-arquitectura">Esquema detallado de arquitectura</h3>
 <p>En la defensa resulta mas claro bajar un nivel adicional y mostrar el recorrido tecnico real desde la URL publica hasta la consola de soporte. Por eso, en vez de dejar un arbol textual largo, se incorpora un segundo esquema visual centrado en el despliegue efectivo y en la separacion entre flujo funcional y operacion tecnica.</p>
@@ -626,7 +626,7 @@ Estado 5: rechazada
 <p>En la revision final se han ejecutado, como minimo, estas comprobaciones:</p>
 <ul>
 <li><code>php bin/phpunit</code> en backend;</li>
-<li><code>npm test -- --run</code> en <code>frontend/app</code>;</li>
+<li><code>npm test</code> en <code>frontend/app</code>;</li>
 <li><code>npm run test:e2e</code> en <code>frontend/app</code> para flujos criticos;</li>
 <li><code>npm run build:backend</code> en <code>frontend/app</code>;</li>
 <li><code>npm run build:backend</code> en <code>frontend/company-portal</code>;</li>
@@ -715,7 +715,7 @@ Estado 5: rechazada
 </ul>
 <h2 id="anexo-a-manual-usuario-3-acceso-al-sistema">3. Acceso al sistema</h2>
 <h3 id="anexo-a-manual-usuario-3-0-acceso-externo-para-evaluacion">3.0 Acceso externo para evaluacion</h3>
-<p>Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le puede facilitar una URL publica como <code>https://agora.34.175.225.98.nip.io/</code>, y sobre esa misma direccion abrir:</p>
+<p>Durante la evaluacion, si el alumno mantiene activa la VM publica, la profesora no necesita descargar ni instalar dependencias del proyecto. Se le facilita la URL cloud efectiva que muestre Agora Desktop y, sobre esa misma direccion, abrir:</p>
 <ul>
 <li><code>/app</code> para el panel interno;</li>
 <li><code>/externo</code> para el portal de empresa;</li>
@@ -725,14 +725,14 @@ Estado 5: rechazada
 <p>Este acceso remoto depende de que la VM publica y el stack Docker sigan levantados. La instalacion local solo seria necesaria si se quiere reproducir el proyecto desde cero a partir del repositorio.</p>
 <h3 id="anexo-a-manual-usuario-3-1-panel-interno-integrado">3.1 Panel interno integrado</h3>
 <ul>
-<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/app/</code></li>
+<li>URL cloud principal: URL cloud efectiva + <code>/app/</code></li>
 <li>URL local de respaldo: <code>http://127.0.0.1:8000/app</code></li>
 <li>Credenciales demo:</li>
 <p>- <code>profesora / Abrete01</code> - <code>profesor / Abrete01</code> - <code>admin / admin123</code> - <code>coordinador / coordinador123</code></p>
 </ul>
 <h3 id="anexo-a-manual-usuario-3-2-documentacion-publica">3.2 Documentacion publica</h3>
 <ul>
-<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/documentacion</code></li>
+<li>URL cloud principal: URL cloud efectiva + <code>/documentacion</code></li>
 <li>URL local de respaldo: <code>http://127.0.0.1:8000/documentacion</code></li>
 <li>No requiere autenticacion.</li>
 </ul>
@@ -744,7 +744,7 @@ Estado 5: rechazada
 </ul>
 <h3 id="anexo-a-manual-usuario-3-4-portal-externo">3.4 Portal externo</h3>
 <ul>
-<li>URL cloud principal: <code>https://agora.34.175.225.98.nip.io/externo/</code></li>
+<li>URL cloud principal: URL cloud efectiva + <code>/externo/</code></li>
 <li>URL local de respaldo: <code>http://127.0.0.1:8000/externo</code></li>
 <li>La cuenta inicial de empresa se crea desde el portal publico.</li>
 <li>La solicitud corporativa se completa despues, ya dentro del panel privado de empresa.</li>
@@ -918,7 +918,7 @@ copy .env.local.example .env.local
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
-symfony server:start --no-tls -d --port=8000</code></pre>
+start-server.bat</code></pre>
 <h3 id="anexo-b-manual-tecnico-3-2-frontend-interno-en-desarrollo">3.2 Frontend interno en desarrollo</h3>
 <pre><code>cd frontend/app
 copy .env.example .env.local
@@ -943,7 +943,7 @@ npm run build:backend</code></pre>
 <li>supervision tecnica integrada en Agora Desktop</li>
 </ul>
 <h3 id="anexo-b-manual-tecnico-3-5-prueba-remota-sin-instalacion-local">3.5 Prueba remota sin instalacion local</h3>
-<p>Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard <code>nip.io</code>, por ejemplo <code>https://agora.34.175.225.98.nip.io/</code>. Desde esa direccion se accede a <code>URL/app/</code>, <code>URL/externo/</code> o <code>URL/documentacion/</code>. La supervision tecnica se realiza desde Agora Desktop.</p>
+<p>Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard <code>nip.io</code>. Como la IP publica puede cambiar al reiniciar la VM, la referencia buena es la URL cloud efectiva que muestra Agora Desktop. Desde esa direccion se accede a <code>URL/app/</code>, <code>URL/externo/</code> o <code>URL/documentacion/</code>. La supervision tecnica se realiza desde Agora Desktop.</p>
 <p>Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan <code>profesora / Abrete01</code> y <code>profesor / Abrete01</code> como accesos de coordinacion.</p>
 <h3 id="anexo-b-manual-tecnico-3-6-app-de-escritorio-empaquetada">3.6 App de escritorio empaquetada</h3>
 <p>La app de escritorio puede generarse asi:</p>
@@ -1140,7 +1140,7 @@ npm run validate:packaged</code></pre>
 <pre><code>cd backend
 php bin/phpunit</code></pre>
 <pre><code>cd frontend/app
-npm test -- --run
+npm test
 npm run test:e2e
 npm run build:backend</code></pre>
 <pre><code>cd frontend/company-portal

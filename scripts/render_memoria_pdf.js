@@ -1,9 +1,17 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Script auxiliar de documentacion/demo: automatiza generacion de entregables del TFG.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const rootDir = path.resolve(__dirname, '..');
 const docsDir = path.join(rootDir, 'docs');
 const outputHtml = path.join(docsDir, 'memoria-final-render.html');
+const outputPdf = path.join(docsDir, 'memoria-final.pdf');
+const outputExportPdf = path.join(docsDir, 'memoria-final-export.pdf');
 
 const sections = [
   { file: 'memoria-final.md', title: 'Memoria Final', pageBreak: false },
@@ -13,7 +21,12 @@ const sections = [
   { file: 'anexo-d-codigo-relevante.md', title: 'Anexo D. Codigo relevante', pageBreak: true },
 ];
 
+/**
+ * Resume la responsabilidad de parseFrontMatter dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function parseFrontMatter(markdown) {
+  markdown = markdown.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
   if (!match) {
     return { attributes: {}, body: markdown };
@@ -41,12 +54,75 @@ function parseFrontMatter(markdown) {
   };
 }
 
+/**
+ * Resume la responsabilidad de readMarkdownDocument dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function readMarkdownDocument(fileName) {
   const raw = fs.readFileSync(path.join(docsDir, fileName), 'utf8');
   const { attributes, body } = parseFrontMatter(raw);
   return { file: fileName, attributes, body };
 }
 
+function findPdfBrowser() {
+  const candidates = [
+    'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  ];
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+function toFileUri(filePath) {
+  return `file:///${filePath.replace(/\\/g, '/')}`;
+}
+
+function sleep(milliseconds) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+}
+
+function renderPdfWithBrowser(htmlPath, pdfPath) {
+  const browserPath = findPdfBrowser();
+  if (!browserPath) {
+    console.warn('No se ha encontrado Edge o Chrome para exportar el PDF de la memoria.');
+    return false;
+  }
+
+  if (fs.existsSync(pdfPath)) {
+    fs.rmSync(pdfPath, { force: true });
+  }
+
+  const escapedBrowserPath = browserPath.replace(/'/g, "''");
+  const escapedPdfPath = pdfPath.replace(/'/g, "''");
+  const escapedHtmlUri = toFileUri(htmlPath).replace(/'/g, "''");
+
+  execFileSync(
+    'powershell.exe',
+    [
+      '-NoProfile',
+      '-Command',
+      `& '${escapedBrowserPath}' '--headless=new' '--disable-gpu' '--allow-file-access-from-files' '--print-to-pdf=${escapedPdfPath}' '${escapedHtmlUri}'; Start-Sleep -Seconds 30`,
+    ],
+    { stdio: 'ignore' },
+  );
+
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    if (fs.existsSync(pdfPath)) {
+      return true;
+    }
+
+    sleep(200);
+  }
+
+  return false;
+}
+
+/**
+ * Resume la responsabilidad de escapeHtml dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function escapeHtml(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -55,6 +131,10 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * Resume la responsabilidad de renderInline dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function renderInline(text) {
   let html = escapeHtml(text);
   html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
@@ -64,6 +144,10 @@ function renderInline(text) {
   return html;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildAnchorId(text, prefix = '') {
   const slug = text
     .toLowerCase()
@@ -73,6 +157,10 @@ function buildAnchorId(text, prefix = '') {
   return prefix ? `${prefix}-${slug}` : slug;
 }
 
+/**
+ * Resume la responsabilidad de markdownToHtml dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function markdownToHtml(markdown, idPrefix = '') {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const parts = [];
@@ -81,6 +169,10 @@ function markdownToHtml(markdown, idPrefix = '') {
   let inCodeBlock = false;
   let codeBuffer = [];
 
+  /**
+   * Resume la responsabilidad de flushParagraph dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   function flushParagraph() {
     if (paragraph.length > 0) {
       parts.push(`<p>${renderInline(paragraph.join(' '))}</p>`);
@@ -88,6 +180,10 @@ function markdownToHtml(markdown, idPrefix = '') {
     }
   }
 
+  /**
+   * Resume la responsabilidad de closeList dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   function closeList() {
     if (listType) {
       parts.push(listType === 'ol' ? '</ol>' : '</ul>');
@@ -95,6 +191,10 @@ function markdownToHtml(markdown, idPrefix = '') {
     }
   }
 
+  /**
+   * Resume la responsabilidad de flushCodeBlock dentro de este modulo y facilita seguir el flujo al revisarlo.
+   * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+   */
   function flushCodeBlock() {
     if (inCodeBlock) {
       parts.push(`<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`);
@@ -183,6 +283,10 @@ function markdownToHtml(markdown, idPrefix = '') {
   return parts.join('\n');
 }
 
+/**
+ * Resume la responsabilidad de extractHeadings dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function extractHeadings(markdown, idPrefix = '') {
   return markdown
     .replace(/\r\n/g, '\n')
@@ -196,6 +300,10 @@ function extractHeadings(markdown, idPrefix = '') {
     }));
 }
 
+/**
+ * Resume la responsabilidad de extractFigures dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function extractFigures(markdown, idPrefix = '') {
   return markdown
     .replace(/\r\n/g, '\n')
@@ -443,7 +551,7 @@ const html = `<!doctype html>
 
     figure img {
       max-width: 100%;
-      max-height: 180mm;
+      max-height: 155mm;
       border: 1px solid var(--line);
       border-radius: 2mm;
       box-shadow: 0 2mm 6mm rgba(0, 0, 0, 0.08);
@@ -483,3 +591,9 @@ const html = `<!doctype html>
 
 fs.writeFileSync(outputHtml, html, 'utf8');
 console.log(outputHtml);
+
+if (renderPdfWithBrowser(outputHtml, outputPdf)) {
+  fs.copyFileSync(outputPdf, outputExportPdf);
+  console.log(outputPdf);
+  console.log(outputExportPdf);
+}

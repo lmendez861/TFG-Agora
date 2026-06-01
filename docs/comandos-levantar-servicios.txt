@@ -60,8 +60,8 @@ http://127.0.0.1:8000/externo
 Documentacion:
 http://127.0.0.1:8000/documentacion
 
-Monitor tecnico:
-http://127.0.0.1:8000/monitor
+Supervision tecnica:
+Agora Desktop en modo local
 
 API:
 http://127.0.0.1:8000/api
@@ -80,7 +80,7 @@ Cuando la consola muestre una URL similar a https://xxxxx.trycloudflare.com, usa
 https://xxxxx.trycloudflare.com/app
 https://xxxxx.trycloudflare.com/externo
 https://xxxxx.trycloudflare.com/documentacion
-https://xxxxx.trycloudflare.com/monitor
+Supervision tecnica: Agora Desktop
 
 Nota: la URL publica es temporal y cambia cada vez que se reinicia el tunel.
 
@@ -137,7 +137,7 @@ php vendor/bin/phpunit
 Panel interno:
 
 cd frontend\app
-npm test -- --run
+npm test
 npm run test:e2e
 npm run build:backend
 

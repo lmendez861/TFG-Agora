@@ -141,7 +141,7 @@ De cara a la defensa conviene justificar no solo que tecnologias se han usado, s
 - **Caddy** como proxy HTTPS porque automatiza certificados de Let's Encrypt, cabeceras de seguridad y redireccion HTTP a HTTPS con muy poca configuracion operativa.
 - **Brevo** como proveedor de correo porque permite cubrir verificacion, rechazo, recuperacion de cuenta y avisos transaccionales desde un servicio externo especializado.
 - **Electron** en Agora Desktop porque resuelve una necesidad distinta del negocio: operar el entorno, leer logs, reiniciar servicios, ejecutar pruebas y disponer de un modo local de contingencia si la VM cloud falla.
-- **PHPUnit, Vitest y Playwright** porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.
+- **PHPUnit, el runner nativo `node:test` y Playwright** porque cubren tres niveles distintos de validacion: logica de backend, comportamiento unitario del frontend y flujos criticos integrados sobre navegador.
 
 ### Esquema detallado de arquitectura
 
@@ -418,7 +418,7 @@ De esta revision han salido pequenas mejoras aplicadas directamente antes de cer
 En la revision final se han ejecutado, como minimo, estas comprobaciones:
 
 - `php bin/phpunit` en backend;
-- `npm test -- --run` en `frontend/app`;
+- `npm test` en `frontend/app`;
 - `npm run test:e2e` en `frontend/app` para flujos criticos;
 - `npm run build:backend` en `frontend/app`;
 - `npm run build:backend` en `frontend/company-portal`;

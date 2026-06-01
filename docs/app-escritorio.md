@@ -96,8 +96,8 @@ En modo cloud, el smoke se lanza contra la URL publica configurada en el perfil 
 
 ### Cloud
 
-- Portal interno cloud: `https://agora.34.175.224.87.nip.io/app/`
-- Portal externo cloud: `https://agora.34.175.224.87.nip.io/externo/`
+- Portal interno cloud: URL cloud efectiva + `/app/`
+- Portal externo cloud: URL cloud efectiva + `/externo/`
 - URL tecnica efectiva: visible desde Agora Desktop, junto con IP publica y estado de `agora.service`
 
 ## Empaquetado Windows

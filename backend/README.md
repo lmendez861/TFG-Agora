@@ -87,7 +87,7 @@ Prueba rapida tras configurar la clave:
 php bin/console mailer:test tu-correo@gmail.com
 ```
 
-El monitor privado mostrara si el correo saliente sigue con placeholders o ya esta listo para envio real.
+La telemetria tecnica consumida por Agora Desktop y `/api/monitor` mostrara si el correo saliente sigue con placeholders o ya esta listo para envio real.
 
 ## Autenticacion y seguridad
 

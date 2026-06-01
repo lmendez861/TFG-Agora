@@ -3,9 +3,9 @@
 ## Servicios verificados el 27/05/2026
 
 - Backend API Symfony en VM publica de Google Cloud.
-- Panel interno integrado: `https://agora.34.175.225.98.nip.io/app/`
-- Portal externo integrado: `https://agora.34.175.225.98.nip.io/externo/`
-- Documentacion publica: `https://agora.34.175.225.98.nip.io/documentacion/`
+- Panel interno integrado: URL cloud efectiva actual + `/app/`
+- Portal externo integrado: URL cloud efectiva actual + `/externo/`
+- Documentacion publica: URL cloud efectiva actual + `/documentacion/`
 - Consola tecnica: `Agora Desktop` en modo `cloud`
 - Correo transaccional operativo para verificacion y rechazo
 - Chat interno y externo con refresco automatico
@@ -30,7 +30,7 @@ copy .env.local.example .env.local
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
-symfony server:start --no-tls -d --port=8000
+start-server.bat
 ```
 
 ### 2. Frontend integrado
@@ -56,12 +56,12 @@ npm run build:backend
 - El acceso principal ya no depende de tunel temporal ni del portatil local.
 - La demo se comparte desde la VM publica de Google Cloud.
 - Para evitar comprar dominio solo para la defensa se usa un hostname wildcard gratuito de `nip.io`.
-- La URL operativa actual es `https://agora.34.175.225.98.nip.io/`.
+- La URL operativa no debe darse por fija si la IP publica cambia. La referencia buena es la URL cloud efectiva que muestra Agora Desktop. En la ultima revision valida fue `https://agora.34.175.225.98.nip.io/`.
 
 ## Como puede probarlo la profesora
 
 - La profesora no necesita instalar nada.
-- El alumno comparte `https://agora.34.175.225.98.nip.io/`.
+- El alumno comparte la URL cloud efectiva que muestre Agora Desktop.
 - Con esa URL se abren `URL/app/`, `URL/externo/` y `URL/documentacion/`.
 - La supervision tecnica del despliegue se realiza desde `Agora Desktop`, no desde una pagina web adicional.
 - Agora Desktop muestra la URL cloud efectiva y el estado de `agora.service`, util si la IP publica cambia tras reiniciar la VM.
@@ -81,7 +81,7 @@ npm run build:backend
 ## Material de apoyo recomendado
 
 - usar el PDF final de memoria y el DOCX como respaldo documental;
-- llevar abierto el video de demo de `docs/video/demo-portales-interno-externo.mp4`;
+- llevar abierto el video de demo de `docs/video/demo-portales-directo-5min.webm`;
 - usar la exportacion `docs/video/agora-solicitudes-demo.xlsx` como apoyo visual del CSV;
 - recordar que los artefactos de demo quedan anonimizados para no exponer datos personales reales.
 
@@ -102,7 +102,7 @@ En la revision final del 27/05/2026 se ha confirmado este bloque minimo para la 
 
 ### Orden funcional recomendado
 
-1. La empresa crea su cuenta desde `https://agora.34.175.225.98.nip.io/externo/`.
+1. La empresa crea su cuenta desde `URL/externo/`.
 2. Entra en el panel privado y desde ahi rellena la solicitud corporativa.
 3. El correo queda verificado y la solicitud pasa a revision interna.
 4. El centro revisa la solicitud desde la campana del portal interno y, si procede, aprueba la empresa.
@@ -113,24 +113,24 @@ En la revision final del 27/05/2026 se ha confirmado este bloque minimo para la 
 
 ### Recorrido de exposicion
 
-1. Entrar en `https://agora.34.175.225.98.nip.io/app/login`.
+1. Entrar en `URL/app/login`.
 2. Acceder con `profesora / Abrete01` o `profesor / Abrete01`.
 3. Mostrar dashboard y exportacion CSV.
 4. Abrir la campana superior para ensenar solicitudes y acceso a mensajes.
 5. Abrir `Solicitudes` y ensenar el flujo de aprobacion.
 6. Abrir `Bandeja` para ensenar la conversacion unificada y comentar que el refresco es automatico.
 7. Abrir `Convenios` o `Asignaciones` para mostrar documentos, seguimientos y evaluacion final.
-8. Pasar a `https://agora.34.175.225.98.nip.io/externo/`.
+8. Pasar a `URL/externo/`.
 9. Ensenar alta de cuenta previa, acceso empresa y luego la solicitud desde el panel privado.
 10. Mostrar que el chat externo se actualiza automaticamente sin recarga manual.
-11. Abrir `https://agora.34.175.225.98.nip.io/documentacion/flujo`.
+11. Abrir `URL/documentacion/flujo`.
 12. Si hace falta justificar despliegue, abrir `Agora Desktop` en modo `cloud` y ensenar estado, logs, smoke y servicios remotos de la VM.
 13. Si la VM se ha reiniciado, ensenar desde Agora Desktop la URL efectiva actual y, si hiciera falta, el reinicio de `agora.service`.
 
 ## Verificaciones tecnicas recomendadas
 
 - `php bin/phpunit`
-- `npm test -- --run` en `frontend/app`
+- `npm test` en `frontend/app`
 - `npm run test:e2e` en `frontend/app`
 - `npm run build:backend` en `frontend/app`
 - `npm run build:backend` en `frontend/company-portal`

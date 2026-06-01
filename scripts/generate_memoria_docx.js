@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: Script auxiliar de documentacion/demo: automatiza generacion de entregables del TFG.
+ * Relaciones: Conexiones principales indicadas por imports, inyeccion de dependencias o rutas del propio archivo.
+ */
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -18,7 +23,12 @@ const sections = [
   { file: 'anexo-d-codigo-relevante.md', tocLevels: [1, 2] },
 ];
 
+/**
+ * Resume la responsabilidad de parseFrontMatter dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function parseFrontMatter(markdown) {
+  markdown = markdown.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n?/);
   if (!match) {
     return { attributes: {}, body: markdown };
@@ -46,6 +56,10 @@ function parseFrontMatter(markdown) {
   };
 }
 
+/**
+ * Resume la responsabilidad de readMarkdownDocument dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function readMarkdownDocument(fileName) {
   const raw = fs.readFileSync(path.join(docsDir, fileName), 'utf8');
   const { attributes, body } = parseFrontMatter(raw);
@@ -83,6 +97,10 @@ const relationships = [
 const extraContentTypes = new Set();
 const bodyParts = [];
 
+/**
+ * Resume la responsabilidad de slugify dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function slugify(value) {
   return value
     .toLowerCase()
@@ -90,21 +108,37 @@ function slugify(value) {
     .replace(/^_+|_+$/g, '');
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildBookmarkName(sectionFile, index) {
   const prefix = slugify(path.basename(sectionFile, path.extname(sectionFile))).slice(0, 18) || 'section';
   return `bk_${prefix}_${index + 1}`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildFigureBookmarkName(sectionFile, index) {
   const prefix = slugify(path.basename(sectionFile, path.extname(sectionFile))).slice(0, 16) || 'figure';
   return `fig_${prefix}_${index + 1}`;
 }
 
+/**
+ * Resume la responsabilidad de ensureCleanDir dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function ensureCleanDir(dir) {
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
 }
 
+/**
+ * Resume la responsabilidad de xmlEscape dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function xmlEscape(value) {
   return value
     .replace(/&/g, '&amp;')
@@ -114,6 +148,10 @@ function xmlEscape(value) {
     .replace(/'/g, '&apos;');
 }
 
+/**
+ * Resume la responsabilidad de normalizeInline dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function normalizeInline(text) {
   return text
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 ($2)')
@@ -122,6 +160,10 @@ function normalizeInline(text) {
     .replace(/\*([^*]+)\*/g, '$1');
 }
 
+/**
+ * Resume la responsabilidad de textRun dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function textRun(text, options = {}) {
   const { style, bold = false } = options;
   const safe = xmlEscape(text);
@@ -141,6 +183,10 @@ function textRun(text, options = {}) {
   return `<w:r>${rPr}<w:t xml:space="preserve">${safe}</w:t></w:r>`;
 }
 
+/**
+ * Resume la responsabilidad de paragraphXml dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function paragraphXml(innerXml = '', options = {}) {
   const { style = 'Normal', align, pageBreakBefore = false, indentLeft, bookmarkName } = options;
   const paragraphProperties = [];
@@ -165,10 +211,18 @@ function paragraphXml(innerXml = '', options = {}) {
   return `<w:p>${pPr}${bookmarkXml}</w:p>`;
 }
 
+/**
+ * Resume la responsabilidad de paragraph dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function paragraph(text = '', options = {}) {
   return paragraphXml(textRun(text), options);
 }
 
+/**
+ * Resume la responsabilidad de hyperlinkParagraph dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function hyperlinkParagraph(text, anchor, options = {}) {
   return paragraphXml(
     `<w:hyperlink w:anchor="${xmlEscape(anchor)}" w:history="1">${textRun(text, { style: 'Hyperlink' })}</w:hyperlink>`,
@@ -176,10 +230,18 @@ function hyperlinkParagraph(text, anchor, options = {}) {
   );
 }
 
+/**
+ * Resume la responsabilidad de pageBreak dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function pageBreak() {
   return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
 }
 
+/**
+ * Devuelve ImageSize sin duplicar logica de acceso en los consumidores.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function getImageSize(filePath) {
   const buffer = fs.readFileSync(filePath);
   const extension = path.extname(filePath).slice(1).toLowerCase();
@@ -214,10 +276,14 @@ function getImageSize(filePath) {
   return { width: 1280, height: 720 };
 }
 
+/**
+ * Resume la responsabilidad de scaleImage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function scaleImage(widthPx, heightPx) {
   const emuPerPx = 9525;
-  const maxWidth = 6.2 * 914400;
-  const maxHeight = 8.1 * 914400;
+  const maxWidth = 6.15 * 914400;
+  const maxHeight = 5.75 * 914400;
 
   let width = widthPx * emuPerPx;
   let height = heightPx * emuPerPx;
@@ -231,6 +297,10 @@ function scaleImage(widthPx, heightPx) {
   return { width, height };
 }
 
+/**
+ * Resume la responsabilidad de addImage dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function addImage(relativeSourcePath, baseDir, caption, bookmarkName) {
   const sourcePath = path.resolve(baseDir, relativeSourcePath);
   if (!fs.existsSync(sourcePath)) {
@@ -300,6 +370,10 @@ function addImage(relativeSourcePath, baseDir, caption, bookmarkName) {
   drawingId += 1;
 }
 
+/**
+ * Resume la responsabilidad de flushParagraph dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function flushParagraph(buffer) {
   if (buffer.length === 0) {
     return;
@@ -309,12 +383,20 @@ function flushParagraph(buffer) {
   buffer.length = 0;
 }
 
+/**
+ * Resume la responsabilidad de addCodeBlock dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function addCodeBlock(lines) {
   for (const line of lines) {
     bodyParts.push(paragraph(line, { style: 'Code' }));
   }
 }
 
+/**
+ * Resume la responsabilidad de extractHeadings dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function extractHeadings(markdown, sectionFile) {
   return markdown
     .replace(/\r\n/g, '\n')
@@ -328,6 +410,10 @@ function extractHeadings(markdown, sectionFile) {
     }));
 }
 
+/**
+ * Resume la responsabilidad de extractFigures dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function extractFigures(markdown, sectionFile) {
   return markdown
     .replace(/\r\n/g, '\n')
@@ -340,6 +426,10 @@ function extractFigures(markdown, sectionFile) {
     }));
 }
 
+/**
+ * Resume la responsabilidad de parseMarkdown dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function parseMarkdown(markdown, baseDir, headings = [], figures = []) {
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const paragraphBuffer = [];
@@ -416,6 +506,10 @@ function parseMarkdown(markdown, baseDir, headings = [], figures = []) {
   }
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildCoverPage() {
   bodyParts.push(paragraph('Trabajo Final de Grado', { style: 'CoverKicker', align: 'center' }));
   bodyParts.push(paragraph(metadata.title, { style: 'Title', align: 'center' }));
@@ -426,6 +520,10 @@ function buildCoverPage() {
   bodyParts.push(pageBreak());
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildToc(sectionData) {
   bodyParts.push(paragraph('Indice', { style: 'Heading1' }));
 
@@ -448,6 +546,10 @@ function buildToc(sectionData) {
   bodyParts.push(pageBreak());
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildDocumentXml() {
   const sectionProperties = `
     <w:sectPr>
@@ -481,6 +583,10 @@ function buildDocumentXml() {
 </w:document>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildStylesXml() {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -571,6 +677,10 @@ function buildStylesXml() {
 </w:styles>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildContentTypesXml() {
   const defaults = Object.entries(CONTENT_TYPES)
     .filter(([extension]) => extraContentTypes.has(extension))
@@ -589,6 +699,10 @@ function buildContentTypesXml() {
 </Types>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildRootRelsXml() {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -598,6 +712,10 @@ function buildRootRelsXml() {
 </Relationships>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildDocumentRelsXml() {
   const entries = relationships
     .map((rel) => `<Relationship Id="${rel.id}" Type="${rel.type}" Target="${rel.target}"/>`)
@@ -609,6 +727,10 @@ function buildDocumentRelsXml() {
 </Relationships>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildCoreXml() {
   const now = new Date().toISOString();
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -626,6 +748,10 @@ function buildCoreXml() {
 </cp:coreProperties>`;
 }
 
+/**
+ * Construye una estructura derivada que sera enviada a otra capa del sistema.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function buildAppXml() {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Properties
@@ -635,6 +761,10 @@ function buildAppXml() {
 </Properties>`;
 }
 
+/**
+ * Resume la responsabilidad de writeStructure dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function writeStructure() {
   ensureCleanDir(tempDir);
   fs.mkdirSync(path.join(tempDir, '_rels'), { recursive: true });
@@ -677,6 +807,10 @@ function writeStructure() {
   fs.writeFileSync(path.join(tempDir, 'docProps', 'app.xml'), buildAppXml(), 'utf8');
 }
 
+/**
+ * Resume la responsabilidad de packageDocx dentro de este modulo y facilita seguir el flujo al revisarlo.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
 function packageDocx() {
   fs.rmSync(zipPath, { force: true });
   fs.rmSync(outputDocx, { force: true });

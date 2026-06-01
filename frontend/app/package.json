@@ -9,7 +9,8 @@
     "build:backend": "tsc && vite build --base=/app/ --outDir ../../backend/public/app --emptyOutDir",
     "preview": "vite preview",
     "test": "node --test --test-isolation=none tests/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "record:video": "node e2e/record-demo-video.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -38,7 +38,7 @@ copy .env.local.example .env.local
 composer install
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
-symfony server:start --no-tls -d --port=8000
+start-server.bat
 ```
 
 ### 3.2 Frontend interno en desarrollo
@@ -78,7 +78,7 @@ Con las builds generadas, Symfony sirve:
 
 ### 3.5 Prueba remota sin instalacion local
 
-Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`, por ejemplo `https://agora.34.175.225.98.nip.io/`. Desde esa direccion se accede a `URL/app/`, `URL/externo/` o `URL/documentacion/`. La supervision tecnica se realiza desde Agora Desktop.
+Para una revision externa rapida, la persona evaluadora no tiene que instalar el entorno si la VM publica esta activa. La ruta usada en la revision final es una VM Ubuntu de Google Cloud Compute Engine publicada por HTTPS y resuelta con un hostname wildcard `nip.io`. Como la IP publica puede cambiar al reiniciar la VM, la referencia buena es la URL cloud efectiva que muestra Agora Desktop. Desde esa direccion se accede a `URL/app/`, `URL/externo/` o `URL/documentacion/`. La supervision tecnica se realiza desde Agora Desktop.
 
 Este modo ya no depende del equipo local del alumno. Para una prueba controlada del portal interno se dejan `profesora / Abrete01` y `profesor / Abrete01` como accesos de coordinacion.
 
@@ -303,7 +303,7 @@ php bin/phpunit
 
 ```bash
 cd frontend/app
-npm test -- --run
+npm test
 npm run test:e2e
 npm run build:backend
 ```

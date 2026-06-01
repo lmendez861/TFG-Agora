@@ -12,6 +12,9 @@ const outputDir = path.join(rootDir, 'docs', 'capturas');
 const API_BASE = process.env.MEMORY_API_BASE || 'http://127.0.0.1:8000/api';
 const API_USER = process.env.MEMORY_API_USER || 'admin';
 const API_PASS = process.env.MEMORY_API_PASS || 'admin123';
+const PUBLIC_URL = process.env.MEMORY_PUBLIC_URL || 'https://agora.34.175.225.98.nip.io';
+const PUBLIC_IP = process.env.MEMORY_PUBLIC_IP || '34.175.225.98';
+const CLOUD_SERVICE_STATUS = process.env.MEMORY_CLOUD_SERVICE_STATUS || 'agora.service activo y habilitado';
 const authHeader = `Basic ${Buffer.from(`${API_USER}:${API_PASS}`).toString('base64')}`;
 
 /**
@@ -460,14 +463,14 @@ async function buildDesktopSnapshot() {
       </div>
       <div class="topbar__meta">
         <span>Consola tecnica</span>
-        <span class="pill">${publicAccess.status === 'active' ? 'Acceso publico temporal local activo' : 'Acceso publico temporal local detenido'}</span>
+        <span class="pill">Cloud principal operativo</span>
       </div>
     </div>
     <div class="page">
       <section class="hero">
         <p class="hero__eyebrow">Supervision integrada</p>
         <h1>Estado, pruebas y operaciones desde una sola app</h1>
-        <p>Agora Desktop sustituye la antigua shell web de monitorizacion y concentra telemetria, pruebas, logs y operaciones remotas sobre la misma instancia cloud.</p>
+        <p>Agora Desktop sustituye la antigua shell web de monitorizacion y concentra telemetria, URL efectiva, pruebas, logs y operaciones remotas sobre la misma instancia cloud.</p>
       </section>
       <section class="section">
         <p class="section__eyebrow">Resumen</p>
@@ -476,19 +479,27 @@ async function buildDesktopSnapshot() {
             <td class="meta-card">
               <h3>Telemetria</h3>
               <p>APP_ENV: ${monitor.environment.appEnv}</p>
-              <p>API interna: ${API_BASE}</p>
+              <p>API cloud: ${PUBLIC_URL}/api</p>
               <p>PHP: ${monitor.environment.phpVersion}</p>
               <p>Zona horaria: ${monitor.environment.timezone}</p>
             </td>
             <td class="meta-card">
-              <h3>Operacion</h3>
-              <p>Logs, reinicios, backups y smoke cloud quedan centralizados en la app.</p>
-              <p class="muted">${publicAccess.detail}</p>
+              <h3>Cloud</h3>
+              <p>URL efectiva: ${PUBLIC_URL}</p>
+              <p>IP publica: ${PUBLIC_IP}</p>
+              <p class="muted">${CLOUD_SERVICE_STATUS}</p>
             </td>
             <td class="meta-card">
+              <h3>Respaldo local</h3>
+              <p>${publicAccess.status === 'active' ? 'Acceso publico temporal activo' : 'Acceso publico temporal detenido'}</p>
+              <p class="muted">${publicAccess.detail}</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="meta-card" colspan="3">
               <h3>Generado</h3>
               <p>${monitor.generatedAt}</p>
-              <p class="muted">Snapshot tecnico para memoria, defensa y manual de escritorio.</p>
+              <p class="muted">Snapshot tecnico para memoria, defensa y manual de escritorio con foco cloud.</p>
             </td>
           </tr>
         </table>

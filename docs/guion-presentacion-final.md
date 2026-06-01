@@ -45,7 +45,7 @@ Muestra que ya no dependes de varios terminales: la app de escritorio centraliza
 Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
 ## 15. Acceso de evaluacion
-Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
+Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
 
 ## 16. Alcance cerrado
 Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
@@ -60,10 +60,10 @@ No las escondas: SSO, firma avanzada, migracion documental a un servicio gestion
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
-1. Abrir `https://agora.34.175.225.98.nip.io/app/`.
+1. Abrir `URL/app/`.
 2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
-6. Portal externo en `https://agora.34.175.225.98.nip.io/externo/`.
+6. Portal externo en `URL/externo/`.
 7. Agora Desktop en modo cloud si queda tiempo.

@@ -7,6 +7,11 @@ $frontController = $publicDir . '/index.php';
 $requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 $candidate = $publicDir . $requestPath;
 
+if ($requestPath === '/legacy/monitor' || str_starts_with($requestPath, '/legacy/monitor/')) {
+    header('Location: /app/', true, 302);
+    return true;
+}
+
 if ($requestPath !== '/' && is_file($candidate)) {
     return false;
 }

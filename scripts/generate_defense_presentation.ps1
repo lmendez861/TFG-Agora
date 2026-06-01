@@ -462,7 +462,7 @@ try {
     ) 14 $colors.ink | Out-Null
     $deployOptions = @(
         @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar TLS.', $colors.green),
-        @('Servicios gestionados', 'Mover documentos, backups y observabilidad a piezas gestionadas.', $colors.cyan),
+        @('Servicios gestionados', 'Migrar documentos, backups y observabilidad a servicios gestionados fuera de la VM.', $colors.cyan),
         @('Cliente tecnico', 'Ampliar Agora Desktop sin mezclar soporte con negocio.', $colors.amber)
     )
     for ($i = 0; $i -lt $deployOptions.Count; $i++) {
@@ -481,10 +481,10 @@ try {
     $slide = Add-Slide $presentation
     Add-Header $slide '16 / Limitaciones' 'Que queda fuera de esta entrega'
     Add-BulletList $slide 78 160 360 230 @(
-        'Despliegue permanente completamente automatizado.',
+        'Infraestructura mas gestionada y endurecida que la VM actual.',
         'Integracion con SSO o identidad corporativa.',
         'Firma electronica avanzada.',
-        'Almacenamiento documental en nube gestionada.',
+        'Migracion del almacenamiento documental a un servicio gestionado independiente.',
         'Perfilado profundo de rendimiento en produccion.'
     ) 19 | Out-Null
     Add-Box -Slide $slide -Left 536 -Top 162 -Width 320 -Height 210 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
@@ -573,7 +573,7 @@ Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo
 Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
 ## 18. Limitaciones
-No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
+No las escondas: SSO, firma avanzada, migracion documental a un servicio gestionado independiente, dominio propio y perfilado productivo quedan como lineas futuras. Aclara que el despliegue cloud funcional si esta hecho; lo que no esta cerrado es una infraestructura mas endurecida y gestionada.
 
 ## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.

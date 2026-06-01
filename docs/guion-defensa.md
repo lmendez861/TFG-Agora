@@ -54,10 +54,10 @@ Ademas, el proyecto queda documentado con memoria, anexos tecnicos, manual de us
 Las principales limitaciones actuales son:
 - autenticacion mejorable para un entorno productivo;
 - falta de exportacion PDF maquetada;
-- almacenamiento documental local;
-- ausencia de pruebas E2E completas.
+- almacenamiento documental persistente en la VM, pero todavia no movido a un servicio gestionado externo;
+- ausencia de una capa completa de observabilidad y automatizacion productiva.
 
-Como trabajo futuro, el siguiente paso seria endurecer seguridad, automatizar pruebas y completar la operacion documental.
+Como trabajo futuro, el siguiente paso seria endurecer seguridad, reforzar observabilidad, automatizar mas validaciones y mover documentos y copias a servicios gestionados sin cambiar el nucleo funcional ya entregado.
 
 ## 9. Cierre
 En conclusion, el proyecto cumple el objetivo de digitalizar y centralizar la gestion de empresas colaboradoras y practicas. Aporta trazabilidad, mejora operativa y una base tecnica escalable para evolucionar el sistema en futuras iteraciones.

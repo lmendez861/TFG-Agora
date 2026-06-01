@@ -55,8 +55,8 @@
 
 - El acceso publico de la entrega se sirve desde una VM publica en Google Cloud con HTTPS.
 - No existe integracion con SSO institucional.
-- El almacenamiento documental sigue siendo local.
-- El despliegue permanente en infraestructura dedicada queda fuera del alcance de esta entrega.
+- El almacenamiento documental persiste en la propia VM; no se ha migrado todavia a un servicio cloud gestionado independiente.
+- El despliegue cloud funcional si esta dentro del alcance; lo que queda fuera es una infraestructura mas gestionada, con dominio propio, backups externos y observabilidad reforzada.
 - La consola tecnica principal es Agora Desktop; la antigua pagina web de monitorizacion ya no forma parte del flujo funcional defendido.
 
 ## 7. Lectura defendible del alcance

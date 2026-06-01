@@ -54,7 +54,7 @@ Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo
 Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
 
 ## 18. Limitaciones
-No las escondas: despliegue permanente, SSO, firma avanzada, nube documental y perfilado productivo quedan como lineas futuras.
+No las escondas: SSO, firma avanzada, migracion documental a un servicio gestionado independiente, dominio propio y perfilado productivo quedan como lineas futuras. Aclara que el despliegue cloud funcional si esta hecho; lo que no esta cerrado es una infraestructura mas endurecida y gestionada.
 
 ## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.

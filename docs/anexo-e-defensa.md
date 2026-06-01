@@ -97,7 +97,7 @@ Se dejan `profesora / Abrete01` y `profesor / Abrete01`, ambos con permisos de c
 
 - Dominio institucional propio.
 - SSO y endurecimiento adicional de secretos.
-- Observabilidad y servicios gestionados.
+- Observabilidad y migracion de documentos, backups y metricas a servicios gestionados.
 - Posible ampliacion funcional de Agora Desktop si en una iteracion posterior compensa absorber parte del trabajo operativo.
 
 ## 8. Mensaje de cierre recomendado

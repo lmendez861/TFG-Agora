@@ -912,9 +912,8 @@ function MailPage() {
 function StatusPage() {
   const query = useQuery();
   const session = readPortalSession();
-  const activeToken = query.get('token') ?? session?.portalToken ?? '';
+  const activeToken = query.get('token') ?? '';
   const [status, setStatus] = useState<PortalStatusSnapshot | null>(null);
-  const [tokenInput, setTokenInput] = useState(activeToken);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const visibleStatus = status;
@@ -1049,24 +1048,56 @@ function StatusPage() {
                 Cuenta empresa: {visibleStatus.portalAccount.activationPending ? 'pendiente de activacion' : 'activa'}
               </small>
             )}
-            <label className="status-grid__field">
-              <span>Token portal</span>
-              <input value={tokenInput} onChange={(event) => setTokenInput(event.target.value)} placeholder="Introduce el token del portal" />
-            </label>
+            {activeToken && (
+              <small>
+                Se ha detectado un enlace publico legado. Esta vista puede seguir usandolo mientras no inicies sesion.
+              </small>
+            )}
             <div className="hero__actions">
-              <Link className="btn btn--primary" to={tokenInput ? `/estado?token=${encodeURIComponent(tokenInput)}` : '/estado'}>
-                Consultar estado
-              </Link>
-              <Link className="btn btn--ghost" to={tokenInput ? `/chat?token=${encodeURIComponent(tokenInput)}` : '/chat'}>
-                Abrir mensajeria
-              </Link>
+              {session ? (
+                <>
+                  <Link className="btn btn--primary" to="/panel">
+                    Ir al panel de empresa
+                  </Link>
+                  <Link className="btn btn--ghost" to="/chat">
+                    Abrir mensajeria
+                  </Link>
+                </>
+              ) : activeToken ? (
+                <>
+                  <Link className="btn btn--primary" to={`/estado?token=${encodeURIComponent(activeToken)}`}>
+                    Consultar estado
+                  </Link>
+                  <Link className="btn btn--ghost" to={`/chat?token=${encodeURIComponent(activeToken)}`}>
+                    Abrir mensajeria
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link className="btn btn--primary" to="/acceso">
+                    Iniciar sesion
+                  </Link>
+                  <Link className="btn btn--ghost" to="/correo">
+                    Revisar correo
+                  </Link>
+                </>
+              )}
             </div>
+            {!session && !activeToken && (
+              <small>El acceso principal al estado y a la mensajeria se hace con la cuenta de empresa. El token ya no forma parte del flujo normal.</small>
+            )}
           </article>
 
           <article className="surface-card">
             <p className="eyebrow">Estado actual</p>
             <h3>{visibleStatus ? visibleStatus.nombreEmpresa : 'Sin solicitud cargada'}</h3>
-            <p>{visibleStatus ? `Situacion: ${getStatusLabel(visibleStatus.estado)}` : 'Carga un token o utiliza la sesion guardada para ver el detalle.'}</p>
+            <p>
+              {visibleStatus
+                ? `Situacion: ${getStatusLabel(visibleStatus.estado)}`
+                : session
+                  ? 'La cuenta existe, pero todavia no hay una solicitud asociada o la sesion del navegador ya no esta activa.'
+                  : 'Inicia sesion con la cuenta de empresa o abre un enlace valido recibido por correo para consultar el detalle.'}
+            </p>
             {visibleStatus?.tutorProfesional?.nombre && (
               <small>
                 Tutor profesional previsto: {visibleStatus.tutorProfesional.nombre}
@@ -1214,8 +1245,8 @@ function ChatPage() {
   const location = useLocation();
   const publicToken = useMemo(() => {
     const query = new URLSearchParams(location.search);
-    return query.get('token') ?? session?.portalToken ?? '';
-  }, [location.search, session?.portalToken]);
+    return query.get('token') ?? '';
+  }, [location.search]);
   const usePublicThread = publicToken !== '';
   const canAttemptChat = usePublicThread || Boolean(session?.contactEmail);
 

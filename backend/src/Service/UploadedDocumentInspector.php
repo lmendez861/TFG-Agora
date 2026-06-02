@@ -85,6 +85,25 @@ final class UploadedDocumentInspector
             return $message;
         }
 
+        if (class_exists(\ZipArchive::class)) {
+            $zip = new \ZipArchive();
+            if ($zip->open($absolutePath) !== true) {
+                return $message;
+            }
+
+            try {
+                foreach ($requiredEntries as $entry) {
+                    if ($zip->locateName($entry) === false) {
+                        return $message;
+                    }
+                }
+
+                return null;
+            } finally {
+                $zip->close();
+            }
+        }
+
         $contents = @file_get_contents($absolutePath);
         if (!is_string($contents) || $contents === '') {
             return 'El archivo subido esta vacio o incompleto.';

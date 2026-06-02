@@ -406,6 +406,45 @@ final class ConvenioControllerTest extends WebTestCase
         self::assertSame('El documento Word subido parece estar danado o no tiene una estructura valida.', $payload['message']);
     }
 
+    public function testDocumentoWordValidoSePuedeAdjuntar(): void
+    {
+        $convenio = $this->entityManager
+            ->getRepository(Convenio::class)
+            ->findOneBy(['titulo' => 'Convenio IA Educativa 2024/2025']);
+
+        self::assertNotNull($convenio);
+
+        $tmpFile = $this->createOpenXmlDocument([
+            '[Content_Types].xml' => '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+            'word/document.xml' => '<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>Acta valida</w:t></w:r></w:p></w:body></w:document>',
+        ]);
+
+        $uploadedFile = new UploadedFile(
+            $tmpFile,
+            'acta-valida.docx',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            null,
+            true
+        );
+
+        $this->client->request(
+            'POST',
+            sprintf('/api/convenios/%d/documents', $convenio->getId()),
+            parameters: [
+                'nombre' => 'Acta valida',
+                'tipo' => 'WORD',
+            ],
+            files: [
+                'file' => $uploadedFile,
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('WORD', $payload['type']);
+        self::assertSame('acta-valida.docx', $payload['originalFilename']);
+    }
+
     public function testDocumentoExcelCorruptoMuestraMensajeDetallado(): void
     {
         $convenio = $this->entityManager
@@ -494,6 +533,28 @@ final class ConvenioControllerTest extends WebTestCase
         $restoredPayload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
         self::assertTrue($restoredPayload['active']);
         self::assertNull($restoredPayload['deletedAt']);
+    }
+
+    /**
+     * @param array<string, string> $entries
+     */
+    private function createOpenXmlDocument(array $entries): string
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'agora-openxml');
+        self::assertNotFalse($tmpFile);
+
+        $zip = new \ZipArchive();
+        self::assertTrue($zip->open($tmpFile, \ZipArchive::OVERWRITE));
+
+        try {
+            foreach ($entries as $path => $content) {
+                self::assertTrue($zip->addFromString($path, $content));
+            }
+        } finally {
+            $zip->close();
+        }
+
+        return $tmpFile;
     }
 
     /**

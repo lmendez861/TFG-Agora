@@ -11,7 +11,7 @@ $captures = Join-Path $docs 'capturas'
 $outputPptx = Join-Path $docs 'presentacion-defensa-final.pptx'
 $outputPdf = Join-Path $docs 'presentacion-defensa-final.pdf'
 $notesPath = Join-Path $docs 'guion-presentacion-final.md'
-$publicBaseUrl = 'https://agora.34.175.225.98.nip.io'
+$publicBaseUrl = 'https://agora.34.175.157.37.nip.io'
 
 function Color {
     param([int] $Red, [int] $Green, [int] $Blue)
@@ -119,6 +119,29 @@ function Add-Slide {
     $slide.Background.Fill.ForeColor.RGB = $colors.bg
     $slide.Background.Fill.Solid()
     return $slide
+}
+
+function Set-SlideNotes {
+    param(
+        $Slide,
+        [string] $Text
+    )
+
+    try {
+        $placeholder = $Slide.NotesPage.Shapes.Placeholders.Item(2)
+        $placeholder.TextFrame.TextRange.Text = $Text
+    }
+    catch {
+        try {
+            $shape = $Slide.NotesPage.Shapes.AddTextbox(1, 36, 100, 640, 300)
+            $shape.TextFrame.WordWrap = $true
+            $shape.TextFrame.TextRange.Text = $Text
+            $shape.TextFrame.TextRange.Font.Name = 'Segoe UI'
+            $shape.TextFrame.TextRange.Font.Size = 14
+        }
+        catch {
+        }
+    }
 }
 
 function Add-FittedImage {
@@ -249,6 +272,13 @@ try {
     Add-Text -Slide $slide -Left 62 -Top 246 -Width 635 -Height 64 -Text 'Plataforma web para centralizar empresas, convenios, practicas, solicitudes externas, seguimiento documental y comunicacion empresa-centro.' -Size 18 -Rgb $colors.muted | Out-Null
     Add-Text -Slide $slide -Left 62 -Top 412 -Width 440 -Height 52 -Text "Autor: Luis Angel`rTutora: Elena" -Size 16 -Rgb $colors.muted | Out-Null
     Add-FittedImage -Slide $slide -Path (Join-Path $captures '03-panel-interno-dashboard.png') -Left 590 -Top 126 -MaxWidth 320 -MaxHeight 238 | Out-Null
+    Set-SlideNotes $slide @'
+En esta portada tengo que abrir con el problema, no con tecnologia.
+
+La idea principal es que he construido una plataforma para gestionar empresas colaboradoras y practicas de FP Dual.
+La solucion final tiene dos portales, una API central, documentacion publica y una app de escritorio tecnica.
+Durante la defensa voy a enseñar el flujo funcional y despues la parte de operacion y validacion.
+'@
 
     # 2. Problema
     $slide = Add-Slide $presentation
@@ -262,6 +292,13 @@ try {
     Add-Box -Slide $slide -Left 560 -Top 172 -Width 310 -Height 190 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 590 -Top 200 -Width 250 -Height 44 -Text 'Necesidad principal' -Size 17 -Rgb $colors.amber -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 590 -Top 248 -Width 246 -Height 74 -Text 'Pasar de una gestion dispersa a una plataforma unica, trazable y defendible.' -Size 23 -Rgb $colors.ink -Bold $true | Out-Null
+    Set-SlideNotes $slide @'
+Aqui tengo que explicar el contexto inicial.
+
+Antes la informacion estaba repartida entre correos, hojas de calculo y documentos en carpetas distintas.
+Eso hacia dificil saber en que estado estaba cada empresa, cada convenio o cada practica.
+Por eso el problema no era solo guardar datos, sino dar continuidad, trazabilidad y una vista unica al centro.
+'@
 
     # 3. Objetivos
     $slide = Add-Slide $presentation
@@ -279,6 +316,14 @@ try {
         Add-Text -Slide $slide -Left ($x + 22) -Top ($y + 18) -Width 300 -Height 28 -Text $objectives[$i][0] -Size 21 -Rgb $colors.blue -Bold $true | Out-Null
         Add-Text -Slide $slide -Left ($x + 22) -Top ($y + 52) -Width 310 -Height 36 -Text $objectives[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
     }
+    Set-SlideNotes $slide @'
+Aqui resumo el alcance en cuatro objetivos claros.
+
+Primero, centralizar la operativa del centro.
+Segundo, abrir un canal externo para empresas sin mezclarlo con el panel interno.
+Tercero, dejar trazabilidad documental y de mensajes.
+Cuarto, cerrar una solucion defendible tecnicamente con pruebas, despliegue y documentacion.
+'@
 
     # 4. Arquitectura
     $slide = Add-Slide $presentation
@@ -291,6 +336,14 @@ try {
         'Agora Desktop trabaja en local o en cloud.',
         'La operacion tecnica queda fuera del flujo web principal.'
     ) 18 | Out-Null
+    Set-SlideNotes $slide @'
+Esta diapositiva me sirve para defender la separacion de responsabilidades.
+
+Symfony concentra negocio, seguridad y persistencia.
+React se divide en portal interno y portal externo.
+La documentacion publica queda separada del flujo operativo.
+Agora Desktop no es una tercera interfaz de negocio, sino una consola tecnica para soporte local y cloud.
+'@
 
     # 5. Modelo y flujo
     $slide = Add-Slide $presentation
@@ -303,6 +356,17 @@ try {
         'La empresa aprobada hereda convenios, documentos y tutores.',
         'Asignacion, seguimiento y evaluacion cierran el ciclo.'
     ) 19 | Out-Null
+    Set-SlideNotes $slide @'
+Flujo que debo explicar en esta diapositiva:
+
+1. La empresa entra primero por solicitud externa.
+2. Cuando el centro aprueba, esa solicitud pasa al catalogo interno de empresas activas.
+3. Despues completo la ficha de empresa con contactos, documentos y tutor profesional.
+4. Luego formalizo el convenio entre centro y empresa.
+5. La asignacion es donde vinculo estudiante, convenio, tutor academico, tutor profesional, horas, fechas y modalidad.
+6. Sobre esa asignacion registro seguimientos, reuniones, evidencias y la evaluacion final.
+7. La evaluacion final se guarda sobre la asignacion, no como un seguimiento suelto ni como una nota general del estudiante.
+'@
 
     # 6. Panel interno
     $slide = Add-Slide $presentation
@@ -311,6 +375,13 @@ try {
     Add-Metric $slide 662 165 '3' 'empresas demo' $colors.green
     Add-Metric $slide 662 278 '3' 'convenios demo' $colors.amber
     Add-Metric $slide 662 391 'CSV' 'exportacion operativa' $colors.cyan
+    Set-SlideNotes $slide @'
+Aqui explico que el portal interno es la herramienta de trabajo diaria del centro.
+
+Desde este panel se revisan KPI, solicitudes, empresas, convenios, tutores, estudiantes y asignaciones.
+La idea es que no sea solo un CRUD, sino un shell operativo con accesos rapidos, bandeja y exportacion CSV.
+Las fichas 360 de empresa y convenio ayudan a no perder contexto.
+'@
 
     # 7. Solicitudes y comunicacion
     $slide = Add-Slide $presentation
@@ -322,6 +393,14 @@ try {
         'El centro aprueba o rechaza desde el panel interno.',
         'La conversacion queda ligada a la solicitud y a la empresa.'
     ) 18 | Out-Null
+    Set-SlideNotes $slide @'
+Aqui tengo que conectar claramente portal externo y portal interno.
+
+La empresa no entra directamente al dominio interno.
+Primero crea su acceso, envia la solicitud y verifica el correo.
+Despues el centro revisa, aprueba o rechaza.
+La mensajeria queda ligada a la solicitud y, cuando se aprueba, continua sobre la empresa ya activada.
+'@
 
     # 8. Portal externo
     $slide = Add-Slide $presentation
@@ -330,6 +409,13 @@ try {
     Add-Box -Slide $slide -Left 690 -Top 164 -Width 180 -Height 72 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
     Add-Text -Slide $slide -Left 712 -Top 184 -Width 140 -Height 32 -Text 'Sin acceso interno' -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 690 -Top 258 -Width 190 -Height 86 -Text 'El portal externo tiene su propio recorrido y no mezcla credenciales de empresa con el panel del centro.' -Size 15 -Rgb $colors.muted | Out-Null
+    Set-SlideNotes $slide @'
+En esta slide explico que el portal externo no es una copia reducida del interno.
+
+Tiene su propio recorrido: alta de cuenta, solicitud, verificacion, estado, acceso persistente y chat.
+La empresa nunca necesita credenciales del centro.
+Cuando la empresa se aprueba, la misma cuenta sigue sirviendo para ver sus convenios, asignaciones y documentos.
+'@
 
     # 9. Como lo he desarrollado
     $slide = Add-Slide $presentation
@@ -349,6 +435,14 @@ try {
         Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 14) -Width 300 -Height 24 -Text $developmentBlocks[$i][0] -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
         Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 42) -Width 320 -Height 28 -Text $developmentBlocks[$i][1] -Size 13 -Rgb $colors.darkInk | Out-Null
     }
+    Set-SlideNotes $slide @'
+Aqui cuento el proyecto por bloques de construccion, no por commits.
+
+Primero modele el problema y el dominio.
+Despues levante backend y reglas de negocio.
+Luego hice el portal interno, el portal externo y el soporte documental.
+La ultima capa fue la operacion tecnica: cloud, escritorio, pruebas y empaquetado.
+'@
 
     # 10. Correo, verificacion y rechazo
     $slide = Add-Slide $presentation
@@ -374,6 +468,13 @@ try {
         Add-Text -Slide $slide -Left 384 -Top ($y + 10) -Width 132 -Height 22 -Text $mailFlow[$i][0] -Size 16 -Rgb $colors.blue -Bold $true | Out-Null
         Add-Text -Slide $slide -Left 520 -Top ($y + 10) -Width 320 -Height 26 -Text $mailFlow[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
     }
+    Set-SlideNotes $slide @'
+Aqui debo dejar claro que el correo no es decorativo.
+
+Uso Brevo para verificacion de empresa, activacion de cuenta, recuperacion de contrasena y avisos de rechazo.
+Eso permite que la profesora pruebe un flujo real desde fuera, no una simulacion local.
+Tambien me sirve para justificar por que necesitaba una URL publica correcta en cloud.
+'@
 
     # 11. Dominio externo y enlaces publicos
     $slide = Add-Slide $presentation
@@ -386,12 +487,19 @@ try {
     Add-Text -Slide $slide -Left 426 -Top 246 -Width 90 -Height 24 -Text 'Caddy' -Size 14 -Rgb $colors.darkInk -Font 'Consolas' | Out-Null
     Add-Box -Slide $slide -Left 650 -Top 194 -Width 242 -Height 92 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 674 -Top 214 -Width 180 -Height 22 -Text 'URL publica' -Size 18 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175.225.98...' -Size 9 -Rgb $colors.ink -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175.157.37...' -Size 9 -Rgb $colors.ink -Font 'Consolas' | Out-Null
     Add-BulletList $slide 92 332 760 104 @(
         'El portal externo y los correos usan ya el origen publico correcto de la VM.',
         'APP_EXTERNAL_BASE_URL fija la URL canonica para enlaces y notificaciones.',
         'El siguiente paso natural seria cambiar nip.io por dominio institucional propio.'
     ) 17 | Out-Null
+    Set-SlideNotes $slide @'
+Aqui explico un problema real que tuve que resolver.
+
+Una URL local dentro de un correo no sirve para una empresa externa.
+Por eso el despliegue cloud publica una URL HTTPS y el backend genera enlaces con ese origen.
+Con nip.io resuelvo la demo, aunque a futuro lo correcto seria un dominio institucional o una IP estatica.
+'@
 
     # 12. Mensajeria y refresco automatico
     $slide = Add-Slide $presentation
@@ -406,6 +514,13 @@ try {
         'La empresa tambien ve cambios en su panel externo.',
         'El rechazo queda comunicado por correo y visible en estado.'
     ) 16 | Out-Null
+    Set-SlideNotes $slide @'
+Esta diapositiva me sirve para justificar que la aplicacion no da sensacion de maqueta estatica.
+
+La bandeja interna y el chat externo se refrescan solos en segundo plano y tambien al recuperar el foco del navegador.
+Eso evita tener que recargar manualmente durante la demo.
+Ademas, el estado de rechazo no solo llega por correo: tambien queda visible dentro del portal externo.
+'@
 
     # 13. Operacion local y app de escritorio
     $slide = Add-Slide $presentation
@@ -418,6 +533,13 @@ try {
         'Diagnostico, logs y backups desde una sola interfaz.',
         'Empaquetado Windows listo para la defensa.'
     ) 17 | Out-Null
+    Set-SlideNotes $slide @'
+Aqui explico por que hice Agora Desktop.
+
+No queria depender de varios terminales ni de una pagina tecnica aparte.
+La app me concentra modo local, modo cloud, logs, reinicios, smoke y contingencia.
+Si la VM cambia de IP o falla el servicio, desde aqui veo la URL efectiva y el estado de agora.service.
+'@
 
     # 14. Validacion
     $slide = Add-Slide $presentation
@@ -432,6 +554,13 @@ try {
         'Tambien se ha validado el empaquetado Windows con PHP embebido y SQLite.'
     ) 18 | Out-Null
     Add-Text -Slide $slide -Left 94 -Top 438 -Width 730 -Height 32 -Text 'Queda una deprecacion tecnica de PHPUnit, no bloqueante para la demo ni para la funcionalidad.' -Size 14 -Rgb $colors.muted | Out-Null
+    Set-SlideNotes $slide @'
+Aqui no me interesa presumir de numeros sin contexto.
+
+Lo importante es explicar que he validado backend, frontend, E2E, correo, mensajeria, documentos, cloud y escritorio.
+Las cifras sirven como apoyo para demostrar que no me he quedado en una prueba manual superficial.
+La deprecacion de PHPUnit existe, pero no afecta a la funcionalidad ni a la defensa.
+'@
 
     # 15. Acceso de evaluacion
     $slide = Add-Slide $presentation
@@ -448,6 +577,13 @@ try {
         'La empresa prueba el recorrido por /externo.',
         'El acceso remoto depende de que la VM siga activa.'
     ) 17 | Out-Null
+    Set-SlideNotes $slide @'
+Esta slide es muy practica: explica como se puede probar el sistema desde fuera.
+
+Debo remarcar que la referencia buena es la URL cloud efectiva.
+Si cambia la IP publica, Agora Desktop me dice la nueva URL.
+Con la cuenta profesora se puede revisar el flujo interno sin usar la cuenta de administrador principal.
+'@
 
     # 16. Alcance cerrado y mejoras futuras
     $slide = Add-Slide $presentation
@@ -476,6 +612,13 @@ try {
         'La prioridad futura no es anadir modulos sin control, sino endurecer despliegue, seguridad y soporte.',
         'Las funciones secundarias quedan identificadas para justificar con claridad el recorte de alcance.'
     ) 18 | Out-Null
+    Set-SlideNotes $slide @'
+Aqui tengo que defender bien el alcance.
+
+Lo principal ya esta cerrado: portales, documentos, mensajeria, correo, cloud y escritorio.
+Lo que dejo para despues no son huecos del nucleo, sino mejoras de endurecimiento y evolucion.
+Eso demuestra criterio: he preferido cerrar bien el producto base antes que abarcar mas cosas a medias.
+'@
 
     # 17. Limitaciones
     $slide = Add-Slide $presentation
@@ -490,6 +633,13 @@ try {
     Add-Box -Slide $slide -Left 536 -Top 162 -Width 320 -Height 210 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 568 -Top 192 -Width 260 -Height 32 -Text 'Siguiente iteracion' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 568 -Top 244 -Width 245 -Height 82 -Text 'Despliegue estable, dominio propio, base de datos de servidor y seguridad endurecida.' -Size 23 -Rgb $colors.ink -Bold $true | Out-Null
+    Set-SlideNotes $slide @'
+No debo esconder las limitaciones.
+
+Lo que falta no invalida el TFG, pero si marca una hoja de ruta realista:
+SSO, firma avanzada, dominio propio, observabilidad y servicios gestionados.
+Tambien puedo mencionar que Symfony sigue una version que convendria actualizar tras la entrega para mantenimiento a medio plazo.
+'@
 
     # 18. Cierre
     $slide = Add-Slide $presentation
@@ -501,6 +651,12 @@ try {
         'Validacion tecnica, empaquetado y demo preparados.'
     ) 19 | Out-Null
     Add-Text -Slide $slide -Left 330 -Top 468 -Width 300 -Height 32 -Text 'Demo y preguntas' -Size 22 -Rgb $colors.amber -Bold $true | Out-Null
+    Set-SlideNotes $slide @'
+Aqui cierro con una idea simple.
+
+El valor del proyecto no esta en una tecnologia concreta, sino en haber convertido una necesidad real del centro en una solucion completa, funcional y defendible.
+Despues de esta slide paso a demo o a preguntas, segun el tiempo.
+'@
 
     if (Test-Path $outputPptx) { Remove-Item $outputPptx -Force }
     if (Test-Path $outputPdf) { Remove-Item $outputPdf -Force }
@@ -536,6 +692,16 @@ Defiende la separacion: Symfony concentra negocio y seguridad; React se divide e
 ## 5. Modelo y flujo
 Insiste en el orden de negocio: empresa activa, convenio operativo, asignacion, seguimiento y evaluacion. Esto demuestra que no son CRUD aislados.
 
+Si me piden concretarlo, lo explico asi:
+
+1. la empresa entra por solicitud externa y el centro la aprueba;
+2. al aprobarla, pasa al catalogo interno de empresas activas;
+3. despues se completa la ficha de empresa y se puede registrar el tutor profesional;
+4. luego se formaliza el convenio entre centro y empresa;
+5. la asignacion es donde se vinculan estudiante, convenio, tutores, horas, fechas y modalidad;
+6. sobre esa asignacion se registran seguimientos, reuniones, evidencias y la evaluacion final;
+7. la evaluacion final queda ligada a la asignacion, no a un seguimiento suelto.
+
 ## 6. Panel interno
 Muestra dashboard, KPI, modulos y exportacion CSV. Di que es la herramienta de trabajo diaria para coordinacion.
 
@@ -564,7 +730,7 @@ Muestra que ya no dependes de varios terminales: la app de escritorio centraliza
 Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
 ## 15. Acceso de evaluacion
-Indica la URL publica y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa.
+Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
 
 ## 16. Alcance cerrado
 Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
@@ -579,12 +745,12 @@ No las escondas: SSO, firma avanzada, migracion documental a un servicio gestion
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
-1. Abrir `https://agora.34.175.225.98.nip.io/app/`.
+1. Abrir `URL cloud efectiva/app/`.
 2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
-6. Portal externo en `https://agora.34.175.225.98.nip.io/externo/`.
+6. Portal externo en `URL cloud efectiva/externo/`.
 7. Agora Desktop en modo cloud si queda tiempo.
 '@
 

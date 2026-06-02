@@ -17,6 +17,16 @@ Defiende la separacion: Symfony concentra negocio y seguridad; React se divide e
 ## 5. Modelo y flujo
 Insiste en el orden de negocio: empresa activa, convenio operativo, asignacion, seguimiento y evaluacion. Esto demuestra que no son CRUD aislados.
 
+Si me piden concretarlo, lo explico asi:
+
+1. la empresa entra por solicitud externa y el centro la aprueba;
+2. al aprobarla, pasa al catalogo interno de empresas activas;
+3. despues se completa la ficha de empresa y se puede registrar el tutor profesional;
+4. luego se formaliza el convenio entre centro y empresa;
+5. la asignacion es donde se vinculan estudiante, convenio, tutores, horas, fechas y modalidad;
+6. sobre esa asignacion se registran seguimientos, reuniones, evidencias y la evaluacion final;
+7. la evaluacion final queda ligada a la asignacion, no a un seguimiento suelto.
+
 ## 6. Panel interno
 Muestra dashboard, KPI, modulos y exportacion CSV. Di que es la herramienta de trabajo diaria para coordinacion.
 
@@ -60,10 +70,10 @@ No las escondas: SSO, firma avanzada, migracion documental a un servicio gestion
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
-1. Abrir `URL/app/`.
+1. Abrir `URL cloud efectiva/app/`.
 2. Login con `profesora / Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.
-6. Portal externo en `URL/externo/`.
+6. Portal externo en `URL cloud efectiva/externo/`.
 7. Agora Desktop en modo cloud si queda tiempo.

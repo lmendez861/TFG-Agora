@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Guia personal de repaso para la defensa</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #55627a;
+      --line: #d7dce5;
+      --panel: #f5f7fb;
+      --accent: #2d5baf;
+      --accent-soft: #eef4ff;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      background: #fff;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 12mm 4mm 12mm 4mm;
+    }
+
+    .hero {
+      padding: 18px 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #f8faff 0%, #eef3fb 100%);
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    .hero h1 {
+      margin: 10px 0 8px;
+      font-size: 31px;
+      line-height: 1.15;
+    }
+
+    .hero .summary {
+      margin: 0;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .toc {
+      margin: 0 0 28px;
+      padding: 18px 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .toc h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .toc ul {
+      margin: 0;
+      padding-left: 20px;
+      columns: 2;
+      column-gap: 28px;
+    }
+
+    .toc li {
+      margin: 0 0 6px;
+      break-inside: avoid;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    h1, h2, h3 {
+      line-height: 1.2;
+      break-after: avoid;
+    }
+
+    h2 {
+      margin-top: 30px;
+      padding-top: 6px;
+      border-top: 1px solid var(--line);
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 22px;
+      font-size: 18px;
+      color: var(--accent);
+    }
+
+    p, li {
+      font-size: 14px;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+    }
+
+    code {
+      background: #f3f5f9;
+      border: 1px solid #e2e7ef;
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+    }
+
+    pre {
+      background: #0f1723;
+      color: #e8eef7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow: hidden;
+      white-space: pre-wrap;
+      border: 1px solid #243247;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    figure {
+      margin: 22px 0;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+
+    figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+
+    figcaption {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      color: var(--ink);
+    }
+
+    @media print {
+      main { padding: 0; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <p>Documento de estudio</p>
+      <h1>Guia personal de repaso para la defensa</h1>
+      <p class="summary">Resumen tecnico y funcional del proyecto para repasar arquitectura, flujo de negocio, tecnologia, comandos, accesos y respuestas rapidas antes de la exposicion.</p>
+    </section>
+    <nav class="toc">
+      <h2>Indice rapido</h2>
+      <ul><li class="toc-level-1"><a href="#guia-personal-de-repaso-para-la-defensa">Guia personal de repaso para la defensa</a></li>
+<li class="toc-level-2"><a href="#1-como-explico-el-proyecto-en-treinta-segundos">1. Como explico el proyecto en treinta segundos</a></li>
+<li class="toc-level-2"><a href="#2-cual-es-la-idea-de-arquitectura-que-tengo-que-defender">2. Cual es la idea de arquitectura que tengo que defender</a></li>
+<li class="toc-level-3"><a href="#como-cuento-este-esquema">Como cuento este esquema</a></li>
+<li class="toc-level-2"><a href="#3-tecnologias-y-por-que-las-use">3. Tecnologias y por que las use</a></li>
+<li class="toc-level-3"><a href="#backend">Backend</a></li>
+<li class="toc-level-3"><a href="#persistencia">Persistencia</a></li>
+<li class="toc-level-3"><a href="#frontend">Frontend</a></li>
+<li class="toc-level-3"><a href="#cloud-y-despliegue">Cloud y despliegue</a></li>
+<li class="toc-level-3"><a href="#que-hacen-docker-y-compose-en-la-vm">Que hacen Docker y Compose en la VM</a></li>
+<li class="toc-level-3"><a href="#correo">Correo</a></li>
+<li class="toc-level-3"><a href="#escritorio-tecnico">Escritorio tecnico</a></li>
+<li class="toc-level-3"><a href="#pruebas">Pruebas</a></li>
+<li class="toc-level-3"><a href="#frase-corta-para-defender-la-eleccion-tecnica">Frase corta para defender la eleccion tecnica</a></li>
+<li class="toc-level-2"><a href="#4-que-hace-realmente-el-backend">4. Que hace realmente el backend</a></li>
+<li class="toc-level-3"><a href="#como-explico-el-backend-sin-quedarme-en-abstracciones">Como explico el backend sin quedarme en abstracciones</a></li>
+<li class="toc-level-2"><a href="#4-1-que-archivos-del-codigo-respaldan-cada-bloque">4.1 Que archivos del codigo respaldan cada bloque</a></li>
+<li class="toc-level-2"><a href="#5-flujos-funcionales-que-tengo-que-tener-claros">5. Flujos funcionales que tengo que tener claros</a></li>
+<li class="toc-level-3"><a href="#flujo-externo">Flujo externo</a></li>
+<li class="toc-level-3"><a href="#flujo-interno">Flujo interno</a></li>
+<li class="toc-level-3"><a href="#como-explico-bien-el-orden-de-negocio">Como explico bien el orden de negocio</a></li>
+<li class="toc-level-3"><a href="#relacion-importante-que-tengo-que-recordar">Relacion importante que tengo que recordar</a></li>
+<li class="toc-level-3"><a href="#flujo-tecnico">Flujo tecnico</a></li>
+<li class="toc-level-2"><a href="#6-que-hace-cada-interfaz">6. Que hace cada interfaz</a></li>
+<li class="toc-level-3"><a href="#portal-interno">Portal interno</a></li>
+<li class="toc-level-3"><a href="#portal-externo">Portal externo</a></li>
+<li class="toc-level-3"><a href="#documentacion">Documentacion</a></li>
+<li class="toc-level-3"><a href="#agora-desktop">Agora Desktop</a></li>
+<li class="toc-level-2"><a href="#7-comandos-que-debo-recordar">7. Comandos que debo recordar</a></li>
+<li class="toc-level-3"><a href="#local-desde-repositorio">Local desde repositorio</a></li>
+<li class="toc-level-3"><a href="#pruebas">Pruebas</a></li>
+<li class="toc-level-3"><a href="#cloud">Cloud</a></li>
+<li class="toc-level-2"><a href="#8-accesos-que-debo-tener-a-mano">8. Accesos que debo tener a mano</a></li>
+<li class="toc-level-3"><a href="#como-hablar-de-la-url-sin-pillarme-los-dedos">Como hablar de la URL sin pillarme los dedos</a></li>
+<li class="toc-level-2"><a href="#9-que-esta-cerrado-y-que-no">9. Que esta cerrado y que no</a></li>
+<li class="toc-level-3"><a href="#cerrado">Cerrado</a></li>
+<li class="toc-level-3"><a href="#futuro">Futuro</a></li>
+<li class="toc-level-2"><a href="#10-si-me-preguntan-por-que-no-he-hecho-mas">10. Si me preguntan por que no he hecho mas</a></li>
+<li class="toc-level-2"><a href="#11-si-algo-falla-durante-la-defensa">11. Si algo falla durante la defensa</a></li>
+<li class="toc-level-2"><a href="#12-preguntas-tipicas-y-respuestas-cortas">12. Preguntas tipicas y respuestas cortas</a></li>
+<li class="toc-level-3"><a href="#por-que-dos-portales">Por que dos portales?</a></li>
+<li class="toc-level-3"><a href="#por-que-la-evaluacion-final-no-va-dentro-de-un-seguimiento">Por que la evaluacion final no va dentro de un seguimiento?</a></li>
+<li class="toc-level-3"><a href="#por-que-agora-desktop-si-ya-existe-cloud">Por que Agora Desktop si ya existe cloud?</a></li>
+<li class="toc-level-3"><a href="#por-que-postgresql-en-cloud-y-sqlite-en-local">Por que PostgreSQL en cloud y SQLite en local?</a></li>
+<li class="toc-level-3"><a href="#que-haria-despues-de-la-entrega">Que haria despues de la entrega?</a></li></ul>
+    </nav>
+    <h1 id="guia-personal-de-repaso-para-la-defensa">Guia personal de repaso para la defensa</h1>
+<p>Este documento no forma parte de la memoria formal. Lo uso como chuleta de estudio para tener claro que hace cada bloque, por que he elegido cada tecnologia y como puedo reaccionar si algo falla durante la exposicion.</p>
+<h2 id="1-como-explico-el-proyecto-en-treinta-segundos">1. Como explico el proyecto en treinta segundos</h2>
+<p>Mi TFG resuelve un problema real del centro: la gestion de empresas colaboradoras, convenios y practicas estaba dispersa entre correos, hojas de calculo y documentos sueltos. La solucion final es una plataforma con dos portales, una API central, documentacion publica y una app de escritorio tecnica para operar el entorno en local o en cloud.</p>
+<p>La idea corta que quiero transmitir es esta:</p>
+<ol>
+<li>el centro necesitaba una vista unica del ciclo empresa -&gt; convenio -&gt; practica;</li>
+<li>la empresa necesitaba un canal propio, sin acceder al panel interno;</li>
+<li>yo he separado negocio, operacion funcional y soporte tecnico para que el sistema sea defendible.</li>
+</ol>
+<h2 id="2-cual-es-la-idea-de-arquitectura-que-tengo-que-defender">2. Cual es la idea de arquitectura que tengo que defender</h2>
+<p>No he construido una sola aplicacion mezclando todo. He separado responsabilidades:</p>
+<ol>
+<li>un backend Symfony que concentra negocio, seguridad, correo y persistencia;</li>
+<li>un portal interno para coordinacion academica;</li>
+<li>un portal externo para empresas;</li>
+<li>una guia publica bajo <code>/documentacion</code>;</li>
+<li>Agora Desktop como consola tecnica separada del flujo funcional.</li>
+</ol>
+<p>La idea clave que tengo que repetir es esta: <strong>un solo nucleo de negocio, varias interfaces segun el actor que entra al sistema</strong>.</p>
+<figure id="esquema-de-arquitectura-del-proyecto"><img src="capturas/10-arquitectura-detallada.png" alt="Esquema de arquitectura del proyecto"><figcaption>Esquema de arquitectura del proyecto</figcaption></figure>
+<h3 id="como-cuento-este-esquema">Como cuento este esquema</h3>
+<ul>
+<li>la VM publica recibe trafico HTTPS;</li>
+<li>Caddy hace de reverse proxy y expone el origen publico;</li>
+<li>Symfony sirve la API y tambien publica <code>/app</code>, <code>/externo</code> y <code>/documentacion</code>;</li>
+<li>PostgreSQL guarda el estado persistente en cloud;</li>
+<li>los documentos quedan en almacenamiento persistente fuera del contenedor;</li>
+<li>Agora Desktop no forma parte del flujo de negocio: es soporte tecnico.</li>
+</ul>
+<h2 id="3-tecnologias-y-por-que-las-use">3. Tecnologias y por que las use</h2>
+<h3 id="backend">Backend</h3>
+<ul>
+<li><strong>PHP 8.2</strong>: porque era una base realista para una solucion web mantenible y compatible con Symfony.</li>
+<li><strong>Symfony 7</strong>: porque me da seguridad, routing, sesiones, validacion, mailer y estructura clara de API.</li>
+<li><strong>Doctrine ORM</strong>: porque el proyecto vive de relaciones entre entidades y me interesaba un modelo consistente con migraciones y repositorios.</li>
+</ul>
+<h3 id="persistencia">Persistencia</h3>
+<ul>
+<li><strong>SQLite</strong> en local: porque me permite demo y contingencia sin depender de un servidor externo.</li>
+<li><strong>PostgreSQL 16</strong> en cloud: porque para un despliegue publico es una base de datos mas seria, robusta y apropiada.</li>
+</ul>
+<h3 id="frontend">Frontend</h3>
+<ul>
+<li><strong>React + TypeScript + Vite</strong>: porque necesitaba dos SPA separadas, con formularios, tablas, estados y bastante interaccion. TypeScript me ayuda a evitar errores de contrato entre frontend y backend.</li>
+</ul>
+<h3 id="cloud-y-despliegue">Cloud y despliegue</h3>
+<ul>
+<li><strong>Docker Compose</strong>: para publicar app, base de datos y proxy de forma reproducible.</li>
+<li><strong>Caddy</strong>: para HTTPS automatico, redireccion y cabeceras seguras sin meter un proxy mas pesado de la cuenta.</li>
+<li><strong>Google Cloud Compute Engine</strong>: porque necesitaba una VM real accesible desde fuera para que la profesora pudiera probar el sistema.</li>
+<li><strong>nip.io</strong>: como solucion rapida para tener un hostname publico sin comprar dominio solo para la defensa.</li>
+</ul>
+<h3 id="que-hacen-docker-y-compose-en-la-vm">Que hacen Docker y Compose en la VM</h3>
+<p>Si me preguntan esto, la respuesta correcta es:</p>
+<ul>
+<li><strong>Docker</strong> ejecuta los contenedores.</li>
+<li><strong>Docker Compose</strong> define y levanta el stack completo.</li>
+</ul>
+<p>En mi despliegue cloud ese stack tiene tres servicios:</p>
+<ol>
+<li><code>app</code>: Symfony + Apache + frontends integrados;</li>
+<li><code>db</code>: PostgreSQL;</li>
+<li><code>proxy</code>: Caddy para HTTPS y publicacion externa.</li>
+</ol>
+<p>La VM no depende de que yo lance todo a mano cada vez. El flujo real es:</p>
+<ol>
+<li>arranca la VM;</li>
+<li><code>systemd</code> levanta <code>agora.service</code>;</li>
+<li><code>agora.service</code> ejecuta <code>deploy/gcp/startup.sh</code>;</li>
+<li>ese script usa <code>docker compose up -d --remove-orphans</code>;</li>
+<li>Compose sube <code>app</code>, <code>db</code> y <code>proxy</code>.</li>
+</ol>
+<p>La frase corta para defenderlo es esta:</p>
+<p>&gt; En cloud, Docker Compose me sirve para describir y levantar de forma reproducible la aplicacion, la base de datos y el proxy HTTPS. Docker ejecuta los contenedores y <code>agora.service</code> asegura que el stack arranque automaticamente cuando reinicio la VM.</p>
+<h3 id="correo">Correo</h3>
+<ul>
+<li><strong>Brevo</strong>: para verificacion de empresa, rechazo, recuperacion de contrasena y avisos transaccionales.</li>
+</ul>
+<h3 id="escritorio-tecnico">Escritorio tecnico</h3>
+<ul>
+<li><strong>Electron</strong>: porque queria una consola tecnica unica para entorno local y cloud, con logs, pruebas, servicio remoto y contingencia si la VM falla.</li>
+</ul>
+<h3 id="pruebas">Pruebas</h3>
+<ul>
+<li><strong>PHPUnit</strong> para backend.</li>
+<li><strong>node:test</strong> para pruebas unitarias del frontend interno.</li>
+<li><strong>Playwright</strong> para flujos E2E.</li>
+<li><strong>Smoke tests</strong> para el flujo completo y para Agora Desktop.</li>
+</ul>
+<h3 id="frase-corta-para-defender-la-eleccion-tecnica">Frase corta para defender la eleccion tecnica</h3>
+<p>No elegi tecnologias exoticas. Elegi piezas conocidas y justificables para un TFG que tenia que acabar funcionando de verdad:</p>
+<ul>
+<li>Symfony para el nucleo de negocio;</li>
+<li>React/TypeScript para las interfaces;</li>
+<li>Docker para el despliegue reproducible;</li>
+<li>Electron para la consola tecnica;</li>
+<li>PostgreSQL en cloud y SQLite en local para separar demo de contingencia y despliegue real.</li>
+</ul>
+<h2 id="4-que-hace-realmente-el-backend">4. Que hace realmente el backend</h2>
+<p>El backend es el nucleo del sistema. Lo que tengo que saber explicar es:</p>
+<ul>
+<li>autentica usuarios internos y cuentas de empresa;</li>
+<li>aplica permisos y separa el firewall interno del externo;</li>
+<li>expone la API REST del portal interno;</li>
+<li>mantiene el flujo empresa -&gt; solicitud -&gt; revision -&gt; aprobacion/rechazo;</li>
+<li>crea la empresa colaboradora cuando la solicitud se aprueba;</li>
+<li>crea o asocia el tutor profesional propuesto;</li>
+<li>guarda mensajes empresa-centro;</li>
+<li>controla documentos, versiones, retirada y restauracion;</li>
+<li>gestiona asignaciones, seguimientos y evaluacion final;</li>
+<li>genera correo de verificacion, recuperacion y rechazo;</li>
+<li>sirve los frontends integrados bajo <code>/app</code>, <code>/externo</code> y <code>/documentacion</code>.</li>
+</ul>
+<h3 id="como-explico-el-backend-sin-quedarme-en-abstracciones">Como explico el backend sin quedarme en abstracciones</h3>
+<ol>
+<li>recibe la peticion;</li>
+<li>valida permisos y datos;</li>
+<li>aplica la regla de negocio;</li>
+<li>persiste con Doctrine;</li>
+<li>devuelve JSON al frontend;</li>
+<li>si hace falta, dispara correo o guarda auditoria.</li>
+</ol>
+<h2 id="4-1-que-archivos-del-codigo-respaldan-cada-bloque">4.1 Que archivos del codigo respaldan cada bloque</h2>
+<p>Si me piden bajar a codigo, estas son las referencias mas utiles:</p>
+<ul>
+<li><strong>Seguridad interna y externa</strong>: <code>backend/config/packages/security.yaml</code></li>
+<li><strong>Login interno y sesion del portal</strong>: <code>backend/src/Controller/Api/AuthController.php</code></li>
+<li><strong>Login y sesion de empresa</strong>: <code>backend/src/Controller/PortalAuthController.php</code></li>
+<li><strong>Empresas y documentacion privada</strong>: <code>backend/src/Controller/Api/EmpresaColaboradoraController.php</code></li>
+<li><strong>Convenios y sus documentos</strong>: <code>backend/src/Controller/Api/ConvenioController.php</code></li>
+<li><strong>Estudiantes</strong>: <code>backend/src/Controller/Api/EstudianteController.php</code></li>
+<li><strong>Asignaciones, seguimientos y evaluacion final</strong>: <code>backend/src/Controller/Api/AsignacionController.php</code></li>
+<li><strong>Solicitudes de empresa</strong>: <code>backend/src/Controller/Api/EmpresaSolicitudController.php</code></li>
+<li><strong>Mensajeria empresa-centro</strong>: <code>backend/src/Controller/Api/EmpresaMensajeController.php</code></li>
+<li><strong>Portal externo autenticado</strong>: <code>backend/src/Controller/Api/PortalCompanyController.php</code></li>
+<li><strong>Creacion y ciclo de vida de cuentas de empresa</strong>: <code>backend/src/Service/PortalCompanyAccountManager.php</code></li>
+<li><strong>Almacenamiento y validacion documental</strong>: <code>backend/src/Service/DocumentStorageManager.php</code> y <code>backend/src/Service/UploadedDocumentInspector.php</code></li>
+<li><strong>Snapshot de datos del panel interno</strong>: <code>backend/src/Service/BootstrapSnapshotProvider.php</code></li>
+<li><strong>Auditoria</strong>: <code>backend/src/Service/AuditLogger.php</code></li>
+<li><strong>Operativa local/cloud de escritorio</strong>: <code>desktop/main.js</code>, <code>desktop/preload.js</code> y <code>desktop/renderer/app.js</code></li>
+</ul>
+<p>La idea importante es que el negocio real no esta en React ni en Electron. Esta en Symfony. Los frontends consumen API y el escritorio se limita a operacion tecnica.</p>
+<h2 id="5-flujos-funcionales-que-tengo-que-tener-claros">5. Flujos funcionales que tengo que tener claros</h2>
+<h3 id="flujo-externo">Flujo externo</h3>
+<ol>
+<li>La empresa crea cuenta.</li>
+<li>Inicia sesion.</li>
+<li>Completa su solicitud corporativa.</li>
+<li>Verifica el correo.</li>
+<li>Consulta el estado.</li>
+<li>Mantiene mensajes con el centro.</li>
+<li>Si se aprueba, usa la misma cuenta para ver convenios, asignaciones y documentos.</li>
+</ol>
+<h3 id="flujo-interno">Flujo interno</h3>
+<ol>
+<li>Entro con perfil de coordinacion.</li>
+<li>Veo dashboard y KPI.</li>
+<li>Reviso solicitudes.</li>
+<li>Apruebo o rechazo.</li>
+<li>Si apruebo, la empresa pasa al catalogo interno y queda activa para colaborar.</li>
+<li>Completo la ficha de empresa con contactos, documentos y, si aplica, tutor profesional.</li>
+<li>Formalizo el convenio entre centro y empresa.</li>
+<li>La asignacion es donde vinculo estudiante, convenio, tutores, horas, fechas y modalidad.</li>
+<li>Sobre esa asignacion registro seguimientos, reuniones, evidencias y la evaluacion final.</li>
+<li>Exporto CSV si necesito evidencia.</li>
+</ol>
+<h3 id="como-explico-bien-el-orden-de-negocio">Como explico bien el orden de negocio</h3>
+<p>Si me preguntan por el flujo interno, no debo decir que convenio, tutores, estudiante y evaluacion se hacen todos a la vez. La forma correcta de explicarlo es esta:</p>
+<ol>
+<li>primero apruebo la solicitud de empresa;</li>
+<li>esa aprobacion crea o activa la empresa en el dominio interno;</li>
+<li>despues preparo la empresa para operar, incluyendo contactos, documentos y tutor profesional;</li>
+<li>luego formalizo el convenio con la empresa;</li>
+<li>solo entonces creo la asignacion concreta de practica;</li>
+<li>la asignacion es la que une estudiante, empresa, convenio, tutor academico, tutor profesional, horas, fechas y modalidad;</li>
+<li>a partir de esa asignacion registro seguimientos;</li>
+<li>la evaluacion final se guarda sobre la asignacion, no como si fuera un simple seguimiento ni como una nota suelta del estudiante.</li>
+</ol>
+<figure id="esquema-relacional-resumido"><img src="capturas/02-esquema-relacional.png" alt="Esquema relacional resumido"><figcaption>Esquema relacional resumido</figcaption></figure>
+<h3 id="relacion-importante-que-tengo-que-recordar">Relacion importante que tengo que recordar</h3>
+<ul>
+<li><code>EmpresaSolicitud</code> representa la entrada externa;</li>
+<li><code>EmpresaPortalCuenta</code> representa la cuenta persistente;</li>
+<li><code>EmpresaColaboradora</code> representa la empresa ya aprobada dentro del dominio interno;</li>
+<li><code>Convenio</code> formaliza la colaboracion;</li>
+<li><code>AsignacionPractica</code> une estudiante, empresa, convenio y tutores;</li>
+<li><code>Seguimiento</code> guarda reuniones, incidencias y evidencias;</li>
+<li><code>EvaluacionFinal</code> cierra la practica y cuelga de la asignacion.</li>
+</ul>
+<h3 id="flujo-tecnico">Flujo tecnico</h3>
+<ol>
+<li>Si la VM funciona, uso el cloud como modo principal.</li>
+<li>Si algo falla, abro Agora Desktop.</li>
+<li>Veo URL efectiva, estado de <code>agora.service</code>, logs y smoke.</li>
+<li>Si la VM no responde o la URL cambia, lo detecto ahi.</li>
+<li>Si el cloud cae del todo, puedo levantar el modo local como contingencia de demo.</li>
+</ol>
+<figure id="agora-desktop-en-operacion"><img src="capturas/07-agora-desktop-operativo.png" alt="Agora Desktop en operacion"><figcaption>Agora Desktop en operacion</figcaption></figure>
+<h2 id="6-que-hace-cada-interfaz">6. Que hace cada interfaz</h2>
+<h3 id="portal-interno">Portal interno</h3>
+<p>Es la herramienta de trabajo del centro. Desde aqui se:</p>
+<ul>
+<li>revisan KPI;</li>
+<li>gestionan solicitudes;</li>
+<li>administran empresas, convenios, estudiantes y tutores;</li>
+<li>crean asignaciones;</li>
+<li>registran seguimientos y evaluacion final;</li>
+<li>gestionan documentos;</li>
+<li>exportan CSV.</li>
+</ul>
+<h3 id="portal-externo">Portal externo</h3>
+<p>Es la puerta de entrada de la empresa. Desde aqui se:</p>
+<ul>
+<li>crea la cuenta;</li>
+<li>se completa la solicitud;</li>
+<li>se verifica el correo;</li>
+<li>se consulta el estado;</li>
+<li>se mantiene la conversacion con el centro;</li>
+<li>se revisan convenios, asignaciones y documentos tras la aprobacion.</li>
+</ul>
+<h3 id="documentacion">Documentacion</h3>
+<p>Es un espacio publico separado del uso operativo. Sirve para:</p>
+<ul>
+<li>consultar la memoria y anexos;</li>
+<li>revisar capturas y esquemas;</li>
+<li>disponer de una guia funcional del proyecto.</li>
+</ul>
+<h3 id="agora-desktop">Agora Desktop</h3>
+<p>Es una consola tecnica, no un portal de negocio. Sirve para:</p>
+<ul>
+<li>ver la URL cloud efectiva;</li>
+<li>comprobar <code>agora.service</code>;</li>
+<li>lanzar smoke tests;</li>
+<li>revisar logs;</li>
+<li>reiniciar servicios;</li>
+<li>operar en local si el cloud falla.</li>
+</ul>
+<h2 id="7-comandos-que-debo-recordar">7. Comandos que debo recordar</h2>
+<h3 id="local-desde-repositorio">Local desde repositorio</h3>
+<pre><code>cd backend
+composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+start-server.bat</code></pre>
+<pre><code>cd frontend/app
+npm install
+npm run build:backend</code></pre>
+<pre><code>cd frontend/company-portal
+npm install
+npm run build:backend</code></pre>
+<h3 id="pruebas">Pruebas</h3>
+<pre><code>cd backend
+php vendor/bin/phpunit</code></pre>
+<pre><code>cd frontend/app
+npm test
+npm run test:e2e</code></pre>
+<pre><code>cd desktop
+npm run smoke:workflow</code></pre>
+<h3 id="cloud">Cloud</h3>
+<p>La VM arranca sola por <code>agora.service</code>. Si hay que revisarla:</p>
+<pre><code>sudo systemctl status agora.service
+sudo systemctl restart agora.service
+sudo journalctl -u agora.service -n 100 --no-pager</code></pre>
+<p>Si quiero reconstruir la app cloud tras un cambio:</p>
+<pre><code>cd ~/TFG-Agora
+git pull origin gcp-deploy-20260517
+sudo docker compose --env-file deploy/gcp/.env.gcp -f deploy/gcp/docker-compose.yml up -d --build</code></pre>
+<p>Si necesito resetear los datos demo:</p>
+<pre><code>cd ~/TFG-Agora
+sudo docker exec agora-app-1 sh -lc 'cd /var/www/html/backend &amp;&amp; php bin/console app:demo:refresh --force'</code></pre>
+<h2 id="8-accesos-que-debo-tener-a-mano">8. Accesos que debo tener a mano</h2>
+<ul>
+<li>URL base: la URL cloud efectiva que muestre Agora Desktop. En la ultima revision valida fue <code>https://agora.34.175.157.37.nip.io/</code>.</li>
+<li>Portal interno: <code>/app/</code></li>
+<li>Portal externo: <code>/externo/</code></li>
+<li>Documentacion: <code>/documentacion</code></li>
+</ul>
+<p>Credenciales:</p>
+<ul>
+<li><code>profesora / Abrete01</code></li>
+<li><code>profesor / Abrete01</code></li>
+<li><code>admin / admin123</code></li>
+<li><code>coordinador / coordinador123</code></li>
+</ul>
+<h3 id="como-hablar-de-la-url-sin-pillarme-los-dedos">Como hablar de la URL sin pillarme los dedos</h3>
+<p>No debo vender <code>nip.io</code> como si fuera una URL permanente. La explicacion correcta es:</p>
+<ul>
+<li>la VM publica usa <code>nip.io</code> para no depender de un dominio comprado solo para la defensa;</li>
+<li>si cambia la IP publica, cambia la URL;</li>
+<li>Agora Desktop me sirve precisamente para ver la URL efectiva correcta en cada momento.</li>
+</ul>
+<h2 id="9-que-esta-cerrado-y-que-no">9. Que esta cerrado y que no</h2>
+<h3 id="cerrado">Cerrado</h3>
+<ul>
+<li>portal interno funcional;</li>
+<li>portal externo funcional;</li>
+<li>correo de verificacion y rechazo;</li>
+<li>mensajeria empresa-centro;</li>
+<li>documentos autenticados;</li>
+<li>despliegue cloud por HTTPS;</li>
+<li>Agora Desktop como consola tecnica principal;</li>
+<li>modo local de contingencia.</li>
+</ul>
+<h3 id="futuro">Futuro</h3>
+<ul>
+<li>dominio propio;</li>
+<li>SSO institucional;</li>
+<li>almacenamiento documental gestionado;</li>
+<li>observabilidad avanzada;</li>
+<li>ampliar Agora Desktop con mas operativa de negocio si compensa.</li>
+</ul>
+<h2 id="10-si-me-preguntan-por-que-no-he-hecho-mas">10. Si me preguntan por que no he hecho mas</h2>
+<p>La respuesta correcta es que he preferido cerrar bien el nucleo del producto antes que dejar muchas funciones a medias. Lo importante del TFG no es abarcarlo todo, sino demostrar analisis, arquitectura, implementacion, validacion y criterio para recortar alcance sin romper coherencia.</p>
+<p>La frase que mejor me sirve es esta:</p>
+<p>&gt; He preferido terminar bien el circuito principal de empresa, convenio, asignacion, seguimiento y evaluacion antes que ensenar muchas funcionalidades secundarias a medio cerrar.</p>
+<h2 id="11-si-algo-falla-durante-la-defensa">11. Si algo falla durante la defensa</h2>
+<p>Mi orden mental es este:</p>
+<ol>
+<li>no improvisar;</li>
+<li>abrir Agora Desktop;</li>
+<li>comprobar URL efectiva y estado del servicio;</li>
+<li>si el cloud sigue mal, pasar al entorno local de respaldo;</li>
+<li>apoyar la explicacion con memoria, capturas, video y validaciones ya ejecutadas.</li>
+</ol>
+<h2 id="12-preguntas-tipicas-y-respuestas-cortas">12. Preguntas tipicas y respuestas cortas</h2>
+<h3 id="por-que-dos-portales">Por que dos portales?</h3>
+<p>Porque el centro y la empresa no tienen las mismas necesidades ni el mismo nivel de acceso. Separarlos simplifica seguridad, experiencia de usuario y flujo de negocio.</p>
+<h3 id="por-que-la-evaluacion-final-no-va-dentro-de-un-seguimiento">Por que la evaluacion final no va dentro de un seguimiento?</h3>
+<p>Porque la evaluacion final cierra una asignacion concreta. Los seguimientos son hitos del proceso; la evaluacion final es el cierre formal de la practica.</p>
+<h3 id="por-que-agora-desktop-si-ya-existe-cloud">Por que Agora Desktop si ya existe cloud?</h3>
+<p>Porque necesito una consola tecnica para ver servicio, URL efectiva, logs, smoke y contingencia local sin depender del navegador.</p>
+<h3 id="por-que-postgresql-en-cloud-y-sqlite-en-local">Por que PostgreSQL en cloud y SQLite en local?</h3>
+<p>Porque SQLite simplifica la demo local y PostgreSQL es mas apropiado para una instancia publica persistente.</p>
+<h3 id="que-haria-despues-de-la-entrega">Que haria despues de la entrega?</h3>
+<p>Dominio propio, SSO, servicios gestionados para documentos y backups, observabilidad mas fuerte y endurecimiento del despliegue.</p>
+  </main>
+</body>
+</html>

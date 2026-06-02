@@ -101,7 +101,7 @@ final class PortalCompanyControllerTest extends WebTestCase
 
     public function testOverviewPermiteCuentaPrerregistradaSinEmpresaAprobada(): void
     {
-        $account = $this->createAndLoginPreRegisteredAccount();
+        $account = $this->createAndLoginPreRegisteredAccount('empresa-portal-overview@example.com');
 
         $this->client->request('GET', '/api/portal-company/overview');
 
@@ -117,12 +117,15 @@ final class PortalCompanyControllerTest extends WebTestCase
 
     public function testCuentaPrerregistradaPuedeCrearSolicitudDesdeElPortal(): void
     {
-        $account = $this->createAndLoginPreRegisteredAccount();
+        $account = $this->createAndLoginPreRegisteredAccount('empresa-portal-create@example.com');
 
         $this->client->request(
             'POST',
             '/api/portal-company/request',
-            server: ['CONTENT_TYPE' => 'application/json'],
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'REMOTE_ADDR' => '198.51.100.120',
+            ],
             content: json_encode([
                 'nombreEmpresa' => 'Empresa Portal Previa',
                 'sector' => 'Servicios',
@@ -149,19 +152,22 @@ final class PortalCompanyControllerTest extends WebTestCase
         $refreshed = $this->entityManager->getRepository(EmpresaPortalCuenta::class)->find($account->getId());
         self::assertInstanceOf(EmpresaPortalCuenta::class, $refreshed);
         self::assertInstanceOf(EmpresaSolicitud::class, $refreshed->getSolicitud());
-        self::assertSame('empresa-portal@example.com', $refreshed->getSolicitud()?->getContactoEmail());
+        self::assertSame('empresa-portal-create@example.com', $refreshed->getSolicitud()?->getContactoEmail());
         self::assertSame('Empresa Portal Previa', $refreshed->getSolicitud()?->getNombreEmpresa());
         self::assertSame('Claudia Tutor', $refreshed->getSolicitud()?->getTutorProfesionalNombre());
     }
 
     public function testCuentaPrerregistradaPuedeReenviarLaVerificacionDesdeElPortal(): void
     {
-        $this->createAndLoginPreRegisteredAccount();
+        $this->createAndLoginPreRegisteredAccount('empresa-portal-resend@example.com');
 
         $this->client->request(
             'POST',
             '/api/portal-company/request',
-            server: ['CONTENT_TYPE' => 'application/json'],
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'REMOTE_ADDR' => '198.51.100.121',
+            ],
             content: json_encode([
                 'nombreEmpresa' => 'Empresa Portal Reenvio',
                 'sector' => 'Servicios',
@@ -307,10 +313,10 @@ final class PortalCompanyControllerTest extends WebTestCase
         return $account;
     }
 
-    private function createAndLoginPreRegisteredAccount(): EmpresaPortalCuenta
+    private function createAndLoginPreRegisteredAccount(string $email): EmpresaPortalCuenta
     {
         $account = (new EmpresaPortalCuenta())
-            ->setEmail('empresa-portal@example.com')
+            ->setEmail($email)
             ->setDisplayName('Portal Preregistro')
             ->setRoles(['ROLE_COMPANY_PORTAL'])
             ->setActive(true);
@@ -325,7 +331,7 @@ final class PortalCompanyControllerTest extends WebTestCase
             '/portal-auth/login',
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode([
-                'email' => 'empresa-portal@example.com',
+                'email' => $email,
                 'password' => 'PortalArea123',
             ], JSON_THROW_ON_ERROR)
         );

@@ -93,7 +93,8 @@ final class UploadedDocumentInspector
 
             try {
                 foreach ($requiredEntries as $entry) {
-                    if ($zip->locateName($entry) === false) {
+                    $windowsEntry = str_replace('/', '\\', $entry);
+                    if ($zip->locateName($entry) === false && $zip->locateName($windowsEntry) === false) {
                         return $message;
                     }
                 }

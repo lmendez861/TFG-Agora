@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: valida documentos subidos antes de persistirlos para mostrar errores comprensibles al usuario.
+ * Relaciones: lo usan los controladores API que gestionan documentacion de empresas, convenios y seguimiento.
+ */
+
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;

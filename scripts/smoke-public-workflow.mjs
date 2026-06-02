@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: prueba automatizada de humo contra la URL publica para validar portal interno, externo y datos basicos.
+ * Relaciones: se ejecuta desde Agora Desktop o consola y puede usar SSH para inspeccionar el despliegue cloud.
+ */
 
 import { execFile } from 'node:child_process';
 import os from 'node:os';
@@ -149,16 +154,23 @@ async function sshExec(target, command, keyPath = defaultSshKeyPath()) {
     keyPath,
     '-o',
     'StrictHostKeyChecking=no',
+    '-o',
+    'UserKnownHostsFile=' + path.join(os.tmpdir(), 'agora-smoke-known-hosts'),
     target,
     command,
   ];
 
-  const { stdout, stderr } = await execFileAsync('ssh', args, { windowsHide: true });
-  if (stderr && stderr.trim() !== '') {
-    return `${stdout}\n${stderr}`.trim();
-  }
+  const { stdout } = await execFileAsync('ssh', args, { windowsHide: true });
 
   return stdout.trim();
+}
+
+function extractHexToken(value, label) {
+  const matches = String(value || '').match(/[a-f0-9]{32,}/gi) || [];
+  const token = matches.at(-1) || '';
+  assertCondition(token !== '', `No se ha encontrado token hexadecimal valido para ${label}.`);
+
+  return token;
 }
 
 function isoDateOffset(days) {
@@ -177,10 +189,10 @@ function generateDni(seed) {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const baseUrl = normalizeBaseUrl(options['base-url'] || process.env.BASE_URL || 'https://agora.34.175.225.98.nip.io');
+  const baseUrl = normalizeBaseUrl(options['base-url'] || process.env.BASE_URL || 'https://agora.34.175.157.37.nip.io');
   const adminUser = options['admin-user'] || process.env.ADMIN_USER || 'profesor';
   const adminPassword = options['admin-password'] || process.env.ADMIN_PASSWORD || 'Abrete01';
-  const sshTarget = options['ssh-target'] || process.env.SSH_TARGET || 'lmendezgsd@34.175.225.98';
+  const sshTarget = options['ssh-target'] || process.env.SSH_TARGET || 'lmendezgsd@34.175.157.37';
   const sshKeyPath = options['ssh-key'] || process.env.SSH_KEY_PATH || defaultSshKeyPath();
   const dbContainer = options['db-container'] || process.env.DB_CONTAINER || 'agora-db-1';
   const seed = Date.now();
@@ -344,8 +356,7 @@ async function main() {
   const verificationToken = await runStep('token-verificacion', 'Recuperar token de verificacion desde la VM', async () => {
     const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(registration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
-    const token = (await sshExec(sshTarget, command, sshKeyPath)).trim();
-    assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud principal.');
+    const token = extractHexToken(await sshExec(sshTarget, command, sshKeyPath), 'la solicitud principal');
 
     return { detail: 'Token de verificacion recuperado', value: token };
   });
@@ -639,8 +650,7 @@ async function main() {
   const rejectedVerificationToken = await runStep('token-verificacion-rechazo', 'Recuperar token de verificacion de la solicitud rechazada', async () => {
     const sql = `SELECT token FROM empresa_solicitud WHERE id = ${Number(rejectedRegistration.id)} LIMIT 1;`;
     const command = `docker exec ${dbContainer} sh -lc 'PGPASSWORD=\"$POSTGRES_PASSWORD\" psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -t -A -c \"${sql}\"'`;
-    const token = (await sshExec(sshTarget, command, sshKeyPath)).trim();
-    assertCondition(token !== '', 'No se ha encontrado token de verificacion para la solicitud rechazada.');
+    const token = extractHexToken(await sshExec(sshTarget, command, sshKeyPath), 'la solicitud rechazada');
 
     return { detail: 'Token de rechazo recuperado', value: token };
   });

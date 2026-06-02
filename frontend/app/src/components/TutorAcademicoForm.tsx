@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: formulario del portal interno para mantener tutores academicos del centro educativo.
+ * Relaciones: lo invoca App.tsx desde el modulo de tutores y se reutiliza al planificar asignaciones.
+ */
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 
 export interface TutorAcademicoFormValues {

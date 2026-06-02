@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: formulario del portal interno para mantener tutores profesionales vinculados a empresas.
+ * Relaciones: lo invoca App.tsx desde el modulo de tutores y alimenta las asignaciones de practicas.
+ */
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import type { EmpresaSummary } from '../types';
 

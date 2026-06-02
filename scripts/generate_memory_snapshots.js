@@ -12,8 +12,8 @@ const outputDir = path.join(rootDir, 'docs', 'capturas');
 const API_BASE = process.env.MEMORY_API_BASE || 'http://127.0.0.1:8000/api';
 const API_USER = process.env.MEMORY_API_USER || 'admin';
 const API_PASS = process.env.MEMORY_API_PASS || 'admin123';
-const PUBLIC_URL = process.env.MEMORY_PUBLIC_URL || 'https://agora.34.175.225.98.nip.io';
-const PUBLIC_IP = process.env.MEMORY_PUBLIC_IP || '34.175.225.98';
+const PUBLIC_URL = process.env.MEMORY_PUBLIC_URL || 'https://agora.34.175.157.37.nip.io';
+const PUBLIC_IP = process.env.MEMORY_PUBLIC_IP || '34.175.157.37';
 const CLOUD_SERVICE_STATUS = process.env.MEMORY_CLOUD_SERVICE_STATUS || 'agora.service activo y habilitado';
 const authHeader = `Basic ${Buffer.from(`${API_USER}:${API_PASS}`).toString('base64')}`;
 

@@ -12,6 +12,7 @@ namespace App\Tests\Controller\Api;
 
 use App\Tests\Support\DemoFixtureLoaderTrait;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,9 +50,7 @@ final class CsvExportControllerTest extends WebTestCase
         unset($this->entityManager);
     }
 
-    /**
-     * @dataProvider exportRouteProvider
-     */
+    #[DataProvider('exportRouteProvider')]
     public function testExportRoutesReturnCsv(string $path, string $expectedHeader, string $expectedFragment): void
     {
         $this->client->request('GET', $path);

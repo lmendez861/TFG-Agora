@@ -24,6 +24,7 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
 {
     use DemoFixtureLoaderTrait;
 
+    private static int $publicRequestIndex = 10;
     private EntityManagerInterface $entityManager;
 
     protected function setUp(): void
@@ -126,7 +127,10 @@ final class EmpresaSolicitudControllerTest extends WebTestCase
         $client->request(
             'POST',
             '/registro-empresa',
-            server: ['CONTENT_TYPE' => 'application/json'],
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'REMOTE_ADDR' => sprintf('198.51.100.%d', self::$publicRequestIndex++),
+            ],
             content: json_encode($payload, JSON_THROW_ON_ERROR)
         );
 

@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: prueba de humo del instalador de Agora Desktop en Windows.
+ * Relaciones: verifica el ejecutable generado por electron-builder antes de usarlo en demo o entrega.
+ */
 
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');

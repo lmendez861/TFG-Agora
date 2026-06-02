@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: lanzador local de Electron evitando que ELECTRON_RUN_AS_NODE bloquee la app.
+ * Relaciones: se usa desde npm scripts para abrir Agora Desktop durante desarrollo.
+ */
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 

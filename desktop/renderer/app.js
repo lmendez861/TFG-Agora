@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: controla la interfaz de Agora Desktop para estado, logs, pruebas, backups y gestion cloud/local.
+ * Relaciones: consume la API expuesta por preload.js y refleja operaciones implementadas en main.js.
+ */
 const api = window.agoraDesktop;
 const bridgeReady = Boolean(
   api

@@ -32,7 +32,10 @@ final class RegistroEmpresaControllerTest extends WebTestCase
         $client->request(
             'POST',
             '/registro-empresa',
-            server: ['CONTENT_TYPE' => 'application/json'],
+            server: [
+                'CONTENT_TYPE' => 'application/json',
+                'REMOTE_ADDR' => '198.51.100.80',
+            ],
             content: json_encode([
                 'nombreEmpresa' => 'Correo Real SL',
                 'sector' => 'Tecnologia educativa',

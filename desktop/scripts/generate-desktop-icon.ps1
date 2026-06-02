@@ -1,3 +1,8 @@
+<#
+ Comentario de mantenimiento Agora.
+ Proposito: genera el icono de Agora Desktop para el empaquetado Windows.
+ Relaciones: produce recursos utilizados por electron-builder en desktop/build.
+#>
 param(
     [string]$OutputDir = (Join-Path (Split-Path -Parent $PSScriptRoot) 'build')
 )

@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: puente seguro entre Electron renderer y proceso principal sin exponer Node directamente a la UI.
+ * Relaciones: publica la API agoraDesktop consumida por desktop/renderer/app.js.
+ */
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('agoraDesktop', {

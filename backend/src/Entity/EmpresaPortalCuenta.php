@@ -171,6 +171,7 @@ class EmpresaPortalCuenta implements UserInterface, PasswordAuthenticatedUserInt
      * Resume la responsabilidad de eraseCredentials dentro de este modulo y facilita seguir el flujo al revisarlo.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
      */
+    #[\Deprecated(reason: 'Empty implementation')]
     public function eraseCredentials(): void
     {
         // No temporal credentials stored.

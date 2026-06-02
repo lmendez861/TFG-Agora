@@ -1,3 +1,8 @@
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: proceso principal de Electron para operar Agora Desktop en modo local y modo cloud.
+ * Relaciones: coordina renderer/preload, backend local Symfony, conexion SSH cloud, logs, smoke tests y backups.
+ */
 const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');

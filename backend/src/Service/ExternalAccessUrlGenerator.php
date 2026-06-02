@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+/**
+ * Comentario de mantenimiento Agora.
+ * Proposito: construye URLs publicas coherentes cuando la aplicacion se ejecuta detras de cloud, nip.io o tunel.
+ * Relaciones: centraliza enlaces de verificacion, portal externo y rutas absolutas usadas por correos/API.
+ */
+
 namespace App\Service;
 
 use Symfony\Component\HttpFoundation\Request;

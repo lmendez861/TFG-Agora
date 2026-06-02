@@ -40,6 +40,16 @@ trait DemoFixtureLoaderTrait
             $connection->rollBack();
         }
 
+        $params = $connection->getParams();
+        $databasePath = $params['path'] ?? null;
+        if (($params['driver'] ?? null) === 'pdo_sqlite' && is_string($databasePath) && $databasePath !== ':memory:') {
+            $connection->close();
+            if (is_file($databasePath)) {
+                unlink($databasePath);
+            }
+            $connection->connect();
+        }
+
         $schemaTool = new SchemaTool($entityManager);
         try {
             $schemaTool->dropSchema($metadata);

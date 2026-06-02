@@ -689,8 +689,8 @@ final class ConvenioController extends AbstractController
                 return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
             }
 
-            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
             $filename = $documento->getOriginalFilename() ?: basename($filePath);
+            $mimeType = $this->resolveDownloadMimeType($documento->getTipo(), $filename, $filePath);
 
             return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
         }
@@ -714,7 +714,7 @@ final class ConvenioController extends AbstractController
             return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
         }
 
-        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+        $mimeType = $this->resolveDownloadMimeType(null, $filename, $filePath);
 
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
@@ -998,6 +998,21 @@ final class ConvenioController extends AbstractController
         }
 
         return $documento->getUrl();
+    }
+
+    private function resolveDownloadMimeType(?string $documentType, ?string $filename, string $filePath): string
+    {
+        $extension = strtolower((string) pathinfo((string) $filename, PATHINFO_EXTENSION));
+        $normalizedType = $this->normalizeDocumentType($documentType);
+
+        return match ($normalizedType ?: $extension) {
+            'PDF', 'pdf' => 'application/pdf',
+            'WORD', 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc' => 'application/msword',
+            'EXCEL', 'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls' => 'application/vnd.ms-excel',
+            default => mime_content_type($filePath) ?: 'application/octet-stream',
+        };
     }
 
     /**

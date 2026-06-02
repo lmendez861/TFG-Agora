@@ -588,8 +588,8 @@ final class EmpresaColaboradoraController extends AbstractController
                 return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
             }
 
-            $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
             $filename = $documento->getOriginalFilename() ?: basename($filePath);
+            $mimeType = $this->resolveDownloadMimeType($documento->getTipo(), $filename, $filePath);
 
             return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
         }
@@ -630,7 +630,7 @@ final class EmpresaColaboradoraController extends AbstractController
         if (!is_file($filePath)) {
             return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
         }
-        $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+        $mimeType = $this->resolveDownloadMimeType(null, $filename, $filePath);
         return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
     }
 
@@ -923,6 +923,21 @@ final class EmpresaColaboradoraController extends AbstractController
             'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             default => 'application/octet-stream',
         };
+    }
+
+    private function resolveDownloadMimeType(?string $documentType, ?string $filename, string $filePath): string
+    {
+        $extension = strtolower((string) pathinfo((string) $filename, PATHINFO_EXTENSION));
+        $normalizedType = $this->normalizeDocumentType($documentType);
+
+        if ($normalizedType !== null) {
+            $extensions = self::DOCUMENT_TYPE_EXTENSIONS[$normalizedType] ?? [];
+            $extension = $extension !== '' ? $extension : (string) ($extensions[0] ?? '');
+        }
+
+        return $extension !== ''
+            ? $this->resolveMimeTypeByExtension($extension)
+            : (mime_content_type($filePath) ?: 'application/octet-stream');
     }
 
     private function resolveUploadErrorMessage(int $errorCode): string

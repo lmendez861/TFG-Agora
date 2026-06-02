@@ -591,7 +591,10 @@ final class EmpresaColaboradoraController extends AbstractController
             $filename = $documento->getOriginalFilename() ?: basename($filePath);
             $mimeType = $this->resolveDownloadMimeType($documento->getTipo(), $filename, $filePath);
 
-            return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+            $response = $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE);
+            $response->headers->set('Content-Type', $mimeType);
+
+            return $response;
         }
 
         if ($documento->hasEmbeddedContent()) {
@@ -631,7 +634,10 @@ final class EmpresaColaboradoraController extends AbstractController
             return $this->json(['message' => 'Documento no encontrado.'], Response::HTTP_NOT_FOUND);
         }
         $mimeType = $this->resolveDownloadMimeType(null, $filename, $filePath);
-        return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+        $response = $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE);
+        $response->headers->set('Content-Type', $mimeType);
+
+        return $response;
     }
 
     /**

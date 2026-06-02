@@ -692,7 +692,10 @@ final class ConvenioController extends AbstractController
             $filename = $documento->getOriginalFilename() ?: basename($filePath);
             $mimeType = $this->resolveDownloadMimeType($documento->getTipo(), $filename, $filePath);
 
-            return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+            $response = $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE);
+            $response->headers->set('Content-Type', $mimeType);
+
+            return $response;
         }
 
         if ($documento->getUrl()) {
@@ -716,7 +719,10 @@ final class ConvenioController extends AbstractController
 
         $mimeType = $this->resolveDownloadMimeType(null, $filename, $filePath);
 
-        return $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE, ['Content-Type' => $mimeType]);
+        $response = $this->file($filePath, $filename, ResponseHeaderBag::DISPOSITION_INLINE);
+        $response->headers->set('Content-Type', $mimeType);
+
+        return $response;
     }
 
     /**

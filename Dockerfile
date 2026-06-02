@@ -44,9 +44,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libicu-dev \
         libpq-dev \
+        libzip-dev \
         libsqlite3-dev \
         unzip \
-    && docker-php-ext-install intl pdo_pgsql pdo_sqlite opcache \
+    && docker-php-ext-install intl pdo_pgsql pdo_sqlite zip opcache \
     && a2enmod rewrite headers expires \
     && rm -rf /var/lib/apt/lists/*
 

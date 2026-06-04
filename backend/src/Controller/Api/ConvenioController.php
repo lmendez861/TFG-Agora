@@ -441,7 +441,10 @@ final class ConvenioController extends AbstractController
             'observaciones' => $convenio->getObservaciones(),
             'workflow' => $this->serializeWorkflow($convenio),
             'checklist' => array_map(fn (ConvenioChecklistItem $item): array => $this->serializeChecklistItem($item), $convenio->getChecklistItems()->toArray()),
-            'documents' => array_map(fn (ConvenioDocumento $documento): array => $this->serializeConvenioDocumento($documento), $convenio->getDocumentos()->toArray()),
+            'documents' => array_map(
+                fn (ConvenioDocumento $documento): array => $this->serializeConvenioDocumento($documento),
+                $this->sortConvenioDocumentos($convenio->getDocumentos()->toArray())
+            ),
             'alerts' => array_map(fn (ConvenioAlerta $alerta): array => $this->serializeConvenioAlerta($alerta), $convenio->getAlertas()->toArray()),
             'asignaciones' => $asignaciones,
         ];
@@ -834,7 +837,10 @@ final class ConvenioController extends AbstractController
         return [
             'workflow' => $this->serializeWorkflow($convenio),
             'checklist' => array_map(fn (ConvenioChecklistItem $item): array => $this->serializeChecklistItem($item), $convenio->getChecklistItems()->toArray()),
-            'documents' => array_map(fn (ConvenioDocumento $documento): array => $this->serializeConvenioDocumento($documento), $convenio->getDocumentos()->toArray()),
+            'documents' => array_map(
+                fn (ConvenioDocumento $documento): array => $this->serializeConvenioDocumento($documento),
+                $this->sortConvenioDocumentos($convenio->getDocumentos()->toArray())
+            ),
             'alerts' => array_map(fn (ConvenioAlerta $alerta): array => $this->serializeConvenioAlerta($alerta), $convenio->getAlertas()->toArray()),
         ];
     }
@@ -1004,6 +1010,27 @@ final class ConvenioController extends AbstractController
         }
 
         return $documento->getUrl();
+    }
+
+    /**
+     * @param list<ConvenioDocumento> $documentos
+     * @return list<ConvenioDocumento>
+     */
+    private function sortConvenioDocumentos(array $documentos): array
+    {
+        usort(
+            $documentos,
+            static function (ConvenioDocumento $left, ConvenioDocumento $right): int {
+                $byDate = $right->getUploadedAt() <=> $left->getUploadedAt();
+                if ($byDate !== 0) {
+                    return $byDate;
+                }
+
+                return $right->getVersion() <=> $left->getVersion();
+            }
+        );
+
+        return $documentos;
     }
 
     private function resolveDownloadMimeType(?string $documentType, ?string $filename, string $filePath): string

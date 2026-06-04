@@ -1386,10 +1386,15 @@ export default function App() {
     setSavingConvenioDocument(true);
     try {
       const nuevo = await addEmpresaDocument(empresaId, trimmedName, typeValue, urlValue, fileValue);
-      setEmpresaDocs((prev) => {
-        const docs = prev[empresaId] ?? [];
-        return { ...prev, [empresaId]: [nuevo, ...docs] };
-      });
+      try {
+        const detail = await getEmpresaDetail(empresaId);
+        setEmpresaDocs((prev) => ({ ...prev, [empresaId]: detail.documentos ?? [nuevo] }));
+      } catch {
+        setEmpresaDocs((prev) => {
+          const docs = prev[empresaId] ?? [];
+          return { ...prev, [empresaId]: [nuevo, ...docs] };
+        });
+      }
       pushToast('success', 'Documento anadido.');
       return true;
     } catch (err) {
@@ -1532,13 +1537,18 @@ export default function App() {
     setSavingConvenioDocument(true);
     try {
       const nuevo = await addConvenioDocument(convenioId, trimmedName, typeValue, urlValue, fileValue);
-      setConvenioDocuments((prev) => {
-        const docs = prev[convenioId] ?? [];
-        return {
-          ...prev,
-          [convenioId]: [nuevo, ...docs],
-        };
-      });
+      try {
+        const extras = await getConvenioExtras(convenioId);
+        applyConvenioExtras(convenioId, extras);
+      } catch {
+        setConvenioDocuments((prev) => {
+          const docs = prev[convenioId] ?? [];
+          return {
+            ...prev,
+            [convenioId]: [nuevo, ...docs],
+          };
+        });
+      }
       pushToast('success', 'Documento anadido.');
       return true;
     } catch (err) {
@@ -1548,7 +1558,7 @@ export default function App() {
     } finally {
       setSavingConvenioDocument(false);
     }
-  }, [pushToast]);
+  }, [applyConvenioExtras, pushToast]);
 
   const handleDismissConvenioAlert = useCallback(async (convenioId: number, alertId: number) => {
     setProcessingConvenioActionId(convenioId);

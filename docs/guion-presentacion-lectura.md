@@ -160,9 +160,15 @@ La VM ejecuta un servicio systemd que lanza Docker Compose. Docker Compose levan
 
 Tambien se recalcula la URL nip.io cuando cambia la IP publica, para que Agora Desktop y el despliegue puedan trabajar con la URL correcta.
 
-En seguridad hay roles definidos: administrador, coordinador, gestor documental, monitor tecnico y cuenta externa de empresa. En una mejora futura se podria afinar mas la matriz de permisos por rol.
+En seguridad ya hay roles aplicados en backend y visibles en el portal interno.
 
-Tiempo acumulado: 8:50.
+El usuario administrador tiene control completo y es el unico que puede eliminar datos de prueba desde el panel. Para evitar romper relaciones, el borrado esta limitado: primero se eliminan asignaciones; despues convenios que ya no tengan asignaciones; y finalmente empresas que no tengan convenios ni asignaciones.
+
+El perfil profesor o coordinador mantiene la operativa diaria: puede crear, editar y consultar empresas, convenios, asignaciones, solicitudes y mensajes, pero no ve ni puede ejecutar botones de eliminacion.
+
+Esto me permite defender una separacion real de permisos: la tutora puede probar la aplicacion sin riesgo de borrar datos, mientras que el administrador puede limpiar datos para pruebas. Como mejora futura, esta base se puede ampliar con perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+
+Tiempo acumulado: 9:20.
 
 ## 15. Validacion - 35 segundos
 
@@ -172,7 +178,7 @@ Se han probado portales publicados, autenticacion, registro externo, verificacio
 
 Tambien he hecho una prueba de carga controlada con datos y documentos para comprobar que las APIs principales siguen respondiendo correctamente.
 
-Tiempo acumulado: 9:25.
+Tiempo acumulado: 9:55.
 
 ## 16. Acceso de evaluacion - 25 segundos
 
@@ -182,7 +188,7 @@ El panel interno esta en /app y el portal externo en /externo, ambos bajo la mis
 
 El usuario interno de prueba es profesora con la contrasena Abrete01.
 
-Tiempo acumulado: 9:50.
+Tiempo acumulado: 10:20.
 
 ## 17. Alcance y futuro - 35 segundos
 
@@ -192,7 +198,7 @@ Como mejoras futuras quedan aspectos que amplian o endurecen el sistema: dominio
 
 Esto no bloquea la defensa porque el flujo principal ya es funcional y demostrable.
 
-Tiempo acumulado: 10:25.
+Tiempo acumulado: 10:55.
 
 ## 18. Limitaciones - 30 segundos
 
@@ -202,7 +208,7 @@ La VM actual funciona para la defensa, pero en produccion seria mejor usar base 
 
 Tambien quedaria pendiente un perfilado mas profundo de rendimiento en produccion real.
 
-Tiempo acumulado: 10:55.
+Tiempo acumulado: 11:25.
 
 ## 19. Cierre - 25 segundos
 
@@ -212,7 +218,7 @@ Incluye backend, dos portales web, consola de escritorio, despliegue cloud, corr
 
 Con esto doy paso a la demostracion y a las preguntas.
 
-Tiempo total estimado: 11:20.
+Tiempo total estimado: 11:50.
 
 ## Version corta si necesito ajustarme a 8 minutos
 

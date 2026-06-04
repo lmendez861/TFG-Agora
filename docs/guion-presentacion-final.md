@@ -54,6 +54,15 @@ Muestra que ya no dependes de varios terminales: la app de escritorio centraliza
 ## 14. Validacion
 Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
 
+## Roles y permisos
+Explica que ya no es solo una idea futura: el backend aplica permisos reales.
+
+`admin` tiene control completo y puede eliminar datos de prueba desde el portal interno. El borrado esta protegido para no romper relaciones: primero se eliminan asignaciones, despues convenios sin asignaciones y finalmente empresas sin convenios ni asignaciones.
+
+`profesor` / `profesora` / coordinacion pueden crear, editar, consultar y trabajar el flujo diario, pero no ven ni pueden ejecutar acciones de eliminacion. Esto sirve para que la tutora pruebe la aplicacion sin riesgo de borrar datos.
+
+Como mejora futura, la misma base de roles se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+
 ## 15. Acceso de evaluacion
 Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
 

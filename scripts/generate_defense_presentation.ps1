@@ -555,13 +555,13 @@ Si la VM cambia de IP o falla el servicio, desde aqui veo la URL efectiva y el e
     Add-Box -Slide $slide -Left 510 -Top 156 -Width 372 -Height 238 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
     Add-Text -Slide $slide -Left 538 -Top 182 -Width 270 -Height 24 -Text 'Roles definidos' -Size 20 -Rgb $colors.blue -Bold $true | Out-Null
     Add-BulletList $slide 542 224 286 106 @(
-        'ADMIN: control completo.',
-        'COORDINATOR: flujo academico.',
+        'ADMIN: control total y borrado controlado.',
+        'PROFESOR/COORDINATOR: gestion diaria sin eliminar.',
         'DOCUMENT_MANAGER: documentos.',
         'MONITOR: logs y consola tecnica.',
         'COMPANY_PORTAL: empresa externa.'
     ) 13 $colors.darkInk | Out-Null
-    Add-Text -Slide $slide -Left 540 -Top 358 -Width 300 -Height 24 -Text 'Futuro: permisos finos y perfiles de solo lectura.' -Size 12 -Rgb $colors.muted | Out-Null
+    Add-Text -Slide $slide -Left 540 -Top 358 -Width 300 -Height 24 -Text 'Futuro: matriz fina de permisos y perfiles de solo lectura.' -Size 12 -Rgb $colors.muted | Out-Null
     Add-Text -Slide $slide -Left 74 -Top 430 -Width 780 -Height 42 -Text 'Justificacion: cierro el despliegue cloud con arranque reproducible y dejo preparada la separacion de permisos para evolucionar de demo funcional a entorno multiusuario real.' -Size 15 -Rgb $colors.muted | Out-Null
     Set-SlideNotes $slide @'
 Aqui explico dos decisiones tecnicas que pueden preguntar.
@@ -573,10 +573,11 @@ startup.sh comprueba .env.gcp, recalcula la URL nip.io si cambia la IP publica y
 El compose levanta proxy, app y base de datos.
 
 Segundo, roles:
-Ahora mismo para la defensa uso un usuario amplio para no fragmentar la demo.
-Pero el backend ya tiene roles definidos en backend/config/packages/security.yaml.
-ROLE_ADMIN hereda todo, ROLE_COORDINATOR gestiona el flujo academico, ROLE_DOCUMENT_MANAGER gestiona documentos, ROLE_MONITOR sirve para la parte tecnica y ROLE_COMPANY_PORTAL queda separado para empresas.
-La mejora futura seria cerrar la parte fina en React: ocultar botones segun rol y crear un perfil de solo lectura.
+El proyecto ya separa permisos reales por rol.
+ROLE_ADMIN tiene control completo y es el unico que puede eliminar datos de prueba desde el portal interno: asignaciones, convenios sin asignaciones y empresas sin convenios ni asignaciones. Esto me permite limpiar datos para pruebas sin tocar directamente la base de datos.
+ROLE_COORDINATOR, que es el perfil que usan profesor o profesora en la demo, puede crear, editar y consultar empresas, convenios, asignaciones y mensajes, pero no ve ni puede ejecutar acciones de borrado.
+ROLE_DOCUMENT_MANAGER queda pensado para gestion documental, ROLE_MONITOR para logs y consola tecnica, y ROLE_COMPANY_PORTAL para empresas externas.
+Como evolucion futura, esta base se puede ampliar a una matriz de permisos mas fina: perfiles de solo lectura, responsables por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
 '@
 
     # 15. Validacion
@@ -766,6 +767,15 @@ Muestra que ya no dependes de varios terminales: la app de escritorio centraliza
 
 ## 14. Validacion
 Da cifras exactas solo si las acabas de regenerar. Lo importante es remarcar que se han validado flujos criticos, despliegue cloud, correo, mensajeria y escritorio.
+
+## Roles y permisos
+Explica que ya no es solo una idea futura: el backend aplica permisos reales.
+
+`admin` tiene control completo y puede eliminar datos de prueba desde el portal interno. El borrado esta protegido para no romper relaciones: primero se eliminan asignaciones, despues convenios sin asignaciones y finalmente empresas sin convenios ni asignaciones.
+
+`profesor` / `profesora` / coordinacion pueden crear, editar, consultar y trabajar el flujo diario, pero no ven ni pueden ejecutar acciones de eliminacion. Esto sirve para que la tutora pruebe la aplicacion sin riesgo de borrar datos.
+
+Como mejora futura, la misma base de roles se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
 
 ## 15. Acceso de evaluacion
 Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.

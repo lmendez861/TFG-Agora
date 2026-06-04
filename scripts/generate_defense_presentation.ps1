@@ -11,7 +11,7 @@ $captures = Join-Path $docs 'capturas'
 $outputPptx = Join-Path $docs 'presentacion-defensa-final.pptx'
 $outputPdf = Join-Path $docs 'presentacion-defensa-final.pdf'
 $notesPath = Join-Path $docs 'guion-presentacion-final.md'
-$publicBaseUrl = 'https://agora.34.175.157.37.nip.io'
+$publicBaseUrl = 'https://agora.34.175.161.212.nip.io'
 
 function Color {
     param([int] $Red, [int] $Green, [int] $Blue)
@@ -541,9 +541,47 @@ La app me concentra modo local, modo cloud, logs, reinicios, smoke y contingenci
 Si la VM cambia de IP o falla el servicio, desde aqui veo la URL efectiva y el estado de agora.service.
 '@
 
-    # 14. Validacion
+    # 14. Autoarranque y roles
     $slide = Add-Slide $presentation
-    Add-Header $slide '13 / Validacion' 'Comprobaciones ejecutadas antes de la revision final'
+    Add-Header $slide '13 / Operacion y seguridad' 'Autoarranque en VM y roles internos' 'El despliegue cloud no depende de arrancarlo a mano y la base de seguridad ya separa perfiles tecnicos, funcionales y externos.'
+    Add-Box -Slide $slide -Left 58 -Top 156 -Width 390 -Height 238 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
+    Add-Text -Slide $slide -Left 86 -Top 182 -Width 300 -Height 24 -Text 'Arranque automatico' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 86 -Top 222 -Width 320 -Height 92 -Text "VM -> systemd -> agora.service`rdeploy/gcp/startup.sh`rdocker compose up -d" -Size 17 -Rgb $colors.ink -Font 'Consolas' | Out-Null
+    Add-BulletList $slide 88 326 300 48 @(
+        'Recalcula la URL nip.io si cambia la IP.',
+        'Levanta proxy, app y PostgreSQL.'
+    ) 14 $colors.muted | Out-Null
+
+    Add-Box -Slide $slide -Left 510 -Top 156 -Width 372 -Height 238 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+    Add-Text -Slide $slide -Left 538 -Top 182 -Width 270 -Height 24 -Text 'Roles definidos' -Size 20 -Rgb $colors.blue -Bold $true | Out-Null
+    Add-BulletList $slide 542 224 286 106 @(
+        'ADMIN: control completo.',
+        'COORDINATOR: flujo academico.',
+        'DOCUMENT_MANAGER: documentos.',
+        'MONITOR: logs y consola tecnica.',
+        'COMPANY_PORTAL: empresa externa.'
+    ) 13 $colors.darkInk | Out-Null
+    Add-Text -Slide $slide -Left 540 -Top 358 -Width 300 -Height 24 -Text 'Futuro: permisos finos y perfiles de solo lectura.' -Size 12 -Rgb $colors.muted | Out-Null
+    Add-Text -Slide $slide -Left 74 -Top 430 -Width 780 -Height 42 -Text 'Justificacion: cierro el despliegue cloud con arranque reproducible y dejo preparada la separacion de permisos para evolucionar de demo funcional a entorno multiusuario real.' -Size 15 -Rgb $colors.muted | Out-Null
+    Set-SlideNotes $slide @'
+Aqui explico dos decisiones tecnicas que pueden preguntar.
+
+Primero, el arranque de la VM:
+Docker por si solo reinicia contenedores, pero yo queria asegurar el arranque completo del stack.
+Por eso instalo agora.service con systemd. Ese servicio ejecuta deploy/gcp/startup.sh.
+startup.sh comprueba .env.gcp, recalcula la URL nip.io si cambia la IP publica y ejecuta docker compose up -d --remove-orphans.
+El compose levanta proxy, app y base de datos.
+
+Segundo, roles:
+Ahora mismo para la defensa uso un usuario amplio para no fragmentar la demo.
+Pero el backend ya tiene roles definidos en backend/config/packages/security.yaml.
+ROLE_ADMIN hereda todo, ROLE_COORDINATOR gestiona el flujo academico, ROLE_DOCUMENT_MANAGER gestiona documentos, ROLE_MONITOR sirve para la parte tecnica y ROLE_COMPANY_PORTAL queda separado para empresas.
+La mejora futura seria cerrar la parte fina en React: ocultar botones segun rol y crear un perfil de solo lectura.
+'@
+
+    # 15. Validacion
+    $slide = Add-Slide $presentation
+    Add-Header $slide '14 / Validacion' 'Comprobaciones ejecutadas antes de la revision final'
     Add-Metric $slide 70 162 '110' 'tests backend' $colors.green
     Add-Metric $slide 292 162 '628' 'aserciones' $colors.cyan
     Add-Metric $slide 514 162 '14/14' 'tests frontend' $colors.green
@@ -562,9 +600,9 @@ Las cifras sirven como apoyo para demostrar que no me he quedado en una prueba m
 La deprecacion de PHPUnit existe, pero no afecta a la funcionalidad ni a la defensa.
 '@
 
-    # 15. Acceso de evaluacion
+    # 16. Acceso de evaluacion
     $slide = Add-Slide $presentation
-    Add-Header $slide '14 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
+    Add-Header $slide '15 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
     Add-Box -Slide $slide -Left 68 -Top 158 -Width 824 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
     Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text \"$publicBaseUrl/app   |   $publicBaseUrl/externo\" -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
     Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo y documentacion; la operacion tecnica se hace desde Agora Desktop.' -Size 14 -Rgb $colors.darkInk | Out-Null
@@ -585,9 +623,9 @@ Si cambia la IP publica, Agora Desktop me dice la nueva URL.
 Con la cuenta profesora se puede revisar el flujo interno sin usar la cuenta de administrador principal.
 '@
 
-    # 16. Alcance cerrado y mejoras futuras
+    # 17. Alcance cerrado y mejoras futuras
     $slide = Add-Slide $presentation
-    Add-Header $slide '15 / Alcance y futuro' 'Que queda cerrado y que se deja para despues' 'El nucleo funcional y tecnico ya esta entregado; las mejoras futuras endurecen o amplian, pero no bloquean la defensa.'
+    Add-Header $slide '16 / Alcance y futuro' 'Que queda cerrado y que se deja para despues' 'El nucleo funcional y tecnico ya esta entregado; las mejoras futuras endurecen o amplian, pero no bloquean la defensa.'
     Add-Box -Slide $slide -Left 56 -Top 170 -Width 270 -Height 214 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 80 -Top 192 -Width 210 -Height 28 -Text 'Cerrado en esta entrega' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-BulletList $slide 82 232 212 132 @(
@@ -620,9 +658,9 @@ Lo que dejo para despues no son huecos del nucleo, sino mejoras de endurecimient
 Eso demuestra criterio: he preferido cerrar bien el producto base antes que abarcar mas cosas a medias.
 '@
 
-    # 17. Limitaciones
+    # 18. Limitaciones
     $slide = Add-Slide $presentation
-    Add-Header $slide '16 / Limitaciones' 'Que queda fuera de esta entrega'
+    Add-Header $slide '17 / Limitaciones' 'Que queda fuera de esta entrega'
     Add-BulletList $slide 78 160 360 230 @(
         'Infraestructura mas gestionada y endurecida que la VM actual.',
         'Integracion con SSO o identidad corporativa.',
@@ -641,9 +679,9 @@ SSO, firma avanzada, dominio propio, observabilidad y servicios gestionados.
 Tambien puedo mencionar que Symfony sigue una version que convendria actualizar tras la entrega para mantenimiento a medio plazo.
 '@
 
-    # 18. Cierre
+    # 19. Cierre
     $slide = Add-Slide $presentation
-    Add-Header $slide '17 / Cierre' 'Resultado defendible'
+    Add-Header $slide '18 / Cierre' 'Resultado defendible'
     Add-Text -Slide $slide -Left 92 -Top 158 -Width 760 -Height 118 -Text 'El proyecto transforma una gestion dispersa en una plataforma web funcional, trazable y documentada para empresas colaboradoras y practicas de FP Dual.' -Size 30 -Rgb $colors.ink -Bold $true | Out-Null
     Add-BulletList $slide 128 322 690 90 @(
         'Problema real del centro.',

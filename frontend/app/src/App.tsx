@@ -43,8 +43,6 @@ import {
   fetchTutorAcademicos,
   fetchTutorProfesionales,
   getApiBaseUrl,
-  getConfiguredAuthPassword,
-  getConfiguredAuthUsername,
   getAsignacionDetail,
   getConvenioDetail,
   getConvenioExtras,
@@ -939,8 +937,8 @@ interface LoginPageProps {
  * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
  */
 function LoginPage({ onLogin, authError }: LoginPageProps) {
-  const [username, setUsername] = useState(getConfiguredAuthUsername());
-  const [password, setPassword] = useState(getConfiguredAuthPassword());
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [status, setStatus] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -958,7 +956,7 @@ function LoginPage({ onLogin, authError }: LoginPageProps) {
       setStatus(`Bienvenido ${meData.username}`);
       navigate('/');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesion.';
+      const message = err instanceof Error ? err.message : 'No se pudo iniciar sesión.';
       setStatus(message);
     }
   };
@@ -967,39 +965,39 @@ function LoginPage({ onLogin, authError }: LoginPageProps) {
     <section className="access-shell">
       <article className="access-shell__hero">
         <p className="auth-card__eyebrow">Portal interno</p>
-        <h1>Acceso operativo para coordinacion, seguimiento y documentacion.</h1>
+        <h1>Acceso operativo para coordinación, seguimiento y documentación.</h1>
         <p className="auth-card__description">
           Entra al entorno interno de Agora para revisar solicitudes, gestionar convenios, asignaciones,
-          documentacion y mensajeria con empresas desde una unica consola.
+          documentación y mensajería con empresas desde una única consola.
         </p>
         <div className="access-shell__metrics">
           <article className="access-metric">
             <span>Entorno</span>
             <strong>Panel interno</strong>
-            <small>Gestion de empresas, convenios, estudiantes y practicas.</small>
+            <small>Gestión de empresas, convenios, estudiantes y prácticas.</small>
           </article>
           <article className="access-metric">
             <span>Seguridad</span>
-            <strong>Sesion autenticada</strong>
-            <small>El backend mantiene la sesion y los permisos de acceso al API.</small>
+            <strong>Sesión autenticada</strong>
+            <small>El backend mantiene la sesión y los permisos de acceso al API.</small>
           </article>
           <article className="access-metric">
             <span>Soporte</span>
-            <strong>Documentacion publica</strong>
-            <small>La guia del proyecto permanece accesible sin entrar al portal.</small>
+            <strong>Documentación pública</strong>
+            <small>La guía del proyecto permanece accesible sin entrar al portal.</small>
           </article>
         </div>
         <div className="access-shell__links">
-          <a href="/documentacion" className="button button--ghost">Ver documentacion</a>
+          <a href="/documentacion" className="button button--ghost">Ver documentación</a>
           <a href="/externo" className="button button--ghost">Abrir portal externo</a>
         </div>
       </article>
 
       <div className="auth-card auth-card--access">
-        <p className="auth-card__eyebrow">Inicio de sesion</p>
+        <p className="auth-card__eyebrow">Inicio de sesión</p>
         <h2>Entrar al panel</h2>
         <p className="auth-card__description">
-          Usa tus credenciales operativas para acceder al panel interno y activar la sesion del navegador.
+          Usa tus credenciales operativas para acceder al panel interno y activar la sesión del navegador.
         </p>
         {authError && <div className="app__alert app__alert--error">{authError}</div>}
         <form className="auth-form auth-form--stacked" onSubmit={handleSubmit}>
@@ -1007,22 +1005,22 @@ function LoginPage({ onLogin, authError }: LoginPageProps) {
             <span>Usuario</span>
             <input
               type="text"
-              placeholder="admin"
+              placeholder="Usuario"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
             />
           </label>
           <label className="form__field">
-            <span>Contrasena</span>
-            <input type="password" placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            <span>Contraseña</span>
+            <input type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </label>
           <button type="submit" className="button button--primary button--lg">
             Entrar al portal interno
           </button>
           {status && <p className="form__error">{status}</p>}
           <p className="auth-card__hint">
-            Si cambian las credenciales de backend, ajusta tambien las variables del frontend para mantener el acceso integrado.
+            Si cambian las credenciales de backend, ajusta también las variables del frontend para mantener el acceso integrado.
           </p>
         </form>
       </div>
@@ -2759,22 +2757,22 @@ export default function App() {
 
   const dashboardHeroUpdates = useMemo(() => {
     const referenceStatus = loadingReferenceData
-      ? 'Cargando catÃ¡logo de tutores bajo demanda para no penalizar el arranque.'
+      ? 'Cargando catálogo de tutores bajo demanda para no penalizar el arranque.'
       : referenceData
-        ? `${referenceData.tutoresAcademicos.length} tutores acadÃ©micos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
-        : 'Los tutores se cargan a demanda cuando entras en el mÃ³dulo o preparas una asignaciÃ³n.';
+        ? `${referenceData.tutoresAcademicos.length} tutores académicos y ${referenceData.tutoresProfesionales.length} profesionales listos.`
+        : 'Los tutores se cargan a demanda cuando entras en el módulo o preparas una asignación.';
 
     return [
       {
         title: 'Estado del panel',
         detail: lastUpdated
           ? `Datos sincronizados a las ${lastUpdated.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}.`
-          : 'Esperando la primera sincronizaciÃ³n completa.',
+          : 'Esperando la primera sincronización completa.',
       },
       {
-        title: 'RevisiÃ³n externa',
+        title: 'Revisión externa',
         detail: empresaSolicitudes.length > 0
-          ? `${empresaSolicitudes.length} solicitudes requieren revisiÃ³n desde el equipo interno.`
+          ? `${empresaSolicitudes.length} solicitudes requieren revisión desde el equipo interno.`
           : 'No hay solicitudes pendientes de revisar en este momento.',
       },
       {
@@ -2895,7 +2893,7 @@ export default function App() {
         disabled={loadingReferenceData}
         title={loadingReferenceData ? 'Cargando datos de referencia...' : undefined}
       >
-        Nueva asignacion
+        Nueva asignación
       </button>
     ),
     [openCreateAsignacion, referenceData],
@@ -2911,7 +2909,7 @@ const moduleCards = useMemo(
       label: 'Empresas',
       total: collections?.empresas.length ?? 0,
       description: 'Colaboradoras activas',
-      detail: 'Incluye estados de colaboraciÃ³n, contactos y convenios relacionados.',
+      detail: 'Incluye estados de colaboración, contactos y convenios relacionados.',
       accent: 'orchid',
     },
     {
@@ -2919,7 +2917,7 @@ const moduleCards = useMemo(
       label: 'Convenios',
       total: collections?.convenios.length ?? 0,
       description: 'Acuerdos vigentes',
-      detail: 'InformaciÃ³n completa sobre fechas, estado y asignaciones vinculadas.',
+      detail: 'Información completa sobre fechas, estado y asignaciones vinculadas.',
       accent: 'amber',
     },
     {
@@ -2927,30 +2925,30 @@ const moduleCards = useMemo(
       label: 'Estudiantes',
       total: collections?.estudiantes.length ?? 0,
       description: 'Participantes registrados',
-      detail: 'Fichas con estado acadÃ©mico, asignaciones y datos de contacto.',
+      detail: 'Fichas con estado académico, asignaciones y datos de contacto.',
       accent: 'cyan',
     },
     {
       id: 'asignaciones',
       label: 'Asignaciones',
       total: collections?.asignaciones.length ?? 0,
-      description: 'PrÃ¡cticas en curso',
-      detail: 'Pipeline Kanban con tutorÃ­as, fechas y modalidad.',
+      description: 'Prácticas en curso',
+      detail: 'Pipeline Kanban con tutorías, fechas y modalidad.',
       accent: 'violet',
     },
     {
       id: 'tutores',
       label: 'Tutores',
       total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-      description: 'AcadÃ©micos y profesionales',
-      detail: 'Filtra por estado y empresa para contactar rÃ¡pido.',
+      description: 'Académicos y profesionales',
+      detail: 'Filtra por estado y empresa para contactar rápido.',
       accent: 'cyan',
     },
     {
       id: 'documentacion',
-      label: 'DocumentaciÃ³n',
+      label: 'Documentación',
       total: 3,
-      description: 'GuÃ­as y recursos listos',
+      description: 'Guías y recursos listos',
       detail: 'Enlaza a backend, frontend y desglose de flujos CRUD.',
       accent: 'orchid',
     },
@@ -2971,7 +2969,7 @@ const moduleCards = useMemo(
         id: 'convenios',
         label: 'Convenios',
         total: collections?.convenios.length ?? 0,
-        description: 'Estado, fechas y documentaciÃ³n adjunta.',
+        description: 'Estado, fechas y documentación adjunta.',
         path: '/convenios',
       },
       {
@@ -2992,7 +2990,7 @@ const moduleCards = useMemo(
         id: 'tutores',
         label: 'Tutores',
         total: (referenceData?.tutoresAcademicos.length ?? 0) + (referenceData?.tutoresProfesionales.length ?? 0),
-        description: 'Equipos acadÃ©micos y de empresa con filtros.',
+        description: 'Equipos académicos y de empresa con filtros.',
         path: '/tutores',
       },
     ],
@@ -3769,7 +3767,7 @@ const selectedConvenio = useMemo(() => {
               onSubmit={async (event) => {
                 event.preventDefault();
                 if (!empresaDocFile) {
-                  pushToast('error', 'Debes seleccionar un archivo local antes de anadir el documento.');
+                  pushToast('error', 'Debes seleccionar un archivo local antes de añadir el documento.');
                   return;
                 }
                 const resolvedType = empresaDocType || inferUploadDocumentType(empresaDocFile);
@@ -3823,22 +3821,23 @@ const selectedConvenio = useMemo(() => {
                   onChange={(e) => {
                     const nextFile = e.target.files?.[0] ?? null;
                     setEmpresaDocFile(nextFile);
-                    setEmpresaDocType(inferUploadDocumentType(nextFile));
+                    const inferredType = inferUploadDocumentType(nextFile);
+                    setEmpresaDocType((current) => inferredType || current);
                     if (nextFile && !empresaDocName.trim()) {
                       setEmpresaDocName(nextFile.name.replace(/\.[^.]+$/, ''));
                     }
                   }}
                 />
                 <small className="document-form__file-name">
-                  {empresaDocFile ? `Archivo seleccionado: ${empresaDocFile.name}` : 'No hay archivo seleccionado todavia.'}
+                  {empresaDocFile ? `Archivo seleccionado: ${empresaDocFile.name}` : 'No hay archivo seleccionado todavía.'}
                 </small>
               </label>
               <button
                 type="submit"
                 className="button button--primary button--sm"
-                disabled={savingConvenioDocument || !empresaDocFile || !empresaDocType}
+                disabled={savingConvenioDocument || !empresaDocFile || !(empresaDocType || inferUploadDocumentType(empresaDocFile))}
               >
-                {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
+                {savingConvenioDocument ? 'Guardando...' : 'Añadir documento'}
               </button>
             </form>
           </article>
@@ -5445,7 +5444,7 @@ const selectedConvenio = useMemo(() => {
                           </div>
                         ))
                       ) : (
-                        <p className="detail-placeholder">Sin documentos adjuntos todavia.</p>
+                        <p className="detail-placeholder">Sin documentos adjuntos todavía.</p>
                       )}
                     </div>
                     <form className="convenio-document-form" onSubmit={handleDocumentSubmit}>
@@ -5457,7 +5456,7 @@ const selectedConvenio = useMemo(() => {
                             ...current,
                             name: event.target.value,
                           }))}
-                          placeholder="Acta renovacion"
+                          placeholder="Acta renovación"
                           maxLength={120}
                           required
                         />
@@ -5487,10 +5486,11 @@ const selectedConvenio = useMemo(() => {
                           accept={UPLOAD_DOCUMENT_ACCEPT}
                           onChange={(event) => {
                             const nextFile = event.target.files?.[0] ?? null;
+                            const inferredType = inferUploadDocumentType(nextFile);
                             setConvenioDocumentDraft((current) => ({
                               ...current,
                               file: nextFile,
-                              type: inferUploadDocumentType(nextFile),
+                              type: inferredType || current.type,
                               name: nextFile && !current.name.trim()
                                 ? nextFile.name.replace(/\.[^.]+$/, '')
                                 : current.name,
@@ -5498,15 +5498,15 @@ const selectedConvenio = useMemo(() => {
                           }}
                         />
                         <small className="document-form__file-name">
-                          {documentFile ? `Archivo seleccionado: ${documentFile.name}` : 'No hay archivo seleccionado todavia.'}
+                          {documentFile ? `Archivo seleccionado: ${documentFile.name}` : 'No hay archivo seleccionado todavía.'}
                         </small>
                       </label>
                       <button
                         type="submit"
                         className="button button--primary button--sm"
-                        disabled={savingConvenioDocument || !documentFile || !documentType}
+                        disabled={savingConvenioDocument || !documentFile || !(documentType || inferUploadDocumentType(documentFile))}
                       >
-                        {savingConvenioDocument ? 'Guardando...' : 'Anadir documento'}
+                        {savingConvenioDocument ? 'Guardando...' : 'Añadir documento'}
                       </button>
                     </form>
                   </article>

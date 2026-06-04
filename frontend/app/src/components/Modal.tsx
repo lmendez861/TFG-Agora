@@ -38,7 +38,7 @@ export function Modal({ title, children, onClose, footer }: ModalProps) {
         <header className="modal__header">
           <h2>{title}</h2>
           <button type="button" className="modal__close" onClick={onClose} aria-label="Cerrar">
-            Ã—
+            X
           </button>
         </header>
         <div className="modal__body">{children}</div>

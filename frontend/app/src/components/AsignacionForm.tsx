@@ -127,7 +127,7 @@ export function AsignacionForm({
   );
   const estudiantePracticasHint =
     mode === 'create' && (estudianteSeleccionado?.asignaciones.enCurso ?? 0) > 0
-      ? 'Este estudiante ya figura con practicas en curso. Si intentas solapar otra asignacion activa, el sistema la bloqueara.'
+      ? 'Este estudiante ya figura con prácticas en curso. Si intentas solapar otra asignación activa, el sistema la bloqueará.'
       : null;
   const tutorProfesionalHint = useMemo(() => {
     if (!values.empresaId) {
@@ -167,9 +167,10 @@ export function AsignacionForm({
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     setLocalError(null);
+    const nextValue = name === 'horasTotales' ? value.replace(/\D/g, '') : value;
     setValues((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: nextValue,
     }));
   };
 
@@ -267,7 +268,7 @@ export function AsignacionForm({
               </option>
             ))}
           </select>
-          <small className="form__hint">Solo se muestran empresas activas para no asignar practicas sobre datos pendientes de validar.</small>
+          <small className="form__hint">Solo se muestran empresas activas para no asignar prácticas sobre datos pendientes de validar.</small>
         </label>
 
         <label className="form__field">
@@ -286,13 +287,13 @@ export function AsignacionForm({
               </option>
             ))}
           </select>
-          <small className="form__hint">Solo se listan convenios firmados, vigentes o en renovacion para respetar el flujo de negocio.</small>
+          <small className="form__hint">Solo se listan convenios firmados, vigentes o en renovación para respetar el flujo de negocio.</small>
         </label>
 
         <label className="form__field">
-          <span>Tutor academico*</span>
+          <span>Tutor académico*</span>
           <select name="tutorAcademicoId" value={values.tutorAcademicoId} onChange={handleChange} required>
-            <option value="">Selecciona un tutor academico</option>
+            <option value="">Selecciona un tutor académico</option>
             {tutoresAcademicos.map((tutor) => (
               <option key={tutor.id} value={tutor.id}>
                 {tutor.nombre} {tutor.apellido}
@@ -347,10 +348,10 @@ export function AsignacionForm({
           <span>Horas totales</span>
           <input
             name="horasTotales"
-            type="number"
-            min="0"
-            max={MAX_ALLOWED_HOURS}
-            step="1"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="Ej. 370"
             value={values.horasTotales}
             onChange={handleChange}
           />
@@ -389,7 +390,7 @@ export function AsignacionForm({
           Cancelar
         </button>
         <button type="submit" className="button button--primary" disabled={submitting}>
-          {submitting ? 'Guardando...' : mode === 'create' ? 'Crear asignacion' : 'Guardar cambios'}
+          {submitting ? 'Guardando...' : mode === 'create' ? 'Crear asignación' : 'Guardar cambios'}
         </button>
       </div>
     </form>

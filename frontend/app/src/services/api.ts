@@ -60,8 +60,6 @@ type EmpresaDetailApi = Omit<EmpresaDetail, 'documentos'> & {
 
 type ImportMetaEnvLike = {
   VITE_API_BASE_URL?: string;
-  VITE_API_USERNAME?: string;
-  VITE_API_PASSWORD?: string;
 };
 
 type CsvExportParamValue = string | number | boolean | null | undefined;
@@ -98,8 +96,6 @@ function resolveDefaultApiBaseUrl(): string {
 }
 
 const API_BASE_URL = ENV.VITE_API_BASE_URL ?? resolveDefaultApiBaseUrl();
-const API_USERNAME = ENV.VITE_API_USERNAME ?? 'admin';
-const API_PASSWORD = ENV.VITE_API_PASSWORD ?? 'admin123';
 const API_REQUEST_TIMEOUT_MS = 20000;
 let activeUsername = '';
 let activePassword = '';
@@ -544,22 +540,6 @@ export async function fetchCollections(): Promise<ApiCollections> {
  */
 export function getApiBaseUrl(): string {
   return API_BASE_URL;
-}
-
-/**
- * Devuelve ConfiguredAuthUsername sin duplicar logica de acceso en los consumidores.
- * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
- */
-export function getConfiguredAuthUsername(): string {
-  return API_USERNAME;
-}
-
-/**
- * Devuelve ConfiguredAuthPassword sin duplicar logica de acceso en los consumidores.
- * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
- */
-export function getConfiguredAuthPassword(): string {
-  return API_PASSWORD;
 }
 
 /**

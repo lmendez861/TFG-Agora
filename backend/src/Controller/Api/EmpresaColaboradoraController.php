@@ -332,6 +332,41 @@ final class EmpresaColaboradoraController extends AbstractController
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
+    #[Route('/{id<\d+>}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(
+        ?EmpresaColaboradora $empresa,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$empresa) {
+            return $this->json(['message' => 'Empresa no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($empresa->getAsignaciones()->count() > 0 || $empresa->getConvenios()->count() > 0) {
+            return $this->json([
+                'message' => 'No se puede eliminar la empresa porque tiene convenios o asignaciones asociados. Elimina primero esos datos de prueba.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $empresaId = $empresa->getId();
+        $auditLogger->log('empresa.delete', 'empresa_colaboradora', $empresaId, [
+            'nombre' => $empresa->getNombre(),
+            'email' => $empresa->getEmail(),
+        ]);
+
+        $entityManager->remove($empresa);
+        $entityManager->flush();
+        $snapshotProvider->invalidate();
+
+        return $this->json(['message' => 'Empresa eliminada correctamente.'], Response::HTTP_OK);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/etiquetas', name: 'add_label', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function addEtiqueta(

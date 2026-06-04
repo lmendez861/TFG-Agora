@@ -268,6 +268,36 @@ final class AsignacionController extends AbstractController
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
+    #[Route('/{id<\d+>}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(
+        ?AsignacionPractica $asignacion,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$asignacion) {
+            return $this->json(['message' => 'Asignacion no encontrada'], Response::HTTP_NOT_FOUND);
+        }
+
+        $asignacionId = $asignacion->getId();
+        $auditLogger->log('asignacion.delete', 'asignacion_practica', $asignacionId, [
+            'empresaId' => $asignacion->getEmpresa()?->getId(),
+            'convenioId' => $asignacion->getConvenio()?->getId(),
+            'estudianteId' => $asignacion->getEstudiante()?->getId(),
+        ]);
+
+        $entityManager->remove($asignacion);
+        $entityManager->flush();
+        $snapshotProvider->invalidate();
+
+        return $this->json(['message' => 'Asignacion eliminada correctamente.'], Response::HTTP_OK);
+    }
+
+    /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
     #[Route('/{id<\d+>}/seguimientos', name: 'create_follow_up', methods: ['POST'])]
     #[IsGranted('ROLE_COORDINATOR')]
     public function createSeguimiento(

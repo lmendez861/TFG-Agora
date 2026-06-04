@@ -591,6 +591,14 @@ export async function updateEmpresa(id: number, payload: Partial<EmpresaPayload>
 }
 
 /**
+ * Elimina un registro de empresa desde administracion cuando no conserva dependencias activas.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
+export async function deleteEmpresa(id: number): Promise<{ message: string }> {
+  return apiDelete<{ message: string }>(`/empresas/${id}`);
+}
+
+/**
  * Devuelve ConvenioDetail sin duplicar logica de acceso en los consumidores.
  * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
  */
@@ -620,6 +628,14 @@ export async function createConvenio(payload: ConvenioPayload): Promise<Convenio
  */
 export async function updateConvenio(id: number, payload: Partial<ConvenioPayload>): Promise<ConvenioDetail> {
   return apiPut<ConvenioDetail>(`/convenios/${id}`, payload);
+}
+
+/**
+ * Elimina un convenio de prueba desde administracion cuando no tiene asignaciones asociadas.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
+export async function deleteConvenio(id: number): Promise<{ message: string }> {
+  return apiDelete<{ message: string }>(`/convenios/${id}`);
 }
 
 /**
@@ -808,6 +824,14 @@ export async function createAsignacion(payload: AsignacionPayload): Promise<Asig
  */
 export async function updateAsignacion(id: number, payload: Partial<AsignacionPayload>): Promise<AsignacionDetail> {
   return apiPut<AsignacionDetail>(`/asignaciones/${id}`, payload);
+}
+
+/**
+ * Elimina una asignacion de prueba desde administracion.
+ * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
+ */
+export async function deleteAsignacion(id: number): Promise<{ message: string }> {
+  return apiDelete<{ message: string }>(`/asignaciones/${id}`);
 }
 
 /**

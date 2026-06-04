@@ -32,7 +32,10 @@ import {
   createSeguimiento,
   addConvenioDocument,
   addEmpresaDocument,
+  deleteAsignacion,
+  deleteConvenio,
   deleteConvenioDocument,
+  deleteEmpresa,
   deleteEmpresaDocument,
   dismissConvenioAlert,
   downloadAuthenticatedDocument,
@@ -1772,6 +1775,69 @@ export default function App() {
     });
   }, [refreshSolicitudes]);
 
+  const handleDeleteEmpresa = useCallback(async (empresa: EmpresaSummary) => {
+    if (!canPerformDestructiveActions) {
+      pushToast('error', 'Solo el administrador puede eliminar datos de prueba.');
+      return;
+    }
+    const confirmed = window.confirm(`Eliminar la empresa "${empresa.nombre}"? Solo se permite si no tiene convenios ni asignaciones.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await deleteEmpresa(empresa.id);
+      setSelectedEmpresaId(null);
+      pushToast('success', response.message);
+      await loadData({ silent: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo eliminar la empresa.';
+      pushToast('error', message);
+    }
+  }, [canPerformDestructiveActions, loadData, pushToast]);
+
+  const handleDeleteConvenio = useCallback(async (convenio: ConvenioSummary) => {
+    if (!canPerformDestructiveActions) {
+      pushToast('error', 'Solo el administrador puede eliminar datos de prueba.');
+      return;
+    }
+    const confirmed = window.confirm(`Eliminar el convenio "${convenio.titulo}"? Solo se permite si no tiene asignaciones asociadas.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await deleteConvenio(convenio.id);
+      setSelectedConvenioId(null);
+      pushToast('success', response.message);
+      await loadData({ silent: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo eliminar el convenio.';
+      pushToast('error', message);
+    }
+  }, [canPerformDestructiveActions, loadData, pushToast]);
+
+  const handleDeleteAsignacion = useCallback(async (asignacion: AsignacionSummary) => {
+    if (!canPerformDestructiveActions) {
+      pushToast('error', 'Solo el administrador puede eliminar datos de prueba.');
+      return;
+    }
+    const confirmed = window.confirm(`Eliminar la asignacion de ${asignacion.estudiante.nombre} ${asignacion.estudiante.apellido}?`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await deleteAsignacion(asignacion.id);
+      setSelectedAsignacion((current) => (current?.id === asignacion.id ? null : current));
+      pushToast('success', response.message);
+      await loadData({ silent: true });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo eliminar la asignacion.';
+      pushToast('error', message);
+    }
+  }, [canPerformDestructiveActions, loadData, pushToast]);
+
   const loadTutorAcademicosList = useCallback(
     async (page: number, estado: 'todos' | 'activos' | 'inactivos') => {
       if (!me) return;
@@ -2856,12 +2922,19 @@ export default function App() {
       header: 'Acciones',
       align: 'right',
       render: (empresa) => (
-        <button type="button" className="button button--link" onClick={() => handleEditEmpresa(empresa)}>
-          Editar
-        </button>
+        <div className="table-actions">
+          <button type="button" className="button button--link" onClick={() => handleEditEmpresa(empresa)}>
+            Editar
+          </button>
+          {canPerformDestructiveActions && (
+            <button type="button" className="button button--link" onClick={() => void handleDeleteEmpresa(empresa)}>
+              Eliminar
+            </button>
+          )}
+        </div>
       ),
     },
-  ], [handleEditEmpresa]);
+  ], [canPerformDestructiveActions, handleDeleteEmpresa, handleEditEmpresa]);
 
   const empresaActions = useMemo(
     () => (
@@ -2879,12 +2952,19 @@ export default function App() {
       header: 'Acciones',
       align: 'right',
       render: (convenio) => (
-        <button type="button" className="button button--link" onClick={() => handleEditConvenio(convenio)}>
-          Editar
-        </button>
+        <div className="table-actions">
+          <button type="button" className="button button--link" onClick={() => handleEditConvenio(convenio)}>
+            Editar
+          </button>
+          {canPerformDestructiveActions && (
+            <button type="button" className="button button--link" onClick={() => void handleDeleteConvenio(convenio)}>
+              Eliminar
+            </button>
+          )}
+        </div>
       ),
     },
-  ], [handleEditConvenio]);
+  ], [canPerformDestructiveActions, handleDeleteConvenio, handleEditConvenio]);
 
   const convenioActions = useMemo(
     () => (
@@ -2909,10 +2989,15 @@ export default function App() {
           <Link to={`/asignaciones/${asignacion.id}`} className="button button--link">
             Ver detalle
           </Link>
+          {canPerformDestructiveActions && (
+            <button type="button" className="button button--link" onClick={() => void handleDeleteAsignacion(asignacion)}>
+              Eliminar
+            </button>
+          )}
         </div>
       ),
     },
-  ], [handleEditAsignacion]);
+  ], [canPerformDestructiveActions, handleDeleteAsignacion, handleEditAsignacion]);
 
   const asignacionActions = useMemo(
     () => (
@@ -5025,6 +5110,11 @@ const selectedConvenio = useMemo(() => {
                       <button type="button" className="button button--ghost button--sm" onClick={() => handleEditEmpresa(selectedEmpresa)}>
                         Editar ficha
                       </button>
+                      {canPerformDestructiveActions && (
+                        <button type="button" className="button button--ghost button--sm" onClick={() => void handleDeleteEmpresa(selectedEmpresa)}>
+                          Eliminar
+                        </button>
+                      )}
                       <button type="button" className="button button--primary button--sm" onClick={() => navigate(`/empresas/${selectedEmpresa.id}`)}>
                         Abrir ficha 360
                       </button>
@@ -5335,6 +5425,11 @@ const selectedConvenio = useMemo(() => {
                     <Link className="button button--primary button--sm" to={`/convenios/${selectedConvenio.id}`}>
                       Abrir ficha
                     </Link>
+                    {canPerformDestructiveActions && (
+                      <button type="button" className="button button--ghost button--sm" onClick={() => void handleDeleteConvenio(selectedConvenio)}>
+                        Eliminar
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className="convenio-panel__meta">
@@ -5969,6 +6064,11 @@ const selectedConvenio = useMemo(() => {
                     <Link className="button button--primary button--sm" to={`/asignaciones/${selectedAsignacion.id}`}>
                       Abrir ficha
                     </Link>
+                    {canPerformDestructiveActions && (
+                      <button type="button" className="button button--ghost button--sm" onClick={() => void handleDeleteAsignacion(selectedAsignacion)}>
+                        Eliminar
+                      </button>
+                    )}
                   </div>
                 </div>
 

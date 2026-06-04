@@ -394,6 +394,41 @@ final class ConvenioController extends AbstractController
     }
 
     /**
+     * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
+     * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
+     */
+    #[Route('/{id<\d+>}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
+    public function delete(
+        ?Convenio $convenio,
+        EntityManagerInterface $entityManager,
+        BootstrapSnapshotProvider $snapshotProvider,
+        AuditLogger $auditLogger,
+    ): JsonResponse {
+        if (!$convenio) {
+            return $this->json(['message' => 'Convenio no encontrado'], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($convenio->getAsignaciones()->count() > 0) {
+            return $this->json([
+                'message' => 'No se puede eliminar el convenio porque tiene asignaciones asociadas. Elimina primero esas asignaciones de prueba.',
+            ], Response::HTTP_CONFLICT);
+        }
+
+        $convenioId = $convenio->getId();
+        $auditLogger->log('convenio.delete', 'convenio', $convenioId, [
+            'empresaId' => $convenio->getEmpresa()?->getId(),
+            'titulo' => $convenio->getTitulo(),
+        ]);
+
+        $entityManager->remove($convenio);
+        $entityManager->flush();
+        $snapshotProvider->invalidate();
+
+        return $this->json(['message' => 'Convenio eliminado correctamente.'], Response::HTTP_OK);
+    }
+
+    /**
      * Convierte entidades de dominio en el contrato JSON consumido por el frontend.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.
      */

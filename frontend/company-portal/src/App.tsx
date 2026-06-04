@@ -237,15 +237,15 @@ const IMPACT_METRICS: MetricCard[] = [
   {
     label: 'Cuenta previa',
     value: '1 acceso',
-    detail: 'La empresa define correo y contrasena antes de enviar la solicitud.',
+    detail: 'La empresa define correo y contraseña antes de enviar la solicitud.',
   },
   {
     label: 'Canal directo',
     value: 'Chat',
-    detail: 'La mensajeria queda asociada a la solicitud y al panel privado.',
+    detail: 'La mensajería queda asociada a la solicitud y al panel privado.',
   },
   {
-    label: 'Revision interna',
+    label: 'Revisión interna',
     value: 'Coordinada',
     detail: 'La empresa registra la solicitud y el centro la revisa en el portal interno.',
   },
@@ -254,7 +254,7 @@ const IMPACT_METRICS: MetricCard[] = [
 const CAPABILITIES: CapabilityCard[] = [
   {
     title: 'Cuenta previa de empresa',
-    detail: 'La empresa crea su acceso con correo y contrasena antes de remitir la solicitud formal.',
+    detail: 'La empresa crea su acceso con correo y contraseña antes de remitir la solicitud formal.',
   },
   {
     title: 'Solicitud posterior',
@@ -269,18 +269,18 @@ const CAPABILITIES: CapabilityCard[] = [
 const PROCESS_STEPS: ProcessStep[] = [
   {
     title: '1. Crear cuenta',
-    detail: 'La empresa registra su acceso inicial con correo corporativo y contrasena.',
+    detail: 'La empresa registra su acceso inicial con correo corporativo y contraseña.',
   },
   {
     title: '2. Completar solicitud',
     detail: 'Ya dentro del portal, la empresa remite datos corporativos, contacto y propuesta de colaboracion.',
   },
   {
-    title: '3. Verificacion de correo',
-    detail: 'El sistema remite un enlace seguro para validar el correo asociado a la solicitud.',
+    title: '3. Verificación de correo',
+    detail: 'El sistema remite un enlace seguro para válidar el correo asociado a la solicitud.',
   },
   {
-    title: '4. Revision y operativa',
+    title: '4. Revisión y operativa',
     detail: 'El portal interno recibe la solicitud, la aprueba o rechaza y mantiene el canal operativo.',
   },
 ];
@@ -295,7 +295,7 @@ const JOURNEY_SUMMARY = [
     detail: 'La peticion se rellena ya dentro del portal, con los datos de la empresa y el contacto principal.',
   },
   {
-    title: 'Revision y continuidad',
+    title: 'Revisión y continuidad',
     detail: 'El centro revisa la solicitud y la empresa mantiene el mismo acceso para estado, chat y operativa posterior.',
   },
 ];
@@ -303,23 +303,23 @@ const JOURNEY_SUMMARY = [
 const MAIL_CHECKLIST = [
   'Confirma que la cuenta del portal se creo con el correo corporativo correcto.',
   'Revisar entrada, promociones y spam del correo corporativo.',
-  'Abrir el enlace de verificacion completo recibido por email.',
-  'Volver al panel o a la pagina de estado para confirmar el avance del registro.',
+  'Abrir el enlace de verificación completo recibido por email.',
+  'Volver al panel o a la página de estado para confirmar el avance del registro.',
   'Mantener el mismo acceso de empresa para consultar mensajes y estado.',
 ];
 
 const FAQ_ITEMS = [
   {
-    question: 'Que ocurre despues de enviar la solicitud?',
-    answer: 'La solicitud queda ligada a la cuenta de empresa, se envia el correo de verificacion y el centro la revisa internamente.',
+    question: 'Qué ocurre después de enviar la solicitud?',
+    answer: 'La solicitud queda ligada a la cuenta de empresa, se envia el correo de verificación y el centro la revisa internamente.',
   },
   {
-    question: 'Como puedo seguir el estado?',
-    answer: 'Puedes seguirlo desde la pagina de estado o desde el panel privado, usando el mismo acceso de empresa.',
+    question: 'Cómo puedo seguir el estado?',
+    answer: 'Puedes seguirlo desde la página de estado o desde el panel privado, usando el mismo acceso de empresa.',
   },
   {
-    question: 'Cuando se habilita la mensajeria?',
-    answer: 'La mensajeria queda disponible en cuanto la cuenta tiene una solicitud asociada, sin esperar a recargar manualmente.',
+    question: 'Cuándo se habilita la mensajería?',
+    answer: 'La mensajería queda disponible en cuanto la cuenta tiene una solicitud asociada, sin esperar a recargar manualmente.',
   },
 ];
 
@@ -369,7 +369,7 @@ function writePortalSession(session: PortalSession): void {
 }
 
 /**
- * Elimina la sesion local del portal externo para evitar incoherencias tras cerrar sesion.
+ * Elimina la sesión local del portal externo para evitar incoherencias tras cerrar sesión.
  * Si cambia su contrato, revisar los imports locales indicados en la cabecera del archivo.
  */
 function clearPortalSession(): void {
@@ -465,10 +465,10 @@ class PortalHttpError extends Error {
 function buildPortalHttpMessage(status: number, payloadMessage?: string, contextPath?: string): string {
   if (status === 401) {
     if (contextPath === '/portal-auth/login') {
-      return 'No se ha podido iniciar sesion con ese correo y contrasena. Revisa las credenciales o activa antes la cuenta si sigue pendiente.';
+      return 'No se ha podido iniciar sesión con ese correo y contraseña. Revisa las credenciales o activa antes la cuenta si sigue pendiente.';
     }
 
-    return 'Debes iniciar sesion con una cuenta de empresa valida para continuar.';
+    return 'Debes iniciar sesión con una cuenta de empresa válida para continuar.';
   }
 
   if (status === 403) {
@@ -484,7 +484,7 @@ function buildPortalHttpMessage(status: number, payloadMessage?: string, context
   }
 
   if (status === 409 || status === 422) {
-    return payloadMessage || 'Los datos enviados no son validos o no encajan con el estado actual de la solicitud.';
+    return payloadMessage || 'Los datos enviados no son válidos o no encajan con el estado actual de la solicitud.';
   }
 
   if (status === 429) {
@@ -568,10 +568,10 @@ function Layout({ children, session }: { children: ReactNode; session: PortalSes
       <main>{children}</main>
 
       <footer className="site-footer">
-        <p>Agora | Portal de relacion empresa-centro</p>
+        <p>Agora | Portal de relación empresa-centro</p>
         <small>
-          Registro, verificacion y acceso empresarial coordinados desde un unico portal.
-          {session ? ` | Sesion local: ${session.companyName}` : ''}
+          Registro, verificación y acceso empresarial coordinados desde un único portal.
+          {session ? ` | Sesión local: ${session.companyName}` : ''}
         </small>
       </footer>
     </div>
@@ -600,7 +600,7 @@ function LandingPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (payload.password !== payload.confirmPassword) {
-      setStatus({ kind: 'error', message: 'Las contrasenas no coinciden.' });
+      setStatus({ kind: 'error', message: 'Las contraseñas no coinciden.' });
       return;
     }
 
@@ -648,7 +648,7 @@ function LandingPage() {
           <h1>Crea la cuenta de empresa primero y remite la solicitud formal desde tu propio panel privado.</h1>
           <p className="lede">
             Agora separa el alta de acceso y la solicitud corporativa para que la empresa conserve el mismo usuario
-            durante la verificacion, la revision interna, la mensajeria y la operativa posterior.
+            durante la verificación, la revisión interna, la mensajería y la operativa posterior.
           </p>
           <div className="hero__actions">
             <a className="btn btn--primary" href="#registro">Crear cuenta</a>
@@ -672,16 +672,16 @@ function LandingPage() {
             <p className="eyebrow">Ruta operativa</p>
             <h2>Un recorrido coherente de principio a fin.</h2>
             <ul className="rail-list">
-              <li>Cuenta previa con correo y contrasena.</li>
+              <li>Cuenta previa con correo y contraseña.</li>
               <li>Solicitud corporativa desde el panel privado.</li>
-              <li>Correo de verificacion emitido por backend.</li>
-              <li>Estado y mensajeria con el mismo acceso.</li>
+              <li>Correo de verificación emitido por backend.</li>
+              <li>Estado y mensajería con el mismo acceso.</li>
             </ul>
           </div>
           <div className="hero__rail-card hero__rail-card--soft">
             <span className="eyebrow">Acceso empresarial</span>
-            <strong>La cuenta existe antes de la solicitud y se mantiene despues de la aprobacion.</strong>
-            <p>Evita pedir una contrasena tardia y da continuidad al chat, al estado y al panel de empresa.</p>
+            <strong>La cuenta existe antes de la solicitud y se mantiene después de la aprobación.</strong>
+            <p>Evita pedir una contraseña tardia y da continuidad al chat, al estado y al panel de empresa.</p>
           </div>
         </aside>
       </section>
@@ -734,11 +734,11 @@ function LandingPage() {
             </div>
           </header>
           <ul className="feature-list">
-            <li>Cuenta previa con contrasena definida por la propia empresa.</li>
+            <li>Cuenta previa con contraseña definida por la propia empresa.</li>
             <li>Formulario de solicitud dentro del area privada.</li>
-            <li>Pagina de correo para reenviar y seguir el enlace de validacion.</li>
-            <li>Pagina de estado con hitos y proximos pasos visibles.</li>
-            <li>Mensajeria y operativa posterior sobre el mismo acceso.</li>
+            <li>Página de correo para reenviar y seguir el enlace de válidación.</li>
+            <li>Página de estado con hitos y proximos pasos visibles.</li>
+            <li>Mensajería y operativa posterior sobre el mismo acceso.</li>
           </ul>
         </article>
       </section>
@@ -748,7 +748,7 @@ function LandingPage() {
           <div>
             <p className="eyebrow">Cuenta previa</p>
             <h2>Crear acceso de empresa</h2>
-            <p>Usa un correo corporativo valido. Despues entraras al panel para completar la solicitud de colaboracion.</p>
+            <p>Usa un correo corporativo válido. Después entraras al panel para completar la solicitud de colaboracion.</p>
           </div>
           <div className="panel__meta">
             <span className="chip">Acceso seguro</span>
@@ -772,11 +772,11 @@ function LandingPage() {
             <input required type="email" value={payload.email} onChange={(e) => setPayload((current) => ({ ...current, email: e.target.value }))} />
           </label>
           <label>
-            <span>Contrasena*</span>
+            <span>Contraseña*</span>
             <input required type="password" minLength={8} value={payload.password} onChange={(e) => setPayload((current) => ({ ...current, password: e.target.value }))} />
           </label>
           <label>
-            <span>Confirmar contrasena*</span>
+            <span>Confirmar contraseña*</span>
             <input required type="password" minLength={8} value={payload.confirmPassword} onChange={(e) => setPayload((current) => ({ ...current, confirmPassword: e.target.value }))} />
           </label>
           <div className="form__actions">
@@ -833,7 +833,7 @@ function MailPage() {
     } catch (err) {
       setFeedback({
         kind: 'error',
-        message: err instanceof Error ? err.message : 'No se pudo reenviar el correo de verificacion.',
+        message: err instanceof Error ? err.message : 'No se pudo reenviar el correo de verificación.',
       });
     } finally {
       setResending(false);
@@ -847,8 +847,8 @@ function MailPage() {
           <div className="panel__header">
             <div>
               <p className="eyebrow">Correo</p>
-              <h2>Verificacion por correo</h2>
-              <p>Revisa el mensaje enviado al correo corporativo para completar la validacion del registro.</p>
+              <h2>Verificación por correo</h2>
+              <p>Revisa el mensaje enviado al correo corporativo para completar la válidación del registro.</p>
             </div>
           </div>
 
@@ -856,7 +856,7 @@ function MailPage() {
             <div className={`alert ${delivery === 'sent' ? 'alert--success' : 'alert--error'}`}>
               {delivery === 'sent'
                 ? 'Solicitud enviada. Revisa el correo corporativo para continuar.'
-                : 'La solicitud se ha registrado, pero el correo saliente no esta operativo todavia. Debe revisarse la configuracion SMTP.'}
+                : 'La solicitud se ha registrado, pero el correo saliente no esta operativo todavía. Debe revisarse la configuracion SMTP.'}
             </div>
           )}
           {feedback && <div className={`alert ${feedback.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{feedback.message}</div>}
@@ -867,15 +867,15 @@ function MailPage() {
                 <p className="eyebrow">Centro educativo</p>
                 <h3>Confirma tu registro</h3>
               </div>
-              <span className="chip">Verificacion</span>
+              <span className="chip">Verificación</span>
             </header>
-            <p>Hemos recibido tu solicitud. Utiliza el enlace de verificacion enviado al correo corporativo para confirmar el acceso.</p>
+            <p>Hemos recibido tu solicitud. Utiliza el enlace de verificación enviado al correo corporativo para confirmar el acceso.</p>
             {session?.verificationUrl ? (
               <a className="link" href={verificationLink} target="_blank" rel="noreferrer">{verificationLink}</a>
             ) : (
               <p className="mail-card__hint">El enlace personalizado se envia unicamente al correo registrado.</p>
             )}
-            <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisara la solicitud desde el portal interno.</p>
+            <p className="mail-card__hint">Tras confirmar el correo, el equipo del centro revisará la solicitud desde el portal interno.</p>
             <div className="hero__actions">
               <Link className="btn btn--ghost" to="/estado">
                 Ver estado
@@ -977,40 +977,40 @@ function StatusPage() {
     return [
       { label: 'Solicitud enviada', done: Boolean(visibleStatus?.creadaEn), detail: visibleStatus?.creadaEn ? new Date(visibleStatus.creadaEn).toLocaleString('es-ES') : 'Pendiente' },
       { label: 'Correo verificado', done: isVerified, detail: visibleStatus?.emailVerificadoEn ? new Date(visibleStatus.emailVerificadoEn).toLocaleString('es-ES') : 'Pendiente' },
-      { label: 'Revision interna', done: Boolean(visibleStatus), detail: visibleStatus ? getStatusLabel(visibleStatus.estado) : 'Sin datos' },
-      { label: 'Aprobacion final', done: isApproved, detail: visibleStatus?.aprobadoEn ? new Date(visibleStatus.aprobadoEn).toLocaleString('es-ES') : 'Pendiente' },
+      { label: 'Revisión interna', done: Boolean(visibleStatus), detail: visibleStatus ? getStatusLabel(visibleStatus.estado) : 'Sin datos' },
+      { label: 'Aprobación final', done: isApproved, detail: visibleStatus?.aprobadoEn ? new Date(visibleStatus.aprobadoEn).toLocaleString('es-ES') : 'Pendiente' },
     ];
   }, [visibleStatus]);
 
   const nextActions = useMemo(() => {
     if (!visibleStatus) {
       return [
-        'Inicia sesion en el portal de empresa o abre el enlace publico recibido por correo para recuperar la solicitud.',
-        'Si acabas de registrarte, revisa primero la pagina de correo para verificar la direccion.',
+        'Inicia sesión en el portal de empresa o abre el enlace publico recibido por correo para recuperar la solicitud.',
+        'Si acabas de registrarte, revisa primero la página de correo para verificar la direccion.',
       ];
     }
 
     if (visibleStatus.estado === 'pendiente') {
       return [
         'Confirma el enlace recibido en el correo corporativo.',
-        'Cuando el correo este validado, vuelve a esta pagina para seguir la revision.',
+        'Cuando el correo este válidado, vuelve a esta página para seguir la revisión.',
       ];
     }
 
     if (visibleStatus.estado === 'email_verificado') {
       return [
-        'La solicitud ya ha pasado la validacion por correo.',
-        'El siguiente paso depende de la revision del centro desde el portal interno.',
+        'La solicitud ya ha pasado la válidación por correo.',
+        'El siguiente paso depende de la revisión del centro desde el portal interno.',
       ];
     }
 
     if (visibleStatus.estado === 'aprobada') {
       return [
         visibleStatus.portalAccount?.activationPending
-          ? 'Revisa el correo de activacion de cuenta para crear tu contrasena inicial.'
+          ? 'Revisa el correo de activación de cuenta para crear tu contraseña inicial.'
           : 'Accede al area privada de empresa para revisar convenios, mensajes y documentos.',
         activeToken
-          ? 'Conserva el enlace publico solo para consultas puntuales desde fuera de tu sesion.'
+          ? 'Conserva el enlace publico solo para consultas puntuales desde fuera de tu sesión.'
           : 'Tu propia cuenta de empresa ya sirve como acceso principal al estado y a la operativa.',
       ];
     }
@@ -1028,7 +1028,7 @@ function StatusPage() {
           <div>
             <p className="eyebrow">Seguimiento</p>
             <h2>Estado de la solicitud</h2>
-            <p>Consulta la evolucion del registro y recupera el acceso a la mensajeria vinculada.</p>
+            <p>Consulta la evolucion del registro y recupera el acceso a la mensajería vinculada.</p>
           </div>
           {session && (
             <div className="panel__meta">
@@ -1041,16 +1041,16 @@ function StatusPage() {
         <div className="status-grid">
           <article className="surface-card">
             <p className="eyebrow">Acceso</p>
-            <h3>Sesion del portal</h3>
-            <p>{session ? 'Existe una sesion local guardada en este navegador.' : 'No hay sesion local guardada.'}</p>
+            <h3>Sesión del portal</h3>
+            <p>{session ? 'Existe una sesión local guardada en este navegador.' : 'No hay sesión local guardada.'}</p>
             {visibleStatus?.portalAccount && (
               <small>
-                Cuenta empresa: {visibleStatus.portalAccount.activationPending ? 'pendiente de activacion' : 'activa'}
+                Cuenta empresa: {visibleStatus.portalAccount.activationPending ? 'pendiente de activación' : 'activa'}
               </small>
             )}
             {activeToken && (
               <small>
-                Se ha detectado un enlace publico legado. Esta vista puede seguir usandolo mientras no inicies sesion.
+                Se ha detectado un enlace publico legado. Esta vista puede seguir usandolo mientras no inicies sesión.
               </small>
             )}
             <div className="hero__actions">
@@ -1060,7 +1060,7 @@ function StatusPage() {
                     Ir al panel de empresa
                   </Link>
                   <Link className="btn btn--ghost" to="/chat">
-                    Abrir mensajeria
+                    Abrir mensajería
                   </Link>
                 </>
               ) : activeToken ? (
@@ -1069,13 +1069,13 @@ function StatusPage() {
                     Consultar estado
                   </Link>
                   <Link className="btn btn--ghost" to={`/chat?token=${encodeURIComponent(activeToken)}`}>
-                    Abrir mensajeria
+                    Abrir mensajería
                   </Link>
                 </>
               ) : (
                 <>
                   <Link className="btn btn--primary" to="/acceso">
-                    Iniciar sesion
+                    Iniciar sesión
                   </Link>
                   <Link className="btn btn--ghost" to="/correo">
                     Revisar correo
@@ -1084,7 +1084,7 @@ function StatusPage() {
               )}
             </div>
             {!session && !activeToken && (
-              <small>El acceso principal al estado y a la mensajeria se hace con la cuenta de empresa. El token ya no forma parte del flujo normal.</small>
+              <small>El acceso principal al estado y a la mensajería se hace con la cuenta de empresa. El token ya no forma parte del flujo normal.</small>
             )}
           </article>
 
@@ -1095,8 +1095,8 @@ function StatusPage() {
               {visibleStatus
                 ? `Situacion: ${getStatusLabel(visibleStatus.estado)}`
                 : session
-                  ? 'La cuenta existe, pero todavia no hay una solicitud asociada o la sesion del navegador ya no esta activa.'
-                  : 'Inicia sesion con la cuenta de empresa o abre un enlace valido recibido por correo para consultar el detalle.'}
+                  ? 'La cuenta existe, pero todavía no hay una solicitud asociada o la sesión del navegador ya no esta activa.'
+                  : 'Inicia sesión con la cuenta de empresa o abre un enlace válido recibido por correo para consultar el detalle.'}
             </p>
             {visibleStatus?.tutorProfesional?.nombre && (
               <small>
@@ -1114,7 +1114,7 @@ function StatusPage() {
         <article className="panel panel--soft">
           <div className="panel__header">
             <div>
-              <p className="eyebrow">Linea temporal</p>
+              <p className="eyebrow">Línea temporal</p>
               <h2>Hitos de la solicitud</h2>
             </div>
           </div>
@@ -1192,7 +1192,7 @@ function VerifyPage() {
           setVerification({
             token,
             status: 'error',
-            message: err instanceof Error ? err.message : 'No se pudo validar el enlace de verificacion.',
+            message: err instanceof Error ? err.message : 'No se pudo válidar el enlace de verificación.',
           });
         }
       });
@@ -1207,7 +1207,7 @@ function VerifyPage() {
       <section className="panel">
         <div className="panel__header">
           <div>
-            <p className="eyebrow">Verificacion</p>
+            <p className="eyebrow">Verificación</p>
             <h2>Confirma tu correo</h2>
             <p>Validamos el enlace remitido al correo corporativo para confirmar la identidad de la empresa.</p>
           </div>
@@ -1220,7 +1220,7 @@ function VerifyPage() {
           <p className="verify-card__message">{effectiveMessage}</p>
           <div className="verify-card__actions">
             <Link to="/chat" className="btn btn--ghost">
-              Ir a mensajeria
+              Ir a mensajería
             </Link>
             <Link to="/estado" className="btn btn--primary">
               Ir al estado
@@ -1348,9 +1348,9 @@ function ChatPage() {
         <div className="panel__header">
           <div>
             <p className="eyebrow">Canal</p>
-            <h2>Mensajeria con el centro</h2>
-            <p>Utiliza este canal para resolver dudas y compartir aclaraciones durante la revision de la solicitud.</p>
-            {!canAttemptChat && <p className="alert alert--error">Inicia sesion o abre el enlace recibido por correo para consultar la mensajeria.</p>}
+            <h2>Mensajería con el centro</h2>
+            <p>Utiliza este canal para resolver dudas y compartir aclaraciones durante la revisión de la solicitud.</p>
+            {!canAttemptChat && <p className="alert alert--error">Inicia sesión o abre el enlace recibido por correo para consultar la mensajería.</p>}
           </div>
         </div>
         <div className="chat">
@@ -1408,14 +1408,14 @@ function ResourcesPage() {
         <div className="panel__header">
           <div>
             <p className="eyebrow">Material recomendado</p>
-            <h2>Que preparar antes de enviar la solicitud</h2>
+            <h2>Qué preparar antes de enviar la solicitud</h2>
           </div>
         </div>
         <ul className="feature-list">
           <li>Descripcion clara del perfil o area de colaboracion.</li>
-          <li>Correo corporativo valido para recibir el enlace de verificacion.</li>
+          <li>Correo corporativo válido para recibir el enlace de verificación.</li>
           <li>Telefono y persona de contacto del equipo responsable.</li>
-          <li>Datos de web y ciudad para la primera revision interna.</li>
+          <li>Datos de web y ciudad para la primera revisión interna.</li>
         </ul>
       </section>
     </div>
@@ -1449,7 +1449,7 @@ function CompanyLoginPage() {
       });
       navigate('/panel');
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'No se pudo iniciar sesion.');
+      setStatus(err instanceof Error ? err.message : 'No se pudo iniciar sesión.');
     } finally {
       setLoading(false);
     }
@@ -1472,14 +1472,14 @@ function CompanyLoginPage() {
             <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           </label>
           <label>
-            <span>Contrasena</span>
+            <span>Contraseña</span>
             <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           <div className="form__actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
               {loading ? 'Accediendo...' : 'Entrar al portal'}
             </button>
-            <Link className="btn btn--ghost" to="/recuperar-clave">Recuperar contrasena</Link>
+            <Link className="btn btn--ghost" to="/recuperar-clave">Recuperar contraseña</Link>
           </div>
         </form>
       </section>
@@ -1507,11 +1507,11 @@ function ActivateAccountPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) {
-      setStatus({ kind: 'error', message: 'El enlace de activacion no incluye un token valido.' });
+      setStatus({ kind: 'error', message: 'El enlace de activación no incluye un token válido.' });
       return;
     }
     if (password !== confirmPassword) {
-      setStatus({ kind: 'error', message: 'Las contrasenas no coinciden.' });
+      setStatus({ kind: 'error', message: 'Las contraseñas no coinciden.' });
       return;
     }
 
@@ -1537,19 +1537,19 @@ function ActivateAccountPage() {
       <section className="panel">
         <div className="panel__header">
           <div>
-            <p className="eyebrow">Activacion</p>
-            <h2>Definir contrasena inicial</h2>
-            <p>Esta pantalla queda como respaldo para cuentas antiguas o activaciones por correo que todavia no tengan contrasena.</p>
+            <p className="eyebrow">Activación</p>
+            <h2>Definir contraseña inicial</h2>
+            <p>Esta pantalla queda como respaldo para cuentas antiguas o activaciónes por correo que todavía no tengan contraseña.</p>
           </div>
         </div>
         {status && <div className={`alert ${status.kind === 'success' ? 'alert--success' : 'alert--error'}`}>{status.message}</div>}
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
-            <span>Nueva contrasena</span>
+            <span>Nueva contraseña</span>
             <input type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           <label>
-            <span>Confirmar contrasena</span>
+            <span>Confirmar contraseña</span>
             <input type="password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
           </label>
           <div className="form__actions">
@@ -1588,7 +1588,7 @@ function RequestResetPage() {
       });
       setStatus(response.message);
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'No se pudo solicitar la recuperacion.');
+      setStatus(err instanceof Error ? err.message : 'No se pudo solicitar la recuperación.');
     } finally {
       setLoading(false);
     }
@@ -1599,9 +1599,9 @@ function RequestResetPage() {
       <section className="panel">
         <div className="panel__header">
           <div>
-            <p className="eyebrow">Recuperacion</p>
+            <p className="eyebrow">Recuperación</p>
             <h2>Solicitar restablecimiento</h2>
-            <p>Enviaremos un enlace de recuperacion a la cuenta ya activada.</p>
+            <p>Enviaremos un enlace de recuperación a la cuenta ya activada.</p>
           </div>
         </div>
         {status && <div className="alert alert--success">{status}</div>}
@@ -1641,7 +1641,7 @@ function ResetPasswordPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (password !== confirmPassword) {
-      setStatus('Las contrasenas no coinciden.');
+      setStatus('Las contraseñas no coinciden.');
       return;
     }
 
@@ -1656,7 +1656,7 @@ function ResetPasswordPage() {
       setStatus(response.message);
       window.setTimeout(() => navigate('/acceso'), 1200);
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'No se pudo actualizar la contrasena.');
+      setStatus(err instanceof Error ? err.message : 'No se pudo actualizar la contraseña.');
     } finally {
       setLoading(false);
     }
@@ -1667,23 +1667,23 @@ function ResetPasswordPage() {
       <section className="panel">
         <div className="panel__header">
           <div>
-            <p className="eyebrow">Nueva contrasena</p>
+            <p className="eyebrow">Nueva contraseña</p>
             <h2>Restablecer acceso</h2>
           </div>
         </div>
         {status && <div className="alert alert--success">{status}</div>}
         <form className="form-grid" onSubmit={handleSubmit}>
           <label>
-            <span>Nueva contrasena</span>
+            <span>Nueva contraseña</span>
             <input type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} required />
           </label>
           <label>
-            <span>Confirmar contrasena</span>
+            <span>Confirmar contraseña</span>
             <input type="password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
           </label>
           <div className="form__actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
-              {loading ? 'Guardando...' : 'Actualizar contrasena'}
+              {loading ? 'Guardando...' : 'Actualizar contraseña'}
             </button>
           </div>
         </form>
@@ -1875,8 +1875,8 @@ function CompanyAreaPage() {
         <section className="panel">
           {status && <div className="alert alert--error">{status}</div>}
           <p>
-            Inicia sesion con tu cuenta de empresa para acceder al panel privado. Si la cuenta todavia no tiene una
-            solicitud asociada, desde este panel podras crearla sin necesidad de una empresa aprobada previa.
+            Inicia sesión con tu cuenta de empresa para acceder al panel privado. Si la cuenta todavía no tiene una
+            solicitud asociada, desde este panel podrás crearla sin necesidad de una empresa aprobada previa.
           </p>
           <div className="hero__actions">
             <Link className="btn btn--primary" to="/acceso">Ir a acceso</Link>
@@ -1903,12 +1903,12 @@ function CompanyAreaPage() {
       done: Boolean(overview.solicitud.emailVerificadoEn),
     },
     {
-      label: 'Revision interna',
+      label: 'Revisión interna',
       detail: requestStateLabel,
       done: ['email_verificado', 'aprobada', 'rechazada'].includes(overview.solicitud.estado),
     },
     {
-      label: 'Aprobacion operativa',
+      label: 'Aprobación operativa',
       detail: overview.solicitud.aprobadoEn
         ? new Date(overview.solicitud.aprobadoEn).toLocaleString('es-ES')
         : 'Pendiente',
@@ -1929,11 +1929,11 @@ function CompanyAreaPage() {
           </p>
           <div className="hero__actions">
             <button type="button" className="btn btn--primary" onClick={() => void loadOverview()}>Actualizar</button>
-            <button type="button" className="btn btn--ghost" onClick={() => void handleLogout()}>Cerrar sesion</button>
+            <button type="button" className="btn btn--ghost" onClick={() => void handleLogout()}>Cerrar sesión</button>
           </div>
           <div className="metric-grid">
             <article className="metric-card"><span>Solicitud</span><strong>{requestStateLabel}</strong><small>{hasApprovedCompany ? 'Operativa completada' : 'Seguimiento del alta'}</small></article>
-            <article className="metric-card"><span>Convenios</span><strong>{overview.convenios.length}</strong><small>{hasApprovedCompany ? 'Acuerdos visibles' : 'Apareceran tras la aprobacion'}</small></article>
+            <article className="metric-card"><span>Convenios</span><strong>{overview.convenios.length}</strong><small>{hasApprovedCompany ? 'Acuerdos visibles' : 'Aparecerán tras la aprobación'}</small></article>
             <article className="metric-card"><span>Mensajes</span><strong>{overview.messages.length}</strong><small>Canal con el centro</small></article>
           </div>
         </div>
@@ -1956,7 +1956,7 @@ function CompanyAreaPage() {
               <p className="eyebrow">Cuenta</p>
               <h3>{me.displayName ?? me.email}</h3>
               <p>{me.email}</p>
-              <small>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</small>
+              <small>Último acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesión'}</small>
             </article>
             <article className="surface-card">
               <p className="eyebrow">Siguiente paso</p>
@@ -2027,7 +2027,7 @@ function CompanyAreaPage() {
                   <button type="submit" className="btn btn--primary" disabled={requestLoading}>
                     {requestLoading ? 'Enviando...' : 'Enviar solicitud'}
                   </button>
-                  <p className="form__hint">La verificacion del correo se hara sobre {me.email}.</p>
+                  <p className="form__hint">La verificación del correo se hara sobre {me.email}.</p>
                 </div>
               </form>
             </article>
@@ -2036,13 +2036,13 @@ function CompanyAreaPage() {
               <header className="panel__header">
                 <div>
                   <p className="eyebrow">Recorrido</p>
-                  <h2>Que ocurrira despues</h2>
+                  <h2>Que ocurrira después</h2>
                 </div>
               </header>
               <ul className="feature-list">
                 <li>Se registra la solicitud vinculada a esta cuenta.</li>
-                <li>Recibiras un correo de verificacion en el mismo email del portal.</li>
-                <li>El centro revisara la propuesta desde el panel interno.</li>
+                <li>Recibirás un correo de verificación en el mismo email del portal.</li>
+                <li>El centro revisará la propuesta desde el panel interno.</li>
                 <li>Si se aprueba, el tutor profesional propuesto quedara dado de alta directamente en la empresa.</li>
               </ul>
             </article>
@@ -2067,8 +2067,8 @@ function CompanyAreaPage() {
             </article>
             <article className="surface-card">
               <p className="eyebrow">Estado</p>
-              <h3>{overview.solicitud.aprobadoEn ? 'Aprobada' : 'En revision'}</h3>
-              <p>{overview.solicitud.emailVerificadoEn ? 'Correo validado' : 'Pendiente de verificacion por correo'}</p>
+              <h3>{overview.solicitud.aprobadoEn ? 'Aprobada' : 'En revisión'}</h3>
+              <p>{overview.solicitud.emailVerificadoEn ? 'Correo válidado' : 'Pendiente de verificación por correo'}</p>
               {overview.solicitud.motivoRechazo && <small>Motivo rechazo: {overview.solicitud.motivoRechazo}</small>}
             </article>
           </section>
@@ -2078,7 +2078,7 @@ function CompanyAreaPage() {
               <header className="panel__header">
                 <div>
                   <p className="eyebrow">Seguimiento</p>
-                  <h2>Linea temporal de la solicitud</h2>
+                  <h2>Línea temporal de la solicitud</h2>
                 </div>
               </header>
               <div className="timeline">
@@ -2094,7 +2094,7 @@ function CompanyAreaPage() {
             <article className="panel panel--dark">
               <header className="panel__header">
                 <div>
-                  <p className="eyebrow">Mensajeria</p>
+                  <p className="eyebrow">Mensajería</p>
                   <h2>Canal con el centro</h2>
                 </div>
               </header>
@@ -2130,7 +2130,7 @@ function CompanyAreaPage() {
             <article className="surface-card">
               <p className="eyebrow">Estado</p>
               <h3>{overview.company.estadoColaboracion ?? 'Sin estado'}</h3>
-              <p>Ultimo acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesion'}</p>
+              <p>Último acceso: {overview.account.lastLoginAt ? new Date(overview.account.lastLoginAt).toLocaleString('es-ES') : 'Primera sesión'}</p>
             </article>
           </section>
 
@@ -2156,7 +2156,7 @@ function CompanyAreaPage() {
             <article className="panel panel--dark">
               <header className="panel__header">
                 <div>
-                  <p className="eyebrow">Mensajeria</p>
+                  <p className="eyebrow">Mensajería</p>
                   <h2>Canal con el centro</h2>
                 </div>
               </header>

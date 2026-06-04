@@ -66,6 +66,18 @@ final class PublicAccessControllerTest extends WebTestCase
         self::assertSame('http://127.0.0.1:8000', $payload['targetUrl']);
     }
 
+    public function testApiSinSesionNoDisparaDialogoHttpBasicDelNavegador(): void
+    {
+        $this->client->getCookieJar()->clear();
+        $this->client->request('GET', '/api/me');
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertFalse($this->client->getResponse()->headers->has('WWW-Authenticate'));
+
+        $payload = json_decode($this->client->getResponse()->getContent() ?: '{}', true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('Inicia sesion para acceder al portal interno.', $payload['message'] ?? null);
+    }
+
     /**
      * Endpoint/controlador que valida la entrada, coordina dependencias y devuelve una respuesta HTTP.
      * Revisar llamadas salientes en el cuerpo para seguir el flujo hacia otros modulos.

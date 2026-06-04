@@ -36,11 +36,11 @@ Explica solicitudes, verificacion por correo, aprobacion interna y bandeja. Este
 ## 8. Portal externo
 Explica que la empresa puede registrarse, consultar estado, activar cuenta, recuperar contrasena y comunicarse sin acceder al panel interno.
 
-## 9. Como lo he desarrollado
-Explica por fases: problema real, modelo de datos, backend, portal interno, portal externo y operacion final con escritorio, pruebas y empaquetado.
+## 9. Flujo funcional
+No te detengas en como lo programaste. Usa esta diapositiva para explicar el recorrido cerrado: entrada externa, revision interna, empresa activa, convenio, asignacion, seguimiento y evaluacion.
 
 ## 10. Gestor de correos
-Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta, recuperacion de contrasena, MFA tecnico local y avisos de rechazo.
+Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta y recuperacion de contrasena. En rechazo, el estado y motivo quedan visibles en el portal externo y el backend intenta enviar correo si Brevo esta disponible.
 
 ## 11. Dominio externo
 Explica el problema que habia: una URL local en el correo no sirve fuera. Ahora los enlaces publicos salen con el origen correcto de la VM cloud y quedan bajo HTTPS.
@@ -61,26 +61,26 @@ Explica que ya no es solo una idea futura: el backend aplica permisos reales.
 
 `profesor` / `profesora` / coordinacion pueden crear, editar, consultar y trabajar el flujo diario, pero no ven ni pueden ejecutar acciones de eliminacion. Esto sirve para que la tutora pruebe la aplicacion sin riesgo de borrar datos.
 
-Como mejora futura, la misma base de roles se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+No hace falta mencionar en voz alta todos los roles tecnicos. Como mejora futura, la misma base se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y separacion por centro educativo.
 
 ## 15. Acceso de evaluacion
-Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
+Indica la URL cloud efectiva y di que hay usuarios internos de prueba con contrasena `Abrete01`. Evita centrarlo en una sola profesora: sirve para que profesorado o tutoria testeen desde fuera mientras la VM este activa y, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
 
 ## 16. Alcance cerrado
 Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
 
 ## 17. Mejoras futuras
-Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
+Explica que el siguiente paso ya no es "hacer que funcione", sino ampliar lo que quedo fuera por tiempo: subida documental mas robusta, roles avanzados, perfiles de solo lectura y soporte multi-centro.
 
 ## 18. Limitaciones
-No las escondas: SSO, firma avanzada, migracion documental a un servicio gestionado independiente, dominio propio y perfilado productivo quedan como lineas futuras. Aclara que el despliegue cloud funcional si esta hecho; lo que no esta cerrado es una infraestructura mas endurecida y gestionada.
+No las escondas: almacenamiento documental gestionado, roles avanzados, multi-centro, dominio propio e infraestructura mas endurecida quedan como lineas futuras. SSO o firma electronica pueden mencionarse solo como ampliaciones lejanas, no como prioridad.
 
 ## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
 1. Abrir `URL cloud efectiva/app/`.
-2. Login con `profesora / Abrete01`.
+2. Login con un usuario interno de prueba (`profesor` o `profesora`) y contrasena `Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.

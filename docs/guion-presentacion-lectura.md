@@ -96,17 +96,19 @@ Para la demo he dejado creada una empresa llamada Luis S.L., registrada mediante
 
 Tiempo acumulado: 5:00.
 
-## 9. Desarrollo - 45 segundos
+## 9. Flujo funcional - 45 segundos
 
-El desarrollo se ha dividido en bloques.
+En esta parte no voy a entrar en detalle de codigo, sino en el recorrido funcional que queda cerrado.
 
-En backend uso Symfony con Doctrine, validaciones, controladores API, seguridad, correo, tokens, auditoria y persistencia.
+Primero, la empresa entra por el portal externo, crea cuenta y envia una solicitud.
 
-En frontend hay dos aplicaciones React: el portal interno del centro y el portal externo de empresas.
+Segundo, el centro revisa esa solicitud desde el panel interno y puede aprobarla o rechazarla.
 
-Tambien hay una aplicacion de escritorio, Agora Desktop, para operaciones tecnicas.
+Tercero, si se aprueba, la empresa pasa al catalogo interno y ya puede tener convenios.
 
-El objetivo no era solo crear pantallas, sino cerrar el ciclo funcional: solicitud, aprobacion, convenio, asignacion, seguimiento, documentos y comunicacion.
+Cuarto, sobre el convenio se crea la asignacion, vinculando estudiante, empresa, convenio, tutor academico, tutor profesional, horas y fechas.
+
+Y finalmente se completa el ciclo con mensajes, documentos, seguimientos y evaluacion final.
 
 Tiempo acumulado: 5:45.
 
@@ -116,7 +118,7 @@ El correo se gestiona con Brevo.
 
 Se usa para verificar solicitudes de empresa, activar cuentas, recuperar contrasenas y comunicar operaciones importantes.
 
-En el caso de rechazo, la empresa puede ver el estado y el motivo en el portal externo. Esto evita que el resultado quede solo en un correo o en una conversacion suelta.
+En el caso de rechazo, la empresa puede ver el estado y el motivo en el portal externo. El backend tambien intenta enviar una notificacion por correo si Brevo esta disponible. Esto evita que el resultado quede solo en una conversacion suelta.
 
 Tiempo acumulado: 6:20.
 
@@ -166,7 +168,7 @@ El usuario administrador tiene control completo y es el unico que puede eliminar
 
 El perfil profesor o coordinador mantiene la operativa diaria: puede crear, editar y consultar empresas, convenios, asignaciones, solicitudes y mensajes, pero no ve ni puede ejecutar botones de eliminacion.
 
-Esto me permite defender una separacion real de permisos: la tutora puede probar la aplicacion sin riesgo de borrar datos, mientras que el administrador puede limpiar datos para pruebas. Como mejora futura, esta base se puede ampliar con perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+Esto me permite defender una separacion real de permisos: el profesorado puede probar la aplicacion sin riesgo de borrar datos, mientras que el administrador puede limpiar datos para pruebas. No necesito explicar todos los roles tecnicos en la diapositiva. Como mejora futura, esta base se puede ampliar con perfiles de solo lectura, permisos por departamento, auditoria visible por rol y separacion por centro educativo.
 
 Tiempo acumulado: 9:20.
 
@@ -182,11 +184,11 @@ Tiempo acumulado: 9:55.
 
 ## 16. Acceso de evaluacion - 25 segundos
 
-La profesora puede probar la aplicacion desde fuera con la VM levantada.
+La aplicacion se puede probar desde fuera con la VM levantada.
 
 El panel interno esta en /app y el portal externo en /externo, ambos bajo la misma URL publica.
 
-El usuario interno de prueba es profesora con la contrasena Abrete01.
+Hay usuarios internos de prueba, como profesor o profesora, con la contrasena Abrete01. La cuenta admin queda para tareas de limpieza y administracion, no para la prueba normal.
 
 Tiempo acumulado: 10:20.
 
@@ -194,7 +196,9 @@ Tiempo acumulado: 10:20.
 
 Lo que queda cerrado es el nucleo funcional: portales interno y externo, correo, documentos, chat, exportacion, despliegue cloud y consola tecnica.
 
-Como mejoras futuras quedan aspectos que amplian o endurecen el sistema: dominio propio, servicios gestionados para documentos y backups, observabilidad mas avanzada y evolucion de roles.
+Como mejoras futuras quedan aspectos que amplian el alcance: subida documental mas robusta, almacenamiento gestionado fuera de la VM, roles avanzados, perfiles de solo lectura y soporte multi-centro.
+
+El soporte multi-centro seria importante si la plataforma se quisiera usar en varios centros educativos, porque ahora mismo el proyecto trabaja sobre una base comun. En una evolucion real, cada centro tendria sus usuarios, empresas, convenios y asignaciones separados.
 
 Esto no bloquea la defensa porque el flujo principal ya es funcional y demostrable.
 
@@ -204,9 +208,9 @@ Tiempo acumulado: 10:55.
 
 Las limitaciones principales estan relacionadas con la infraestructura y con el alcance temporal.
 
-La VM actual funciona para la defensa, pero en produccion seria mejor usar base de datos gestionada, almacenamiento documental externo, dominio propio, SSO institucional y firma electronica avanzada.
+La VM actual funciona para la defensa, pero en produccion seria mejor usar una infraestructura mas gestionada, almacenamiento documental externo, dominio propio, roles mas finos y separacion multi-centro.
 
-Tambien quedaria pendiente un perfilado mas profundo de rendimiento en produccion real.
+SSO o firma electronica avanzada se podrian estudiar mas adelante, pero no las considero la prioridad principal frente a documentos, roles y multi-centro.
 
 Tiempo acumulado: 11:25.
 

@@ -417,31 +417,30 @@ La empresa nunca necesita credenciales del centro.
 Cuando la empresa se aprueba, la misma cuenta sigue sirviendo para ver sus convenios, asignaciones y documentos.
 '@
 
-    # 9. Como lo he desarrollado
+    # 9. Flujo funcional validado
     $slide = Add-Slide $presentation
-    Add-Header $slide '08 / Desarrollo' 'Como lo he desarrollado y que partes tiene' 'La presentacion se apoya en bloques funcionales y decisiones de arquitectura, no en fragmentos de codigo.'
-    $developmentBlocks = @(
-        @('Analisis del problema', 'Necesidad real del centro y alcance viable para el TFG.'),
-        @('Modelo y reglas', 'Empresa, convenio, asignacion, seguimiento y evaluacion.'),
-        @('Backend Symfony', 'API, seguridad, correo, tokens, auditoria y persistencia.'),
-        @('Portal interno', 'Gestion academica, bandeja, documentos y exportacion CSV.'),
-        @('Portal externo', 'Registro, verificacion, estado, acceso empresa y chat.'),
-        @('Operacion final', 'App de escritorio, pruebas, logs, backups y empaquetado.')
+    Add-Header $slide '08 / Flujo funcional' 'Recorrido principal que queda cerrado' 'La defensa se centra en el flujo real de empresa, convenio, asignacion, seguimiento y comunicacion.'
+    $workflowBlocks = @(
+        @('1. Entrada externa', 'La empresa se registra, verifica su correo y envia la solicitud.'),
+        @('2. Revision interna', 'El centro aprueba o rechaza y la empresa ve el estado en su portal.'),
+        @('3. Operativa academica', 'Empresa activa, convenio firmado, asignacion, tutores, horas y fechas.'),
+        @('4. Seguimiento', 'Mensajes, documentos, reuniones, evidencias y evaluacion final.')
     )
-    for ($i = 0; $i -lt $developmentBlocks.Count; $i++) {
-        $x = 60 + (($i % 2) * 420)
-        $y = 154 + ([Math]::Floor($i / 2) * 104)
-        Add-Box -Slide $slide -Left $x -Top $y -Width 360 -Height 82 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
-        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 14) -Width 300 -Height 24 -Text $developmentBlocks[$i][0] -Size 18 -Rgb $colors.blue -Bold $true | Out-Null
-        Add-Text -Slide $slide -Left ($x + 18) -Top ($y + 42) -Width 320 -Height 28 -Text $developmentBlocks[$i][1] -Size 13 -Rgb $colors.darkInk | Out-Null
+    for ($i = 0; $i -lt $workflowBlocks.Count; $i++) {
+        $x = 70 + (($i % 2) * 410)
+        $y = 166 + ([Math]::Floor($i / 2) * 130)
+        Add-Box -Slide $slide -Left $x -Top $y -Width 340 -Height 96 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
+        Add-Text -Slide $slide -Left ($x + 20) -Top ($y + 16) -Width 280 -Height 24 -Text $workflowBlocks[$i][0] -Size 19 -Rgb $colors.blue -Bold $true | Out-Null
+        Add-Text -Slide $slide -Left ($x + 20) -Top ($y + 48) -Width 292 -Height 34 -Text $workflowBlocks[$i][1] -Size 14 -Rgb $colors.darkInk | Out-Null
     }
     Set-SlideNotes $slide @'
-Aqui cuento el proyecto por bloques de construccion, no por commits.
+Esta diapositiva sustituye a una explicacion larga de desarrollo.
 
-Primero modele el problema y el dominio.
-Despues levante backend y reglas de negocio.
-Luego hice el portal interno, el portal externo y el soporte documental.
-La ultima capa fue la operacion tecnica: cloud, escritorio, pruebas y empaquetado.
+Aqui tengo que explicar el recorrido que si queda cerrado y que voy a defender en demo.
+Primero entra la empresa desde el portal externo.
+Despues el centro revisa la solicitud desde el panel interno.
+Si se aprueba, la empresa pasa al catalogo y se pueden crear convenios.
+Finalmente se crean asignaciones con estudiantes y tutores, y se completa el seguimiento con mensajes, documentos y evaluacion final.
 '@
 
     # 10. Correo, verificacion y rechazo
@@ -460,7 +459,7 @@ La ultima capa fue la operacion tecnica: cloud, escritorio, pruebas y empaquetad
         @('1. Registro', 'La empresa envia la solicitud.'),
         @('2. Verificacion', 'Recibe enlace y confirma correo.'),
         @('3. Revision', 'El centro aprueba o rechaza.'),
-        @('4. Resultado', 'Si se rechaza llega correo y el estado sigue visible en el portal.')
+        @('4. Resultado', 'El estado y motivo quedan visibles; si Brevo esta disponible tambien se envia correo.')
     )
     for ($i = 0; $i -lt $mailFlow.Count; $i++) {
         $y = 160 + ($i * 68)
@@ -471,7 +470,7 @@ La ultima capa fue la operacion tecnica: cloud, escritorio, pruebas y empaquetad
     Set-SlideNotes $slide @'
 Aqui debo dejar claro que el correo no es decorativo.
 
-Uso Brevo para verificacion de empresa, activacion de cuenta, recuperacion de contrasena y avisos de rechazo.
+Uso Brevo para verificacion de empresa, activacion de cuenta, recuperacion de contrasena y, si el transporte esta disponible, aviso de rechazo.
 Eso permite que la profesora pruebe un flujo real desde fuera, no una simulacion local.
 Tambien me sirve para justificar por que necesitaba una URL publica correcta en cloud.
 '@
@@ -512,14 +511,14 @@ Con nip.io resuelvo la demo, aunque a futuro lo correcto seria un dominio instit
         'Refresco periodico del chat y de la bandeja.',
         'Nueva carga cuando la ventana recupera el foco.',
         'La empresa tambien ve cambios en su panel externo.',
-        'El rechazo queda comunicado por correo y visible en estado.'
+        'El rechazo queda visible en estado y puede notificarse por correo.'
     ) 16 | Out-Null
     Set-SlideNotes $slide @'
 Esta diapositiva me sirve para justificar que la aplicacion no da sensacion de maqueta estatica.
 
 La bandeja interna y el chat externo se refrescan solos en segundo plano y tambien al recuperar el foco del navegador.
 Eso evita tener que recargar manualmente durante la demo.
-Ademas, el estado de rechazo no solo llega por correo: tambien queda visible dentro del portal externo.
+Ademas, el estado de rechazo queda visible dentro del portal externo y el backend intenta enviar aviso por correo cuando Brevo esta disponible.
 '@
 
     # 13. Operacion local y app de escritorio
@@ -543,7 +542,7 @@ Si la VM cambia de IP o falla el servicio, desde aqui veo la URL efectiva y el e
 
     # 14. Autoarranque y roles
     $slide = Add-Slide $presentation
-    Add-Header $slide '13 / Operacion y seguridad' 'Autoarranque en VM y roles internos' 'El despliegue cloud no depende de arrancarlo a mano y la base de seguridad ya separa perfiles tecnicos, funcionales y externos.'
+    Add-Header $slide '13 / Operacion y seguridad' 'Autoarranque en VM y permisos internos' 'El despliegue cloud no depende de arrancarlo a mano y la seguridad separa operacion diaria de acciones destructivas.'
     Add-Box -Slide $slide -Left 58 -Top 156 -Width 390 -Height 238 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 86 -Top 182 -Width 300 -Height 24 -Text 'Arranque automatico' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-Text -Slide $slide -Left 86 -Top 222 -Width 320 -Height 92 -Text "VM -> systemd -> agora.service`rdeploy/gcp/startup.sh`rdocker compose up -d" -Size 17 -Rgb $colors.ink -Font 'Consolas' | Out-Null
@@ -555,13 +554,11 @@ Si la VM cambia de IP o falla el servicio, desde aqui veo la URL efectiva y el e
     Add-Box -Slide $slide -Left 510 -Top 156 -Width 372 -Height 238 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
     Add-Text -Slide $slide -Left 538 -Top 182 -Width 270 -Height 24 -Text 'Roles definidos' -Size 20 -Rgb $colors.blue -Bold $true | Out-Null
     Add-BulletList $slide 542 224 286 106 @(
-        'ADMIN: control total y borrado controlado.',
-        'PROFESOR/COORDINATOR: gestion diaria sin eliminar.',
-        'DOCUMENT_MANAGER: documentos.',
-        'MONITOR: logs y consola tecnica.',
-        'COMPANY_PORTAL: empresa externa.'
+        'ADMIN: control total y limpieza de datos de prueba.',
+        'PROFESOR/COORDINATOR: crear, editar y consultar sin eliminar.',
+        'El borrado respeta relaciones: asignacion -> convenio -> empresa.'
     ) 13 $colors.darkInk | Out-Null
-    Add-Text -Slide $slide -Left 540 -Top 358 -Width 300 -Height 24 -Text 'Futuro: matriz fina de permisos y perfiles de solo lectura.' -Size 12 -Rgb $colors.muted | Out-Null
+    Add-Text -Slide $slide -Left 540 -Top 348 -Width 300 -Height 34 -Text 'Futuro: roles avanzados, solo lectura y permisos por centro.' -Size 12 -Rgb $colors.muted | Out-Null
     Add-Text -Slide $slide -Left 74 -Top 430 -Width 780 -Height 42 -Text 'Justificacion: cierro el despliegue cloud con arranque reproducible y dejo preparada la separacion de permisos para evolucionar de demo funcional a entorno multiusuario real.' -Size 15 -Rgb $colors.muted | Out-Null
     Set-SlideNotes $slide @'
 Aqui explico dos decisiones tecnicas que pueden preguntar.
@@ -576,8 +573,9 @@ Segundo, roles:
 El proyecto ya separa permisos reales por rol.
 ROLE_ADMIN tiene control completo y es el unico que puede eliminar datos de prueba desde el portal interno: asignaciones, convenios sin asignaciones y empresas sin convenios ni asignaciones. Esto me permite limpiar datos para pruebas sin tocar directamente la base de datos.
 ROLE_COORDINATOR, que es el perfil que usan profesor o profesora en la demo, puede crear, editar y consultar empresas, convenios, asignaciones y mensajes, pero no ve ni puede ejecutar acciones de borrado.
-ROLE_DOCUMENT_MANAGER queda pensado para gestion documental, ROLE_MONITOR para logs y consola tecnica, y ROLE_COMPANY_PORTAL para empresas externas.
-Como evolucion futura, esta base se puede ampliar a una matriz de permisos mas fina: perfiles de solo lectura, responsables por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+No necesito detallar todos los roles tecnicos en la diapositiva.
+Lo importante para defensa es que admin puede limpiar datos de prueba y profesor o coordinador puede trabajar sin riesgo de borrar.
+Como evolucion futura, esta base se puede ampliar a una matriz de permisos mas fina: perfiles de solo lectura, responsables por departamento, auditoria visible por rol y separacion por centro educativo.
 '@
 
     # 15. Validacion
@@ -603,14 +601,15 @@ La deprecacion de PHPUnit existe, pero no afecta a la funcionalidad ni a la defe
 
     # 16. Acceso de evaluacion
     $slide = Add-Slide $presentation
-    Add-Header $slide '15 / Acceso de evaluacion' 'Como puede probarla la profesora desde fuera' 'Con la VM levantada no necesita instalar dependencias en su equipo.'
+    Add-Header $slide '15 / Acceso de evaluacion' 'Como se puede probar desde fuera' 'Con la VM levantada no hace falta instalar dependencias en el equipo de quien evalua.'
     Add-Box -Slide $slide -Left 68 -Top 158 -Width 824 -Height 92 -Fill (Color 247 250 252) -Line (Color 221 229 238) | Out-Null
-    Add-Text -Slide $slide -Left 98 -Top 186 -Width 760 -Height 28 -Text \"$publicBaseUrl/app   |   $publicBaseUrl/externo\" -Size 13 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
-    Add-Text -Slide $slide -Left 102 -Top 220 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo y documentacion; la operacion tecnica se hace desde Agora Desktop.' -Size 14 -Rgb $colors.darkInk | Out-Null
+    Add-Text -Slide $slide -Left 98 -Top 176 -Width 760 -Height 24 -Text "Panel interno: $publicBaseUrl/app" -Size 12 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 98 -Top 202 -Width 760 -Height 24 -Text "Portal externo: $publicBaseUrl/externo" -Size 12 -Rgb $colors.blue -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 102 -Top 228 -Width 760 -Height 22 -Text 'La misma base sirve panel interno, portal externo y documentacion; la operacion tecnica se hace desde Agora Desktop.' -Size 14 -Rgb $colors.darkInk | Out-Null
     Add-Box -Slide $slide -Left 86 -Top 302 -Width 320 -Height 118 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 118 -Top 328 -Width 250 -Height 22 -Text 'Usuario de prueba' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 118 -Top 362 -Width 250 -Height 22 -Text 'profesora / Abrete01' -Size 18 -Rgb $colors.ink -Bold $true -Font 'Consolas' | Out-Null
-    Add-Text -Slide $slide -Left 118 -Top 392 -Width 220 -Height 20 -Text 'Rol: coordinacion' -Size 14 -Rgb $colors.muted | Out-Null
+    Add-Text -Slide $slide -Left 118 -Top 362 -Width 250 -Height 22 -Text 'usuario interno / Abrete01' -Size 16 -Rgb $colors.ink -Bold $true -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 118 -Top 392 -Width 220 -Height 20 -Text 'Perfil de prueba del centro' -Size 14 -Rgb $colors.muted | Out-Null
     Add-BulletList $slide 470 306 360 110 @(
         'Puede revisar solicitudes, convenios, asignaciones y mensajes.',
         'La empresa prueba el recorrido por /externo.',
@@ -621,7 +620,7 @@ Esta slide es muy practica: explica como se puede probar el sistema desde fuera.
 
 Debo remarcar que la referencia buena es la URL cloud efectiva.
 Si cambia la IP publica, Agora Desktop me dice la nueva URL.
-Con la cuenta profesora se puede revisar el flujo interno sin usar la cuenta de administrador principal.
+Con una cuenta interna de prueba se puede revisar el flujo del centro sin usar la cuenta administradora principal.
 '@
 
     # 17. Alcance cerrado y mejoras futuras
@@ -631,14 +630,14 @@ Con la cuenta profesora se puede revisar el flujo interno sin usar la cuenta de 
     Add-Text -Slide $slide -Left 80 -Top 192 -Width 210 -Height 28 -Text 'Cerrado en esta entrega' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
     Add-BulletList $slide 82 232 212 132 @(
         'Portales /app y /externo bajo HTTPS.',
-        'Correo real, documentos, chat y exportacion.',
+        'Correo real, chat, exportacion y documentacion.',
         'Agora Desktop local/cloud como consola tecnica.',
         'VM publica con arranque automatico y URL efectiva visible.'
     ) 14 $colors.ink | Out-Null
     $deployOptions = @(
-        @('Dominio propio', 'Sustituir nip.io por dominio institucional y reforzar TLS.', $colors.green),
-        @('Servicios gestionados', 'Migrar documentos, backups y observabilidad a servicios gestionados fuera de la VM.', $colors.cyan),
-        @('Cliente tecnico', 'Ampliar Agora Desktop sin mezclar soporte con negocio.', $colors.amber)
+        @('Documentos', 'Completar subida, versionado y almacenamiento externo gestionado.', $colors.green),
+        @('Roles avanzados', 'Perfiles de solo lectura, auditoria por rol y permisos mas finos.', $colors.cyan),
+        @('Multi-centro', 'Separar datos por centro educativo, empresas y usuarios.', $colors.amber)
     )
     for ($i = 0; $i -lt $deployOptions.Count; $i++) {
         $x = 356 + (($i % 2) * 272)
@@ -655,7 +654,7 @@ Con la cuenta profesora se puede revisar el flujo interno sin usar la cuenta de 
 Aqui tengo que defender bien el alcance.
 
 Lo principal ya esta cerrado: portales, documentos, mensajeria, correo, cloud y escritorio.
-Lo que dejo para despues no son huecos del nucleo, sino mejoras de endurecimiento y evolucion.
+Lo que dejo para despues no son huecos del nucleo, sino mejoras de alcance que requieren mas tiempo.
 Eso demuestra criterio: he preferido cerrar bien el producto base antes que abarcar mas cosas a medias.
 '@
 
@@ -663,21 +662,21 @@ Eso demuestra criterio: he preferido cerrar bien el producto base antes que abar
     $slide = Add-Slide $presentation
     Add-Header $slide '17 / Limitaciones' 'Que queda fuera de esta entrega'
     Add-BulletList $slide 78 160 360 230 @(
-        'Infraestructura mas gestionada y endurecida que la VM actual.',
-        'Integracion con SSO o identidad corporativa.',
-        'Firma electronica avanzada.',
-        'Migracion del almacenamiento documental a un servicio gestionado independiente.',
+        'Subida documental completa y almacenamiento gestionado fuera de la VM.',
+        'Sistema de roles avanzado con perfiles de solo lectura.',
+        'Gestion multi-centro con datos separados por centro educativo.',
+        'Dominio propio e infraestructura mas gestionada que la VM actual.',
         'Perfilado profundo de rendimiento en produccion.'
     ) 19 | Out-Null
     Add-Box -Slide $slide -Left 536 -Top 162 -Width 320 -Height 210 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 568 -Top 192 -Width 260 -Height 32 -Text 'Siguiente iteracion' -Size 20 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 568 -Top 244 -Width 245 -Height 82 -Text 'Despliegue estable, dominio propio, base de datos de servidor y seguridad endurecida.' -Size 23 -Rgb $colors.ink -Bold $true | Out-Null
+    Add-Text -Slide $slide -Left 568 -Top 244 -Width 245 -Height 82 -Text 'Cerrar documentos, roles avanzados y soporte multi-centro sin romper el flujo principal.' -Size 21 -Rgb $colors.ink -Bold $true | Out-Null
     Set-SlideNotes $slide @'
 No debo esconder las limitaciones.
 
-Lo que falta no invalida el TFG, pero si marca una hoja de ruta realista:
-SSO, firma avanzada, dominio propio, observabilidad y servicios gestionados.
-Tambien puedo mencionar que Symfony sigue una version que convendria actualizar tras la entrega para mantenimiento a medio plazo.
+Lo que falta no invalida el TFG, pero si marca una hoja de ruta realista.
+Lo principal pendiente es cerrar almacenamiento documental de forma mas robusta, ampliar roles y preparar multi-centro.
+SSO o firma electronica podrian estudiarse mas adelante, pero no los pondria como prioridad principal de esta defensa.
 '@
 
     # 19. Cierre
@@ -750,11 +749,11 @@ Explica solicitudes, verificacion por correo, aprobacion interna y bandeja. Este
 ## 8. Portal externo
 Explica que la empresa puede registrarse, consultar estado, activar cuenta, recuperar contrasena y comunicarse sin acceder al panel interno.
 
-## 9. Como lo he desarrollado
-Explica por fases: problema real, modelo de datos, backend, portal interno, portal externo y operacion final con escritorio, pruebas y empaquetado.
+## 9. Flujo funcional
+No te detengas en como lo programaste. Usa esta diapositiva para explicar el recorrido cerrado: entrada externa, revision interna, empresa activa, convenio, asignacion, seguimiento y evaluacion.
 
 ## 10. Gestor de correos
-Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta, recuperacion de contrasena, MFA tecnico local y avisos de rechazo.
+Aclara que el proveedor configurado es Brevo. Se usa para verificacion, activacion de cuenta y recuperacion de contrasena. En rechazo, el estado y motivo quedan visibles en el portal externo y el backend intenta enviar correo si Brevo esta disponible.
 
 ## 11. Dominio externo
 Explica el problema que habia: una URL local en el correo no sirve fuera. Ahora los enlaces publicos salen con el origen correcto de la VM cloud y quedan bajo HTTPS.
@@ -775,26 +774,26 @@ Explica que ya no es solo una idea futura: el backend aplica permisos reales.
 
 `profesor` / `profesora` / coordinacion pueden crear, editar, consultar y trabajar el flujo diario, pero no ven ni pueden ejecutar acciones de eliminacion. Esto sirve para que la tutora pruebe la aplicacion sin riesgo de borrar datos.
 
-Como mejora futura, la misma base de roles se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y restricciones por centro o familia profesional.
+No hace falta mencionar en voz alta todos los roles tecnicos. Como mejora futura, la misma base se puede ampliar a una matriz mas fina: perfiles de solo lectura, permisos por departamento, auditoria visible por rol y separacion por centro educativo.
 
 ## 15. Acceso de evaluacion
-Indica la URL cloud efectiva y el usuario de prueba `profesora / Abrete01`. Si hace falta, comenta que tambien existe `profesor / Abrete01`. Aclara que sirven para que la tutora o profesorado testeen desde fuera mientras la VM este activa y que, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
+Indica la URL cloud efectiva y di que hay usuarios internos de prueba con contrasena `Abrete01`. Evita centrarlo en una sola profesora: sirve para que profesorado o tutoria testeen desde fuera mientras la VM este activa y, si la IP cambia, la referencia buena es la URL mostrada por Agora Desktop.
 
 ## 16. Alcance cerrado
 Deja explicitamente que el nucleo ya esta terminado: portales `/app` y `/externo`, correo real, documentos, mensajeria, despliegue cloud por HTTPS y Agora Desktop como consola tecnica local/cloud.
 
 ## 17. Mejoras futuras
-Explica que el siguiente paso ya no es "hacer que funcione", sino endurecer dominio, observabilidad, servicios gestionados y ampliar el cliente tecnico sin mezclarlo con negocio.
+Explica que el siguiente paso ya no es "hacer que funcione", sino ampliar lo que quedo fuera por tiempo: subida documental mas robusta, roles avanzados, perfiles de solo lectura y soporte multi-centro.
 
 ## 18. Limitaciones
-No las escondas: SSO, firma avanzada, migracion documental a un servicio gestionado independiente, dominio propio y perfilado productivo quedan como lineas futuras. Aclara que el despliegue cloud funcional si esta hecho; lo que no esta cerrado es una infraestructura mas endurecida y gestionada.
+No las escondas: almacenamiento documental gestionado, roles avanzados, multi-centro, dominio propio e infraestructura mas endurecida quedan como lineas futuras. SSO o firma electronica pueden mencionarse solo como ampliaciones lejanas, no como prioridad.
 
 ## 19. Cierre
 Cierra con una frase directa: el valor del TFG esta en convertir una necesidad real en una solucion completa, funcional, trazable y defendible.
 
 ## Orden rapido de demo
 1. Abrir `URL cloud efectiva/app/`.
-2. Login con `profesora / Abrete01`.
+2. Login con un usuario interno de prueba (`profesor` o `profesora`) y contrasena `Abrete01`.
 3. Dashboard y exportacion CSV.
 4. Solicitudes, bandeja y refresco de mensajes.
 5. Convenios/asignaciones.

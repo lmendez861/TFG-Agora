@@ -1154,6 +1154,9 @@ export default function App() {
   const pushToast = useCallback((type: ToastMessage['type'], message: string) => {
     const id = randomId();
     setToasts((prev) => [...prev, { id, type, message }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, type === 'success' ? 4500 : 7000);
   }, []);
 
   const syncConvenioState = useCallback((convenioId: number, estado: string) => {

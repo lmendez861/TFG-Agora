@@ -1826,7 +1826,7 @@ function CompanyAreaPage() {
         method: 'POST',
         body: JSON.stringify({
           nombreEmpresa: requestPayload.nombreEmpresa,
-          cif: requestPayload.cif || undefined,
+          cif: requestPayload.cif,
           sector: requestPayload.sector || undefined,
           ciudad: requestPayload.ciudad || undefined,
           web: requestPayload.web || undefined,
@@ -1981,8 +1981,8 @@ function CompanyAreaPage() {
                   <input required value={requestPayload.nombreEmpresa} onChange={(event) => setRequestPayload((current) => ({ ...current, nombreEmpresa: event.target.value }))} />
                 </label>
                 <label>
-                  <span>CIF</span>
-                  <input value={requestPayload.cif} onChange={(event) => setRequestPayload((current) => ({ ...current, cif: event.target.value }))} />
+                  <span>NIF/CIF*</span>
+                  <input required value={requestPayload.cif} onChange={(event) => setRequestPayload((current) => ({ ...current, cif: event.target.value }))} />
                 </label>
                 <label>
                   <span>Sector</span>

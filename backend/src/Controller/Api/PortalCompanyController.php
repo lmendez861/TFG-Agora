@@ -202,7 +202,7 @@ final class PortalCompanyController extends AbstractController
             new Assert\Collection(
                 fields: [
                     'nombreEmpresa' => [new Assert\NotBlank(), new Assert\Length(max: 150)],
-                    'cif' => new Assert\Optional([new Assert\Length(max: 32)]),
+                    'cif' => [new Assert\NotBlank(), new Assert\Length(max: 32)],
                     'sector' => new Assert\Optional([new Assert\Length(max: 120)]),
                     'ciudad' => new Assert\Optional([new Assert\Length(max: 100)]),
                     'web' => new Assert\Optional([new Assert\Url(requireTld: false)]),

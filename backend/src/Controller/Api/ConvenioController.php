@@ -75,6 +75,14 @@ final class ConvenioController extends AbstractController
 
     private const ELIGIBLE_COMPANY_STATES = ['activa'];
 
+    private const DEFAULT_CHECKLIST_ITEMS = [
+        'Solicitud de colaboración revisada',
+        'Datos de empresa validados',
+        'Tutor profesional identificado',
+        'Documento de convenio firmado',
+        'Calendario de seguimiento definido',
+    ];
+
     private function denyUnlessCanManageDocuments(): void
     {
         if (
@@ -236,6 +244,7 @@ final class ConvenioController extends AbstractController
         }
 
         $entityManager->persist($convenio);
+        $this->attachDefaultChecklist($convenio, $entityManager);
         $entityManager->flush();
         $snapshotProvider->invalidate();
 
@@ -1100,6 +1109,23 @@ final class ConvenioController extends AbstractController
         return $this->json([
             'message' => 'Solo se pueden registrar o actualizar convenios sobre empresas activas y validadas.',
         ], Response::HTTP_BAD_REQUEST);
+    }
+
+    private function attachDefaultChecklist(Convenio $convenio, EntityManagerInterface $entityManager): void
+    {
+        if ($convenio->getChecklistItems()->count() > 0) {
+            return;
+        }
+
+        foreach (self::DEFAULT_CHECKLIST_ITEMS as $label) {
+            $item = (new ConvenioChecklistItem())
+                ->setConvenio($convenio)
+                ->setLabel($label)
+                ->setCompleted(false);
+
+            $convenio->addChecklistItem($item);
+            $entityManager->persist($item);
+        }
     }
 
     private function getUserIdentifier(): string

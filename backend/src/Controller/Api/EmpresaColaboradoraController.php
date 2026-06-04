@@ -375,7 +375,7 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/etiquetas/{etiquetaId<\d+>}', name: 'delete_label', methods: ['DELETE'])]
-    #[IsGranted('ROLE_COORDINATOR')]
+    #[IsGranted('ROLE_ADMIN')]
     public function deleteEtiqueta(
         ?EmpresaColaboradora $empresa,
         int $etiquetaId,
@@ -645,6 +645,7 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}', name: 'delete_document', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function deleteDocumento(
         ?EmpresaColaboradora $empresa,
         int $documentId,
@@ -679,6 +680,7 @@ final class EmpresaColaboradoraController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documentos/{documentId<\d+>}/restore', name: 'restore_document', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function restoreDocumento(
         ?EmpresaColaboradora $empresa,
         int $documentId,

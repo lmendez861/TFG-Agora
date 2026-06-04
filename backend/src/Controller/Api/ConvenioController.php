@@ -742,6 +742,7 @@ final class ConvenioController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}', name: 'delete_support_document', methods: ['DELETE'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function deleteDocument(
         ?Convenio $convenio,
         int $documentId,
@@ -778,6 +779,7 @@ final class ConvenioController extends AbstractController
      * El bloque de atributos siguiente indica la ruta, permiso o mapeo que conecta esta pieza con el resto del sistema.
      */
     #[Route('/{id<\d+>}/documents/{documentId<\d+>}/restore', name: 'restore_support_document', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function restoreDocument(
         ?Convenio $convenio,
         int $documentId,

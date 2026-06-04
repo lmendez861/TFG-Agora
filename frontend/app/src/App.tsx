@@ -1159,6 +1159,11 @@ export default function App() {
     }, type === 'success' ? 4500 : 7000);
   }, []);
 
+  const canPerformDestructiveActions = useMemo(
+    () => me?.roles.includes('ROLE_ADMIN') ?? false,
+    [me],
+  );
+
   const syncConvenioState = useCallback((convenioId: number, estado: string) => {
     setConvenioWorkflowState((prev) => ({ ...prev, [convenioId]: estado }));
     setCollections((prev) => {
@@ -1414,6 +1419,11 @@ export default function App() {
     documentId: number,
     restore = false,
   ) => {
+    if (!canPerformDestructiveActions) {
+      pushToast('error', 'Solo el administrador puede retirar o restaurar documentos.');
+      return;
+    }
+
     setSavingConvenioDocument(true);
     try {
       const updated = restore
@@ -1434,7 +1444,7 @@ export default function App() {
     } finally {
       setSavingConvenioDocument(false);
     }
-  }, [pushToast]);
+  }, [canPerformDestructiveActions, pushToast]);
 
   const loadConvenioExtras = useCallback(
     async (convenioId: number, options?: { silent?: boolean; background?: boolean }) => {
@@ -1488,6 +1498,11 @@ export default function App() {
     documentId: number,
     restore = false,
   ) => {
+    if (!canPerformDestructiveActions) {
+      pushToast('error', 'Solo el administrador puede retirar o restaurar documentos.');
+      return;
+    }
+
     setSavingConvenioDocument(true);
     try {
       const updated = restore
@@ -1508,7 +1523,7 @@ export default function App() {
     } finally {
       setSavingConvenioDocument(false);
     }
-  }, [pushToast]);
+  }, [canPerformDestructiveActions, pushToast]);
 
   const handleAdvanceConvenioState = useCallback(async (convenioId: number) => {
     setProcessingConvenioActionId(convenioId);
@@ -2511,6 +2526,7 @@ export default function App() {
       maybeFile?: File,
     ) => Promise<boolean>;
     savingConvenioDocument: boolean;
+    canPerformDestructiveActions: boolean;
   } | null>(null);
   empresaManagementPageContextRef.current = {
     collections,
@@ -2524,6 +2540,7 @@ export default function App() {
     handleToggleEmpresaDocument,
     handleAddEmpresaDocument,
     savingConvenioDocument,
+    canPerformDestructiveActions,
   };
 
   const handleAsignacionSubmit = useCallback(
@@ -3549,6 +3566,7 @@ const selectedConvenio = useMemo(() => {
     const toggleEmpresaDocument = shared?.handleToggleEmpresaDocument;
     const addEmpresaDocument = shared?.handleAddEmpresaDocument;
     const savingConvenioDocument = shared?.savingConvenioDocument ?? false;
+    const canManageDestructiveActions = shared?.canPerformDestructiveActions ?? false;
     const [empresaDocName, setEmpresaDocName] = useState('');
     const [empresaDocType, setEmpresaDocType] = useState('');
     const [empresaDocFile, setEmpresaDocFile] = useState<File | null>(null);
@@ -3747,18 +3765,20 @@ const selectedConvenio = useMemo(() => {
                         >
                           Descargar
                         </button>
-                        <button
-                          type="button"
-                          className="button button--ghost button--sm"
-                          onClick={() => void toggleEmpresaDocument?.(empresa.id, doc.id)}
-                        >
-                          Retirar
-                        </button>
+                        {canManageDestructiveActions && (
+                          <button
+                            type="button"
+                            className="button button--ghost button--sm"
+                            onClick={() => void toggleEmpresaDocument?.(empresa.id, doc.id)}
+                          >
+                            Retirar
+                          </button>
+                        )}
                       </div>
                     ) : (
                       <div className="document-actions">
                         <span className="chip chip--ghost">{doc.deletedAt ? 'Retirado' : 'Archivo local'}</span>
-                        {doc.deletedAt && (
+                        {doc.deletedAt && canManageDestructiveActions && (
                           <button
                             type="button"
                             className="button button--ghost button--sm"
@@ -5432,18 +5452,20 @@ const selectedConvenio = useMemo(() => {
                                 >
                                   Descargar
                                 </button>
-                                <button
-                                  type="button"
-                                  className="button button--ghost button--sm"
-                                  onClick={() => void handleToggleConvenioDocument(selectedConvenio.id, doc.id)}
-                                >
-                                  Retirar
-                                </button>
+                                {canPerformDestructiveActions && (
+                                  <button
+                                    type="button"
+                                    className="button button--ghost button--sm"
+                                    onClick={() => void handleToggleConvenioDocument(selectedConvenio.id, doc.id)}
+                                  >
+                                    Retirar
+                                  </button>
+                                )}
                               </div>
                             ) : (
                               <div className="document-actions">
                                 <span className="chip chip--ghost">{doc.deletedAt ? 'Retirado' : 'Sin enlace'}</span>
-                                {doc.deletedAt && (
+                                {doc.deletedAt && canPerformDestructiveActions && (
                                   <button
                                     type="button"
                                     className="button button--ghost button--sm"

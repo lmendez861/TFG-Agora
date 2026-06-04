@@ -68,7 +68,9 @@ trait JsonRequestTrait
      */
     private function parseDate(string $value, string $fieldName): DateTimeImmutable|JsonResponse
     {
-        $date = DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        // El prefijo "!" inicializa la hora a 00:00:00 y evita comparar
+        // fechas de calendario con horas heredadas del momento de parseo.
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
 
         if ($date === false) {
             return $this->json([

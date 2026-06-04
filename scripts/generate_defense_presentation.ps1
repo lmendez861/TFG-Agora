@@ -487,7 +487,7 @@ Tambien me sirve para justificar por que necesitaba una URL publica correcta en 
     Add-Text -Slide $slide -Left 426 -Top 246 -Width 90 -Height 24 -Text 'Caddy' -Size 14 -Rgb $colors.darkInk -Font 'Consolas' | Out-Null
     Add-Box -Slide $slide -Left 650 -Top 194 -Width 242 -Height 92 -Fill (Color 29 36 48) -Line $colors.line | Out-Null
     Add-Text -Slide $slide -Left 674 -Top 214 -Width 180 -Height 22 -Text 'URL publica' -Size 18 -Rgb $colors.amber -Bold $true | Out-Null
-    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175.157.37...' -Size 9 -Rgb $colors.ink -Font 'Consolas' | Out-Null
+    Add-Text -Slide $slide -Left 668 -Top 246 -Width 208 -Height 24 -Text 'https://agora.34.175.161.212...' -Size 9 -Rgb $colors.ink -Font 'Consolas' | Out-Null
     Add-BulletList $slide 92 332 760 104 @(
         'El portal externo y los correos usan ya el origen publico correcto de la VM.',
         'APP_EXTERNAL_BASE_URL fija la URL canonica para enlaces y notificaciones.',

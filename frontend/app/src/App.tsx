@@ -584,7 +584,7 @@ const EMPTY_CONVENIO_VALUES: ConvenioFormValues = {
   titulo: '',
   tipo: '',
   descripcion: '',
-  estado: '',
+  estado: 'firmado',
   fechaInicio: '',
   fechaFin: '',
   documentoUrl: '',

@@ -38,6 +38,7 @@ final class RegistroEmpresaControllerTest extends WebTestCase
             ],
             content: json_encode([
                 'nombreEmpresa' => 'Correo Real SL',
+                'cif' => 'B11223344',
                 'sector' => 'Tecnologia educativa',
                 'ciudad' => 'Madrid',
                 'web' => 'https://correo-real.example',

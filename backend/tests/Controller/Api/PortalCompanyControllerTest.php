@@ -128,6 +128,7 @@ final class PortalCompanyControllerTest extends WebTestCase
             ],
             content: json_encode([
                 'nombreEmpresa' => 'Empresa Portal Previa',
+                'cif' => 'B12345678',
                 'sector' => 'Servicios',
                 'ciudad' => 'Madrid',
                 'web' => 'https://empresa-portal.example',
@@ -170,6 +171,7 @@ final class PortalCompanyControllerTest extends WebTestCase
             ],
             content: json_encode([
                 'nombreEmpresa' => 'Empresa Portal Reenvio',
+                'cif' => 'B87654321',
                 'sector' => 'Servicios',
                 'ciudad' => 'Madrid',
                 'web' => 'https://empresa-reenvio.example',

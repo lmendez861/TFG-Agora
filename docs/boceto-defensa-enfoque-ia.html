@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Boceto de defensa Agora</title>
+  <style>
+    @page { size: A4; margin: 16mm 15mm; }
+    body {
+      margin: 0;
+      color: #172033;
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.52;
+      background: #fff;
+    }
+    main { max-width: 920px; margin: 0 auto; }
+    .cover {
+      padding: 22px 24px;
+      margin: 0 0 22px;
+      border: 1px solid #d7dce5;
+      border-radius: 12px;
+      background: #f5f8fc;
+    }
+    .cover .eyebrow {
+      margin: 0 0 8px;
+      color: #2d5baf;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 30px; line-height: 1.15; }
+    .cover p:last-child { margin: 12px 0 0; color: #4c5a70; }
+    .toc {
+      padding: 15px 18px;
+      margin: 0 0 24px;
+      border: 1px solid #d7dce5;
+      border-radius: 10px;
+      background: #fbfcff;
+      break-inside: avoid;
+    }
+    .toc h2 { margin-top: 0; font-size: 18px; border: 0; }
+    .toc ul { columns: 2; column-gap: 28px; margin-bottom: 0; }
+    h2 {
+      margin: 26px 0 10px;
+      padding-top: 8px;
+      border-top: 1px solid #d7dce5;
+      font-size: 21px;
+      color: #163a70;
+      break-after: avoid;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+      color: #22324d;
+      break-after: avoid;
+    }
+    p { margin: 0 0 10px; }
+    ul, ol { margin: 0 0 12px 22px; padding: 0; }
+    li { margin: 4px 0; }
+    blockquote {
+      margin: 10px 0 14px;
+      padding: 10px 14px;
+      border-left: 4px solid #2d5baf;
+      background: #eef4ff;
+      color: #1b2b44;
+      break-inside: avoid;
+    }
+    blockquote p { margin: 0; }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #edf1f7;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .94em;
+    }
+    a { color: #2d5baf; text-decoration: none; }
+    strong { color: #111827; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <p class="eyebrow">Boceto de enfoque</p>
+      <h1>Agora como proyecto desarrollado con IA y tecnologias actuales</h1>
+      <p>Propuesta para orientar la defensa hacia el proceso de desarrollo, integracion, despliegue y aprendizaje.</p>
+    </section>
+    <nav class="toc">
+      <h2>Indice</h2>
+      <ul><li><a href="#indice">Indice</a></li>
+<li><a href="#1-idea-principal-del-nuevo-enfoque">1. Idea principal del nuevo enfoque</a></li>
+<li><a href="#2-que-quiero-demostrar-con-la-defensa">2. Que quiero demostrar con la defensa</a></li>
+<li><a href="#3-punto-de-partida-del-proyecto">3. Punto de partida del proyecto</a></li>
+<li><a href="#4-como-he-usado-la-ia-durante-el-desarrollo">4. Como he usado la IA durante el desarrollo</a></li>
+<li><a href="#5-como-he-montado-la-aplicacion-por-capas">5. Como he montado la aplicacion por capas</a></li>
+<li><a href="#6-como-he-conseguido-desplegarlo-en-cloud">6. Como he conseguido desplegarlo en cloud</a></li>
+<li><a href="#7-como-se-conectan-las-tecnologias-entre-si">7. Como se conectan las tecnologias entre si</a></li>
+<li><a href="#8-que-he-aprendido-durante-el-proceso">8. Que he aprendido durante el proceso</a></li>
+<li><a href="#9-como-lo-explicaria-a-alguien-desde-cero">9. Como lo explicaria a alguien desde cero</a></li>
+<li><a href="#10-limitaciones-y-mejoras-futuras">10. Limitaciones y mejoras futuras</a></li>
+<li><a href="#11-cierre-de-la-defensa">11. Cierre de la defensa</a></li></ul>
+    </nav>
+    <h1 id="boceto-personal-de-defensa-agora-con-ia-y-tecnologias-actuales">Boceto personal de defensa: Agora con IA y tecnologias actuales</h1>
+<p>Este documento es para mi preparacion personal. Incluye frases y recordatorios escritos para estudiar el nuevo enfoque antes de explicarlo.</p>
+<h2 id="indice">Indice</h2>
+<ol>
+<li>Idea principal del nuevo enfoque</li>
+<li>Que quiero demostrar con la defensa</li>
+<li>Punto de partida del proyecto</li>
+<li>Como he usado la IA durante el desarrollo</li>
+<li>Como he montado la aplicacion por capas</li>
+<li>Como he conseguido desplegarlo en cloud</li>
+<li>Como se conectan las tecnologias entre si</li>
+<li>Que he aprendido durante el proceso</li>
+<li>Como lo explicaria a alguien desde cero</li>
+<li>Limitaciones y mejoras futuras</li>
+<li>Cierre de la defensa</li>
+</ol>
+<h2 id="1-idea-principal-del-nuevo-enfoque">1. Idea principal del nuevo enfoque</h2>
+<p>No voy a cambiar el proyecto ni rehacerlo como si fuera otro trabajo distinto. Agora sigue siendo una aplicacion funcional para gestionar practicas entre un centro educativo y empresas colaboradoras.</p>
+<p>Lo que voy a cambiar es la forma de defenderlo.</p>
+<p>En vez de plantearlo como:</p>
+<blockquote><p>He escrito manualmente todo este codigo desde cero.</p></blockquote>
+<p>Lo voy a plantear como:</p>
+<blockquote><p>He usado inteligencia artificial y tecnologias actuales para desarrollar, integrar, desplegar y validar una aplicacion web funcional.</p></blockquote>
+<p>La idea que quiero transmitir es que actualmente existen herramientas que permiten construir un proyecto bastante completo si se saben combinar: IA generativa, frameworks frontend y backend, contenedores, cloud, bases de datos, servicios de correo, pruebas y herramientas de supervision.</p>
+<p>Mi defensa debe centrarse en explicar como he ido usando esas tecnologias, que papel ha tenido cada una, que problemas han aparecido y que he aprendido al montar todo el sistema.</p>
+<p>Una frase que resume el enfoque:</p>
+<blockquote><p>Mi objetivo no es convencer de que he escrito a mano cada linea del codigo, sino demostrar como he podido llevar una idea hasta una aplicacion desplegada usando IA y tecnologias actuales.</p></blockquote>
+<h2 id="2-que-quiero-demostrar-con-la-defensa">2. Que quiero demostrar con la defensa</h2>
+<p>Con esta defensa quiero demostrar cinco cosas.</p>
+<p>Primero, que he entendido el problema que queria resolver: la gestion de practicas entre centro educativo y empresas.</p>
+<p>Segundo, que he sabido dividir ese problema en partes:</p>
+<ul>
+<li>portal interno para el centro;</li>
+<li>portal externo para empresas;</li>
+<li>backend con API;</li>
+<li>base de datos;</li>
+<li>correo;</li>
+<li>mensajeria;</li>
+<li>despliegue cloud;</li>
+<li>herramienta de escritorio para supervision.</li>
+</ul>
+<p>Tercero, que he usado IA generativa como apoyo, no como una solucion automatica. La IA me ha ayudado a generar y corregir codigo, pero he tenido que probar, revisar, detectar errores y decidir que partes entraban o no en el alcance final.</p>
+<p>Cuarto, que he aprendido a integrar tecnologias. El proyecto no es solo una pagina visual; tiene React, Symfony, Doctrine, PostgreSQL, Docker, Caddy, Brevo, Google Cloud y Electron.</p>
+<p>Quinto, que he sido capaz de desplegarlo y probarlo fuera de mi ordenador, en una VM accesible por URL publica.</p>
+<h2 id="3-punto-de-partida-del-proyecto">3. Punto de partida del proyecto</h2>
+<p>El punto de partida era una necesidad funcional: organizar mejor la relacion entre un centro educativo y empresas colaboradoras para practicas.</p>
+<p>El flujo principal que queria representar era:</p>
+<ol>
+<li>Una empresa se registra desde un portal externo.</li>
+<li>La empresa verifica su correo y envia una solicitud.</li>
+<li>El centro revisa esa solicitud desde el portal interno.</li>
+<li>Si la acepta, la empresa queda activa.</li>
+<li>El centro crea un convenio con esa empresa.</li>
+<li>Se asigna un estudiante a una empresa y convenio.</li>
+<li>Se hace seguimiento de la practica.</li>
+<li>Se puede cerrar con una evaluacion final.</li>
+</ol>
+<p>Esto me obligo a pensar en varias entidades principales:</p>
+<ul>
+<li>empresa;</li>
+<li>solicitud de empresa;</li>
+<li>cuenta del portal externo;</li>
+<li>estudiante;</li>
+<li>tutor academico;</li>
+<li>tutor profesional;</li>
+<li>convenio;</li>
+<li>asignacion;</li>
+<li>seguimiento;</li>
+<li>mensajes.</li>
+</ul>
+<h2 id="4-como-he-usado-la-ia-durante-el-desarrollo">4. Como he usado la IA durante el desarrollo</h2>
+<p>La IA me ha servido como herramienta de apoyo en varias fases.</p>
+<h3 id="analisis-y-estructura">Analisis y estructura</h3>
+<p>La use para ordenar el problema y convertirlo en modulos: empresas, convenios, asignaciones, portal externo, autenticacion, documentos, mensajes y despliegue.</p>
+<h3 id="generacion-de-codigo">Generacion de codigo</h3>
+<p>La IA ayudo a generar partes de:</p>
+<ul>
+<li>controladores Symfony;</li>
+<li>entidades y relaciones;</li>
+<li>componentes React;</li>
+<li>formularios;</li>
+<li>llamadas a API;</li>
+<li>scripts de despliegue;</li>
+<li>pruebas.</li>
+</ul>
+<h3 id="correccion-de-errores">Correccion de errores</h3>
+<p>Tambien la use para interpretar errores y proponer soluciones. Por ejemplo:</p>
+<ul>
+<li>errores de migraciones;</li>
+<li>errores 401, 403, 422 y 500;</li>
+<li>problemas de permisos;</li>
+<li>problemas con la URL publica;</li>
+<li>problemas de persistencia documental.</li>
+</ul>
+<p>Lo importante es que la IA no ha hecho que todo funcione automaticamente. He tenido que comprobar resultados, ejecutar comandos, revisar logs, reconstruir contenedores y probar flujos reales.</p>
+<p>Frase para defenderlo:</p>
+<blockquote><p>La IA me ha dado velocidad, pero el trabajo ha estado en dirigir el proceso, probar lo generado y entender como encajaban las piezas.</p></blockquote>
+<h2 id="5-como-he-montado-la-aplicacion-por-capas">5. Como he montado la aplicacion por capas</h2>
+<p>Para entender el proyecto, lo explico por capas.</p>
+<h3 id="capa-de-interfaz-react">Capa de interfaz: React</h3>
+<p>React es la parte visual.</p>
+<p>Tengo dos portales:</p>
+<ul>
+<li>portal interno: lo usa el centro;</li>
+<li>portal externo: lo usan las empresas.</li>
+</ul>
+<p>El portal interno permite gestionar empresas, estudiantes, tutores, convenios, asignaciones y mensajes.</p>
+<p>El portal externo permite a una empresa registrarse, enviar solicitud, ver estado, consultar informacion y comunicarse con el centro.</p>
+<h3 id="capa-de-comunicacion-api">Capa de comunicacion: API</h3>
+<p>El frontend no accede directamente a la base de datos. Se comunica con el backend mediante una API.</p>
+<p>Ejemplo:</p>
+<blockquote><p>Si quiero cargar empresas, React llama a <code>/api/empresas</code>.</p></blockquote>
+<p>Esa llamada devuelve JSON, que es el formato de datos que viaja entre frontend y backend.</p>
+<h3 id="capa-de-backend-symfony">Capa de backend: Symfony</h3>
+<p>Symfony recibe las peticiones de la API.</p>
+<p>Por ejemplo:</p>
+<ul>
+<li><code>/api/empresas</code> lo gestiona el controlador de empresas;</li>
+<li><code>/api/convenios</code> lo gestiona el controlador de convenios;</li>
+<li><code>/api/asignaciones</code> lo gestiona el controlador de asignaciones;</li>
+<li><code>/api/portal-company/...</code> lo usa el portal externo.</li>
+</ul>
+<p>Symfony valida los datos, aplica reglas de negocio y devuelve respuestas.</p>
+<h3 id="capa-de-datos-doctrine-y-postgresql">Capa de datos: Doctrine y PostgreSQL</h3>
+<p>Doctrine conecta Symfony con la base de datos.</p>
+<p>En vez de escribir SQL para todo, el proyecto usa entidades PHP como:</p>
+<ul>
+<li><code>EmpresaColaboradora</code>;</li>
+<li><code>Convenio</code>;</li>
+<li><code>AsignacionPractica</code>;</li>
+<li><code>Estudiante</code>;</li>
+<li><code>EmpresaMensaje</code>.</li>
+</ul>
+<p>PostgreSQL guarda los datos reales en cloud.</p>
+<h3 id="capa-de-despliegue-docker-y-google-cloud">Capa de despliegue: Docker y Google Cloud</h3>
+<p>Docker empaqueta los servicios en contenedores.</p>
+<p>En cloud se levantan:</p>
+<ul>
+<li>contenedor de aplicacion;</li>
+<li>contenedor PostgreSQL;</li>
+<li>contenedor proxy con Caddy.</li>
+</ul>
+<p>Google Cloud proporciona la VM donde se ejecuta todo.</p>
+<h3 id="capa-de-supervision-agora-desktop">Capa de supervision: Agora Desktop</h3>
+<p>Agora Desktop funciona como una consola tecnica para comprobar:</p>
+<ul>
+<li>estado del cloud;</li>
+<li>URL activa;</li>
+<li>logs;</li>
+<li>pruebas;</li>
+<li>conexion con la VM.</li>
+</ul>
+<h2 id="6-como-he-conseguido-desplegarlo-en-cloud">6. Como he conseguido desplegarlo en cloud</h2>
+<p>El despliegue ha sido una parte importante del proyecto porque demuestra que no se queda solo funcionando en local.</p>
+<p>El proceso se puede explicar asi:</p>
+<ol>
+<li>Crear una VM en Google Cloud.</li>
+<li>Instalar Docker en la VM.</li>
+<li>Preparar un <code>docker-compose.yml</code> para levantar varios servicios.</li>
+<li>Configurar variables de entorno.</li>
+<li>Construir la imagen de la aplicacion.</li>
+<li>Levantar PostgreSQL.</li>
+<li>Ejecutar migraciones de Symfony.</li>
+<li>Crear usuarios iniciales.</li>
+<li>Exponer la aplicacion con Caddy por HTTP/HTTPS.</li>
+<li>Usar <code>nip.io</code> para acceder con una URL publica basada en la IP.</li>
+<li>Configurar <code>agora.service</code> para que el sistema arranque automaticamente al iniciar la VM.</li>
+</ol>
+<p>Frase para explicarlo:</p>
+<blockquote><p>El despliegue cloud me sirvio para pasar de una aplicacion local a un sistema accesible desde fuera, con contenedores, base de datos persistente, proxy y arranque automatico.</p></blockquote>
+<h2 id="7-como-se-conectan-las-tecnologias-entre-si">7. Como se conectan las tecnologias entre si</h2>
+<p>Un ejemplo claro es la gestion de empresas.</p>
+<ol>
+<li>El usuario entra al portal interno.</li>
+<li>React muestra la pantalla.</li>
+<li>React llama a <code>/api/empresas</code>.</li>
+<li>Symfony recibe la peticion.</li>
+<li>El controlador de empresas consulta Doctrine.</li>
+<li>Doctrine consulta PostgreSQL.</li>
+<li>PostgreSQL devuelve los datos.</li>
+<li>Symfony los transforma en JSON.</li>
+<li>React recibe el JSON y actualiza la tabla.</li>
+</ol>
+<p>Otro ejemplo es el registro de empresa externa.</p>
+<ol>
+<li>La empresa entra al portal externo.</li>
+<li>React muestra el formulario.</li>
+<li>La empresa crea cuenta y rellena datos.</li>
+<li>El frontend envia la solicitud al backend.</li>
+<li>Symfony valida los datos.</li>
+<li>Se crea una solicitud en base de datos.</li>
+<li>Brevo envia correo de verificacion.</li>
+<li>El centro aprueba o rechaza desde el portal interno.</li>
+</ol>
+<p>Esto demuestra que las tecnologias no estan aisladas. Cada una cumple una funcion dentro del flujo.</p>
+<h2 id="8-que-he-aprendido-durante-el-proceso">8. Que he aprendido durante el proceso</h2>
+<p>He aprendido que montar una aplicacion completa no es solo hacer pantallas.</p>
+<p>He aprendido a diferenciar:</p>
+<ul>
+<li>frontend: lo que ve el usuario;</li>
+<li>backend: donde esta la logica;</li>
+<li>API: comunicacion entre ambos;</li>
+<li>base de datos: donde se guarda la informacion;</li>
+<li>Docker: como se empaqueta y ejecuta;</li>
+<li>cloud: donde se publica;</li>
+<li>logs: donde se investigan fallos;</li>
+<li>pruebas: como se comprueba que algo funciona.</li>
+</ul>
+<p>Tambien he aprendido que la IA puede generar codigo rapidamente, pero hay que revisarlo. Algunos errores que aparecieron fueron precisamente por no funcionar igual en local y en cloud.</p>
+<p>Ejemplos de aprendizaje real:</p>
+<ul>
+<li>una migracion valida para SQLite puede fallar en PostgreSQL;</li>
+<li>una aplicacion puede arrancar pero fallar por permisos de cache;</li>
+<li>un formulario puede parecer correcto pero enviar datos incompletos;</li>
+<li>un error 401 no se debe mostrar al usuario sin contexto;</li>
+<li>subir documentos no es solo elegir un archivo, tambien hay que persistirlo bien;</li>
+<li>una VM puede cambiar de IP y afectar a la URL publica.</li>
+</ul>
+<h2 id="9-como-lo-explicaria-a-alguien-desde-cero">9. Como lo explicaria a alguien desde cero</h2>
+<p>Si tuviera que explicar a alguien como construir algo parecido desde cero, lo haria por pasos.</p>
+<h3 id="paso-1-definir-el-problema">Paso 1: definir el problema</h3>
+<p>Primero hay que saber que se quiere resolver. En mi caso: gestionar practicas entre centro y empresas.</p>
+<h3 id="paso-2-definir-los-usuarios">Paso 2: definir los usuarios</h3>
+<p>Los usuarios principales son:</p>
+<ul>
+<li>personal del centro;</li>
+<li>empresas externas;</li>
+<li>administrador tecnico.</li>
+</ul>
+<h3 id="paso-3-definir-los-datos-principales">Paso 3: definir los datos principales</h3>
+<p>Antes de programar hay que saber que datos existen:</p>
+<ul>
+<li>empresas;</li>
+<li>estudiantes;</li>
+<li>tutores;</li>
+<li>convenios;</li>
+<li>asignaciones;</li>
+<li>mensajes;</li>
+<li>documentos.</li>
+</ul>
+<h3 id="paso-4-crear-el-backend">Paso 4: crear el backend</h3>
+<p>El backend define la API y la logica.</p>
+<p>Aqui se crean entidades, controladores, validaciones y conexiones con base de datos.</p>
+<h3 id="paso-5-crear-el-frontend">Paso 5: crear el frontend</h3>
+<p>El frontend consume la API y muestra pantallas.</p>
+<p>Aqui se crean formularios, tablas, botones, mensajes y navegacion.</p>
+<h3 id="paso-6-conectar-frontend-y-backend">Paso 6: conectar frontend y backend</h3>
+<p>React llama a Symfony mediante rutas <code>/api/...</code>.</p>
+<p>Symfony responde con JSON.</p>
+<h3 id="paso-7-probar-flujos">Paso 7: probar flujos</h3>
+<p>No basta con que compile. Hay que probar:</p>
+<ul>
+<li>login;</li>
+<li>registro;</li>
+<li>crear empresa;</li>
+<li>aprobar solicitud;</li>
+<li>crear convenio;</li>
+<li>crear asignacion;</li>
+<li>enviar mensaje;</li>
+<li>revisar errores.</li>
+</ul>
+<h3 id="paso-8-desplegar">Paso 8: desplegar</h3>
+<p>Cuando funciona en local, se prepara Docker y se despliega en cloud.</p>
+<h3 id="paso-9-revisar-errores-reales">Paso 9: revisar errores reales</h3>
+<p>En cloud aparecen problemas distintos:</p>
+<ul>
+<li>permisos;</li>
+<li>variables de entorno;</li>
+<li>puertos;</li>
+<li>base de datos;</li>
+<li>certificados;</li>
+<li>URL publica.</li>
+</ul>
+<h3 id="paso-10-documentar">Paso 10: documentar</h3>
+<p>Finalmente hay que documentar que se ha conseguido, que tecnologias se han usado y que queda pendiente.</p>
+<h2 id="10-limitaciones-y-mejoras-futuras">10. Limitaciones y mejoras futuras</h2>
+<p>No debo defender que todo esta al nivel de una aplicacion comercial terminada.</p>
+<p>Puedo reconocer como futuras mejoras:</p>
+<ul>
+<li>gestion documental mas robusta;</li>
+<li>roles avanzados;</li>
+<li>multi-centro;</li>
+<li>backups automaticos;</li>
+<li>dominio propio estable;</li>
+<li>mas pruebas E2E;</li>
+<li>seguridad avanzada;</li>
+<li>auditoria mas completa.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>He priorizado demostrar el flujo principal y el despliegue funcional. Algunas partes quedan como evolucion futura porque llevarlas a produccion requeriria mas tiempo.</p></blockquote>
+<h2 id="11-cierre-de-la-defensa">11. Cierre de la defensa</h2>
+<p>La conclusion que quiero transmitir es:</p>
+<blockquote><p>Agora demuestra como, usando IA y tecnologias actuales, he podido construir una aplicacion web funcional con portal interno, portal externo, backend, base de datos, despliegue cloud y supervision tecnica.</p></blockquote>
+<p>Tambien quiero dejar claro que he aprendido una leccion importante:</p>
+<blockquote><p>La IA ayuda a desarrollar mas rapido, pero no elimina la necesidad de entender, probar, revisar errores y explicar como funciona el sistema.</p></blockquote>
+<p>Mi defensa tiene que centrarse en ese aprendizaje: no vender el proyecto como codigo escrito manualmente al 100 %, sino como una demostracion de como se puede usar tecnologia actual para llegar a una solucion funcional real.</p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Guia de defensa: enfoque IA</title>
+  <style>
+    @page { size: A4; margin: 16mm 15mm; }
+    body {
+      margin: 0;
+      color: #172033;
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.52;
+      background: #fff;
+    }
+    main { max-width: 920px; margin: 0 auto; }
+    .cover {
+      padding: 22px 24px;
+      margin: 0 0 22px;
+      border: 1px solid #d7dce5;
+      border-radius: 12px;
+      background: #f5f8fc;
+    }
+    .cover .eyebrow {
+      margin: 0 0 8px;
+      color: #2d5baf;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: 30px; line-height: 1.15; }
+    .cover p:last-child { margin: 12px 0 0; color: #4c5a70; }
+    .toc {
+      padding: 15px 18px;
+      margin: 0 0 24px;
+      border: 1px solid #d7dce5;
+      border-radius: 10px;
+      background: #fbfcff;
+      break-inside: avoid;
+    }
+    .toc h2 { margin-top: 0; font-size: 18px; border: 0; }
+    .toc ul { columns: 2; column-gap: 28px; margin-bottom: 0; }
+    h2 {
+      margin: 26px 0 10px;
+      padding-top: 8px;
+      border-top: 1px solid #d7dce5;
+      font-size: 21px;
+      color: #163a70;
+      break-after: avoid;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+      color: #22324d;
+      break-after: avoid;
+    }
+    p { margin: 0 0 10px; }
+    ul, ol { margin: 0 0 12px 22px; padding: 0; }
+    li { margin: 4px 0; }
+    blockquote {
+      margin: 10px 0 14px;
+      padding: 10px 14px;
+      border-left: 4px solid #2d5baf;
+      background: #eef4ff;
+      color: #1b2b44;
+      break-inside: avoid;
+    }
+    blockquote p { margin: 0; }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #edf1f7;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: .94em;
+    }
+    a { color: #2d5baf; text-decoration: none; }
+    strong { color: #111827; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="cover">
+      <p class="eyebrow">Repaso personal</p>
+      <h1>Guia de defensa con enfoque de inteligencia artificial</h1>
+      <p>Documento de estudio para explicar Agora como un proyecto funcional desarrollado con apoyo de IA generativa, de forma honesta y defendible.</p>
+    </section>
+    <nav class="toc">
+      <h2>Indice</h2>
+      <ul><li><a href="#1-enfoque-principal-que-voy-a-defender">1. Enfoque principal que voy a defender</a></li>
+<li><a href="#2-que-parte-he-hecho-yo">2. Que parte he hecho yo</a></li>
+<li><a href="#3-que-papel-ha-tenido-la-ia-en-el-desarrollo">3. Que papel ha tenido la IA en el desarrollo</a></li>
+<li><a href="#4-que-quiero-demostrar-con-esta-defensa">4. Que quiero demostrar con esta defensa</a></li>
+<li><a href="#5-tecnologias-usadas-y-como-las-explico">5. Tecnologias usadas y como las explico</a></li>
+<li><a href="#6-como-se-conectan-frontend-y-backend-a-nivel-de-codigo">6. Como se conectan frontend y backend a nivel de codigo</a></li>
+<li><a href="#7-errores-que-entiendo-y-puedo-explicar">7. Errores que entiendo y puedo explicar</a></li>
+<li><a href="#8-dificultades-reales-que-tuve">8. Dificultades reales que tuve</a></li>
+<li><a href="#9-flujo-funcional-principal">9. Flujo funcional principal</a></li>
+<li><a href="#10-funcionalidades-que-puedo-defender-como-cerradas">10. Funcionalidades que puedo defender como cerradas</a></li>
+<li><a href="#11-funcionalidades-que-reconozco-como-futuras-mejoras">11. Funcionalidades que reconozco como futuras mejoras</a></li>
+<li><a href="#12-preguntas-dificiles-y-respuestas">12. Preguntas dificiles y respuestas</a></li>
+<li><a href="#13-mini-guion-para-decirlo-oralmente">13. Mini guion para decirlo oralmente</a></li></ul>
+    </nav>
+    <h1 id="guia-de-defensa-como-voy-a-explicar-agora-con-ia-y-tecnologias-actuales">Guia de defensa: como voy a explicar Agora con IA y tecnologias actuales</h1>
+<h2 id="1-enfoque-principal-que-voy-a-defender">1. Enfoque principal que voy a defender</h2>
+<p>No tengo que cambiar el proyecto ni presentarlo como otro proyecto distinto. Lo que tengo que cambiar es el enfoque de la defensa.</p>
+<p>Agora sigue siendo una aplicacion funcional para gestionar practicas entre un centro educativo y empresas colaboradoras. Lo que voy a explicar es como, con las tecnologias actuales y con apoyo de inteligencia artificial, he podido desarrollar, integrar, desplegar y validar un sistema completo.</p>
+<p>La defensa no tiene que sonar a:</p>
+<blockquote><p>He programado manualmente todo este sistema desde cero.</p></blockquote>
+<p>Tiene que sonar a:</p>
+<blockquote><p>He desarrollado un proyecto funcional usando herramientas actuales de desarrollo, despliegue e inteligencia artificial. El objetivo es demostrar como se puede construir una aplicacion real combinando frontend, backend, base de datos, cloud, Docker, correo, pruebas y supervision tecnica.</p></blockquote>
+<p>Para mi, el valor del proyecto no esta solo en el codigo generado, sino en haber conseguido convertir una idea en un sistema que se puede abrir desde una URL, que tiene portal interno, portal externo, base de datos, correo, despliegue en una VM y una herramienta de escritorio para supervision.</p>
+<p>Si me preguntan directamente si he programado todo yo, mi respuesta tiene que ser clara:</p>
+<blockquote><p>No he escrito manualmente todo el codigo linea por linea. He usado IA generativa y herramientas actuales como apoyo para construir el sistema. Mi trabajo ha sido orientar el desarrollo, definir requisitos, probar flujos, revisar errores, adaptar el despliegue y entender como encajan las tecnologias. Por eso la defensa se centra en explicar el proceso, las tecnologias utilizadas y el resultado funcional.</p></blockquote>
+<p>La idea clave es:</p>
+<blockquote><p>No intento convencer de que todo el codigo es mio de forma manual, sino demostrar que se usar las herramientas actuales para llevar una aplicacion desde la idea hasta un despliegue funcional.</p></blockquote>
+<h2 id="2-que-parte-he-hecho-yo">2. Que parte he hecho yo</h2>
+<p>Mi aportacion se puede explicar en varias partes.</p>
+<p>Primero, he definido el problema. El sistema intenta resolver la gestion de practicas entre un centro educativo y empresas colaboradoras. Eso incluye empresas, estudiantes, tutores, convenios, asignaciones, seguimiento, documentos y comunicacion.</p>
+<p>Despues, he ido definiendo que necesitaba cada portal. El portal interno tenia que servir para que el centro gestionara empresas, convenios, estudiantes y asignaciones. El portal externo tenia que permitir que una empresa se registrara, verificara su correo, enviara una solicitud y pudiera comunicarse con el centro.</p>
+<p>Tambien he trabajado en la validacion funcional. He probado inicios de sesion, errores 401 y 500, aprobacion y rechazo de empresas, mensajeria, asignaciones, tutores, documentos, URL publica, despliegue cloud y arranque automatico.</p>
+<p>Ademas, he tenido que tomar decisiones de alcance. Algunas funcionalidades eran demasiado grandes para cerrarlas bien, como la gestion documental avanzada, roles muy detallados o multi-centro. En esos casos las he dejado como mejoras futuras en vez de intentar defender que estaban completas.</p>
+<p>Una forma sencilla de explicarlo seria:</p>
+<blockquote><p>La IA y las herramientas actuales me han ayudado mucho a avanzar, pero yo he tenido que dirigir que se queria construir, probar si funcionaba, detectar incoherencias y decidir que se quedaba dentro del alcance final.</p></blockquote>
+<h2 id="3-que-papel-ha-tenido-la-ia-en-el-desarrollo">3. Que papel ha tenido la IA en el desarrollo</h2>
+<p>La IA ha tenido un papel importante como herramienta de apoyo. No la presento como sustituta del trabajo, sino como una tecnologia actual que permite acelerar la creacion de una aplicacion si se sabe guiar, probar y corregir.</p>
+<p>Me ha ayudado a generar codigo de backend, frontend, scripts de despliegue, pruebas, documentacion y correcciones.</p>
+<p>En concreto, la IA ha ayudado en:</p>
+<ul>
+<li>estructura de controladores Symfony;</li>
+<li>componentes y formularios React;</li>
+<li>endpoints de API;</li>
+<li>validaciones de datos;</li>
+<li>mensajes de error;</li>
+<li>pruebas automatizadas;</li>
+<li>scripts de Docker y despliegue;</li>
+<li>documentacion tecnica;</li>
+<li>guiones de presentacion.</li>
+</ul>
+<p>Pero el aprendizaje importante es que la IA no hace que todo funcione automaticamente. Muchas veces genera algo que parece correcto, pero luego falla al probarlo en un entorno real.</p>
+<p>Por ejemplo, hubo migraciones que parecian validas, pero fallaban en PostgreSQL. Tambien hubo errores de permisos en Symfony, problemas con la URL publica, problemas de documentos y errores que aparecian directamente al usuario.</p>
+<p>Por eso puedo decir:</p>
+<blockquote><p>La IA acelera el desarrollo, pero no sustituye la revision. Hay que probar, mirar logs, entender los errores y corregir el sistema hasta que el flujo sea demostrable. Ese es precisamente uno de los aprendizajes principales del proyecto.</p></blockquote>
+<h2 id="4-que-quiero-demostrar-con-esta-defensa">4. Que quiero demostrar con esta defensa</h2>
+<p>Con esta defensa quiero demostrar cuatro cosas.</p>
+<p>Primero, que he entendido el problema funcional: un centro necesita gestionar empresas, convenios, estudiantes, asignaciones y comunicacion con empresas.</p>
+<p>Segundo, que he sabido usar tecnologias actuales para construir una solucion:</p>
+<ul>
+<li>React para los portales;</li>
+<li>Symfony para el backend;</li>
+<li>Doctrine para conectar con la base de datos;</li>
+<li>PostgreSQL para persistencia;</li>
+<li>Docker y Docker Compose para despliegue;</li>
+<li>Google Cloud para publicar el sistema;</li>
+<li>Caddy/HTTPS para exponer la URL;</li>
+<li>Brevo para correo;</li>
+<li>Electron para Agora Desktop;</li>
+<li>IA generativa como apoyo al desarrollo.</li>
+</ul>
+<p>Tercero, que he aprendido a integrar esas piezas. El proyecto no es solo una pantalla aislada: hay frontend, backend, base de datos, contenedores, despliegue, correo, logs y pruebas.</p>
+<p>Cuarto, que he aprendido de los fallos. Durante el proyecto aparecieron errores reales y eso me obligo a revisar logs, migraciones, permisos, rutas, codigos de error y persistencia.</p>
+<p>Frase para decirlo:</p>
+<blockquote><p>El objetivo de mi defensa no es decir que he escrito manualmente cada linea, sino explicar como he usado un conjunto de tecnologias actuales, incluida la IA, para construir y desplegar una aplicacion funcional.</p></blockquote>
+<h2 id="5-tecnologias-usadas-y-como-las-explico">5. Tecnologias usadas y como las explico</h2>
+<h3 id="symfony">Symfony</h3>
+<p>Symfony es el backend principal. Es la parte que recibe las peticiones del frontend, valida los datos, aplica la logica de negocio y guarda o consulta informacion en la base de datos.</p>
+<p>En el proyecto, Symfony se usa para crear la API. Por ejemplo, hay rutas como:</p>
+<ul>
+<li><code>/api/empresas</code></li>
+<li><code>/api/convenios</code></li>
+<li><code>/api/asignaciones</code></li>
+<li><code>/api/monitor</code></li>
+<li><code>/api/portal-company/overview</code></li>
+</ul>
+<p>Cuando el frontend necesita datos, no habla directamente con PostgreSQL. Llama a una ruta de Symfony, y Symfony responde con JSON.</p>
+<p>Frase para decirlo:</p>
+<blockquote><p>Symfony es el nucleo del backend. Recibe las peticiones de los portales, valida los datos, usa Doctrine para acceder a la base de datos y devuelve respuestas JSON.</p></blockquote>
+<h3 id="react">React</h3>
+<p>React es la tecnologia usada para construir las interfaces de usuario.</p>
+<p>Hay dos frontends principales:</p>
+<ul>
+<li>portal interno del centro: <code>frontend/app</code>;</li>
+<li>portal externo de empresas: <code>frontend/company-portal</code>.</li>
+</ul>
+<p>React se encarga de mostrar pantallas, formularios, tablas, botones y mensajes. Cuando el usuario hace una accion, React llama a la API del backend.</p>
+<p>Frase:</p>
+<blockquote><p>React es la capa visual. Muestra los datos y recoge las acciones del usuario, pero la logica principal y la persistencia estan en el backend.</p></blockquote>
+<h3 id="doctrine">Doctrine</h3>
+<p>Doctrine es el ORM que conecta Symfony con la base de datos.</p>
+<p>En vez de escribir SQL manual para todo, se trabaja con clases PHP llamadas entidades. Por ejemplo:</p>
+<ul>
+<li><code>EmpresaColaboradora</code></li>
+<li><code>Convenio</code></li>
+<li><code>AsignacionPractica</code></li>
+<li><code>Estudiante</code></li>
+<li><code>TutorAcademico</code></li>
+<li><code>TutorProfesional</code></li>
+</ul>
+<p>Doctrine se encarga de traducir esas entidades a tablas y consultas SQL.</p>
+<p>Frase:</p>
+<blockquote><p>Doctrine me permite trabajar con objetos del dominio, como empresas o convenios, y el ORM se encarga de llevar esos datos a PostgreSQL.</p></blockquote>
+<h3 id="postgresql">PostgreSQL</h3>
+<p>PostgreSQL es la base de datos que se usa en el despliegue cloud.</p>
+<p>Guarda la informacion persistente del proyecto:</p>
+<ul>
+<li>empresas;</li>
+<li>estudiantes;</li>
+<li>tutores;</li>
+<li>convenios;</li>
+<li>asignaciones;</li>
+<li>mensajes;</li>
+<li>cuentas de empresa;</li>
+<li>solicitudes;</li>
+<li>auditoria.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>PostgreSQL es la base de datos real del despliegue. Es mas adecuada que SQLite para un entorno cloud porque esta pensada para uso persistente y concurrente.</p></blockquote>
+<h3 id="docker-y-docker-compose">Docker y Docker Compose</h3>
+<p>Docker sirve para empaquetar la aplicacion en contenedores. En vez de instalar manualmente PHP, Apache, PostgreSQL y Caddy en la VM, cada parte se ejecuta en un contenedor.</p>
+<p>Docker Compose define como se levantan juntos esos contenedores.</p>
+<p>En la VM se usan principalmente:</p>
+<ul>
+<li>contenedor de aplicacion: Symfony, Apache y los builds de React;</li>
+<li>contenedor de base de datos: PostgreSQL;</li>
+<li>contenedor proxy: Caddy para exponer HTTP/HTTPS.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>Docker hace que el despliegue sea mas reproducible. Docker Compose define los servicios, redes, volumenes y variables necesarias para levantar todo el sistema.</p></blockquote>
+<h3 id="google-cloud-vm">Google Cloud VM</h3>
+<p>La VM de Google Cloud es el servidor donde se ejecuta el proyecto.</p>
+<p>Sirve para que la aplicacion no funcione solo en mi ordenador, sino que este accesible desde Internet mediante una URL publica.</p>
+<p>Frase:</p>
+<blockquote><p>La VM permite demostrar el proyecto en un entorno parecido a produccion, con Docker, PostgreSQL, HTTPS y acceso externo.</p></blockquote>
+<h3 id="caddy-y-https">Caddy y HTTPS</h3>
+<p>Caddy actua como proxy. Recibe las peticiones externas por los puertos 80 y 443 y las redirige al contenedor de la aplicacion.</p>
+<p>Tambien ayuda a servir la aplicacion por HTTPS.</p>
+<p>Frase:</p>
+<blockquote><p>Caddy esta delante de la aplicacion y se encarga de exponerla hacia fuera de forma mas limpia, usando HTTP y HTTPS.</p></blockquote>
+<h3 id="brevo">Brevo</h3>
+<p>Brevo se usa para el envio de correos.</p>
+<p>En el proyecto se usa sobre todo para:</p>
+<ul>
+<li>correo de verificacion de cuenta o solicitud;</li>
+<li>notificaciones relacionadas con solicitudes cuando el correo esta configurado.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>Brevo es el servicio externo de correo. Lo uso para que el portal externo pueda enviar verificaciones y notificaciones reales.</p></blockquote>
+<h3 id="agora-desktop">Agora Desktop</h3>
+<p>Agora Desktop es una aplicacion de escritorio hecha con Electron.</p>
+<p>No es el portal principal. Es una herramienta tecnica para:</p>
+<ul>
+<li>ver estado del despliegue;</li>
+<li>comprobar URL cloud;</li>
+<li>consultar logs;</li>
+<li>lanzar validaciones;</li>
+<li>trabajar en modo cloud o local.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>Agora Desktop me sirve como consola tecnica. Me permite comprobar rapidamente si el cloud responde, ver logs y tener una forma de supervision sin depender solo del navegador.</p></blockquote>
+<h2 id="6-como-se-conectan-frontend-y-backend-a-nivel-de-codigo">6. Como se conectan frontend y backend a nivel de codigo</h2>
+<p>Esta es una parte importante porque si me preguntan que significa &quot;conectar frontend y backend&quot;, no puedo quedarme en algo generico.</p>
+<p>La explicacion base es:</p>
+<blockquote><p>El frontend no accede directamente a la base de datos. El usuario interactua con React. React llama a una API usando <code>fetch</code>. Esa API esta hecha en Symfony. Symfony valida la peticion, consulta o guarda datos con Doctrine y devuelve JSON. React recibe ese JSON y actualiza la pantalla.</p></blockquote>
+<h3 id="archivos-que-puedo-mencionar">Archivos que puedo mencionar</h3>
+<p>Portal interno:</p>
+<ul>
+<li><code>frontend/app/src/App.tsx</code>: organiza la aplicacion interna, las vistas y el estado principal.</li>
+<li><code>frontend/app/src/services/api.ts</code>: centraliza las llamadas HTTP al backend.</li>
+<li><code>frontend/app/src/types.ts</code>: define tipos de datos como empresa, convenio, estudiante o asignacion.</li>
+</ul>
+<p>Portal externo:</p>
+<ul>
+<li><code>frontend/company-portal/src/App.tsx</code>: gestiona registro, login de empresa, estado, panel externo y mensajes.</li>
+</ul>
+<p>Backend:</p>
+<ul>
+<li><code>backend/src/Controller/Api/EmpresaColaboradoraController.php</code>: endpoints de empresas.</li>
+<li><code>backend/src/Controller/Api/ConvenioController.php</code>: endpoints de convenios.</li>
+<li><code>backend/src/Controller/Api/AsignacionController.php</code>: endpoints de asignaciones y seguimiento.</li>
+<li><code>backend/src/Controller/Api/PortalCompanyController.php</code>: endpoints del portal externo.</li>
+<li><code>backend/src/Controller/PortalAuthController.php</code>: registro y login del portal externo.</li>
+<li><code>backend/src/Controller/RegistroEmpresaController.php</code>: solicitud publica y verificacion de correo.</li>
+</ul>
+<p>Entidades:</p>
+<ul>
+<li><code>backend/src/Entity/EmpresaColaboradora.php</code></li>
+<li><code>backend/src/Entity/EmpresaSolicitud.php</code></li>
+<li><code>backend/src/Entity/EmpresaPortalCuenta.php</code></li>
+<li><code>backend/src/Entity/Convenio.php</code></li>
+<li><code>backend/src/Entity/AsignacionPractica.php</code></li>
+<li><code>backend/src/Entity/EmpresaMensaje.php</code></li>
+</ul>
+<h3 id="ejemplo-1-cargar-empresas">Ejemplo 1: cargar empresas</h3>
+<p>Cuando en el portal interno se muestra la lista de empresas, el recorrido es:</p>
+<ol>
+<li>React necesita cargar empresas.</li>
+<li>El cliente de API del frontend llama a <code>GET /api/empresas</code>.</li>
+<li>Esa llamada esta centralizada en <code>frontend/app/src/services/api.ts</code>.</li>
+<li>Symfony recibe la peticion en <code>EmpresaColaboradoraController.php</code>.</li>
+<li>El controlador usa el repositorio de empresas.</li>
+<li>Doctrine consulta PostgreSQL.</li>
+<li>Symfony devuelve un JSON con las empresas.</li>
+<li>React pinta la tabla.</li>
+</ol>
+<p>Como lo diria:</p>
+<blockquote><p>Por ejemplo, para cargar empresas, React llama a <code>/api/empresas</code>. Esa ruta la atiende Symfony en el controlador de empresas. El controlador consulta las entidades con Doctrine y devuelve JSON. Despues React usa ese JSON para pintar la tabla.</p></blockquote>
+<h3 id="ejemplo-2-crear-una-empresa">Ejemplo 2: crear una empresa</h3>
+<p>Cuando se crea una empresa desde el portal interno:</p>
+<ol>
+<li>El usuario rellena el formulario.</li>
+<li>React crea un objeto con los datos.</li>
+<li>El frontend envia un <code>POST /api/empresas</code>.</li>
+<li>Symfony recibe el payload.</li>
+<li>El backend valida campos como nombre, email, estado o sector.</li>
+<li>Si hay errores, devuelve un mensaje controlado.</li>
+<li>Si todo esta bien, crea una entidad <code>EmpresaColaboradora</code>.</li>
+<li>Doctrine la guarda en PostgreSQL con <code>persist</code> y <code>flush</code>.</li>
+<li>El backend devuelve la empresa creada.</li>
+<li>React actualiza la vista.</li>
+</ol>
+<p>Palabras que puedo explicar:</p>
+<ul>
+<li><code>POST</code>: peticion para crear datos.</li>
+<li><code>payload</code>: datos que se envian desde el formulario.</li>
+<li><code>validacion</code>: comprobacion de que los datos tienen sentido.</li>
+<li><code>EntityManager</code>: componente que gestiona guardado de entidades.</li>
+<li><code>persist</code>: preparar entidad para guardar.</li>
+<li><code>flush</code>: ejecutar los cambios en base de datos.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>Crear una empresa es un flujo completo: formulario en React, peticion POST a Symfony, validacion en backend, entidad Doctrine y respuesta JSON para refrescar la pantalla.</p></blockquote>
+<h3 id="ejemplo-3-registro-de-empresa-externa">Ejemplo 3: registro de empresa externa</h3>
+<p>En el portal externo el flujo es distinto porque lo inicia una empresa desde fuera del centro.</p>
+<ol>
+<li>La empresa entra en <code>/externo</code>.</li>
+<li>Crea una cuenta con email y contrasena.</li>
+<li>Despues rellena los datos de empresa: nombre, CIF/NIF, sector, contacto y tutor profesional.</li>
+<li>El portal externo envia la solicitud al backend.</li>
+<li>Symfony crea una <code>EmpresaSolicitud</code>.</li>
+<li>Se genera un token de verificacion.</li>
+<li>Se envia correo con Brevo si esta configurado.</li>
+<li>El centro revisa la solicitud desde el portal interno.</li>
+<li>Si se aprueba, la empresa pasa a <code>EmpresaColaboradora</code> activa.</li>
+</ol>
+<p>Como lo diria:</p>
+<blockquote><p>En el portal externo separo la cuenta de empresa y la solicitud. Primero la empresa puede tener acceso al portal, pero hasta que el centro aprueba la solicitud no se convierte en empresa colaboradora activa.</p></blockquote>
+<h3 id="ejemplo-4-crear-convenio-y-asignacion">Ejemplo 4: crear convenio y asignacion</h3>
+<p>Para crear un convenio:</p>
+<ol>
+<li>El centro selecciona una empresa activa.</li>
+<li>React envia <code>POST /api/convenios</code>.</li>
+<li>Symfony valida que la empresa exista y que los datos del convenio sean validos.</li>
+<li>Doctrine guarda la entidad <code>Convenio</code>.</li>
+</ol>
+<p>Para crear una asignacion:</p>
+<ol>
+<li>Se selecciona estudiante, empresa, convenio, tutor academico y fechas.</li>
+<li>React envia <code>POST /api/asignaciones</code>.</li>
+<li>Symfony valida que:</li>
+</ol>
+<p>- el estudiante exista; - la empresa este activa; - el convenio sea valido; - el tutor academico exista; - el estudiante no tenga otra practica activa incompatible.</p>
+<ol>
+<li>Si todo esta bien, se crea <code>AsignacionPractica</code>.</li>
+</ol>
+<p>Frase:</p>
+<blockquote><p>La asignacion tiene mas logica que un simple formulario, porque el backend tiene que comprobar reglas del dominio: empresa activa, convenio valido y que el estudiante no tenga conflictos.</p></blockquote>
+<h3 id="ejemplo-5-mensajes-empresa-centro">Ejemplo 5: mensajes empresa-centro</h3>
+<p>La mensajeria se guarda en la entidad <code>EmpresaMensaje</code>.</p>
+<p>El flujo es:</p>
+<ol>
+<li>La empresa escribe desde el portal externo.</li>
+<li>El backend guarda el mensaje con autor <code>empresa</code>.</li>
+<li>El portal interno puede ver el hilo.</li>
+<li>El centro responde.</li>
+<li>El mensaje se guarda con autor <code>centro</code>.</li>
+<li>El portal externo consulta periodicamente la API para refrescar mensajes.</li>
+</ol>
+<p>Frase:</p>
+<blockquote><p>No es un chat con WebSockets en tiempo real. Es una mensajeria persistida en base de datos con refresco automatico desde el frontend.</p></blockquote>
+<h2 id="7-errores-que-entiendo-y-puedo-explicar">7. Errores que entiendo y puedo explicar</h2>
+<p>Durante el desarrollo aparecieron varios tipos de errores. Es importante saber explicarlos.</p>
+<h3 id="error-401">Error 401</h3>
+<p>Significa que el usuario no esta autenticado.</p>
+<p>Ejemplo:</p>
+<blockquote><p>Intento acceder a una ruta privada sin iniciar sesion o con credenciales incorrectas.</p></blockquote>
+<h3 id="error-403">Error 403</h3>
+<p>Significa que el usuario esta autenticado, pero no tiene permisos.</p>
+<p>Ejemplo:</p>
+<blockquote><p>Un profesor intenta borrar una empresa, pero esa accion esta limitada al usuario admin.</p></blockquote>
+<h3 id="error-404">Error 404</h3>
+<p>Significa que el recurso no existe.</p>
+<p>Ejemplo:</p>
+<blockquote><p>Se intenta abrir un convenio o empresa con un ID que no existe en la base de datos.</p></blockquote>
+<h3 id="error-422">Error 422</h3>
+<p>Significa que los datos enviados no pasan la validacion.</p>
+<p>Ejemplo:</p>
+<blockquote><p>Falta un CIF/NIF obligatorio o un campo no tiene el formato esperado.</p></blockquote>
+<h3 id="error-500">Error 500</h3>
+<p>Significa error interno del servidor.</p>
+<p>Ejemplos reales que aparecieron:</p>
+<ul>
+<li>problemas de permisos de cache en Symfony;</li>
+<li>migraciones incorrectas;</li>
+<li>errores de base de datos;</li>
+<li>excepciones no controladas.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>Una parte del trabajo fue que estos errores no aparecieran de forma cruda al usuario. El backend intenta devolver mensajes controlados y el frontend los convierte en textos mas comprensibles.</p></blockquote>
+<h2 id="8-dificultades-reales-que-tuve">8. Dificultades reales que tuve</h2>
+<h3 id="migraciones-entre-sqlite-y-postgresql">Migraciones entre SQLite y PostgreSQL</h3>
+<p>Una dificultad importante fue que algunas migraciones funcionaban en SQLite, pero fallaban al desplegar con PostgreSQL.</p>
+<p>Por ejemplo, aparecieron errores con <code>AUTOINCREMENT</code> y <code>CLOB</code>, que son sintaxis que no encajaban bien con PostgreSQL.</p>
+<p>Como lo explico:</p>
+<blockquote><p>El problema fue que el entorno local y el entorno cloud no se comportaban igual. Tuve que revisar logs, entender que la migracion estaba generada con sintaxis no compatible y adaptarla para que PostgreSQL pudiera crear las tablas.</p></blockquote>
+<h3 id="permisos-de-symfony">Permisos de Symfony</h3>
+<p>Tambien aparecieron errores 500 porque Symfony no podia escribir en <code>var/cache/prod</code>.</p>
+<p>Como lo explico:</p>
+<blockquote><p>La aplicacion arrancaba, pero al entrar en la API fallaba porque Symfony necesitaba escribir archivos de cache dentro del contenedor. Se corrigio ajustando permisos para que Apache/PHP pudiera escribir donde correspondia.</p></blockquote>
+<h3 id="ip-publica-y-url">IP publica y URL</h3>
+<p>Al reiniciar la VM, la IP publica podia cambiar.</p>
+<p>Para solucionarlo se uso <code>nip.io</code>, que permite construir una URL usando la IP.</p>
+<p>Como lo explico:</p>
+<blockquote><p>Como no tenia un dominio propio definitivo, use una URL con nip.io. Asi podia acceder con una direccion tipo <code>agora.IP.nip.io</code>. Tambien se adapto el despliegue para poder recalcular la URL si cambia la IP.</p></blockquote>
+<h3 id="documentos">Documentos</h3>
+<p>La parte documental fue una de las mas problematicas.</p>
+<p>Habia que guardar dos cosas:</p>
+<ul>
+<li>metadatos en base de datos;</li>
+<li>archivo real en almacenamiento persistente.</li>
+</ul>
+<p>Como lo explico:</p>
+<blockquote><p>La subida de documentos no era solo un formulario. Habia que asegurar que el archivo se guardara en un volumen persistente y que la base de datos mantuviera la referencia correcta. Por eso la deje como una parte funcional en algunos casos, pero tambien como mejora futura para hacerla mas robusta.</p></blockquote>
+<h3 id="alcance-demasiado-grande">Alcance demasiado grande</h3>
+<p>El proyecto crecio mucho.</p>
+<p>Acabo incluyendo:</p>
+<ul>
+<li>portal interno;</li>
+<li>portal externo;</li>
+<li>backend;</li>
+<li>base de datos;</li>
+<li>correo;</li>
+<li>chat;</li>
+<li>documentos;</li>
+<li>cloud;</li>
+<li>desktop;</li>
+<li>roles;</li>
+<li>memoria;</li>
+<li>presentacion.</li>
+</ul>
+<p>Como lo explico:</p>
+<blockquote><p>Una de las mayores dificultades fue controlar el alcance. Con IA se avanza rapido, pero tambien es facil abrir demasiadas funcionalidades. Aprendi que hay que priorizar el flujo principal y dejar el resto como mejoras futuras.</p></blockquote>
+<h2 id="9-flujo-funcional-principal">9. Flujo funcional principal</h2>
+<h3 id="flujo-de-empresa">Flujo de empresa</h3>
+<p>El flujo empieza en el portal externo.</p>
+<ol>
+<li>La empresa crea una cuenta.</li>
+<li>Rellena los datos de empresa.</li>
+<li>Incluye CIF/NIF y tutor profesional.</li>
+<li>Verifica el correo.</li>
+<li>El centro revisa la solicitud.</li>
+<li>Si se aprueba, la empresa queda activa.</li>
+<li>Si se rechaza, queda registrado el motivo.</li>
+</ol>
+<p>Frase:</p>
+<blockquote><p>Este flujo representa la entrada de una empresa nueva al sistema. No se crea directamente como colaboradora activa, sino que pasa por una solicitud y una revision del centro.</p></blockquote>
+<h3 id="flujo-de-convenio">Flujo de convenio</h3>
+<p>Despues de aprobar una empresa, el centro puede crear un convenio.</p>
+<ol>
+<li>Se selecciona la empresa.</li>
+<li>Se definen fechas y condiciones.</li>
+<li>Se indica el estado del convenio.</li>
+<li>Se puede asociar documentacion.</li>
+</ol>
+<p>Frase:</p>
+<blockquote><p>El convenio representa el acuerdo entre el centro y la empresa. Sin una empresa activa y un convenio valido, no tiene sentido crear una asignacion de practicas.</p></blockquote>
+<h3 id="flujo-de-asignacion">Flujo de asignacion</h3>
+<p>La asignacion une las piezas principales:</p>
+<ul>
+<li>estudiante;</li>
+<li>empresa;</li>
+<li>convenio;</li>
+<li>tutor academico;</li>
+<li>tutor profesional;</li>
+<li>fechas;</li>
+<li>modalidad;</li>
+<li>horas;</li>
+<li>estado.</li>
+</ul>
+<p>Frase:</p>
+<blockquote><p>La asignacion es el punto donde se concreta la practica. Une al estudiante con una empresa y un convenio, y permite hacer seguimiento y evaluacion.</p></blockquote>
+<h2 id="10-funcionalidades-que-puedo-defender-como-cerradas">10. Funcionalidades que puedo defender como cerradas</h2>
+<p>Puedo defender como funcional:</p>
+<ul>
+<li>portal interno accesible en cloud;</li>
+<li>portal externo accesible en cloud;</li>
+<li>registro de empresa;</li>
+<li>verificacion de correo;</li>
+<li>solicitud de colaboracion;</li>
+<li>aprobacion y rechazo desde el centro;</li>
+<li>gestion de empresas;</li>
+<li>gestion de estudiantes;</li>
+<li>gestion de tutores;</li>
+<li>gestion de convenios;</li>
+<li>gestion de asignaciones;</li>
+<li>mensajeria empresa-centro;</li>
+<li>datos realistas de demostracion;</li>
+<li>despliegue en VM con Docker;</li>
+<li>arranque automatico con <code>agora.service</code>;</li>
+<li>supervision desde Agora Desktop.</li>
+</ul>
+<h2 id="11-funcionalidades-que-reconozco-como-futuras-mejoras">11. Funcionalidades que reconozco como futuras mejoras</h2>
+<p>Estas partes no las debo vender como cerradas al 100 %:</p>
+<ul>
+<li>gestion documental mas robusta;</li>
+<li>roles avanzados y permisos finos;</li>
+<li>perfiles solo lectura;</li>
+<li>multi-centro;</li>
+<li>dominio propio estable;</li>
+<li>backups automaticos;</li>
+<li>mas pruebas E2E;</li>
+<li>auditoria mas completa;</li>
+<li>seguridad avanzada para produccion.</li>
+</ul>
+<p>Como lo explico:</p>
+<blockquote><p>He priorizado el flujo principal. Algunas funciones estan planteadas o parcialmente trabajadas, pero para llevarlas a nivel de produccion necesitarian mas tiempo, por eso las presento como mejoras futuras.</p></blockquote>
+<h2 id="12-preguntas-dificiles-y-respuestas">12. Preguntas dificiles y respuestas</h2>
+<h3 id="has-hecho-tu-todo-el-codigo">&quot;Has hecho tu todo el codigo?&quot;</h3>
+<blockquote><p>No linea por linea. He usado IA generativa y tecnologias actuales como apoyo para construir el proyecto. Mi papel ha sido orientar el desarrollo, definir requisitos, probar flujos, revisar errores, validar el despliegue y documentar el resultado. Lo defiendo como un proyecto funcional desarrollado con apoyo de herramientas actuales, no como una autoria manual completa de cada linea.</p></blockquote>
+<h3 id="entonces-que-has-aprendido">&quot;Entonces que has aprendido?&quot;</h3>
+<blockquote><p>He aprendido a entender como se estructura una aplicacion completa: React en el frontend, Symfony en el backend, Doctrine como conexion con la base de datos, PostgreSQL para persistencia y Docker para desplegarlo. Tambien he aprendido a seguir el recorrido de una accion desde que el usuario pulsa un boton hasta que se guarda en la base de datos.</p></blockquote>
+<h3 id="entonces-cual-es-el-valor-del-proyecto-si-has-usado-ia">&quot;Entonces cual es el valor del proyecto si has usado IA?&quot;</h3>
+<blockquote><p>El valor esta en saber usar la IA como herramienta dentro de un proceso completo. No basta con pedir codigo. Hay que definir el problema, probar lo generado, detectar errores, integrar tecnologias, desplegarlo en cloud y explicar que funciona y que queda como mejora futura.</p></blockquote>
+<h3 id="explica-como-se-conecta-frontend-y-backend">&quot;Explica como se conecta frontend y backend&quot;</h3>
+<blockquote><p>El usuario interactua con React. React llama a una ruta de la API, por ejemplo <code>/api/empresas</code>. Symfony recibe esa peticion en un controlador, valida los datos, usa Doctrine para consultar o guardar en PostgreSQL y devuelve JSON. React recibe ese JSON y actualiza la interfaz.</p></blockquote>
+<h3 id="que-es-un-controlador">&quot;Que es un controlador?&quot;</h3>
+<blockquote><p>Es la clase de Symfony que recibe una peticion HTTP. Por ejemplo, <code>EmpresaColaboradoraController</code> atiende rutas de empresas. El controlador valida la peticion, coordina la logica y devuelve una respuesta.</p></blockquote>
+<h3 id="que-es-una-entidad">&quot;Que es una entidad?&quot;</h3>
+<blockquote><p>Es una clase PHP que representa un concepto del dominio y se relaciona con una tabla de la base de datos. Por ejemplo, <code>EmpresaColaboradora</code> representa empresas y <code>AsignacionPractica</code> representa una practica asignada a un estudiante.</p></blockquote>
+<h3 id="que-es-una-api">&quot;Que es una API?&quot;</h3>
+<blockquote><p>Es la capa de comunicacion entre el frontend y el backend. En mi proyecto son rutas como <code>/api/empresas</code>, <code>/api/convenios</code> o <code>/api/asignaciones</code>, que devuelven datos en JSON.</p></blockquote>
+<h3 id="que-es-json">&quot;Que es JSON?&quot;</h3>
+<blockquote><p>Es el formato de datos que viaja entre React y Symfony. Por ejemplo, una empresa se puede enviar como un objeto con nombre, sector, email y estado.</p></blockquote>
+<h3 id="que-dificultades-tecnicas-tuviste">&quot;Que dificultades tecnicas tuviste?&quot;</h3>
+<blockquote><p>Las principales fueron migraciones incompatibles entre SQLite y PostgreSQL, permisos de cache en Symfony dentro de Docker, errores 401 y 500, gestion de documentos, URL publica cambiante y controlar un alcance demasiado amplio.</p></blockquote>
+<h3 id="por-que-hay-partes-como-futuras-mejoras">&quot;Por que hay partes como futuras mejoras?&quot;</h3>
+<blockquote><p>Porque el proyecto abarco mucho. Preferi cerrar bien el flujo principal y reconocer como mejoras futuras las partes que necesitaban mas tiempo para ser robustas, como documentos avanzados, multi-centro o roles finos.</p></blockquote>
+<h3 id="que-harias-distinto">&quot;Que harias distinto?&quot;</h3>
+<blockquote><p>Cerraria antes el alcance, usaria desde el principio una base de datos igual en local y cloud, escribiria pruebas antes de ampliar funcionalidades y documentaria mejor cada decision tomada con IA.</p></blockquote>
+<h3 id="que-riesgo-tiene-usar-ia-para-programar">&quot;Que riesgo tiene usar IA para programar?&quot;</h3>
+<blockquote><p>Que puede generar codigo que parece correcto, pero falla en entorno real. Por eso hay que probar, revisar logs, validar con datos reales y no aceptar el resultado sin entender el flujo.</p></blockquote>
+<h2 id="13-mini-guion-para-decirlo-oralmente">13. Mini guion para decirlo oralmente</h2>
+<blockquote><p>Mi proyecto se llama Agora y se centra en la gestion de practicas entre un centro educativo y empresas colaboradoras.</p></blockquote>
+<blockquote><p>El enfoque que voy a defender es como he podido desarrollar y desplegar una aplicacion funcional usando tecnologias actuales, incluida la inteligencia artificial como apoyo al desarrollo. No quiero presentarlo como si hubiera escrito manualmente cada linea de codigo, sino como un proyecto donde he usado herramientas modernas para llevar una idea a un sistema real.</p></blockquote>
+<blockquote><p>La aplicacion tiene un portal interno para el centro, un portal externo para empresas, un backend con Symfony, una base de datos PostgreSQL, despliegue en Google Cloud con Docker y una aplicacion de escritorio para supervision tecnica.</p></blockquote>
+<blockquote><p>A nivel tecnico, el frontend y el backend se comunican mediante una API. Por ejemplo, cuando el usuario consulta empresas, React llama a <code>/api/empresas</code>; Symfony recibe esa peticion en un controlador, usa Doctrine para consultar PostgreSQL y devuelve JSON para que React actualice la pantalla.</p></blockquote>
+<blockquote><p>El flujo principal empieza cuando una empresa se registra en el portal externo, verifica su correo y envia una solicitud. Desde el portal interno, el centro puede aprobarla o rechazarla. Si se aprueba, la empresa queda activa y se pueden crear convenios. Despues se pueden crear asignaciones de estudiantes, con tutores y seguimiento.</p></blockquote>
+<blockquote><p>Durante el desarrollo aparecieron dificultades reales: migraciones que fallaban en PostgreSQL, permisos de cache en Symfony, errores 401 y 500, problemas con la URL publica y la gestion documental. Esto me sirvio para aprender que la IA y las herramientas actuales ayudan mucho, pero no sustituyen la prueba, la revision tecnica ni la comprension del flujo.</p></blockquote>
+<blockquote><p>La conclusion es que Agora demuestra como se puede usar IA generativa junto con tecnologias web actuales para construir una aplicacion completa y desplegada. Tambien muestra sus limites: hay que entender el flujo, probarlo y ser honesto con que partes estan cerradas y que partes quedan como mejoras futuras.</p></blockquote>
+  </main>
+</body>
+</html>
